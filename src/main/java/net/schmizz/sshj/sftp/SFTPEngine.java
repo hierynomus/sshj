@@ -101,7 +101,7 @@ public class SFTPEngine implements Requester {
         out.write((len >>> 16) & 0xff);
         out.write((len >>> 8) & 0xff);
         out.write(len & 0xff);
-        out.write(payload.array(), 0, len);
+        out.write(payload.array(), payload.rpos(), len);
         out.flush();
     }
 
