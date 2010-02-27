@@ -11,7 +11,7 @@ JCRAFT = 'com.jcraft:jzlib:jar:1.0.7'
 BC = 'org.bouncycastle:bcprov-jdk16:jar:1.45'
 
 desc 'SSHv2 library for Java'
-define 'sshj', :version=>'0.1.0', :group=>'sshj' do
+define 'sshj', :version=>'0.1a', :group=>'sshj' do
     
     shell.using :scala
     
@@ -19,9 +19,9 @@ define 'sshj', :version=>'0.1.0', :group=>'sshj' do
 
     test.with SSHD, LOG4J, SLF4J, SLF4J_LOG4J
     
-    package(:jar).exclude('**/examples/*')
-    package(:sources).exclude('**/examples/*')
-    package(:javadoc).exclude('**/examples/*')
-    package(:zip, :classifier=>'examples').path('examples').include(_('**/examples/*.{java,class}'))
+    package(:jar).exclude('**/examples')
+    package(:sources).exclude('**/examples')
+    package(:javadoc)
+    package(:zip, :classifier=>'examples').path('examples').include(_('**/examples/*.java'))
     
 end
