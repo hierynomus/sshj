@@ -1,0 +1,144 @@
+/*
+ * Copyright 2010 Shikhar Bhushan
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * This file may incorporate work covered by the following copyright and
+ * permission notice:
+ *
+ *     Licensed to the Apache Software Foundation (ASF) under one
+ *     or more contributor license agreements.  See the NOTICE file
+ *     distributed with this work for additional information
+ *     regarding copyright ownership.  The ASF licenses this file
+ *     to you under the Apache License, Version 2.0 (the
+ *     "License"); you may not use this file except in compliance
+ *     with the License.  You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *      Unless required by applicable law or agreed to in writing,
+ *      software distributed under the License is distributed on an
+ *      "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ *      KIND, either express or implied.  See the License for the
+ *      specific language governing permissions and limitations
+ *      under the License.
+ */
+package net.schmizz.sshj.transport.kex;
+
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.ByteArrayUtils;
+import net.schmizz.sshj.common.DisconnectReason;
+import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.Message;
+import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.signature.Signature;
+import net.schmizz.sshj.transport.Transport;
+import net.schmizz.sshj.transport.TransportException;
+import net.schmizz.sshj.transport.digest.Digest;
+import net.schmizz.sshj.transport.digest.SHA1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.security.PublicKey;
+
+/**
+ * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the
+ * {@link DH} class in the
+ */
+public abstract class AbstractDHG implements KeyExchange {
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private Transport trans;
+
+    private final Digest sha = new SHA1();
+    private final DH dh = new DH();
+
+    private byte[] V_S;
+    private byte[] V_C;
+    private byte[] I_S;
+    private byte[] I_C;
+
+    private byte[] e;
+    private byte[] f;
+    private byte[] K;
+    private byte[] H;
+    private PublicKey hostKey;
+
+    public byte[] getH() {
+        return ByteArrayUtils.copyOf(H);
+    }
+
+    public Digest getHash() {
+        return sha;
+    }
+
+    public PublicKey getHostKey() {
+        return hostKey;
+    }
+
+    public byte[] getK() {
+        return ByteArrayUtils.copyOf(K);
+    }
+
+    public void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws TransportException {
+        this.trans = trans;
+        this.V_S = ByteArrayUtils.copyOf(V_S);
+        this.V_C = ByteArrayUtils.copyOf(V_C);
+        this.I_S = ByteArrayUtils.copyOf(I_S);
+        this.I_C = ByteArrayUtils.copyOf(I_C);
+        sha.init();
+        initDH(dh);
+        e = dh.getE();
+
+        log.info("Sending SSH_MSG_KEXDH_INIT");
+        trans.write(new SSHPacket(Message.KEXDH_INIT).putMPInt(e));
+    }
+
+    public boolean next(Message msg, SSHPacket packet) throws TransportException {
+        if (msg != Message.KEXDH_31)
+            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "Unxpected packet: " + msg);
+
+        log.info("Received SSH_MSG_KEXDH_REPLY");
+        final byte[] K_S = packet.readBytes();
+        f = packet.readMPIntAsBytes();
+        final byte[] sig = packet.readBytes(); // signature sent by server
+        dh.setF(f);
+        K = dh.getK();
+
+        hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
+
+        final Buffer.PlainBuffer buf = new Buffer.PlainBuffer() // our hash
+                .putString(V_C) // 
+                .putString(V_S) // 
+                .putString(I_C) //
+                .putString(I_S) //
+                .putString(K_S) //
+                .putMPInt(e) //
+                .putMPInt(f) //
+                .putMPInt(K); //
+        sha.update(buf.array(), 0, buf.available());
+        H = sha.digest();
+
+        Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(), KeyType.fromKey(hostKey).toString());
+        signature.init(hostKey, null);
+        signature.update(H, 0, H.length);
+        if (!signature.verify(sig))
+            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "KeyExchange signature verification failed");
+        return true;
+    }
+
+    protected abstract void initDH(DH dh);
+
+}

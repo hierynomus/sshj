@@ -1,0 +1,68 @@
+/*
+ * Copyright 2010 Shikhar Bhushan
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net.schmizz.sshj.userauth.password;
+
+import java.util.Arrays;
+import java.util.Map;
+
+/** Static utility method and factories */
+public class PasswordUtils {
+
+    /**
+     * Blank out a character array
+     *
+     * @param pwd the character array
+     */
+    public static void blankOut(char[] pwd) {
+        if (pwd != null)
+            Arrays.fill(pwd, ' ');
+    }
+
+    /**
+     * @param password the password as a char[]
+     *
+     * @return the constructed {@link net.schmizz.sshj.userauth.password.PasswordFinder}
+     */
+    public static PasswordFinder createOneOff(final char[] password) {
+        if (password == null)
+            return null;
+        else
+            return new PasswordFinder() {
+                public char[] reqPassword(Resource<?> resource) {
+                    char[] cloned = password.clone();
+                    blankOut(password);
+                    return cloned;
+                }
+
+                public boolean shouldRetry(Resource<?> resource) {
+                    return false;
+                }
+            };
+    }
+
+    public static PasswordFinder createResourceBased(final Map<Resource<?>, String> passwordMap) {
+        return new PasswordFinder() {
+            public char[] reqPassword(Resource<?> resource) {
+                return passwordMap.get(resource).toCharArray();
+            }
+
+            public boolean shouldRetry(Resource<?> resource) {
+                return false;
+            }
+
+        };
+    }
+}

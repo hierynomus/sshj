@@ -1,0 +1,8 @@
+sshj - SSH library and client
+Copyright 2010 Shikhar Bhushan
+
+This product includes code derived from software developed at 
+The Apache Software Foundation (http://www.apache.org/):
+
+- Apache MINA SSHD
+- Apache Commons-Net
