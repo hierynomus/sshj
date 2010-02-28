@@ -16,25 +16,26 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.PatternLayout;
+
+import java.io.IOException;
 
 /** This example demonstrates downloading of a file over SCP from the SSH server. */
 public class SCPDownload {
 
-    static {
-        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-    }
+//    static {
+//        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
+//    }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)
+            throws IOException {
         SSHClient ssh = new SSHClient();
-        // ssh.useCompression(); // => significant speedup for large file transfers on fast links
+        // ssh.useCompression(); // Can lead to significant speedup
         ssh.loadKnownHosts();
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
-            ssh.newSCPFileTransfer().download("well", "/tmp/");
+            ssh.newSCPFileTransfer()
+                    .download("well", "/tmp/");
         } finally {
             ssh.disconnect();
         }

@@ -17,6 +17,7 @@ package examples;
 
 import net.schmizz.sshj.SSHClient;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
@@ -30,7 +31,8 @@ public class LocalPF {
     // BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
     // }
 
-    public static void main(String... args) throws Exception {
+    public static void main(String... args)
+            throws IOException {
         SSHClient ssh = new SSHClient();
 
         ssh.loadKnownHosts();
@@ -45,7 +47,8 @@ public class LocalPF {
             * google.com:80
             */
 
-            ssh.newLocalPortForwarder(new InetSocketAddress("localhost", 8080), "google.com", 80).listen();
+            ssh.newLocalPortForwarder(new InetSocketAddress("localhost", 8080), "google.com", 80)
+                    .listen();
 
         } finally {
             ssh.disconnect();

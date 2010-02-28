@@ -16,29 +16,29 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.PatternLayout;
+
+import java.io.IOException;
 
 /** This example demonstrates uploading of a file over SCP to the SSH server. */
 public class SCPUpload {
 
-    static {
-        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-    }
+//    static {
+//        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
+//    }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)
+            throws IOException, ClassNotFoundException {
         SSHClient ssh = new SSHClient();
         ssh.loadKnownHosts();
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
 
-            // Compression = significant speedup for large file transfers on fast links
-            // present here to demo algorithm renegotiation - could have just put this before connect()
+            // Present here to demo algorithm renegotiation - could have just put this before connect()
             ssh.useCompression();
 
-            ssh.newSCPFileTransfer().upload("/Users/shikhar/well", "/tmp/");
+            ssh.newSCPFileTransfer()
+                    .upload("/Users/shikhar/well", "/tmp/");
         } finally {
             ssh.disconnect();
         }

@@ -32,11 +32,13 @@ class RudimentaryPTY {
 //        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
 //    }
 
-    public static void main(String... args) throws IOException {
+    public static void main(String... args)
+            throws IOException {
 
         final SSHClient ssh = new SSHClient();
 
-        ssh.addHostKeyVerifier(new ConsoleHostKeyVerifier(new File(OpenSSHKnownHosts.detectSSHDir(), "known_hosts"), System.console()));
+        final File khFile = new File(OpenSSHKnownHosts.detectSSHDir(), "known_hosts");
+        ssh.addHostKeyVerifier(new ConsoleHostKeyVerifier(khFile, System.console()));
 
         ssh.connect("localhost");
 

@@ -18,10 +18,8 @@ package examples;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder.Forward;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.PatternLayout;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
@@ -30,11 +28,12 @@ import java.net.InetSocketAddress;
  */
 public class RemotePF {
 
-    static {
-        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-    }
+//    static {
+//        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
+//    }
 
-    public static void main(String... args) throws Exception {
+    public static void main(String... args)
+            throws IOException {
         SSHClient client = new SSHClient();
         client.loadKnownHosts();
 
@@ -47,10 +46,16 @@ public class RemotePF {
             * We make _server_ listen on port 8080, which forwards all connections to us as a channel, and we further
             * forward all such channels to google.com:80
             */
-            client.getRemotePortForwarder().bind(new Forward(8080), //
-                    new SocketForwardingConnectListener(new InetSocketAddress("google.com", 80)));
+            client.getRemotePortForwarder().bind(
+                    // where the server should listen
+                    new Forward(8080),
+                    // what we do with incoming connections that are forwarded to us
+                    new SocketForwardingConnectListener(new InetSocketAddress("google.com", 80)
+                    ));
 
-            client.getTransport().setHeartbeatInterval(30);
+            client.getTransport()
+                    .setHeartbeatInterval(30);
+
             // Something to hang on to so that the forwarding stays
             client.getTransport().join();
 
