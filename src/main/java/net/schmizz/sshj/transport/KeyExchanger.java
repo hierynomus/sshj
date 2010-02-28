@@ -68,7 +68,7 @@ final class KeyExchanger implements SSHPacketHandler, ErrorNotifiable {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final TransportProtocol transport;
+    private final TransportImpl transport;
 
     /**
      * {@link HostKeyVerifier#verify(String, int, java.security.PublicKey)} is invoked by {@link #verifyHost(PublicKey)}
@@ -95,10 +95,10 @@ final class KeyExchanger implements SSHPacketHandler, ErrorNotifiable {
 
     private final Event<TransportException> done;
 
-    KeyExchanger(TransportProtocol trans) {
+    KeyExchanger(TransportImpl trans) {
         this.transport = trans;
         /*
-         * Use TransportProtocol's writeLock, since TransportProtocol.write() may wait on this event and the lock should
+         * Use TransportImpl's writeLock, since TransportImpl.write() may wait on this event and the lock should
          * be released while waiting.
          */
         this.done = new Event<TransportException>("kex done", TransportException.chainer, trans.getWriteLock());

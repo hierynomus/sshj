@@ -216,27 +216,26 @@ public class OpenSSHKnownHosts implements HostKeyVerifier {
      *
      * @return {@code true} on successful verification or {@code false} on failure
      */
-    public boolean verify(String hostname, int port, PublicKey key) {
+    public boolean verify(final String hostname, final int port, final PublicKey key) {
         KeyType type = KeyType.fromKey(key);
         if (type == KeyType.UNKNOWN)
             return false;
 
-        if (port != 22)
-            hostname = "[" + hostname + "]:" + port;
+        final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
 
         for (Entry e : entries)
             try {
-                if (e.getType() == type && e.appliesTo(hostname))
+                if (e.getType() == type && e.appliesTo(adjustedHostname))
                     if (key.equals(e.getKey()))
                         return true;
                     else {
-                        return hostKeyChangedAction(e, hostname, key);
+                        return hostKeyChangedAction(e, adjustedHostname, key);
                     }
             } catch (IOException ioe) {
                 log.error("Error with {}: {}", e, ioe);
                 return false;
             }
-        return hostKeyUnverifiableAction(hostname, key);
+        return hostKeyUnverifiableAction(adjustedHostname, key);
     }
 
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {

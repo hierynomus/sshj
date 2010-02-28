@@ -57,7 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /** A thread-safe {@link Transport} implementation. */
-public final class TransportProtocol implements Transport {
+public final class TransportImpl implements Transport {
 
     private static final class NullService extends AbstractService {
         NullService(Transport trans) {
@@ -121,7 +121,7 @@ public final class TransportProtocol implements Transport {
 
     private final ReentrantLock writeLock = new ReentrantLock();
 
-    public TransportProtocol(Config config) {
+    public TransportImpl(Config config) {
         this.config = config;
         this.reader = new Reader(this);
         this.heartbeater = new Heartbeater(this);

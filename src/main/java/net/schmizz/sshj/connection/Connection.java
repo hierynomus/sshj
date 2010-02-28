@@ -36,7 +36,6 @@
 package net.schmizz.sshj.connection;
 
 import net.schmizz.concurrent.Future;
-import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException;
@@ -98,7 +97,7 @@ public interface Connection {
      * @throws TransportException if there is an error sending the request
      */
     public Future<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
-                                                                    Buffer.PlainBuffer specifics) throws TransportException;
+                                                                    byte[] specifics) throws TransportException;
 
     /**
      * Send a {@code SSH_MSG_OPEN_FAILURE} for specified {@code Reason} and {@code message}.

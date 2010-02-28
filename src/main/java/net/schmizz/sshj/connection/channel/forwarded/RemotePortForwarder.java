@@ -116,12 +116,12 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
             return address.equals(other.address) && port == other.port;
         }
 
-        /** Returns the address represented by this forward. */
+        /** @return the address represented by this forward. */
         public String getAddress() {
             return address;
         }
 
-        /** Returns the port represented by this forward. */
+        /** @return the port represented by this forward. */
         public int getPort() {
             return port;
         }
@@ -179,8 +179,8 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
      *
      * @return the {@link Forward} which was put into place on the remote host
      *
-     * @throws net.schmizz.sshj.connection.ConnectionException
-     *          if there is an error requesting the forwarding
+     * @throws ConnectionException if there is an error requesting the forwarding
+     * @throws TransportException
      */
     public Forward bind(Forward forward, ConnectListener listener) throws ConnectionException, TransportException {
         SSHPacket reply = req(PF_REQ, forward);
@@ -197,6 +197,7 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
      * @param forward the forward which is being cancelled
      *
      * @throws ConnectionException if there is an error with the cancellation request
+     * @throws TransportException
      */
     public void cancel(Forward forward) throws ConnectionException, TransportException {
         try {
@@ -207,13 +208,12 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
     }
 
     protected SSHPacket req(String reqName, Forward forward) throws ConnectionException, TransportException {
-        return conn.sendGlobalRequest(PF_REQ, true, new Buffer.PlainBuffer() //
-                .putString(forward.address) //
-                .putInt(forward.port)) //
+        final byte[] specifics = new Buffer.PlainBuffer().putString(forward.address).putInt(forward.port).getCompactData();
+        return conn.sendGlobalRequest(reqName, true, specifics)
                 .get(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
-    /** Returns the active forwards. */
+    /** @return the active forwards. */
     public Set<Forward> getActiveForwards() {
         return listeners.keySet();
     }
@@ -223,8 +223,8 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
      * {@code ConnectListener} for that forward in a separate thread.
      */
     public void handleOpen(SSHPacket buf) throws ConnectionException, TransportException {
-        ForwardedTCPIPChannel chan = new ForwardedTCPIPChannel(conn, buf.readInt(), buf.readInt(), buf.readInt(), //
-                new Forward(buf.readString(), buf.readInt()), //
+        final ForwardedTCPIPChannel chan = new ForwardedTCPIPChannel(conn, buf.readInt(), buf.readInt(), buf.readInt(),
+                new Forward(buf.readString(), buf.readInt()),
                 buf.readString(), buf.readInt());
         if (listeners.containsKey(chan.getParentForward()))
             callListener(listeners.get(chan.getParentForward()), chan);

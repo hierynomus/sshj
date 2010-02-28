@@ -18,7 +18,6 @@ package net.schmizz.sshj.connection;
 import net.schmizz.concurrent.Future;
 import net.schmizz.concurrent.FutureUtils;
 import net.schmizz.sshj.AbstractService;
-import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.ErrorNotifiable;
 import net.schmizz.sshj.common.Message;
@@ -38,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** {@link Connection} implementation. */
-public class ConnectionProtocol extends AbstractService implements Connection {
+public class ConnectionImpl extends AbstractService implements Connection {
 
     private final Object internalSynchronizer = new Object();
 
@@ -58,7 +57,7 @@ public class ConnectionProtocol extends AbstractService implements Connection {
      *
      * @param trans transport layer
      */
-    public ConnectionProtocol(Transport trans) {
+    public ConnectionImpl(Transport trans) {
         super("ssh-connection", trans);
     }
 
@@ -175,13 +174,10 @@ public class ConnectionProtocol extends AbstractService implements Connection {
     }
 
     public Future<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
-                                                                    Buffer.PlainBuffer specifics) throws TransportException {
+                                                                    byte[] specifics) throws TransportException {
         synchronized (globalReqFutures) {
             log.info("Making global request for `{}`", name);
-            trans.write(new SSHPacket(Message.GLOBAL_REQUEST) //
-                    .putString(name) //
-                    .putBoolean(wantReply) //
-                    .putBuffer(specifics)); //
+            trans.write(new SSHPacket(Message.GLOBAL_REQUEST).putString(name).putBoolean(wantReply).putRawBytes(specifics));
 
             Future<SSHPacket, ConnectionException> future = null;
             if (wantReply) {

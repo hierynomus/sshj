@@ -45,9 +45,9 @@ final class Reader extends Thread {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final TransportProtocol trans;
+    private final TransportImpl trans;
 
-    Reader(TransportProtocol trans) {
+    Reader(TransportImpl trans) {
         this.trans = trans;
         setName("reader");
     }

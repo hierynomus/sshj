@@ -45,13 +45,13 @@ final class Heartbeater extends Thread {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final TransportProtocol trans;
+    private final TransportImpl trans;
 
     private int interval;
 
     private boolean started;
 
-    Heartbeater(TransportProtocol trans) {
+    Heartbeater(TransportImpl trans) {
         this.trans = trans;
         setName("heartbeater");
     }

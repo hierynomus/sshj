@@ -19,6 +19,7 @@ import net.schmizz.sshj.common.SSHException;
 
 /** A factory interface for creating SSH {@link Session session channels}. */
 public interface SessionFactory {
+
     /**
      * Opens a {@code session} channel. The returned {@link Session} instance allows {@link Session#exec(String)
      * executing a remote command}, {@link Session#startSubsystem(String) starting a subsystem}, or {@link

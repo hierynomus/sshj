@@ -42,7 +42,7 @@ import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
-import net.schmizz.sshj.connection.ConnectionProtocol;
+import net.schmizz.sshj.connection.ConnectionImpl;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.SessionChannel;
@@ -56,7 +56,7 @@ import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
-import net.schmizz.sshj.transport.TransportProtocol;
+import net.schmizz.sshj.transport.TransportImpl;
 import net.schmizz.sshj.transport.compression.DelayedZlibCompression;
 import net.schmizz.sshj.transport.compression.NoneCompression;
 import net.schmizz.sshj.transport.compression.ZlibCompression;
@@ -64,7 +64,7 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.userauth.UserAuth;
 import net.schmizz.sshj.userauth.UserAuthException;
-import net.schmizz.sshj.userauth.UserAuthProtocol;
+import net.schmizz.sshj.userauth.UserAuthImpl;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
@@ -143,7 +143,7 @@ public class SSHClient extends SocketClient implements SessionFactory {
     protected final UserAuth auth;
 
     /** {@code ssh-connection} service */
-    protected final ConnectionProtocol conn;
+    protected final ConnectionImpl conn;
 
     /** Default constructor. Initializes this object using {@link DefaultConfig}. */
     public SSHClient() {
@@ -157,9 +157,9 @@ public class SSHClient extends SocketClient implements SessionFactory {
      */
     public SSHClient(Config config) {
         super(DEFAULT_PORT);
-        this.trans = new TransportProtocol(config);
-        this.auth = new UserAuthProtocol(trans);
-        this.conn = new ConnectionProtocol(trans);
+        this.trans = new TransportImpl(config);
+        this.auth = new UserAuthImpl(trans);
+        this.conn = new ConnectionImpl(trans);
     }
 
     /**

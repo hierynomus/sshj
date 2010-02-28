@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** {@link UserAuth} implementation. */
-public class UserAuthProtocol extends AbstractService implements UserAuth, AuthParams {
+public class UserAuthImpl extends AbstractService implements UserAuth, AuthParams {
 
     private final Set<String> allowed = new HashSet<String>();
 
@@ -72,7 +72,7 @@ public class UserAuthProtocol extends AbstractService implements UserAuth, AuthP
     private volatile String banner;
     private volatile boolean partialSuccess;
 
-    public UserAuthProtocol(Transport trans) {
+    public UserAuthImpl(Transport trans) {
         super("ssh-userauth", trans);
     }
 
