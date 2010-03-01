@@ -20,17 +20,21 @@ import java.io.IOException;
 
 
 /** Default implementation of {@link ModeSetter} that does not set any permissions or preserve mtime and atime. */
-public class DefaultModeSetter implements ModeSetter {
+public class DefaultModeSetter
+        implements ModeSetter {
 
-    public void setLastAccessedTime(File f, long t) throws IOException {
+    public void setLastAccessedTime(File f, long t)
+            throws IOException {
         // can't do ntn
     }
 
-    public void setLastModifiedTime(File f, long t) throws IOException {
+    public void setLastModifiedTime(File f, long t)
+            throws IOException {
         // f.setLastModified(t * 1000);
     }
 
-    public void setPermissions(File f, int perms) throws IOException {
+    public void setPermissions(File f, int perms)
+            throws IOException {
         // TODO: set user's rwx permissions; can't do anything about group and world
     }
 

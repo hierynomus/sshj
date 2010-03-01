@@ -29,7 +29,8 @@ public interface ModeSetter {
      *
      * @throws IOException
      */
-    void setLastAccessedTime(File f, long t) throws IOException;
+    void setLastAccessedTime(File f, long t)
+            throws IOException;
 
     /**
      * Set the last modified time for {@code f}.
@@ -39,7 +40,8 @@ public interface ModeSetter {
      *
      * @throws IOException
      */
-    void setLastModifiedTime(File f, long t) throws IOException;
+    void setLastModifiedTime(File f, long t)
+            throws IOException;
 
     /**
      * Set the permissions for {@code f}.
@@ -49,7 +51,8 @@ public interface ModeSetter {
      *
      * @throws IOException
      */
-    void setPermissions(File f, int perms) throws IOException;
+    void setPermissions(File f, int perms)
+            throws IOException;
 
     /** Whether this implementation is interested in preserving mtime and atime. */
     boolean preservesTimes();

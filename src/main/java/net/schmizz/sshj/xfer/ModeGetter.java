@@ -30,7 +30,8 @@ public interface ModeGetter {
      *
      * @throws IOException
      */
-    long getLastAccessTime(File f) throws IOException;
+    long getLastAccessTime(File f)
+            throws IOException;
 
     /**
      * Returns last modified time for {@code f}.
@@ -41,7 +42,8 @@ public interface ModeGetter {
      *
      * @throws IOException
      */
-    long getLastModifiedTime(File f) throws IOException;
+    long getLastModifiedTime(File f)
+            throws IOException;
 
     /**
      * Returns the permissions for {@code f}.
@@ -52,7 +54,8 @@ public interface ModeGetter {
      *
      * @throws IOException
      */
-    int getPermissions(File f) throws IOException;
+    int getPermissions(File f)
+            throws IOException;
 
     /** Whether this implementation can provide mtime and atime information. */
     boolean preservesTimes();

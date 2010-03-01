@@ -21,7 +21,9 @@ import net.schmizz.sshj.xfer.FileTransfer;
 
 import java.io.IOException;
 
-public class SCPFileTransfer extends AbstractFileTransfer implements FileTransfer {
+public class SCPFileTransfer
+        extends AbstractFileTransfer
+        implements FileTransfer {
     private final SessionFactory sessionFactory;
 
     public SCPFileTransfer(SessionFactory sessionFactory) {
@@ -36,11 +38,13 @@ public class SCPFileTransfer extends AbstractFileTransfer implements FileTransfe
         return new SCPUploadClient(sessionFactory, getModeGetter());
     }
 
-    public void download(String remotePath, String localPath) throws IOException {
+    public void download(String remotePath, String localPath)
+            throws IOException {
         newSCPDownloadClient().copy(remotePath, localPath);
     }
 
-    public void upload(String localPath, String remotePath) throws IOException {
+    public void upload(String localPath, String remotePath)
+            throws IOException {
         newSCPUploadClient().copy(localPath, remotePath);
     }
 

@@ -29,7 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /** Support for uploading files over a connected link using SCP. */
-public final class SCPUploadClient extends SCPEngine {
+public final class SCPUploadClient
+        extends SCPEngine {
 
     private final ModeGetter modeGetter;
 
@@ -42,7 +43,8 @@ public final class SCPUploadClient extends SCPEngine {
 
     /** Upload a file from {@code sourcePath} locally to {@code targetPath} on the remote host. */
     @Override
-    public synchronized int copy(String sourcePath, String targetPath) throws IOException {
+    public synchronized int copy(String sourcePath, String targetPath)
+            throws IOException {
         return super.copy(sourcePath, targetPath);
     }
 
@@ -51,20 +53,23 @@ public final class SCPUploadClient extends SCPEngine {
     }
 
     @Override
-    protected synchronized void startCopy(String sourcePath, String targetPath) throws IOException {
+    protected synchronized void startCopy(String sourcePath, String targetPath)
+            throws IOException {
         init(targetPath);
         check("Start status OK");
         process(new File(sourcePath));
     }
 
-    private File[] getChildren(File f) throws IOException {
+    private File[] getChildren(File f)
+            throws IOException {
         File[] files = fileFilter == null ? f.listFiles() : f.listFiles(fileFilter);
         if (files == null)
             throw new IOException("Error listing files in directory: " + f);
         return files;
     }
 
-    private void init(String target) throws SSHException {
+    private void init(String target)
+            throws SSHException {
         List<Arg> args = new LinkedList<Arg>();
         args.add(Arg.SINK);
         args.add(Arg.RECURSIVE);
@@ -73,7 +78,8 @@ public final class SCPUploadClient extends SCPEngine {
         execSCPWith(args, target);
     }
 
-    private void process(File f) throws IOException {
+    private void process(File f)
+            throws IOException {
         if (f.isDirectory())
             sendDirectory(f);
         else if (f.isFile())
@@ -82,7 +88,8 @@ public final class SCPUploadClient extends SCPEngine {
             throw new IOException(f + " is not a regular file or directory");
     }
 
-    private void sendDirectory(File f) throws IOException {
+    private void sendDirectory(File f)
+            throws IOException {
         log.info("Entering directory `{}`", f.getName());
         preserveTimeIfPossible(f);
         sendMessage("D0" + getPermString(f) + " 0 " + f.getName());
@@ -94,7 +101,8 @@ public final class SCPUploadClient extends SCPEngine {
         log.info("Exiting directory `{}`", f.getName());
     }
 
-    private void sendFile(File f) throws IOException {
+    private void sendFile(File f)
+            throws IOException {
         log.info("Sending `{}`...", f.getName());
         preserveTimeIfPossible(f);
         final InputStream src = new FileInputStream(f);
@@ -108,12 +116,14 @@ public final class SCPUploadClient extends SCPEngine {
         }
     }
 
-    private void preserveTimeIfPossible(File f) throws IOException {
+    private void preserveTimeIfPossible(File f)
+            throws IOException {
         if (modeGetter.preservesTimes())
             sendMessage("T" + modeGetter.getLastModifiedTime(f) + " 0 " + modeGetter.getLastAccessTime(f) + " 0");
     }
 
-    private String getPermString(File f) throws IOException {
+    private String getPermString(File f)
+            throws IOException {
         return Integer.toOctalString(modeGetter.getPermissions(f) & 07777);
     }
 

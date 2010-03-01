@@ -20,7 +20,8 @@ import java.io.IOException;
 
 public class FileTransferUtil {
 
-    public static File getTargetDirectory(File f, String dirname) throws IOException {
+    public static File getTargetDirectory(File f, String dirname)
+            throws IOException {
         if (f.exists())
             if (f.isDirectory()) {
                 if (!f.getName().equals(dirname))
@@ -34,7 +35,8 @@ public class FileTransferUtil {
         return f;
     }
 
-    public static File getTargetFile(File f, String filename) throws IOException {
+    public static File getTargetFile(File f, String filename)
+            throws IOException {
         if (f.isDirectory())
             f = new File(f, filename);
 

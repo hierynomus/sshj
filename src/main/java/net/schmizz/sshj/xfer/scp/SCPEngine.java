@@ -33,7 +33,12 @@ import java.util.Queue;
 abstract class SCPEngine {
 
     static enum Arg {
-        SOURCE('f'), SINK('t'), RECURSIVE('r'), VERBOSE('v'), PRESERVE_TIMES('p'), QUIET('q');
+        SOURCE('f'),
+        SINK('t'),
+        RECURSIVE('r'),
+        VERBOSE('v'),
+        PRESERVE_TIMES('p'),
+        QUIET('q');
 
         private final char a;
 
@@ -63,7 +68,8 @@ abstract class SCPEngine {
         this.host = host;
     }
 
-    public int copy(String sourcePath, String targetPath) throws IOException {
+    public int copy(String sourcePath, String targetPath)
+            throws IOException {
         cleanSlate();
         try {
             startCopy(sourcePath, targetPath);
@@ -90,7 +96,8 @@ abstract class SCPEngine {
         warnings.add(warning);
     }
 
-    void check(String what) throws IOException {
+    void check(String what)
+            throws IOException {
         int code = scp.getInputStream().read();
         switch (code) {
             case -1:
@@ -116,7 +123,8 @@ abstract class SCPEngine {
         warnings.clear();
     }
 
-    void execSCPWith(List<Arg> args, String path) throws SSHException {
+    void execSCPWith(List<Arg> args, String path)
+            throws SSHException {
         StringBuilder cmd = new StringBuilder(SCP_COMMAND);
         for (Arg arg : args)
             cmd.append(" ").append(arg);
@@ -143,11 +151,13 @@ abstract class SCPEngine {
         scp = null;
     }
 
-    String readMessage() throws IOException {
+    String readMessage()
+            throws IOException {
         return readMessage(true);
     }
 
-    String readMessage(boolean errOnEOF) throws IOException {
+    String readMessage(boolean errOnEOF)
+            throws IOException {
         StringBuilder sb = new StringBuilder();
         int x;
         while ((x = scp.getInputStream().read()) != LF)
@@ -162,22 +172,26 @@ abstract class SCPEngine {
         return sb.toString();
     }
 
-    void sendMessage(String msg) throws IOException {
+    void sendMessage(String msg)
+            throws IOException {
         log.debug("Sending message: {}", msg);
         scp.getOutputStream().write((msg + LF).getBytes());
         scp.getOutputStream().flush();
         check("Message ACK received");
     }
 
-    void signal(String what) throws IOException {
+    void signal(String what)
+            throws IOException {
         log.debug("Signalling: {}", what);
         scp.getOutputStream().write(0);
         scp.getOutputStream().flush();
     }
 
-    abstract void startCopy(String sourcePath, String targetPath) throws IOException;
+    abstract void startCopy(String sourcePath, String targetPath)
+            throws IOException;
 
-    void transfer(InputStream in, OutputStream out, int bufSize, long len) throws IOException {
+    void transfer(InputStream in, OutputStream out, int bufSize, long len)
+            throws IOException {
         final byte[] buf = new byte[bufSize];
         long count = 0;
         int read = 0;

@@ -22,7 +22,8 @@ import java.io.IOException;
  * Default implementation of {@link ModeGetter} that supplies file permissions as {@code "0644"}, directory permissions
  * as {@code "0755"}, and does not supply mtime and atime.
  */
-public class DefaultModeGetter implements ModeGetter {
+public class DefaultModeGetter
+        implements ModeGetter {
 
     public long getLastAccessTime(File f) {
         return 0;
@@ -33,7 +34,8 @@ public class DefaultModeGetter implements ModeGetter {
         return 0;
     }
 
-    public int getPermissions(File f) throws IOException {
+    public int getPermissions(File f)
+            throws IOException {
         if (f.isDirectory())
             return 0755;
         else if (f.isFile())
