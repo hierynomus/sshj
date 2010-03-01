@@ -67,16 +67,16 @@ public interface Config {
     List<Factory.Named<MAC>> getMACFactories();
 
     /**
-     * Retrieve the {@link net.schmizz.sshj.transport.random.Random} factory.
+     * Retrieve the {@link Random} factory.
      *
-     * @return the {@link net.schmizz.sshj.transport.random.Random} factory
+     * @return the {@link Random} factory
      */
     Factory<Random> getRandomFactory();
 
     /**
-     * Retrieve the list of named factories for {@link net.schmizz.sshj.signature.Signature}
+     * Retrieve the list of named factories for {@link Signature}
      *
-     * @return a list of named {@link net.schmizz.sshj.signature.Signature} factories
+     * @return a list of named {@link Signature} factories
      */
     List<Factory.Named<Signature>> getSignatureFactories();
 
@@ -87,49 +87,49 @@ public interface Config {
     String getVersion();
 
     /**
-     * Set the named factories for {@link net.schmizz.sshj.transport.cipher.Cipher}.
+     * Set the named factories for {@link Cipher}.
      *
      * @param cipherFactories a list of named factories
      */
     void setCipherFactories(List<Factory.Named<Cipher>> cipherFactories);
 
     /**
-     * Set the named factories for {@link net.schmizz.sshj.transport.compression.Compression}.
+     * Set the named factories for {@link Compression}.
      *
      * @param compressionFactories a list of named factories
      */
     void setCompressionFactories(List<Factory.Named<Compression>> compressionFactories);
 
     /**
-     * Set the named factories for {@link net.schmizz.sshj.userauth.keyprovider.FileKeyProvider}.
+     * Set the named factories for {@link FileKeyProvider}.
      *
      * @param fileKeyProviderFactories a list of named factories
      */
     void setFileKeyProviderFactories(List<Factory.Named<FileKeyProvider>> fileKeyProviderFactories);
 
     /**
-     * Set the named factories for {@link net.schmizz.sshj.transport.kex.KeyExchange}.
+     * Set the named factories for {@link KeyExchange}.
      *
      * @param kexFactories a list of named factories
      */
     void setKeyExchangeFactories(List<Factory.Named<KeyExchange>> kexFactories);
 
     /**
-     * Set the named factories for {@link net.schmizz.sshj.transport.mac.MAC}.
+     * Set the named factories for {@link MAC}.
      *
      * @param macFactories a list of named factories
      */
     void setMACFactories(List<Factory.Named<MAC>> macFactories);
 
     /**
-     * Set the factory for {@link net.schmizz.sshj.transport.random.Random}.
+     * Set the factory for {@link Random}.
      *
      * @param randomFactory the factory
      */
     void setRandomFactory(Factory<Random> randomFactory);
 
     /**
-     * Set the named factories for {@link net.schmizz.sshj.signature.Signature}.
+     * Set the named factories for {@link Signature}.
      *
      * @param signatureFactories a list of named factories
      */

@@ -43,7 +43,8 @@ import java.io.IOException;
  * Most exceptions in {@code org.apache.commons.net.ssh} are instances of this class. An {@link SSHException} is itself
  * an {@link IOException} and can be caught like that if this level of granularity is not desired.
  */
-public class SSHException extends IOException {
+public class SSHException
+        extends IOException {
 
     public static final ExceptionChainer<SSHException> chainer = new ExceptionChainer<SSHException>() {
 

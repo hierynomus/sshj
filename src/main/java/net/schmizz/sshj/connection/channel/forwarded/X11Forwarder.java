@@ -24,10 +24,12 @@ import net.schmizz.sshj.transport.TransportException;
  * Handles forwarded {@code x11} channels. The actual request to forward X11 should be made from the specific {@link
  * net.schmizz.sshj.connection.channel.direct.Session}.
  */
-public class X11Forwarder extends AbstractForwardedChannelOpener {
+public class X11Forwarder
+        extends AbstractForwardedChannelOpener {
 
     /** An {@code x11} forwarded channel. */
-    public static class X11Channel extends AbstractForwardedChannel {
+    public static class X11Channel
+            extends AbstractForwardedChannel {
 
         public static final String TYPE = "x11";
 
@@ -52,7 +54,8 @@ public class X11Forwarder extends AbstractForwardedChannelOpener {
     }
 
     /** Internal API */
-    public void handleOpen(SSHPacket buf) throws ConnectionException, TransportException {
+    public void handleOpen(SSHPacket buf)
+            throws ConnectionException, TransportException {
         callListener(listener, new X11Channel(conn, buf.readInt(), buf.readInt(), buf.readInt(), buf.readString(), buf
                 .readInt()));
     }

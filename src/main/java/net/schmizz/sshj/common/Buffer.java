@@ -48,9 +48,30 @@ import java.util.Arrays;
 
 public class Buffer<T extends Buffer<T>> {
 
-    public static class BufferException extends SSHRuntimeException {
+    public static class BufferException
+            extends SSHRuntimeException {
         public BufferException(String message) {
             super(message);
+        }
+    }
+
+    public static class PlainBuffer
+            extends Buffer<PlainBuffer> {
+
+        public PlainBuffer() {
+            super();
+        }
+
+        public PlainBuffer(Buffer<?> from) {
+            super(from);
+        }
+
+        public PlainBuffer(byte[] b) {
+            super(b);
+        }
+
+        public PlainBuffer(int size) {
+            super(size);
         }
     }
 
@@ -285,9 +306,9 @@ public class Buffer<T extends Buffer<T>> {
     public long readLong() {
         ensureAvailable(4);
         return data[rpos++] << 24 & 0xff000000L |
-                data[rpos++] << 16 & 0x00ff0000L |
-                data[rpos++] << 8 & 0x0000ff00L |
-                data[rpos++] & 0x000000ffL;
+               data[rpos++] << 16 & 0x00ff0000L |
+               data[rpos++] << 8 & 0x0000ff00L |
+               data[rpos++] & 0x000000ffL;
     }
 
     /**
@@ -473,18 +494,22 @@ public class Buffer<T extends Buffer<T>> {
     public T putPublicKey(PublicKey key) {
         KeyType type = KeyType.fromKey(key);
         switch (type) {
-            case RSA:
+            case RSA: {
+                final RSAPublicKey rsaKey = (RSAPublicKey) key;
                 putString(type.toString()) // ssh-rsa
-                        .putMPInt(((RSAPublicKey) key).getPublicExponent()) // e
-                        .putMPInt(((RSAPublicKey) key).getModulus()); // n
+                        .putMPInt(rsaKey.getPublicExponent()) // e
+                        .putMPInt(rsaKey.getModulus()); // n
                 break;
-            case DSA:
+            }
+            case DSA: {
+                final DSAPublicKey dsaKey = (DSAPublicKey) key;
                 putString(type.toString()) // ssh-dss
-                        .putMPInt(((DSAPublicKey) key).getParams().getP()) // p
-                        .putMPInt(((DSAPublicKey) key).getParams().getQ()) // q
-                        .putMPInt(((DSAPublicKey) key).getParams().getG()) // g
-                        .putMPInt(((DSAPublicKey) key).getY()); // y
+                        .putMPInt(dsaKey.getParams().getP()) // p
+                        .putMPInt(dsaKey.getParams().getQ()) // q
+                        .putMPInt(dsaKey.getParams().getG()) // g
+                        .putMPInt(dsaKey.getY()); // y
                 break;
+            }
             default:
                 assert false;
         }
@@ -492,7 +517,8 @@ public class Buffer<T extends Buffer<T>> {
     }
 
     public T putSignature(String sigFormat, byte[] sigData) {
-        return putString(new PlainBuffer().putString(sigFormat).putBytes(sigData).getCompactData());
+        final byte[] sig = new PlainBuffer().putString(sigFormat).putBytes(sigData).getCompactData();
+        return putString(sig);
     }
 
     /**
@@ -507,25 +533,6 @@ public class Buffer<T extends Buffer<T>> {
     @Override
     public String toString() {
         return "Buffer [rpos=" + rpos + ", wpos=" + wpos + ", size=" + data.length + "]";
-    }
-
-    public static class PlainBuffer extends Buffer<PlainBuffer> {
-
-        public PlainBuffer() {
-            super();
-        }
-
-        public PlainBuffer(Buffer<?> from) {
-            super(from);
-        }
-
-        public PlainBuffer(byte[] b) {
-            super(b);
-        }
-
-        public PlainBuffer(int size) {
-            super(size);
-        }
     }
 
 }

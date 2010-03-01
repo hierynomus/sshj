@@ -37,7 +37,8 @@ package net.schmizz.sshj.common;
 
 import java.util.Arrays;
 
-public class SSHPacket extends Buffer<SSHPacket> {
+public class SSHPacket
+        extends Buffer<SSHPacket> {
 
     public SSHPacket() {
         super();

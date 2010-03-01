@@ -52,11 +52,14 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.Signature;
 
+// TODO refactor
+
 /** Static utility method relating to security facilities. */
 public class SecurityUtils {
 
     private static class BouncyCastleRegistration {
-        public void run() throws Exception {
+        public void run()
+                throws Exception {
             if (java.security.Security.getProvider(BOUNCY_CASTLE) == null) {
                 LOG.info("Trying to register BouncyCastle as a JCE provider");
                 java.security.Security.addProvider(new BouncyCastleProvider());
@@ -83,8 +86,8 @@ public class SecurityUtils {
     private static Boolean registerBouncyCastle;
     private static boolean registrationDone;
 
-    public static synchronized Cipher getCipher(String transformation) throws NoSuchAlgorithmException,
-            NoSuchPaddingException, NoSuchProviderException {
+    public static synchronized Cipher getCipher(String transformation)
+            throws NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException {
         register();
         if (getSecurityProvider() == null)
             return Cipher.getInstance(transformation);
@@ -127,8 +130,8 @@ public class SecurityUtils {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public static synchronized KeyAgreement getKeyAgreement(String algorithm) throws NoSuchAlgorithmException,
-            NoSuchProviderException {
+    public static synchronized KeyAgreement getKeyAgreement(String algorithm)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         register();
         if (getSecurityProvider() == null)
             return KeyAgreement.getInstance(algorithm);
@@ -146,8 +149,8 @@ public class SecurityUtils {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public static synchronized KeyFactory getKeyFactory(String algorithm) throws NoSuchAlgorithmException,
-            NoSuchProviderException {
+    public static synchronized KeyFactory getKeyFactory(String algorithm)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         register();
         if (getSecurityProvider() == null)
             return KeyFactory.getInstance(algorithm);
@@ -165,8 +168,8 @@ public class SecurityUtils {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public static synchronized KeyPairGenerator getKeyPairGenerator(String algorithm) throws NoSuchAlgorithmException,
-            NoSuchProviderException {
+    public static synchronized KeyPairGenerator getKeyPairGenerator(String algorithm)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         register();
         if (getSecurityProvider() == null)
             return KeyPairGenerator.getInstance(algorithm);
@@ -184,7 +187,8 @@ public class SecurityUtils {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public static synchronized Mac getMAC(String algorithm) throws NoSuchAlgorithmException, NoSuchProviderException {
+    public static synchronized Mac getMAC(String algorithm)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         register();
         if (getSecurityProvider() == null)
             return Mac.getInstance(algorithm);
@@ -202,8 +206,8 @@ public class SecurityUtils {
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
-    public static synchronized MessageDigest getMessageDigest(String algorithm) throws NoSuchAlgorithmException,
-            NoSuchProviderException {
+    public static synchronized MessageDigest getMessageDigest(String algorithm)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         register();
         if (getSecurityProvider() == null)
             return MessageDigest.getInstance(algorithm);
@@ -221,8 +225,8 @@ public class SecurityUtils {
         return securityProvider;
     }
 
-    public static synchronized Signature getSignature(String algorithm) throws NoSuchAlgorithmException,
-            NoSuchProviderException {
+    public static synchronized Signature getSignature(String algorithm)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
         register();
         if (getSecurityProvider() == null)
             return Signature.getInstance(algorithm);

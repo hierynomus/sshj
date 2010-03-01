@@ -36,7 +36,8 @@
 package net.schmizz.sshj.common;
 
 /** Represents unrecoverable exceptions in the {@code org.apache.commons.net.ssh} package. */
-public class SSHRuntimeException extends RuntimeException {
+public class SSHRuntimeException
+        extends RuntimeException {
 
     public SSHRuntimeException() {
         this(null, null);

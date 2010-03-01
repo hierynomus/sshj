@@ -12,26 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * This file may incorporate work covered by the following copyright and
- * permission notice:
- *
- *     Licensed to the Apache Software Foundation (ASF) under one
- *     or more contributor license agreements.  See the NOTICE file
- *     distributed with this work for additional information
- *     regarding copyright ownership.  The ASF licenses this file
- *     to you under the Apache License, Version 2.0 (the
- *     "License"); you may not use this file except in compliance
- *     with the License.  You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *      Unless required by applicable law or agreed to in writing,
- *      software distributed under the License is distributed on an
- *      "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *      KIND, either express or implied.  See the License for the
- *      specific language governing permissions and limitations
- *      under the License.
  */
 package net.schmizz.sshj.connection;
 
@@ -43,16 +23,14 @@ import net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 
-/**
- * Connection layer of the SSH protocol.
- *
- * @see rfc4254
- */
+/** Connection layer of the SSH protocol. Refer to RFC 254. */
 public interface Connection {
 
     /**
      * Attach a {@link net.schmizz.sshj.connection.channel.Channel} to this connection. A channel must be attached to
      * the connection if it is to receive any channel-specific data that is received.
+     *
+     * @param chan
      */
     void attach(Channel chan);
 
@@ -60,24 +38,45 @@ public interface Connection {
      * Attach a {@link net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener} to this connection, which
      * will be delegated opening of any {@code CHANNEL_OPEN} packets {@link net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener#getChannelType()
      * for which it is responsible}.
+     *
+     * @param opener
      */
     void attach(ForwardedChannelOpener opener);
 
-    /** Forget an attached {@link Channel}. */
+    /**
+     * Forget an attached {@link Channel}.
+     *
+     * @param chan
+     */
     void forget(Channel chan);
 
-    /** Forget an attached {@link net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener}. */
+    /**
+     * Forget an attached {@link net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener}.
+     *
+     * @param handler
+     */
     void forget(ForwardedChannelOpener handler);
 
-    /** Returns an attached {@link Channel} of specified channel-id, or {@code null} if no such channel was attached */
+    /**
+     * Returns an attached {@link Channel} of specified channel-id, or {@code null} if no such channel was attached
+     *
+     * @param id
+     */
     Channel get(int id);
 
-    /** Wait for the situation that no channels are attached (e.g., got closed). */
-    void join() throws InterruptedException;
+    /**
+     * Wait for the situation that no channels are attached (e.g., got closed).
+     *
+     * @throws InterruptedException
+     */
+    void join()
+            throws InterruptedException;
 
     /**
-     * Returns an attached {@link net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener} of specified
-     * channel-type, or {@code null} if no such channel was attached
+     * @param chanType channel type
+     *
+     * @return an attached {@link ForwardedChannelOpener} of specified channel-type, or {@code null} if no such channel
+     *         was attached
      */
     ForwardedChannelOpener get(String chanType);
 
@@ -97,7 +96,8 @@ public interface Connection {
      * @throws TransportException if there is an error sending the request
      */
     public Future<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
-                                                                    byte[] specifics) throws TransportException;
+                                                                    byte[] specifics)
+            throws TransportException;
 
     /**
      * Send a {@code SSH_MSG_OPEN_FAILURE} for specified {@code Reason} and {@code message}.
@@ -108,7 +108,8 @@ public interface Connection {
      *
      * @throws TransportException
      */
-    void sendOpenFailure(int recipient, OpenFailException.Reason reason, String message) throws TransportException;
+    void sendOpenFailure(int recipient, OpenFailException.Reason reason, String message)
+            throws TransportException;
 
     /**
      * Get the maximum packet size for the local window this connection recommends to any {@link Channel}'s that ask for

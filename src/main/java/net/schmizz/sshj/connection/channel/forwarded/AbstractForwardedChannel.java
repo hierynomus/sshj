@@ -43,7 +43,9 @@ import net.schmizz.sshj.connection.channel.OpenFailException.Reason;
 import net.schmizz.sshj.transport.TransportException;
 
 /** Base class for forwarded channels whose open is initiated by the server. */
-public abstract class AbstractForwardedChannel extends AbstractChannel implements Channel.Forwarded {
+public abstract class AbstractForwardedChannel
+        extends AbstractChannel
+        implements Channel.Forwarded {
 
     protected final String origIP;
     protected final int origPort;
@@ -60,7 +62,8 @@ public abstract class AbstractForwardedChannel extends AbstractChannel implement
         init(recipient, remoteWinSize, remoteMaxPacketSize);
     }
 
-    public void confirm() throws TransportException {
+    public void confirm()
+            throws TransportException {
         log.info("Confirming `{}` channel #{}", getType(), getID());
         // Must ensure channel is attached before confirming, data could start coming in immediately!
         conn.attach(this);
@@ -71,7 +74,8 @@ public abstract class AbstractForwardedChannel extends AbstractChannel implement
         open.set();
     }
 
-    public void reject(Reason reason, String message) throws TransportException {
+    public void reject(Reason reason, String message)
+            throws TransportException {
         log.info("Rejecting `{}` channel: {}", getType(), message);
         conn.sendOpenFailure(getRecipient(), reason, message);
     }

@@ -12,26 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * This file may incorporate work covered by the following copyright and
- * permission notice:
- *
- *     Licensed to the Apache Software Foundation (ASF) under one
- *     or more contributor license agreements.  See the NOTICE file
- *     distributed with this work for additional information
- *     regarding copyright ownership.  The ASF licenses this file
- *     to you under the Apache License, Version 2.0 (the
- *     "License"); you may not use this file except in compliance
- *     with the License.  You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *      Unless required by applicable law or agreed to in writing,
- *      software distributed under the License is distributed on an
- *      "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *      KIND, either express or implied.  See the License for the
- *      specific language governing permissions and limitations
- *      under the License.
  */
 package net.schmizz.sshj.connection.channel.forwarded;
 
@@ -48,7 +28,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /** Handles remote port forwarding. */
-public class RemotePortForwarder extends AbstractForwardedChannelOpener {
+public class RemotePortForwarder
+        extends AbstractForwardedChannelOpener {
 
     /**
      * Represents a particular forwarding. From RFC 4254, s. 7.1
@@ -139,14 +120,16 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
     }
 
     /** A {@code forwarded-tcpip} channel. */
-    public static class ForwardedTCPIPChannel extends AbstractForwardedChannel {
+    public static class ForwardedTCPIPChannel
+            extends AbstractForwardedChannel {
 
         public static final String TYPE = "forwarded-tcpip";
 
         private final Forward fwd;
 
         public ForwardedTCPIPChannel(Connection conn, int recipient, int remoteWinSize, int remoteMaxPacketSize,
-                                     Forward fwd, String origIP, int origPort) throws TransportException {
+                                     Forward fwd, String origIP, int origPort)
+                throws TransportException {
             super(TYPE, conn, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
             this.fwd = fwd;
         }
@@ -182,7 +165,8 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
      * @throws ConnectionException if there is an error requesting the forwarding
      * @throws TransportException
      */
-    public Forward bind(Forward forward, ConnectListener listener) throws ConnectionException, TransportException {
+    public Forward bind(Forward forward, ConnectListener listener)
+            throws ConnectionException, TransportException {
         SSHPacket reply = req(PF_REQ, forward);
         if (forward.port == 0)
             forward.port = reply.readInt();
@@ -199,7 +183,8 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
      * @throws ConnectionException if there is an error with the cancellation request
      * @throws TransportException
      */
-    public void cancel(Forward forward) throws ConnectionException, TransportException {
+    public void cancel(Forward forward)
+            throws ConnectionException, TransportException {
         try {
             req(PF_CANCEL, forward);
         } finally {
@@ -207,8 +192,10 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
         }
     }
 
-    protected SSHPacket req(String reqName, Forward forward) throws ConnectionException, TransportException {
-        final byte[] specifics = new Buffer.PlainBuffer().putString(forward.address).putInt(forward.port).getCompactData();
+    protected SSHPacket req(String reqName, Forward forward)
+            throws ConnectionException, TransportException {
+        final byte[] specifics = new Buffer.PlainBuffer().putString(forward.address).putInt(forward.port)
+                .getCompactData();
         return conn.sendGlobalRequest(reqName, true, specifics)
                 .get(conn.getTimeout(), TimeUnit.SECONDS);
     }
@@ -222,15 +209,16 @@ public class RemotePortForwarder extends AbstractForwardedChannelOpener {
      * Internal API. Creates a {@link ForwardedTCPIPChannel} from the {@code CHANNEL_OPEN} request and calls associated
      * {@code ConnectListener} for that forward in a separate thread.
      */
-    public void handleOpen(SSHPacket buf) throws ConnectionException, TransportException {
+    public void handleOpen(SSHPacket buf)
+            throws ConnectionException, TransportException {
         final ForwardedTCPIPChannel chan = new ForwardedTCPIPChannel(conn, buf.readInt(), buf.readInt(), buf.readInt(),
-                new Forward(buf.readString(), buf.readInt()),
-                buf.readString(), buf.readInt());
+                                                                     new Forward(buf.readString(), buf.readInt()),
+                                                                     buf.readString(), buf.readInt());
         if (listeners.containsKey(chan.getParentForward()))
             callListener(listeners.get(chan.getParentForward()), chan);
         else
             chan.reject(OpenFailException.Reason.ADMINISTRATIVELY_PROHIBITED, "Forwarding was not requested on `"
-                    + chan.getParentForward() + "`");
+                                                                              + chan.getParentForward() + "`");
     }
 
 }

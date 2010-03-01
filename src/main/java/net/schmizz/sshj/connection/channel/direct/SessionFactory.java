@@ -30,6 +30,7 @@ public interface SessionFactory {
      * @throws SSHException
      * @see {@link Session}
      */
-    Session startSession() throws SSHException;
+    Session startSession()
+            throws SSHException;
 
 }

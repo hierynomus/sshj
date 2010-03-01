@@ -47,7 +47,9 @@ import net.schmizz.sshj.transport.TransportException;
 import java.util.concurrent.TimeUnit;
 
 /** Base class for direct channels whose open is initated by the client. */
-public abstract class AbstractDirectChannel extends AbstractChannel implements Channel.Direct {
+public abstract class AbstractDirectChannel
+        extends AbstractChannel
+        implements Channel.Direct {
 
     protected AbstractDirectChannel(String name, Connection conn) {
         super(name, conn);
@@ -58,7 +60,8 @@ public abstract class AbstractDirectChannel extends AbstractChannel implements C
         conn.attach(this);
     }
 
-    public void open() throws ConnectionException, TransportException {
+    public void open()
+            throws ConnectionException, TransportException {
         trans.write(buildOpenReq());
         open.await(conn.getTimeout(), TimeUnit.SECONDS);
     }
@@ -82,7 +85,8 @@ public abstract class AbstractDirectChannel extends AbstractChannel implements C
     }
 
     @Override
-    protected void gotUnknown(Message cmd, SSHPacket buf) throws ConnectionException, TransportException {
+    protected void gotUnknown(Message cmd, SSHPacket buf)
+            throws ConnectionException, TransportException {
         switch (cmd) {
 
             case CHANNEL_OPEN_CONFIRMATION:

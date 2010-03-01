@@ -24,7 +24,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
-public class StreamCopier extends Thread {
+public class StreamCopier
+        extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(StreamCopier.class);
 
@@ -41,7 +42,8 @@ public class StreamCopier extends Thread {
         };
     }
 
-    public static long copy(InputStream in, OutputStream out, int bufSize, boolean keepFlushing) throws IOException {
+    public static long copy(InputStream in, OutputStream out, int bufSize, boolean keepFlushing)
+            throws IOException {
         long count = 0;
 
         final long startTime = System.currentTimeMillis();
@@ -64,7 +66,8 @@ public class StreamCopier extends Thread {
         return count;
     }
 
-    public static String copyStreamToString(InputStream stream) throws IOException {
+    public static String copyStreamToString(InputStream stream)
+            throws IOException {
         final StringBuilder sb = new StringBuilder();
         int read;
         while ((read = stream.read()) != -1)

@@ -37,7 +37,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** {@link Connection} implementation. */
-public class ConnectionImpl extends AbstractService implements Connection {
+public class ConnectionImpl
+        extends AbstractService
+        implements Connection {
 
     private final Object internalSynchronizer = new Object();
 
@@ -93,7 +95,8 @@ public class ConnectionImpl extends AbstractService implements Connection {
         openers.put(opener.getChannelType(), opener);
     }
 
-    private Channel getChannel(SSHPacket buffer) throws ConnectionException {
+    private Channel getChannel(SSHPacket buffer)
+            throws ConnectionException {
         int recipient = buffer.readInt();
         Channel channel = get(recipient);
         if (channel != null)
@@ -101,12 +104,13 @@ public class ConnectionImpl extends AbstractService implements Connection {
         else {
             buffer.rpos(buffer.rpos() - 5);
             throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Received " + buffer.readMessageID()
-                    + " on unknown channel #" + recipient);
+                                                                           + " on unknown channel #" + recipient);
         }
     }
 
     @Override
-    public void handle(Message msg, SSHPacket buf) throws SSHException {
+    public void handle(Message msg, SSHPacket buf)
+            throws SSHException {
         if (msg.in(91, 100))
             getChannel(buf).handle(msg, buf);
 
@@ -162,7 +166,8 @@ public class ConnectionImpl extends AbstractService implements Connection {
         this.windowSize = windowSize;
     }
 
-    public void join() throws InterruptedException {
+    public void join()
+            throws InterruptedException {
         synchronized (internalSynchronizer) {
             while (!channels.isEmpty())
                 internalSynchronizer.wait();
@@ -174,10 +179,12 @@ public class ConnectionImpl extends AbstractService implements Connection {
     }
 
     public Future<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
-                                                                    byte[] specifics) throws TransportException {
+                                                                    byte[] specifics)
+            throws TransportException {
         synchronized (globalReqFutures) {
             log.info("Making global request for `{}`", name);
-            trans.write(new SSHPacket(Message.GLOBAL_REQUEST).putString(name).putBoolean(wantReply).putRawBytes(specifics));
+            trans.write(new SSHPacket(Message.GLOBAL_REQUEST).putString(name)
+                    .putBoolean(wantReply).putRawBytes(specifics));
 
             Future<SSHPacket, ConnectionException> future = null;
             if (wantReply) {
@@ -188,12 +195,13 @@ public class ConnectionImpl extends AbstractService implements Connection {
         }
     }
 
-    private void gotGlobalReqResponse(SSHPacket response) throws ConnectionException {
+    private void gotGlobalReqResponse(SSHPacket response)
+            throws ConnectionException {
         synchronized (globalReqFutures) {
             Future<SSHPacket, ConnectionException> gr = globalReqFutures.poll();
             if (gr == null)
                 throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
-                        "Got a global request response when none was requested");
+                                              "Got a global request response when none was requested");
             else if (response == null)
                 gr.error(new ConnectionException("Global request [" + gr + "] failed"));
             else
@@ -201,7 +209,8 @@ public class ConnectionImpl extends AbstractService implements Connection {
         }
     }
 
-    private void gotChannelOpen(SSHPacket buf) throws ConnectionException, TransportException {
+    private void gotChannelOpen(SSHPacket buf)
+            throws ConnectionException, TransportException {
         final String type = buf.readString();
         log.debug("Received CHANNEL_OPEN for `{}` channel", type);
         if (openers.containsKey(type))
@@ -212,17 +221,19 @@ public class ConnectionImpl extends AbstractService implements Connection {
         }
     }
 
-    public void sendOpenFailure(int recipient, Reason reason, String message) throws TransportException {
-        trans.write(new SSHPacket(Message.CHANNEL_OPEN_FAILURE) //
-                .putInt(recipient) //
-                .putInt(reason.getCode()) //
+    public void sendOpenFailure(int recipient, Reason reason, String message)
+            throws TransportException {
+        trans.write(new SSHPacket(Message.CHANNEL_OPEN_FAILURE)
+                .putInt(recipient)
+                .putInt(reason.getCode())
                 .putString(message));
     }
 
     @Override
-    public void notifyDisconnect() throws SSHException {
+    public void notifyDisconnect()
+            throws SSHException {
         super.notifyDisconnect();
-        // wh'about them futures?
+        FutureUtils.alertAll(new ConnectionException("Disconnected."), globalReqFutures);
         for (Channel chan : channels.values())
             chan.close();
     }

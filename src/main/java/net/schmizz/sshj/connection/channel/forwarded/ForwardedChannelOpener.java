@@ -31,6 +31,7 @@ public interface ForwardedChannelOpener {
      * @param buf {@link net.schmizz.sshj.common.SSHPacket} containg the request except for the message identifier and
      *            channel type field
      */
-    void handleOpen(SSHPacket buf) throws ConnectionException, TransportException;
+    void handleOpen(SSHPacket buf)
+            throws ConnectionException, TransportException;
 
 }

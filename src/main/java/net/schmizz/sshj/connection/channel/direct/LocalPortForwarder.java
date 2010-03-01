@@ -51,7 +51,8 @@ import java.net.SocketAddress;
 
 public class LocalPortForwarder {
 
-    private class DirectTCPIPChannel extends AbstractDirectChannel {
+    private class DirectTCPIPChannel
+            extends AbstractDirectChannel {
 
         private final Socket sock;
 
@@ -60,16 +61,18 @@ public class LocalPortForwarder {
             this.sock = sock;
         }
 
-        private void start() throws IOException {
+        private void start()
+                throws IOException {
             sock.setSendBufferSize(getLocalMaxPacketSize());
             sock.setReceiveBufferSize(getRemoteMaxPacketSize());
 
             final ErrorCallback closer = StreamCopier.closeOnErrorCallback(this,
-                    new Closeable() {
-                        public void close() throws IOException {
-                            sock.close();
-                        }
-                    });
+                                                                           new Closeable() {
+                                                                               public void close()
+                                                                                       throws IOException {
+                                                                                   sock.close();
+                                                                               }
+                                                                           });
 
             new StreamCopier("chan2soc", getInputStream(), sock.getOutputStream()) //
                     .bufSize(getLocalMaxPacketSize()) //
@@ -102,7 +105,8 @@ public class LocalPortForwarder {
     private final String host;
     private final int port;
 
-    public LocalPortForwarder(Connection conn, SocketAddress listeningAddr, String host, int port) throws IOException {
+    public LocalPortForwarder(Connection conn, SocketAddress listeningAddr, String host, int port)
+            throws IOException {
         this(ServerSocketFactory.getDefault(), conn, listeningAddr, host, port);
     }
 
@@ -118,7 +122,8 @@ public class LocalPortForwarder {
      *
      * @throws IOException if there is an error binding on specified {@code listeningAddr}
      */
-    public LocalPortForwarder(ServerSocketFactory ssf, Connection conn, SocketAddress listeningAddr, String host, int port) throws IOException {
+    public LocalPortForwarder(ServerSocketFactory ssf, Connection conn, SocketAddress listeningAddr, String host, int port)
+            throws IOException {
         this.conn = conn;
         this.host = host;
         this.port = port;
@@ -132,7 +137,8 @@ public class LocalPortForwarder {
     }
 
     /** Start listening for incoming connections and forward to remote host as a channel. */
-    public void listen() throws IOException {
+    public void listen()
+            throws IOException {
         log.info("Listening on {}", ss.getLocalSocketAddress());
         Socket sock;
         while (true) {

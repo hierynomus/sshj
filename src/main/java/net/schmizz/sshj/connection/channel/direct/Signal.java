@@ -39,8 +39,21 @@ package net.schmizz.sshj.connection.channel.direct;
 /** Various signals that may be sent or received. The signals are from POSIX and simply miss the {@code "SIG_"} prefix. */
 public enum Signal {
 
-    ABRT("ABRT"), ALRM("ALRM"), FPE("FPE"), HUP("HUP"), ILL("ILL"), INT("INT"), KILL("KILL"), PIPE("PIPE"), QUIT(
-            "QUIT"), SEGV("SEGV"), TERM("TERM"), USR1("USR1"), USR2("USR2"), UNKNOWN("UNKNOWN");
+    ABRT("ABRT"),
+    ALRM("ALRM"),
+    FPE("FPE"),
+    HUP("HUP"),
+    ILL("ILL"),
+    INT("INT"),
+    KILL("KILL"),
+    PIPE("PIPE"),
+    QUIT(
+            "QUIT"),
+    SEGV("SEGV"),
+    TERM("TERM"),
+    USR1("USR1"),
+    USR2("USR2"),
+    UNKNOWN("UNKNOWN");
 
     /**
      * Create from the string representation used when the signal is received as part of an SSH packet.

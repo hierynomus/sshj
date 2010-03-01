@@ -30,7 +30,8 @@ import java.net.SocketAddress;
  * A {@link net.schmizz.sshj.connection.channel.forwarded.ConnectListener} that forwards what is received over the
  * channel to a socket and vice-versa.
  */
-public class SocketForwardingConnectListener implements ConnectListener {
+public class SocketForwardingConnectListener
+        implements ConnectListener {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -42,7 +43,8 @@ public class SocketForwardingConnectListener implements ConnectListener {
     }
 
     /** On connect, confirm the channel and start forwarding. */
-    public void gotConnect(Channel.Forwarded chan) throws IOException {
+    public void gotConnect(Channel.Forwarded chan)
+            throws IOException {
         log.info("New connection from " + chan.getOriginatorIP() + ":" + chan.getOriginatorPort());
 
         final Socket sock = new Socket();
@@ -55,7 +57,8 @@ public class SocketForwardingConnectListener implements ConnectListener {
         chan.confirm();
 
         final ErrorCallback closer = StreamCopier.closeOnErrorCallback(chan, new Closeable() {
-            public void close() throws IOException {
+            public void close()
+                    throws IOException {
                 sock.close();
             }
         });

@@ -55,7 +55,9 @@ import java.io.InterruptedIOException;
  * {@link InputStream} for channels. Can {@link #receive(byte[], int, int) receive} data into its buffer for serving to
  * readers.
  */
-public final class ChannelInputStream extends InputStream implements ErrorNotifiable {
+public final class ChannelInputStream
+        extends InputStream
+        implements ErrorNotifiable {
 
     private final Logger log;
 
@@ -104,14 +106,16 @@ public final class ChannelInputStream extends InputStream implements ErrorNotifi
     }
 
     @Override
-    public int read() throws IOException {
+    public int read()
+            throws IOException {
         synchronized (b) {
             return read(b, 0, 1) == -1 ? -1 : b[0];
         }
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len)
+            throws IOException {
         synchronized (buf) {
             for (; ;) {
                 if (buf.available() > 0)
@@ -140,7 +144,8 @@ public final class ChannelInputStream extends InputStream implements ErrorNotifi
         return len;
     }
 
-    public void receive(byte[] data, int offset, int len) throws ConnectionException, TransportException {
+    public void receive(byte[] data, int offset, int len)
+            throws ConnectionException, TransportException {
         if (eof)
             throw new ConnectionException("Getting data on EOF'ed stream");
         synchronized (buf) {
@@ -152,12 +157,14 @@ public final class ChannelInputStream extends InputStream implements ErrorNotifi
             checkWindow();
     }
 
-    private void checkWindow() throws TransportException {
+    private void checkWindow()
+            throws TransportException {
         synchronized (win) {
             final int adjustment = win.neededAdjustment();
             if (adjustment > 0) {
                 log.info("Sending SSH_MSG_CHANNEL_WINDOW_ADJUST to #{} for {} bytes", chan.getRecipient(), adjustment);
-                trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST).putInt(chan.getRecipient()).putInt(adjustment));
+                trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST)
+                        .putInt(chan.getRecipient()).putInt(adjustment));
                 win.expand(adjustment);
             }
         }

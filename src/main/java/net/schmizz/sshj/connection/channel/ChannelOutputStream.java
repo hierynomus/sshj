@@ -49,7 +49,9 @@ import java.io.OutputStream;
  * {@link OutputStream} for channels. Buffers data upto the remote window's maximum packet size. Data can also be
  * flushed via {@link #flush()} and is also flushed on {@link #close()}.
  */
-public final class ChannelOutputStream extends OutputStream implements ErrorNotifiable {
+public final class ChannelOutputStream
+        extends OutputStream
+        implements ErrorNotifiable {
 
     private final Channel chan;
     private Transport trans;
@@ -77,13 +79,15 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     }
 
     @Override
-    public synchronized void write(int w) throws IOException {
+    public synchronized void write(int w)
+            throws IOException {
         b[0] = (byte) w;
         write(b, 0, 1);
     }
 
     @Override
-    public synchronized void write(byte[] data, int off, int len) throws IOException {
+    public synchronized void write(byte[] data, int off, int len)
+            throws IOException {
         checkClose();
         while (len > 0) {
             final int x = Math.min(len, win.getMaxPacketSize() - bufferLength);
@@ -102,7 +106,8 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         this.error = error;
     }
 
-    private synchronized void checkClose() throws SSHException {
+    private synchronized void checkClose()
+            throws SSHException {
         if (closed)
             if (error != null)
                 throw error;
@@ -111,7 +116,8 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     }
 
     @Override
-    public synchronized void close() throws IOException {
+    public synchronized void close()
+            throws IOException {
         if (!closed)
             try {
                 flush();
@@ -126,7 +132,8 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     }
 
     @Override
-    public synchronized void flush() throws IOException {
+    public synchronized void flush()
+            throws IOException {
         checkClose();
 
         if (bufferLength <= 0) // No data to send

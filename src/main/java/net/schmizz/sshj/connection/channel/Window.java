@@ -68,13 +68,15 @@ public abstract class Window {
     }
 
     /** Controls how much data we can send before an adjustment notification from remote end is required. */
-    public static final class Remote extends Window {
+    public static final class Remote
+            extends Window {
 
         public Remote(int chanID, int initialWinSize, int maxPacketSize) {
             super(chanID, "remote win", initialWinSize, maxPacketSize);
         }
 
-        public void waitAndConsume(int howMuch) throws ConnectionException {
+        public void waitAndConsume(int howMuch)
+                throws ConnectionException {
             synchronized (lock) {
                 while (size < howMuch) {
                     log.debug("Waiting, need window space for {} bytes", howMuch);
@@ -91,7 +93,8 @@ public abstract class Window {
     }
 
     /** Controls how much data remote end can send before an adjustment notification from us is required. */
-    public static final class Local extends Window {
+    public static final class Local
+            extends Window {
 
         private final int initialSize;
         private final int threshold;
@@ -102,7 +105,8 @@ public abstract class Window {
             threshold = Math.min(maxPacketSize * 20, initialSize / 4);
         }
 
-        public int neededAdjustment() throws TransportException {
+        public int neededAdjustment()
+                throws TransportException {
             synchronized (lock) {
                 return (size - threshold <= 0) ? (initialSize - size) : 0;
             }

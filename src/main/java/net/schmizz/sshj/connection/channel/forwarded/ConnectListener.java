@@ -24,13 +24,14 @@ public interface ConnectListener {
 
     /**
      * Notify this listener of a new forwarded channel. An implementation should firstly {@link
-     * net.schmizz.sshj.connection.channel.Channel.Forwarded#confirm() confirm} or {@link
-     * net.schmizz.sshj.connection.channel.Channel.Forwarded#reject() reject} that channel.
+     * Channel.Forwarded#confirm() confirm} or {@link Channel.Forwarded#reject(net.schmizz.sshj.connection.channel.OpenFailException.Reason,
+     * String)}  reject} that channel.
      *
      * @param chan the {@link net.schmizz.sshj.connection.channel.Channel.Forwarded forwarded channel}
      *
-     * @throws java.io.IOException
+     * @throws IOException
      */
-    void gotConnect(Channel.Forwarded chan) throws IOException;
+    void gotConnect(Channel.Forwarded chan)
+            throws IOException;
 
 }

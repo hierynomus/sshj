@@ -58,7 +58,8 @@ import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-public abstract class AbstractChannel implements Channel {
+public abstract class AbstractChannel
+        implements Channel {
 
     /** Logger */
     protected final Logger log;
@@ -164,7 +165,8 @@ public abstract class AbstractChannel implements Channel {
         return type;
     }
 
-    public void handle(Message msg, SSHPacket buf) throws ConnectionException, TransportException {
+    public void handle(Message msg, SSHPacket buf)
+            throws ConnectionException, TransportException {
         switch (msg) {
 
             case CHANNEL_DATA:
@@ -205,7 +207,8 @@ public abstract class AbstractChannel implements Channel {
         }
     }
 
-    private void gotClose() throws TransportException {
+    private void gotClose()
+            throws TransportException {
         log.info("Got close");
         try {
             closeAllStreams();
@@ -236,7 +239,8 @@ public abstract class AbstractChannel implements Channel {
         this.autoExpand = autoExpand;
     }
 
-    public void close() throws ConnectionException, TransportException {
+    public void close()
+            throws ConnectionException, TransportException {
         lock.lock();
         try {
             try {
@@ -251,7 +255,8 @@ public abstract class AbstractChannel implements Channel {
         }
     }
 
-    protected synchronized void sendClose() throws TransportException {
+    protected synchronized void sendClose()
+            throws TransportException {
         try {
             if (!closeRequested) {
                 log.info("Sending close");
@@ -271,7 +276,8 @@ public abstract class AbstractChannel implements Channel {
         }
     }
 
-    private void gotChannelRequest(SSHPacket buf) throws ConnectionException, TransportException {
+    private void gotChannelRequest(SSHPacket buf)
+            throws ConnectionException, TransportException {
         final String reqType = buf.readString();
         buf.readBoolean(); // We don't care about the 'want-reply' value
         log.info("Got chan request for `{}`", reqType);
@@ -289,15 +295,18 @@ public abstract class AbstractChannel implements Channel {
         close.set();
     }
 
-    protected void gotExtendedData(int dataTypeCode, SSHPacket buf) throws ConnectionException, TransportException {
+    protected void gotExtendedData(int dataTypeCode, SSHPacket buf)
+            throws ConnectionException, TransportException {
         throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Extended data not supported on " + type
-                + " channel");
+                                                                       + " channel");
     }
 
-    protected void gotUnknown(Message msg, SSHPacket buf) throws ConnectionException, TransportException {
+    protected void gotUnknown(Message msg, SSHPacket buf)
+            throws ConnectionException, TransportException {
     }
 
-    protected void handleRequest(String reqType, SSHPacket buf) throws ConnectionException, TransportException {
+    protected void handleRequest(String reqType, SSHPacket buf)
+            throws ConnectionException, TransportException {
         trans.write(newBuffer(Message.CHANNEL_FAILURE));
     }
 
@@ -305,7 +314,8 @@ public abstract class AbstractChannel implements Channel {
         return new SSHPacket(cmd).putInt(recipient);
     }
 
-    protected void receiveInto(ChannelInputStream stream, SSHPacket buf) throws ConnectionException, TransportException {
+    protected void receiveInto(ChannelInputStream stream, SSHPacket buf)
+            throws ConnectionException, TransportException {
         final int len = buf.readInt();
         if (len < 0 || len > getLocalMaxPacketSize() || len != buf.available())
             throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Bad item length: " + len);
@@ -315,7 +325,8 @@ public abstract class AbstractChannel implements Channel {
     }
 
     protected synchronized Event<ConnectionException> sendChannelRequest(String reqType, boolean wantReply,
-                                                                         Buffer.PlainBuffer reqSpecific) throws TransportException {
+                                                                         Buffer.PlainBuffer reqSpecific)
+            throws TransportException {
         log.info("Sending channel request for `{}`", reqType);
         trans.write(
                 newBuffer(Message.CHANNEL_REQUEST)
@@ -332,7 +343,8 @@ public abstract class AbstractChannel implements Channel {
         return responseEvent;
     }
 
-    private synchronized void gotResponse(boolean success) throws ConnectionException {
+    private synchronized void gotResponse(boolean success)
+            throws ConnectionException {
         final Event<ConnectionException> responseEvent = chanReqResponseEvents.poll();
         if (responseEvent != null) {
             if (success)
@@ -345,7 +357,8 @@ public abstract class AbstractChannel implements Channel {
                     "Received response to channel request when none was requested");
     }
 
-    private synchronized void gotEOF() throws TransportException {
+    private synchronized void gotEOF()
+            throws TransportException {
         log.info("Got EOF");
         eofGot = true;
         eofInputStreams();
@@ -358,7 +371,8 @@ public abstract class AbstractChannel implements Channel {
         in.eof();
     }
 
-    public synchronized void sendEOF() throws TransportException {
+    public synchronized void sendEOF()
+            throws TransportException {
         try {
             if (!closeRequested && !eofSent) {
                 log.info("Sending EOF");
@@ -375,7 +389,7 @@ public abstract class AbstractChannel implements Channel {
     @Override
     public String toString() {
         return "< " + type + " channel: id=" + id + ", recipient=" + recipient + ", localWin=" + lwin + ", remoteWin="
-                + rwin + " >";
+               + rwin + " >";
     }
 
 

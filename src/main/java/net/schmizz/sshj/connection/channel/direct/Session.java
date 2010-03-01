@@ -56,10 +56,12 @@ import java.util.Map;
  * @see Shell
  * @see Subsystem
  */
-public interface Session extends Channel {
+public interface Session
+        extends Channel {
 
     /** Command API. */
-    interface Command extends Channel {
+    interface Command
+            extends Channel {
 
         /**
          * Read from the command's {@code stderr} stream into a string (blocking).
@@ -68,7 +70,8 @@ public interface Session extends Channel {
          *
          * @throws IOException if error reading from the stream
          */
-        String getErrorAsString() throws IOException;
+        String getErrorAsString()
+                throws IOException;
 
         /** Returns the command's {@code stderr} stream. */
         InputStream getErrorStream();
@@ -105,7 +108,8 @@ public interface Session extends Channel {
          *
          * @throws IOException if error reading from the stream
          */
-        String getOutputAsString() throws IOException;
+        String getOutputAsString()
+                throws IOException;
 
         /**
          * Send a signal to the remote command.
@@ -114,12 +118,14 @@ public interface Session extends Channel {
          *
          * @throws TransportException if error sending the signal
          */
-        void signal(Signal signal) throws TransportException;
+        void signal(Signal signal)
+                throws TransportException;
 
     }
 
     /** Shell API. */
-    interface Shell extends Channel {
+    interface Shell
+            extends Channel {
 
         /**
          * Whether the client can do local flow control using {@code control-S} and {@code control-Q}.
@@ -139,7 +145,8 @@ public interface Session extends Channel {
          *
          * @throws TransportException
          */
-        void changeWindowDimensions(int cols, int rows, int width, int height) throws TransportException;
+        void changeWindowDimensions(int cols, int rows, int width, int height)
+                throws TransportException;
 
         /** Returns the shell's {@code stderr} stream. */
         InputStream getErrorStream();
@@ -151,12 +158,14 @@ public interface Session extends Channel {
          *
          * @throws TransportException if error sending the signal
          */
-        void signal(Signal signal) throws TransportException;
+        void signal(Signal signal)
+                throws TransportException;
 
     }
 
     /** Subsystem API. */
-    interface Subsystem extends Channel {
+    interface Subsystem
+            extends Channel {
         Integer getExitStatus();
     }
 
@@ -167,7 +176,8 @@ public interface Session extends Channel {
      *
      * @throws TransportException
      */
-    void allocateDefaultPTY() throws ConnectionException, TransportException;
+    void allocateDefaultPTY()
+            throws ConnectionException, TransportException;
 
     /**
      * Allocate a psuedo-terminal for this session.
@@ -197,7 +207,8 @@ public interface Session extends Channel {
      * @throws ConnectionException if the request to execute the command failed
      * @throws TransportException  if there is an error sending the request
      */
-    Command exec(String command) throws ConnectionException, TransportException;
+    Command exec(String command)
+            throws ConnectionException, TransportException;
 
     /**
      * Request X11 forwarding.
@@ -209,8 +220,9 @@ public interface Session extends Channel {
      * @throws ConnectionException if the request failed
      * @throws TransportException  if there was an error sending the request
      */
-    void reqX11Forwarding(String authProto, String authCookie, int screen) throws ConnectionException,
-            TransportException;
+    void reqX11Forwarding(String authProto, String authCookie, int screen)
+            throws ConnectionException,
+                   TransportException;
 
     /**
      * Set an enviornment variable.
@@ -221,7 +233,8 @@ public interface Session extends Channel {
      * @throws ConnectionException if the request failed
      * @throws TransportException  if there was an error sending the request
      */
-    void setEnvVar(String name, String value) throws ConnectionException, TransportException;
+    void setEnvVar(String name, String value)
+            throws ConnectionException, TransportException;
 
     /**
      * Request a shell.
@@ -231,7 +244,8 @@ public interface Session extends Channel {
      * @throws ConnectionException if the request failed
      * @throws TransportException  if there was an error sending the request
      */
-    Shell startShell() throws ConnectionException, TransportException;
+    Shell startShell()
+            throws ConnectionException, TransportException;
 
     /**
      * Request a subsystem.
@@ -243,6 +257,7 @@ public interface Session extends Channel {
      * @throws ConnectionException if the request failed
      * @throws TransportException  if there was an error sending the request
      */
-    Subsystem startSubsystem(String name) throws ConnectionException, TransportException;
+    Subsystem startSubsystem(String name)
+            throws ConnectionException, TransportException;
 
 }

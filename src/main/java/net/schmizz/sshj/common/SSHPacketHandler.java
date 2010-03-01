@@ -30,6 +30,7 @@ public interface SSHPacketHandler {
      *
      * @throws SSHException if there is a non-recoverable error
      */
-    void handle(Message msg, SSHPacket buf) throws SSHException;
+    void handle(Message msg, SSHPacket buf)
+            throws SSHException;
 
 }
