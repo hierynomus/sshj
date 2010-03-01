@@ -35,7 +35,8 @@ public class KeyProviderUtil {
      *
      * @throws java.io.IOException
      */
-    public static FileKeyProvider.Format detectKeyFileFormat(File location) throws IOException {
+    public static FileKeyProvider.Format detectKeyFileFormat(File location)
+            throws IOException {
         BufferedReader br = new BufferedReader(new FileReader(location));
         String firstLine = br.readLine();
         IOUtils.closeQuietly(br);
@@ -51,7 +52,7 @@ public class KeyProviderUtil {
         /*
          * TODO: Tectia, PuTTY (.ppk) ...
          */
-        return FileKeyProvider.Format.OpenSSH;
+        return FileKeyProvider.Format.Unknown;
     }
 
 }

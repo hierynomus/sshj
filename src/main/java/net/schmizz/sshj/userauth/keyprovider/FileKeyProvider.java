@@ -40,10 +40,13 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import java.io.File;
 
 /** A file key provider is initialized with a location of */
-public interface FileKeyProvider extends KeyProvider {
+public interface FileKeyProvider
+        extends KeyProvider {
 
     enum Format {
-        PKCS8, OpenSSH, Unknown
+        PKCS8,
+        OpenSSH,
+        Unknown
     }
 
     void init(File location);

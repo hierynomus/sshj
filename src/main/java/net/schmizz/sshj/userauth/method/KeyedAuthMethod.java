@@ -47,7 +47,8 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-public abstract class KeyedAuthMethod extends AbstractAuthMethod {
+public abstract class KeyedAuthMethod
+        extends AbstractAuthMethod {
     protected KeyProvider kProv;
 
     public KeyedAuthMethod(String name, KeyProvider kProv) {
@@ -55,7 +56,8 @@ public abstract class KeyedAuthMethod extends AbstractAuthMethod {
         this.kProv = kProv;
     }
 
-    protected SSHPacket putPubKey(SSHPacket reqBuf) throws UserAuthException {
+    protected SSHPacket putPubKey(SSHPacket reqBuf)
+            throws UserAuthException {
         PublicKey key;
         try {
             key = kProv.getPublic();
@@ -70,7 +72,8 @@ public abstract class KeyedAuthMethod extends AbstractAuthMethod {
         return reqBuf;
     }
 
-    protected SSHPacket putSig(SSHPacket reqBuf) throws UserAuthException {
+    protected SSHPacket putSig(SSHPacket reqBuf)
+            throws UserAuthException {
         PrivateKey key;
         try {
             key = kProv.getPrivate();

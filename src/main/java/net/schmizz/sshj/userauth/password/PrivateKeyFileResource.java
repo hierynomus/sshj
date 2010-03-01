@@ -15,7 +15,8 @@
  */
 package net.schmizz.sshj.userauth.password;
 
-public class PrivateKeyFileResource extends Resource<String> {
+public class PrivateKeyFileResource
+        extends Resource<String> {
 
     public PrivateKeyFileResource(String path) {
         super(path);

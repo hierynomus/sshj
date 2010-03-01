@@ -52,9 +52,11 @@ import java.security.PublicKey;
  *
  * @see PKCS8KeyFile
  */
-public class OpenSSHKeyFile extends PKCS8KeyFile {
+public class OpenSSHKeyFile
+        extends PKCS8KeyFile {
 
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
         public FileKeyProvider create() {
             return new OpenSSHKeyFile();
@@ -68,7 +70,8 @@ public class OpenSSHKeyFile extends PKCS8KeyFile {
     private PublicKey pubKey;
 
     @Override
-    public PublicKey getPublic() throws IOException {
+    public PublicKey getPublic()
+            throws IOException {
         return pubKey != null ? pubKey : super.getPublic();
     }
 

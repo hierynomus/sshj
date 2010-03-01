@@ -44,14 +44,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** This abstract class for {@link AuthMethod} implements common or default functionality. */
-public abstract class AbstractAuthMethod implements AuthMethod {
+public abstract class AbstractAuthMethod
+        implements AuthMethod {
 
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     private final String name;
 
-    /** {@link net.schmizz.sshj.userauth.AuthParams} useful for building request. */
+    /** {@link AuthParams} useful for building request. */
     protected AuthParams params;
 
     /** Create with the {@code name} of this authentication method. */
@@ -63,7 +64,8 @@ public abstract class AbstractAuthMethod implements AuthMethod {
         return name;
     }
 
-    public void handle(Message msg, SSHPacket buf) throws UserAuthException, TransportException {
+    public void handle(Message msg, SSHPacket buf)
+            throws UserAuthException, TransportException {
         throw new UserAuthException("Unknown packet received during " + getName() + " auth: " + msg);
     }
 
@@ -71,7 +73,8 @@ public abstract class AbstractAuthMethod implements AuthMethod {
         this.params = params;
     }
 
-    public void request() throws UserAuthException, TransportException {
+    public void request()
+            throws UserAuthException, TransportException {
         params.getTransport().write(buildReq());
     }
 
@@ -80,10 +83,11 @@ public abstract class AbstractAuthMethod implements AuthMethod {
     }
 
     /**
-     * Builds a {@link net.schmizz.sshj.common.SSHPacket} containing the fields common to all authentication method.
-     * Method-specific fields can further be put into this buffer.
+     * Builds a {@link SSHPacket} containing the fields common to all authentication method. Method-specific fields can
+     * further be put into this buffer.
      */
-    protected SSHPacket buildReq() throws UserAuthException {
+    protected SSHPacket buildReq()
+            throws UserAuthException {
         return new SSHPacket(Message.USERAUTH_REQUEST) // SSH_MSG_USERAUTH_REQUEST
                 .putString(params.getUsername()) // username goes first
                 .putString(params.getNextServiceName()) // the service that we'd like on success

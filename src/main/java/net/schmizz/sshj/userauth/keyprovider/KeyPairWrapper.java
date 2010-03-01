@@ -42,7 +42,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /** A {@link KeyProvider} wrapper around {@link java.security.KeyPair} */
-public class KeyPairWrapper implements KeyProvider {
+public class KeyPairWrapper
+        implements KeyProvider {
 
     private final KeyPair kp;
     private final KeyType type;

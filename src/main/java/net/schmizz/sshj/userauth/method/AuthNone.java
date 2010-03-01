@@ -40,7 +40,8 @@ package net.schmizz.sshj.userauth.method;
  * service requested. This method generally fails and is typically used to find out the method allowed by an SSH server
  * (sent as part of the {@code SSH_MSG_USERAUTH_FAILURE} packet)
  */
-public class AuthNone extends AbstractAuthMethod {
+public class AuthNone
+        extends AbstractAuthMethod {
 
     AuthNone() {
         super("none");

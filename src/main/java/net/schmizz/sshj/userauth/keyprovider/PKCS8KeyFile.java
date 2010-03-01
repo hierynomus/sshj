@@ -55,9 +55,11 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 /** Represents a PKCS8-encoded key file. This is the format used by OpenSSH and OpenSSL. */
-public class PKCS8KeyFile implements FileKeyProvider {
+public class PKCS8KeyFile
+        implements FileKeyProvider {
 
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
         public FileKeyProvider create() {
             return new PKCS8KeyFile();
         }
@@ -77,15 +79,18 @@ public class PKCS8KeyFile implements FileKeyProvider {
 
     protected char[] passphrase; // for blanking out
 
-    public PrivateKey getPrivate() throws IOException {
+    public PrivateKey getPrivate()
+            throws IOException {
         return kp != null ? kp.getPrivate() : (kp = readKeyPair()).getPrivate();
     }
 
-    public PublicKey getPublic() throws IOException {
+    public PublicKey getPublic()
+            throws IOException {
         return kp != null ? kp.getPublic() : (kp = readKeyPair()).getPublic();
     }
 
-    public KeyType getType() throws IOException {
+    public KeyType getType()
+            throws IOException {
         return type != null ? type : (type = KeyType.fromKey(getPublic()));
     }
 
@@ -111,7 +116,8 @@ public class PKCS8KeyFile implements FileKeyProvider {
             };
     }
 
-    protected KeyPair readKeyPair() throws IOException {
+    protected KeyPair readKeyPair()
+            throws IOException {
         KeyPair kp = null;
         org.bouncycastle.openssl.PasswordFinder pFinder = makeBouncyPasswordFinder();
         PEMReader r = null;

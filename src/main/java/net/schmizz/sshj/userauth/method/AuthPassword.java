@@ -45,7 +45,8 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
 
 /** Implements the {@code password} authentication method. Password-change request handling is not currently supported. */
-public class AuthPassword extends AbstractAuthMethod {
+public class AuthPassword
+        extends AbstractAuthMethod {
 
     private final PasswordFinder pwdf;
     private Resource resource;
@@ -63,7 +64,8 @@ public class AuthPassword extends AbstractAuthMethod {
     }
 
     @Override
-    public SSHPacket buildReq() throws UserAuthException {
+    public SSHPacket buildReq()
+            throws UserAuthException {
         log.info("Requesting password for " + resource);
         char[] password = pwdf.reqPassword(resource);
         if (password == null)
@@ -75,7 +77,8 @@ public class AuthPassword extends AbstractAuthMethod {
     }
 
     @Override
-    public void handle(Message cmd, SSHPacket buf) throws UserAuthException, TransportException {
+    public void handle(Message cmd, SSHPacket buf)
+            throws UserAuthException, TransportException {
         if (cmd == Message.USERAUTH_60)
             throw new UserAuthException("Password change request received; unsupported operation");
         else

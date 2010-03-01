@@ -15,7 +15,8 @@
  */
 package net.schmizz.sshj.userauth.password;
 
-public class AccountResource extends Resource<String> {
+public class AccountResource
+        extends Resource<String> {
 
     public AccountResource(String user, String host) {
         super(user + "@" + host);

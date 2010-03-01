@@ -51,7 +51,8 @@ import java.io.IOException;
  * request signed with the private key. Therefore, private keys are not requested from the associated {@link
  * KeyProvider} unless needed.
  */
-public class AuthPublickey extends KeyedAuthMethod {
+public class AuthPublickey
+        extends KeyedAuthMethod {
 
     /** Initialize this method with the provider for public and private key. */
     public AuthPublickey(KeyProvider kProv) {
@@ -60,7 +61,8 @@ public class AuthPublickey extends KeyedAuthMethod {
 
     /** Internal use. */
     @Override
-    public void handle(Message cmd, SSHPacket buf) throws UserAuthException, TransportException {
+    public void handle(Message cmd, SSHPacket buf)
+            throws UserAuthException, TransportException {
         if (cmd == Message.USERAUTH_60)
             sendSignedReq();
         else
@@ -76,7 +78,8 @@ public class AuthPublickey extends KeyedAuthMethod {
      *
      * @throws UserAuthException
      */
-    private SSHPacket buildReq(boolean signed) throws UserAuthException {
+    private SSHPacket buildReq(boolean signed)
+            throws UserAuthException {
         try {
             kProv.getPublic();
         } catch (IOException ioe) {
@@ -91,14 +94,16 @@ public class AuthPublickey extends KeyedAuthMethod {
      * @throws UserAuthException
      * @throws TransportException
      */
-    private void sendSignedReq() throws UserAuthException, TransportException {
+    private void sendSignedReq()
+            throws UserAuthException, TransportException {
         log.debug("Sending signed request");
         params.getTransport().write(putSig(buildReq(true)));
     }
 
     /** Builds a feeler request (sans signature). */
     @Override
-    protected SSHPacket buildReq() throws UserAuthException {
+    protected SSHPacket buildReq()
+            throws UserAuthException {
         return buildReq(false);
     }
 

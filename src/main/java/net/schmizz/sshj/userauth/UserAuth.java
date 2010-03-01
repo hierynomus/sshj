@@ -41,15 +41,11 @@ import net.schmizz.sshj.userauth.method.AuthMethod;
 
 import java.util.Deque;
 
-/**
- * User authentication API
- *
- * @see rfc4252
- */
+/** User authentication API. See RFC 4252. */
 public interface UserAuth {
 
     /**
-     * Attempt to authenticate {@code username} using each of {@link methods} in order. {@code nextService} is the
+     * Attempt to authenticate {@code username} using each of {@code methods} in order. {@code nextService} is the
      * {@link net.schmizz.sshj.Service} that will be enabled on successful authentication.
      * <p/>
      * Authentication fails if there are no method available, i.e. if all the method failed or there were method
@@ -66,8 +62,8 @@ public interface UserAuth {
      * @throws UserAuthException  in case of authentication failure
      * @throws TransportException if there was a transport-layer error
      */
-    void authenticate(String username, Service nextService, Iterable<AuthMethod> methods) throws UserAuthException,
-            TransportException;
+    void authenticate(String username, Service nextService, Iterable<AuthMethod> methods)
+            throws UserAuthException, TransportException;
 
     /**
      * Returns the authentication banner (if any). In some cases this is available even before the first authentication
@@ -77,15 +73,15 @@ public interface UserAuth {
      */
     String getBanner();
 
-    /** Returns saved exceptions that might have been ignored because there were more authentication method available. */
+    /** @return Saved exceptions that might have been ignored because there were more authentication method available. */
     Deque<UserAuthException> getSavedExceptions();
 
-    /** Returns the {@code timeout} for a method to successfully authenticate before it is abandoned. */
+    /** @return The {@code timeout} for a method to successfully authenticate before it is abandoned. */
     int getTimeout();
 
     /**
-     * Returns whether authentication was partially successful. Some server's may be configured to require multiple
-     * authentications; and this value will be {@code true} if at least one of the method supplied succeeded.
+     * @return Whether authentication was partially successful. Some server's may be configured to require multiple
+     *         authentications; and this value will be {@code true} if at least one of the method supplied succeeded.
      */
     boolean hadPartialSuccess();
 

@@ -40,7 +40,8 @@ import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.SSHException;
 
 /** User authentication exception */
-public class UserAuthException extends SSHException {
+public class UserAuthException
+        extends SSHException {
 
     public static final ExceptionChainer<UserAuthException> chainer = new ExceptionChainer<UserAuthException>() {
 

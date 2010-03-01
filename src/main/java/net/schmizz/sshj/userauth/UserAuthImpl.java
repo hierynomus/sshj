@@ -12,26 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * This file may incorporate work covered by the following copyright and
- * permission notice:
- *
- *     Licensed to the Apache Software Foundation (ASF) under one
- *     or more contributor license agreements.  See the NOTICE file
- *     distributed with this work for additional information
- *     regarding copyright ownership.  The ASF licenses this file
- *     to you under the Apache License, Version 2.0 (the
- *     "License"); you may not use this file except in compliance
- *     with the License.  You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *      Unless required by applicable law or agreed to in writing,
- *      software distributed under the License is distributed on an
- *      "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *      KIND, either express or implied.  See the License for the
- *      specific language governing permissions and limitations
- *      under the License.
  */
 package net.schmizz.sshj.userauth;
 
@@ -54,14 +34,16 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** {@link UserAuth} implementation. */
-public class UserAuthImpl extends AbstractService implements UserAuth, AuthParams {
+public class UserAuthImpl
+        extends AbstractService
+        implements UserAuth, AuthParams {
 
     private final Set<String> allowed = new HashSet<String>();
 
     private final Deque<UserAuthException> savedEx = new ArrayDeque<UserAuthException>();
 
     private final Event<UserAuthException> result = new Event<UserAuthException>("userauth result",
-            UserAuthException.chainer);
+                                                                                 UserAuthException.chainer);
 
     private String username;
     private AuthMethod currentMethod;
@@ -158,7 +140,8 @@ public class UserAuthImpl extends AbstractService implements UserAuth, AuthParam
     }
 
     @Override
-    public void handle(Message msg, SSHPacket buf) throws SSHException {
+    public void handle(Message msg, SSHPacket buf)
+            throws SSHException {
         if (!msg.in(50, 80)) // ssh-userauth packets have message numbers between 50-80
             throw new TransportException(DisconnectReason.PROTOCOL_ERROR);
 
@@ -198,7 +181,8 @@ public class UserAuthImpl extends AbstractService implements UserAuth, AuthParam
         banner = buf.readString();
     }
 
-    private void gotFailure(SSHPacket buf) throws UserAuthException, TransportException {
+    private void gotFailure(SSHPacket buf)
+            throws UserAuthException, TransportException {
         allowed.clear();
         allowed.addAll(Arrays.<String>asList(buf.readString().split(",")));
         partialSuccess |= buf.readBoolean();
@@ -216,7 +200,8 @@ public class UserAuthImpl extends AbstractService implements UserAuth, AuthParam
         result.set(true);
     }
 
-    private void gotUnknown(Message msg, SSHPacket buf) throws SSHException {
+    private void gotUnknown(Message msg, SSHPacket buf)
+            throws SSHException {
         if (currentMethod == null || result == null) {
             trans.sendUnimplemented();
             return;
@@ -239,7 +224,8 @@ public class UserAuthImpl extends AbstractService implements UserAuth, AuthParam
         savedEx.push(e);
     }
 
-    private boolean tryWith(AuthMethod meth) throws UserAuthException, TransportException {
+    private boolean tryWith(AuthMethod meth)
+            throws UserAuthException, TransportException {
         currentMethod = meth;
         result.clear();
         meth.init(this);

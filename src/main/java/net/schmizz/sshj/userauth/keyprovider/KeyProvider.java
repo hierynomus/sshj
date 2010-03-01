@@ -45,12 +45,15 @@ import java.security.PublicKey;
 public interface KeyProvider {
 
     /** Returns the private key. */
-    PrivateKey getPrivate() throws IOException;
+    PrivateKey getPrivate()
+            throws IOException;
 
     /** Returns the public key. */
-    PublicKey getPublic() throws IOException;
+    PublicKey getPublic()
+            throws IOException;
 
     /** Returns the {@link KeyType}. */
-    KeyType getType() throws IOException;
+    KeyType getType()
+            throws IOException;
 
 }

@@ -45,7 +45,8 @@ import net.schmizz.sshj.userauth.UserAuthException;
  *
  * @see net.schmizz.sshj.userauth.UserAuth
  */
-public interface AuthMethod extends SSHPacketHandler {
+public interface AuthMethod
+        extends SSHPacketHandler {
 
     /** Returns assigned name of this authentication method */
     String getName();
@@ -61,7 +62,8 @@ public interface AuthMethod extends SSHPacketHandler {
      *
      * @throws TransportException
      */
-    void request() throws UserAuthException, TransportException;
+    void request()
+            throws UserAuthException, TransportException;
 
     /** Returns whether authentication should be reattempted if it failed. */
     boolean shouldRetry();
