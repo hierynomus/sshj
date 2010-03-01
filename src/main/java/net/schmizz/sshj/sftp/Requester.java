@@ -21,6 +21,7 @@ public interface Requester {
 
     Request newRequest(PacketType type);
 
-    Response doRequest(Request req) throws IOException;
+    Response doRequest(Request req)
+            throws IOException;
 
 }

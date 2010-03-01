@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class RemoteFile extends RemoteResource {
+public class RemoteFile
+        extends RemoteResource {
 
     public RemoteFile(Requester requester, String path, String handle) {
         super(requester, path, handle);
@@ -35,21 +36,25 @@ public class RemoteFile extends RemoteResource {
         return new RemoteFileOutputStream();
     }
 
-    public FileAttributes fetchAttributes() throws IOException {
+    public FileAttributes fetchAttributes()
+            throws IOException {
         return requester.doRequest(newRequest(PacketType.FSTAT)) //
                 .ensurePacketTypeIs(PacketType.ATTRS) //
                 .readFileAttributes();
     }
 
-    public long length() throws IOException {
+    public long length()
+            throws IOException {
         return fetchAttributes().getSize();
     }
 
-    public void setLength(long len) throws IOException {
+    public void setLength(long len)
+            throws IOException {
         setAttributes(new FileAttributes.Builder().withSize(len).build());
     }
 
-    public int read(long fileOffset, byte[] to, int offset, int len) throws IOException {
+    public int read(long fileOffset, byte[] to, int offset, int len)
+            throws IOException {
         Response res = requester.doRequest(newRequest(PacketType.READ).putUINT64(fileOffset).putInt(len));
         switch (res.getType()) {
             case DATA:
@@ -66,30 +71,33 @@ public class RemoteFile extends RemoteResource {
         }
     }
 
-    public void write(long fileOffset, byte[] data, int off, int len) throws IOException {
+    public void write(long fileOffset, byte[] data, int off, int len)
+            throws IOException {
         requester.doRequest( //
-                newRequest(PacketType.WRITE) //
-                        .putUINT64(fileOffset) //
-                        .putInt(len - off) //
-                        .putRawBytes(data, off, len) //
+                             newRequest(PacketType.WRITE) //
+                                     .putUINT64(fileOffset) //
+                                     .putInt(len - off) //
+                                     .putRawBytes(data, off, len) //
         ).ensureStatusPacketIsOK();
     }
 
-    public void setAttributes(FileAttributes attrs) throws IOException {
+    public void setAttributes(FileAttributes attrs)
+            throws IOException {
         requester.doRequest(newRequest(PacketType.FSETSTAT).putFileAttributes(attrs)).ensureStatusPacketIsOK();
     }
 
     public int getOutgoingPacketOverhead() {
         return 1 + // packet type
-                4 + // request id
-                4 + // next length
-                handle.length() + // next
-                8 + // file offset
-                4 + // data length
-                4; // packet length
+               4 + // request id
+               4 + // next length
+               handle.length() + // next
+               8 + // file offset
+               4 + // data length
+               4; // packet length
     }
 
-    public class RemoteFileOutputStream extends OutputStream {
+    public class RemoteFileOutputStream
+            extends OutputStream {
 
 
         private final byte[] b = new byte[1];
@@ -105,20 +113,23 @@ public class RemoteFile extends RemoteResource {
         }
 
         @Override
-        public void write(int w) throws IOException {
+        public void write(int w)
+                throws IOException {
             b[0] = (byte) w;
             write(b, 0, 1);
         }
 
         @Override
-        public void write(byte[] buf, int off, int len) throws IOException {
+        public void write(byte[] buf, int off, int len)
+                throws IOException {
             RemoteFile.this.write(fileOffset, buf, off, len);
             fileOffset += len;
         }
 
     }
 
-    public class RemoteFileInputStream extends InputStream {
+    public class RemoteFileInputStream
+            extends InputStream {
 
         private final byte[] b = new byte[1];
 
@@ -146,22 +157,26 @@ public class RemoteFile extends RemoteResource {
         }
 
         @Override
-        public void reset() throws IOException {
+        public void reset()
+                throws IOException {
             fileOffset = markPos;
         }
 
         @Override
-        public long skip(long n) throws IOException {
+        public long skip(long n)
+                throws IOException {
             return (this.fileOffset = Math.min(fileOffset + n, length()));
         }
 
         @Override
-        public int read() throws IOException {
+        public int read()
+                throws IOException {
             return read(b, 0, 1) == -1 ? -1 : b[0];
         }
 
         @Override
-        public int read(byte[] into, int off, int len) throws IOException {
+        public int read(byte[] into, int off, int len)
+                throws IOException {
             int read = RemoteFile.this.read(fileOffset, into, off, len);
             if (read != -1) {
                 fileOffset += read;

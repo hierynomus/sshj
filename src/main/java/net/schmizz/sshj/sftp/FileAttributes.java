@@ -27,7 +27,11 @@ public final class FileAttributes {
 
     public static enum Flag {
 
-        SIZE(0x00000001), UIDGID(0x00000002), MODE(0x00000004), ACMODTIME(0x00000008), EXTENDED(0x80000000);
+        SIZE(0x00000001),
+        UIDGID(0x00000002),
+        MODE(0x00000004),
+        ACMODTIME(0x00000008),
+        EXTENDED(0x80000000);
 
         private final int flag;
 

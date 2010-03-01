@@ -21,13 +21,15 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-public class RemoteDirectory extends RemoteResource {
+public class RemoteDirectory
+        extends RemoteResource {
 
     public RemoteDirectory(Requester requester, String path, String handle) {
         super(requester, path, handle);
     }
 
-    public List<RemoteResourceInfo> scan(RemoteResourceFilter filter) throws IOException {
+    public List<RemoteResourceInfo> scan(RemoteResourceFilter filter)
+            throws IOException {
         List<RemoteResourceInfo> rri = new LinkedList<RemoteResourceInfo>();
         loop:
         for (; ;) {

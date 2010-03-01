@@ -30,7 +30,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.EnumSet;
 
-public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransfer {
+public class SFTPFileTransfer
+        extends AbstractFileTransfer
+        implements FileTransfer {
 
     private final SFTPEngine sftp;
     private final PathHelper pathHelper;
@@ -55,11 +57,13 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
         this.pathHelper = new PathHelper(sftp);
     }
 
-    public void upload(String source, String dest) throws IOException {
+    public void upload(String source, String dest)
+            throws IOException {
         new Uploader(getModeGetter(), getUploadFilter()).upload(new File(source), dest);
     }
 
-    public void download(String source, String dest) throws IOException {
+    public void download(String source, String dest)
+            throws IOException {
         PathComponents src = pathHelper.getComponents(source);
         new Downloader(getModeSetter(), getDownloadFilter()).download(new RemoteResourceInfo(src.getParent(), src
                 .getName(), sftp.stat(source)), new File(dest));
@@ -91,7 +95,8 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
             this.filter = filter;
         }
 
-        private void setAttributes(RemoteResourceInfo remote, File local) throws IOException {
+        private void setAttributes(RemoteResourceInfo remote, File local)
+                throws IOException {
             final FileAttributes attrs = remote.getAttributes();
             modeSetter.setPermissions(local, attrs.getMode().getPermissionsMask());
             if (modeSetter.preservesTimes() && attrs.has(FileAttributes.Flag.ACMODTIME)) {
@@ -100,7 +105,8 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
             }
         }
 
-        private void downloadFile(RemoteResourceInfo remote, File local) throws IOException {
+        private void downloadFile(RemoteResourceInfo remote, File local)
+                throws IOException {
             local = FileTransferUtil.getTargetFile(local, remote.getName());
             setAttributes(remote, local);
             RemoteFile rf = sftp.open(remote.getPath());
@@ -117,7 +123,8 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
             }
         }
 
-        private void downloadDir(RemoteResourceInfo remote, File local) throws IOException {
+        private void downloadDir(RemoteResourceInfo remote, File local)
+                throws IOException {
             local = FileTransferUtil.getTargetDirectory(local, remote.getName());
             setAttributes(remote, local);
             final RemoteDirectory rd = sftp.openDir(remote.getPath());
@@ -126,7 +133,8 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
             rd.close();
         }
 
-        void download(RemoteResourceInfo remote, File local) throws IOException {
+        void download(RemoteResourceInfo remote, File local)
+                throws IOException {
             log.info("Downloading [{}] to [{}]", remote, local);
             if (remote.isDirectory())
                 downloadDir(remote, local);
@@ -147,7 +155,8 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
             this.filter = filter;
         }
 
-        public FileAttributes getAttributes(File local) throws IOException {
+        public FileAttributes getAttributes(File local)
+                throws IOException {
             FileAttributes.Builder builder = new FileAttributes.Builder().withPermissions(modeGetter
                     .getPermissions(local));
             if (modeGetter.preservesTimes())
@@ -156,17 +165,19 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
         }
 
         // tread carefully
-        private void setAttributes(FileAttributes current, File local, String remote) throws IOException {
+        private void setAttributes(FileAttributes current, File local, String remote)
+                throws IOException {
             final FileAttributes attrs = getAttributes(local);
             // TODO whoaaa.. simplify?
             if (!(current != null
-                    && current.getMode().getPermissionsMask() == attrs.getMode().getPermissionsMask()
-                    && (!modeGetter.preservesTimes() || (attrs.getAtime() == current.getAtime() && attrs.getMtime() == current
-                    .getMtime()))))
+                  && current.getMode().getPermissionsMask() == attrs.getMode().getPermissionsMask()
+                  && (!modeGetter.preservesTimes()
+                      || (attrs.getAtime() == current.getAtime() && attrs.getMtime() == current.getMtime()))))
                 sftp.setAttributes(remote, attrs);
         }
 
-        private String prepareDir(File local, String remote) throws IOException {
+        private String prepareDir(File local, String remote)
+                throws IOException {
             FileAttributes attrs;
             try {
                 attrs = sftp.stat(remote);
@@ -192,7 +203,8 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
                 throw new IOException(attrs.getMode().getType() + " file already exists at " + remote);
         }
 
-        private String prepareFile(File local, String remote) throws IOException {
+        private String prepareFile(File local, String remote)
+                throws IOException {
             FileAttributes attrs;
             try {
                 attrs = sftp.stat(remote);
@@ -213,22 +225,24 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
             }
         }
 
-        private void uploadDir(File local, String remote) throws IOException {
+        private void uploadDir(File local, String remote)
+                throws IOException {
             final String adjusted = prepareDir(local, remote);
             for (File f : local.listFiles(filter))
                 upload(f, adjusted);
         }
 
-        private void uploadFile(File local, String remote) throws IOException {
+        private void uploadFile(File local, String remote)
+                throws IOException {
             final String adjusted = prepareFile(local, remote);
             final RemoteFile rf = sftp.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC),
-                    getAttributes(local));
+                                            getAttributes(local));
             try {
                 final FileInputStream fis = new FileInputStream(local);
                 try {
                     StreamCopier.copy(fis, //
-                            rf.getOutputStream(), sftp.getSubsystem().getRemoteMaxPacketSize()
-                                    - rf.getOutgoingPacketOverhead(), false);
+                                      rf.getOutputStream(), sftp.getSubsystem().getRemoteMaxPacketSize()
+                                                            - rf.getOutgoingPacketOverhead(), false);
                 } finally {
                     fis.close();
                 }
@@ -237,7 +251,8 @@ public class SFTPFileTransfer extends AbstractFileTransfer implements FileTransf
             }
         }
 
-        void upload(File local, String remote) throws IOException {
+        void upload(File local, String remote)
+                throws IOException {
             log.info("Uploading [{}] to [{}]", local, remote);
             if (local.isDirectory())
                 uploadDir(local, remote);

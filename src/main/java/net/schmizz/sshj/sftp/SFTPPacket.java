@@ -17,7 +17,8 @@ package net.schmizz.sshj.sftp;
 
 import net.schmizz.sshj.common.Buffer;
 
-public class SFTPPacket<T extends SFTPPacket<T>> extends Buffer<T> {
+public class SFTPPacket<T extends SFTPPacket<T>>
+        extends Buffer<T> {
 
     public SFTPPacket() {
         super();

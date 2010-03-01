@@ -26,7 +26,8 @@ class PathHelper {
         this.sftp = sftp;
     }
 
-    public PathComponents getComponents(String path) throws IOException {
+    public PathComponents getComponents(String path)
+            throws IOException {
         if (path.isEmpty() || path.equals("."))
             return getComponents(getDotDir());
 
@@ -48,11 +49,13 @@ class PathHelper {
         }
     }
 
-    private String getDotDir() throws IOException {
+    private String getDotDir()
+            throws IOException {
         return (dotDir != null) ? dotDir : (dotDir = canon("."));
     }
 
-    private String canon(String path) throws IOException {
+    private String canon(String path)
+            throws IOException {
         return sftp.canonicalize(path);
     }
 

@@ -29,7 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class SFTPEngine implements Requester {
+public class SFTPEngine
+        implements Requester {
 
     /** Logger */
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -48,7 +49,8 @@ public class SFTPEngine implements Requester {
     private int negotiatedVersion;
     private final Map<String, String> serverExtensions = new HashMap<String, String>();
 
-    public SFTPEngine(SessionFactory ssh) throws SSHException {
+    public SFTPEngine(SessionFactory ssh)
+            throws SSHException {
         sub = ssh.startSession().startSubsystem("sftp");
         out = sub.getOutputStream();
         reader = new PacketReader(sub.getInputStream());
@@ -58,7 +60,8 @@ public class SFTPEngine implements Requester {
         return sub;
     }
 
-    public SFTPEngine init() throws IOException {
+    public SFTPEngine init()
+            throws IOException {
         transmit(new SFTPPacket<Request>(PacketType.INIT).putInt(PROTOCOL_VERSION));
 
         final SFTPPacket<Response> response = reader.readPacket();
@@ -88,14 +91,16 @@ public class SFTPEngine implements Requester {
         return new Request(type, reqID = reqID + 1 & 0xffffffffL);
     }
 
-    public Response doRequest(Request req) throws IOException {
+    public Response doRequest(Request req)
+            throws IOException {
         reader.expectResponseTo(req);
         log.debug("Sending {}", req);
         transmit(req);
         return req.getResponseFuture().get(timeout, TimeUnit.SECONDS);
     }
 
-    private synchronized void transmit(SFTPPacket<Request> payload) throws IOException {
+    private synchronized void transmit(SFTPPacket<Request> payload)
+            throws IOException {
         final int len = payload.available();
         out.write((len >>> 24) & 0xff);
         out.write((len >>> 16) & 0xff);
@@ -105,7 +110,8 @@ public class SFTPEngine implements Requester {
         out.flush();
     }
 
-    public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa) throws IOException {
+    public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)
+            throws IOException {
 
         final String handle = doRequest(
                 newRequest(PacketType.OPEN).putString(path).putInt(OpenMode.toMask(modes)).putFileAttributes(fa)
@@ -113,90 +119,106 @@ public class SFTPEngine implements Requester {
         return new RemoteFile(this, path, handle);
     }
 
-    public RemoteFile open(String filename, Set<OpenMode> modes) throws IOException {
+    public RemoteFile open(String filename, Set<OpenMode> modes)
+            throws IOException {
         return open(filename, modes, new FileAttributes());
     }
 
-    public RemoteFile open(String filename) throws IOException {
+    public RemoteFile open(String filename)
+            throws IOException {
         return open(filename, EnumSet.of(OpenMode.READ));
     }
 
-    public RemoteDirectory openDir(String path) throws IOException {
+    public RemoteDirectory openDir(String path)
+            throws IOException {
         final String handle = doRequest(
                 newRequest(PacketType.OPENDIR).putString(path)
         ).ensurePacketTypeIs(PacketType.HANDLE).readString();
         return new RemoteDirectory(this, path, handle);
     }
 
-    public void setAttributes(String path, FileAttributes attrs) throws IOException {
+    public void setAttributes(String path, FileAttributes attrs)
+            throws IOException {
         doRequest(
                 newRequest(PacketType.SETSTAT).putString(path).putFileAttributes(attrs)
         ).ensureStatusPacketIsOK();
     }
 
-    public String readLink(String path) throws IOException {
+    public String readLink(String path)
+            throws IOException {
         return readSingleName(
                 doRequest(
                         newRequest(PacketType.READLINK).putString(path)
                 ));
     }
 
-    public void makeDir(String path, FileAttributes attrs) throws IOException {
+    public void makeDir(String path, FileAttributes attrs)
+            throws IOException {
         doRequest(
                 newRequest(PacketType.MKDIR).putString(path).putFileAttributes(attrs)
         ).ensureStatusPacketIsOK();
     }
 
-    public void makeDir(String path) throws IOException {
+    public void makeDir(String path)
+            throws IOException {
         makeDir(path, new FileAttributes());
     }
 
-    public void symlink(String linkpath, String targetpath) throws IOException {
+    public void symlink(String linkpath, String targetpath)
+            throws IOException {
         doRequest(
                 newRequest(PacketType.SYMLINK).putString(linkpath).putString(targetpath)
         ).ensureStatusPacketIsOK();
     }
 
-    public void remove(String filename) throws IOException {
+    public void remove(String filename)
+            throws IOException {
         doRequest(
                 newRequest(PacketType.REMOVE).putString(filename)
         ).ensureStatusPacketIsOK();
     }
 
-    public void removeDir(String path) throws IOException {
+    public void removeDir(String path)
+            throws IOException {
         doRequest(
                 newRequest(PacketType.RMDIR).putString(path)
         ).ensureStatusIs(Response.StatusCode.OK);
     }
 
-    private FileAttributes stat(PacketType pt, String path) throws IOException {
+    private FileAttributes stat(PacketType pt, String path)
+            throws IOException {
         return doRequest(newRequest(pt).putString(path))
                 .ensurePacketTypeIs(PacketType.ATTRS)
                 .readFileAttributes();
     }
 
-    public FileAttributes stat(String path) throws IOException {
+    public FileAttributes stat(String path)
+            throws IOException {
         return stat(PacketType.STAT, path);
     }
 
-    public FileAttributes lstat(String path) throws IOException {
+    public FileAttributes lstat(String path)
+            throws IOException {
         return stat(PacketType.LSTAT, path);
     }
 
-    public void rename(String oldPath, String newPath) throws IOException {
+    public void rename(String oldPath, String newPath)
+            throws IOException {
         doRequest(
                 newRequest(PacketType.RENAME).putString(oldPath).putString(newPath)
         ).ensureStatusPacketIsOK();
     }
 
-    public String canonicalize(String path) throws IOException {
+    public String canonicalize(String path)
+            throws IOException {
         return readSingleName(
                 doRequest(
                         newRequest(PacketType.REALPATH).putString(path)
                 ));
     }
 
-    private static String readSingleName(Response res) throws IOException {
+    private static String readSingleName(Response res)
+            throws IOException {
         res.ensurePacketTypeIs(PacketType.NAME);
         if (res.readInt() == 1)
             return res.readString();

@@ -33,7 +33,8 @@ public class SFTPClient {
     private final SFTPEngine sftp;
     private final SFTPFileTransfer xfer;
 
-    public SFTPClient(SessionFactory ssh) throws IOException {
+    public SFTPClient(SessionFactory ssh)
+            throws IOException {
         this.sftp = new SFTPEngine(ssh).init();
         this.xfer = new SFTPFileTransfer(sftp);
     }
@@ -46,11 +47,13 @@ public class SFTPClient {
         return xfer;
     }
 
-    public List<RemoteResourceInfo> ls(String path) throws IOException {
+    public List<RemoteResourceInfo> ls(String path)
+            throws IOException {
         return ls(path, null);
     }
 
-    public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter) throws IOException {
+    public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
+            throws IOException {
         final RemoteDirectory dir = sftp.openDir(path);
         try {
             return dir.scan(filter);
@@ -59,36 +62,44 @@ public class SFTPClient {
         }
     }
 
-    public RemoteFile open(String filename, Set<OpenMode> mode, FileAttributes attrs) throws IOException {
+    public RemoteFile open(String filename, Set<OpenMode> mode, FileAttributes attrs)
+            throws IOException {
         log.debug("Opening `{}`", filename);
         return sftp.open(filename, mode, attrs);
     }
 
-    public RemoteFile open(String filename, Set<OpenMode> mode) throws IOException {
+    public RemoteFile open(String filename, Set<OpenMode> mode)
+            throws IOException {
         return open(filename, mode, new FileAttributes());
     }
 
-    public RemoteFile open(String filename) throws IOException {
+    public RemoteFile open(String filename)
+            throws IOException {
         return open(filename, EnumSet.of(OpenMode.READ));
     }
 
-    public void mkdir(String dirname) throws IOException {
+    public void mkdir(String dirname)
+            throws IOException {
         sftp.makeDir(dirname);
     }
 
-    public void rename(String oldpath, String newpath) throws IOException {
+    public void rename(String oldpath, String newpath)
+            throws IOException {
         sftp.rename(oldpath, newpath);
     }
 
-    public void rm(String filename) throws IOException {
+    public void rm(String filename)
+            throws IOException {
         sftp.remove(filename);
     }
 
-    public void rmdir(String dirname) throws IOException {
+    public void rmdir(String dirname)
+            throws IOException {
         sftp.removeDir(dirname);
     }
 
-    public void symlink(String linkpath, String targetpath) throws IOException {
+    public void symlink(String linkpath, String targetpath)
+            throws IOException {
         sftp.symlink(linkpath, targetpath);
     }
 
@@ -96,79 +107,98 @@ public class SFTPClient {
         return sftp.getOperativeProtocolVersion();
     }
 
-    public void setattr(String path, FileAttributes attrs) throws IOException {
+    public void setattr(String path, FileAttributes attrs)
+            throws IOException {
         sftp.setAttributes(path, attrs);
     }
 
-    public int uid(String path) throws IOException {
+    public int uid(String path)
+            throws IOException {
         return stat(path).getUID();
     }
 
-    public int gid(String path) throws IOException {
+    public int gid(String path)
+            throws IOException {
         return stat(path).getGID();
     }
 
-    public long atime(String path) throws IOException {
+    public long atime(String path)
+            throws IOException {
         return stat(path).getAtime();
     }
 
-    public long mtime(String path) throws IOException {
+    public long mtime(String path)
+            throws IOException {
         return stat(path).getMtime();
     }
 
-    public Set<FilePermission> perms(String path) throws IOException {
+    public Set<FilePermission> perms(String path)
+            throws IOException {
         return stat(path).getPermissions();
     }
 
-    public FileMode mode(String path) throws IOException {
+    public FileMode mode(String path)
+            throws IOException {
         return stat(path).getMode();
     }
 
-    public FileMode.Type type(String path) throws IOException {
+    public FileMode.Type type(String path)
+            throws IOException {
         return stat(path).getType();
     }
 
-    public String readlink(String path) throws IOException {
+    public String readlink(String path)
+            throws IOException {
         return sftp.readLink(path);
     }
 
-    public FileAttributes stat(String path) throws IOException {
+    public FileAttributes stat(String path)
+            throws IOException {
         return sftp.stat(path);
     }
 
-    public FileAttributes lstat(String path) throws IOException {
+    public FileAttributes lstat(String path)
+            throws IOException {
         return sftp.lstat(path);
     }
 
-    public void chown(String path, int uid) throws IOException {
+    public void chown(String path, int uid)
+            throws IOException {
         setattr(path, new FileAttributes.Builder().withUIDGID(uid, gid(path)).build());
     }
 
-    public void chmod(String path, int perms) throws IOException {
+    public void chmod(String path, int perms)
+            throws IOException {
         setattr(path, new FileAttributes.Builder().withPermissions(perms).build());
     }
 
-    public void chgrp(String path, int gid) throws IOException {
+    public void chgrp(String path, int gid)
+            throws IOException {
         setattr(path, new FileAttributes.Builder().withUIDGID(uid(path), gid).build());
     }
 
-    public void truncate(String path, long size) throws IOException {
+    public void truncate(String path, long size)
+            throws IOException {
         setattr(path, new FileAttributes.Builder().withSize(size).build());
     }
 
-    public String canonicalize(String path) throws IOException {
+    public String canonicalize(String path)
+            throws IOException {
         return sftp.canonicalize(path);
     }
 
-    public long size(String path) throws IOException {
+    public long size(String path)
+            throws IOException {
         return stat(path).getSize();
     }
 
-    public void get(String source, String dest) throws IOException {
+    public void get(String source, String dest)
+            throws IOException {
         xfer.download(source, dest);
     }
 
-    public void put(String source, String dest) throws IOException {
+    public void put(String source, String dest)
+            throws IOException {
         xfer.upload(source, dest);
     }
 

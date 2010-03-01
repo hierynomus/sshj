@@ -21,7 +21,8 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 
-abstract class RemoteResource implements Closeable {
+abstract class RemoteResource
+        implements Closeable {
 
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -44,7 +45,8 @@ abstract class RemoteResource implements Closeable {
         return requester.newRequest(type).putString(handle);
     }
 
-    public void close() throws IOException {
+    public void close()
+            throws IOException {
         log.info("Closing `{}`", this);
         requester.doRequest(newRequest(PacketType.CLOSE)).ensureStatusPacketIsOK();
     }

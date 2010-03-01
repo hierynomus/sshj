@@ -17,7 +17,8 @@ package net.schmizz.sshj.sftp;
 
 import net.schmizz.sshj.common.Buffer;
 
-public class Response extends SFTPPacket<Response> {
+public class Response
+        extends SFTPPacket<Response> {
 
     public static enum StatusCode {
         UNKNOWN(-1),
@@ -67,7 +68,8 @@ public class Response extends SFTPPacket<Response> {
         return StatusCode.fromInt(readInt());
     }
 
-    public Response ensurePacketTypeIs(PacketType pt) throws SFTPException {
+    public Response ensurePacketTypeIs(PacketType pt)
+            throws SFTPException {
         if (getType() != pt)
             if (getType() == PacketType.STATUS)
                 throw new SFTPException(readStatusCode(), readString());
@@ -76,11 +78,13 @@ public class Response extends SFTPPacket<Response> {
         return this;
     }
 
-    public Response ensureStatusPacketIsOK() throws SFTPException {
+    public Response ensureStatusPacketIsOK()
+            throws SFTPException {
         return ensurePacketTypeIs(PacketType.STATUS).ensureStatusIs(StatusCode.OK);
     }
 
-    public Response ensureStatusIs(StatusCode acceptable) throws SFTPException {
+    public Response ensureStatusIs(StatusCode acceptable)
+            throws SFTPException {
         StatusCode sc = readStatusCode();
         if (sc != acceptable)
             throw new SFTPException(sc, readString());

@@ -20,7 +20,8 @@ import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.sftp.Response.StatusCode;
 
-public class SFTPException extends SSHException {
+public class SFTPException
+        extends SSHException {
 
     public static final ExceptionChainer<SFTPException> chainer = new ExceptionChainer<SFTPException>() {
 

@@ -19,7 +19,7 @@ class PathComponents {
 
     public static String adjustForParent(String parent, String path) {
         return (path.startsWith("/")) ? path // Absolute path, nothing to adjust
-                : (parent + (parent.endsWith("/") ? "" : "/") + path); // Relative path
+                                      : (parent + (parent.endsWith("/") ? "" : "/") + path); // Relative path
     }
 
     private static String trimFinalSlash(String path) {

@@ -24,7 +24,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PacketReader extends Thread {
+public class PacketReader
+        extends Thread {
 
     /** Logger */
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -39,7 +40,8 @@ public class PacketReader extends Thread {
         setName("sftp reader");
     }
 
-    private void readIntoBuffer(byte[] buf, int off, int len) throws IOException {
+    private void readIntoBuffer(byte[] buf, int off, int len)
+            throws IOException {
         int count = 0;
         int read = 0;
         while (count < len && ((read = in.read(buf, off + count, len - count)) != -1))
@@ -48,17 +50,18 @@ public class PacketReader extends Thread {
             throw new SFTPException("EOF while reading packet");
     }
 
-    private int getPacketLength() throws IOException {
+    private int getPacketLength()
+            throws IOException {
         readIntoBuffer(lenBuf, 0, lenBuf.length);
 
         return (int) (lenBuf[0] << 24 & 0xff000000L
-                | lenBuf[1] << 16 & 0x00ff0000L
-                | lenBuf[2] << 8 & 0x0000ff00L
-                | lenBuf[3] & 0x000000ffL
-        );
+                      | lenBuf[1] << 16 & 0x00ff0000L
+                      | lenBuf[2] << 8 & 0x0000ff00L
+                      | lenBuf[3] & 0x000000ffL);
     }
 
-    public SFTPPacket<Response> readPacket() throws IOException {
+    public SFTPPacket<Response> readPacket()
+            throws IOException {
         int len = getPacketLength();
 
         packet.rpos(0);
@@ -85,13 +88,14 @@ public class PacketReader extends Thread {
         }
     }
 
-    public void handle() throws SFTPException {
+    public void handle()
+            throws SFTPException {
         Response resp = new Response(packet);
         Future<Response, SFTPException> future = futures.remove(resp.getRequestID());
         log.debug("Received {} packet", resp.getType());
         if (future == null)
             throw new SFTPException("Received [" + resp.readType() + "] response for request-id " + resp.getRequestID()
-                    + ", no such request was made");
+                                    + ", no such request was made");
         else
             future.set(resp);
     }
