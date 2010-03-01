@@ -48,7 +48,8 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class ConfigImpl implements Config {
+public class ConfigImpl
+        implements Config {
 
     private String version;
 

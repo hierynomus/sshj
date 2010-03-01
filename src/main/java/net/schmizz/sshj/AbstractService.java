@@ -25,7 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** An abstract class for {@link Service} that implements common or default functionality. */
-public abstract class AbstractService implements Service {
+public abstract class AbstractService
+        implements Service {
 
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -51,7 +52,8 @@ public abstract class AbstractService implements Service {
         return this.timeout;
     }
 
-    public void handle(Message msg, SSHPacket buf) throws SSHException {
+    public void handle(Message msg, SSHPacket buf)
+            throws SSHException {
         trans.sendUnimplemented();
     }
 
@@ -59,11 +61,13 @@ public abstract class AbstractService implements Service {
         log.debug("Was notified of {}", error.toString());
     }
 
-    public void notifyUnimplemented(long seqNum) throws SSHException {
+    public void notifyUnimplemented(long seqNum)
+            throws SSHException {
         throw new SSHException(DisconnectReason.PROTOCOL_ERROR, "Unexpected: SSH_MSG_UNIMPLEMENTED");
     }
 
-    public void request() throws TransportException {
+    public void request()
+            throws TransportException {
         final Service active = trans.getService();
         if (!equals(active))
             if (name.equals(active.getName()))
@@ -76,7 +80,8 @@ public abstract class AbstractService implements Service {
         this.timeout = timeout;
     }
 
-    public void notifyDisconnect() throws SSHException {
+    public void notifyDisconnect()
+            throws SSHException {
         log.debug("Was notified of disconnect");
     }
 

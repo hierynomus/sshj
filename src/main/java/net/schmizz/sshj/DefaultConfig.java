@@ -86,7 +86,8 @@ import java.util.List;
  * [1] It is worth noting that Sun's JRE does not have the unlimited cryptography extension enabled by default. This
  * prevents using ciphers with strength greater than 128.
  */
-public class DefaultConfig extends ConfigImpl {
+public class DefaultConfig
+        extends ConfigImpl {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -157,7 +158,7 @@ public class DefaultConfig extends ConfigImpl {
 
     protected void initMACFactories() {
         setMACFactories(new HMACSHA1.Factory(), new HMACSHA196.Factory(), new HMACMD5.Factory(),
-                new HMACMD596.Factory());
+                        new HMACMD596.Factory());
     }
 
     protected void initCompressionFactories() {

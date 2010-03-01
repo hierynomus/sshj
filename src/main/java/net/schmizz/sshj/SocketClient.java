@@ -97,15 +97,18 @@ abstract class SocketClient {
         connect(InetAddress.getByName(hostname), port, localAddr, localPort);
     }
 
-    public void connect(InetAddress host) throws SocketException, IOException {
+    public void connect(InetAddress host)
+            throws SocketException, IOException {
         connect(host, defaultPort);
     }
 
-    public void connect(String hostname) throws SocketException, IOException {
+    public void connect(String hostname)
+            throws SocketException, IOException {
         connect(hostname, defaultPort);
     }
 
-    public void disconnect() throws IOException {
+    public void disconnect()
+            throws IOException {
         if (socket != null) {
             socket.close();
             socket = null;
@@ -197,7 +200,8 @@ abstract class SocketClient {
         return output;
     }
 
-    void onConnect() throws IOException {
+    void onConnect()
+            throws IOException {
         socket.setSoTimeout(timeout);
         input = socket.getInputStream();
         output = socket.getOutputStream();
