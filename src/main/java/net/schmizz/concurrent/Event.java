@@ -31,7 +31,8 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @see Future
  */
-public class Event<T extends Exception> extends Future<Boolean, T> {
+public class Event<T extends Exception>
+        extends Future<Boolean, T> {
 
     /**
      * Creates this event with given {@code name} and exception {@code chainer}. Allocates a new {@link
@@ -65,7 +66,8 @@ public class Event<T extends Exception> extends Future<Boolean, T> {
      *
      * @throws T if another thread meanwhile informs this event of an error
      */
-    public void await() throws T {
+    public void await()
+            throws T {
         super.get();
     }
 
@@ -73,11 +75,12 @@ public class Event<T extends Exception> extends Future<Boolean, T> {
      * Await this event to have a definite {@code true} or {@code false} value, for {@code timeout} seconds.
      *
      * @param timeout timeout in seconds
-     * @param unit
+     * @param unit    the time unit
      *
      * @throws T if another thread meanwhile informs this event of an error, or timeout expires
      */
-    public void await(long timeout, TimeUnit unit) throws T {
+    public void await(long timeout, TimeUnit unit)
+            throws T {
         super.get(timeout, unit);
     }
 

@@ -116,7 +116,8 @@ public class Future<V, T extends Exception> {
      *
      * @throws T in case another thread informs the future of an error meanwhile
      */
-    public V get() throws T {
+    public V get()
+            throws T {
         return get(0, TimeUnit.SECONDS);
     }
 
@@ -130,7 +131,8 @@ public class Future<V, T extends Exception> {
      *
      * @throws T in case another thread informs the future of an error meanwhile, or the timeout expires
      */
-    public V get(long timeout, TimeUnit unit) throws T {
+    public V get(long timeout, TimeUnit unit)
+            throws T {
         lock();
         try {
             if (pendingEx != null)
