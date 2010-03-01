@@ -41,10 +41,12 @@ import net.schmizz.sshj.common.SSHRuntimeException;
 import java.security.SignatureException;
 
 /** RSA {@link Signature} */
-public class SignatureRSA extends AbstractSignature {
+public class SignatureRSA
+        extends AbstractSignature {
 
     /** A named factory for RSA {@link Signature} */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Signature> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         public Signature create() {
             return new SignatureRSA();

@@ -44,7 +44,8 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 
 /** An abstract class for {@link Signature} that implements common functionality. */
-public abstract class AbstractSignature implements Signature {
+public abstract class AbstractSignature
+        implements Signature {
 
     protected java.security.Signature signature;
     protected String algorithm;
@@ -82,14 +83,14 @@ public abstract class AbstractSignature implements Signature {
             int i = 0;
             int j;
             j = sig[i++] << 24 & 0xff000000 //
-                    | sig[i++] << 16 & 0x00ff0000 // 
-                    | sig[i++] << 8 & 0x0000ff00 //
-                    | sig[i++] & 0x000000ff;
+                | sig[i++] << 16 & 0x00ff0000 //
+                | sig[i++] << 8 & 0x0000ff00 //
+                | sig[i++] & 0x000000ff;
             i += j;
             j = sig[i++] << 24 & 0xff000000 //
-                    | sig[i++] << 16 & 0x00ff0000 //
-                    | sig[i++] << 8 & 0x0000ff00 //
-                    | sig[i++] & 0x000000ff;
+                | sig[i++] << 16 & 0x00ff0000 //
+                | sig[i++] << 8 & 0x0000ff00 //
+                | sig[i++] & 0x000000ff;
             byte[] tmp = new byte[j];
             System.arraycopy(sig, i, tmp, 0, j);
             sig = tmp;

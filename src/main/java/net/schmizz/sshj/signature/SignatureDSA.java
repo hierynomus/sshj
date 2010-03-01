@@ -41,10 +41,12 @@ import net.schmizz.sshj.common.SSHRuntimeException;
 import java.security.SignatureException;
 
 /** DSA {@link Signature} */
-public class SignatureDSA extends AbstractSignature {
+public class SignatureDSA
+        extends AbstractSignature {
 
     /** A named factory for DSA signature */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Signature> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         public Signature create() {
             return new SignatureDSA();
@@ -84,10 +86,16 @@ public class SignatureDSA extends AbstractSignature {
 
         // result must be 40 bytes, but length of r and s may not be 20 bytes
 
-        System.arraycopy(r, r.length > 20 ? 1 : 0, result, r.length > 20 ? 0 : 20 - r.length, r.length > 20 ? 20
-                : r.length);
-        System.arraycopy(s, s.length > 20 ? 1 : 0, result, s.length > 20 ? 20 : 40 - s.length, s.length > 20 ? 20
-                : s.length);
+        System.arraycopy(r,
+                         r.length > 20 ? 1 : 0,
+                         result,
+                         r.length > 20 ? 0 : 20 - r.length,
+                         r.length > 20 ? 20 : r.length);
+        System.arraycopy(s,
+                         s.length > 20 ? 1 : 0,
+                         result,
+                         s.length > 20 ? 20 : 40 - s.length,
+                         s.length > 20 ? 20 : s.length);
 
         return result;
     }
