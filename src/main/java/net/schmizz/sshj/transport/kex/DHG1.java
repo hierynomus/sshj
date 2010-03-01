@@ -40,10 +40,12 @@ package net.schmizz.sshj.transport.kex;
  *
  * @see <a href="http://www.ietf.org/rfc/rfc4253.txt">RFC 4253</a>
  */
-public class DHG1 extends AbstractDHG {
+public class DHG1
+        extends AbstractDHG {
 
     /** Named factory for DHG1 key exchange */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
 
         public KeyExchange create() {
             return new DHG1();

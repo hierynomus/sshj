@@ -40,7 +40,8 @@ import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.SSHException;
 
 /** Transport-layer exception */
-public class TransportException extends SSHException {
+public class TransportException
+        extends SSHException {
 
     /** @see {@link net.schmizz.concurrent.ExceptionChainer} */
     public static final ExceptionChainer<TransportException> chainer = new ExceptionChainer<TransportException>() {

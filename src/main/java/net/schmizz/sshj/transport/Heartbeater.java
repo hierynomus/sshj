@@ -41,7 +41,8 @@ import net.schmizz.sshj.common.SSHPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class Heartbeater extends Thread {
+final class Heartbeater
+        extends Thread {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 

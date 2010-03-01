@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.compression;
 
 /** No-op <code>Compression</code>. */
-public abstract class NoneCompression implements Compression {
+public abstract class NoneCompression
+        implements Compression {
 
     /** Named factory for the no-op <code>Compression</code> */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Compression> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Compression> {
         public Compression create() {
             return null;
         }

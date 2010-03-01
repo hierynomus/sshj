@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.mac;
 
 /** HMAC-MD5-96 <code>MAC</code> */
-public class HMACMD596 extends BaseMAC {
+public class HMACMD596
+        extends BaseMAC {
 
     /** Named factory for the HMAC-MD5-96 <code>MAC</code> */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<MAC> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<MAC> {
 
         public MAC create() {
             return new HMACMD596();

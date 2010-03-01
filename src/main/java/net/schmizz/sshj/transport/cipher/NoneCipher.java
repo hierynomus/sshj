@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.cipher;
 
 /** Represents a no-op cipher. */
-public class NoneCipher implements Cipher {
+public class NoneCipher
+        implements Cipher {
 
     /** Named factory for the no-op Cipher */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Cipher> {
         public Cipher create() {
             return new NoneCipher();
         }

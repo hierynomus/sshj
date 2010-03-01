@@ -38,10 +38,12 @@ package net.schmizz.sshj.transport.random;
 import java.security.SecureRandom;
 
 /** A {@link Random} implementation using the built-in {@link SecureRandom} PRNG. */
-public class JCERandom implements Random {
+public class JCERandom
+        implements Random {
 
     /** Named factory for the JCE {@link Random} */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Random> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Random> {
 
         public Random create() {
             return new JCERandom();

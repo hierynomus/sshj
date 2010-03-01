@@ -19,7 +19,7 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Shell;
-import net.schmizz.sshj.transport.verification.ConsoleHostKeyVerifier;
+import net.schmizz.sshj.transport.verification.ConsoleKnownHostsVerifier;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 
 import java.io.File;
@@ -38,7 +38,7 @@ class RudimentaryPTY {
         final SSHClient ssh = new SSHClient();
 
         final File khFile = new File(OpenSSHKnownHosts.detectSSHDir(), "known_hosts");
-        ssh.addHostKeyVerifier(new ConsoleHostKeyVerifier(khFile, System.console()));
+        ssh.addHostKeyVerifier(new ConsoleKnownHostsVerifier(khFile, System.console()));
 
         ssh.connect("localhost");
 

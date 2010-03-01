@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.cipher;
 
 /** {@code 3des-cbc} cipher */
-public class TripleDESCBC extends BaseCipher {
+public class TripleDESCBC
+        extends BaseCipher {
 
     /** Named factory for TripleDESCBC Cipher */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Cipher> {
         public Cipher create() {
             return new TripleDESCBC();
         }

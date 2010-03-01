@@ -40,10 +40,12 @@ package net.schmizz.sshj.transport.compression;
  *
  * @see Compression#isDelayed()
  */
-public class DelayedZlibCompression extends ZlibCompression {
+public class DelayedZlibCompression
+        extends ZlibCompression {
 
     /** Named factory for the ZLib Delayed Compression. */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Compression> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Compression> {
         public Compression create() {
             return new DelayedZlibCompression();
         }

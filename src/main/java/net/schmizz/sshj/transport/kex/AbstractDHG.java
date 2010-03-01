@@ -56,7 +56,8 @@ import java.security.PublicKey;
  * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the
  * {@link DH} class in the
  */
-public abstract class AbstractDHG implements KeyExchange {
+public abstract class AbstractDHG
+        implements KeyExchange {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -92,7 +93,8 @@ public abstract class AbstractDHG implements KeyExchange {
         return ByteArrayUtils.copyOf(K);
     }
 
-    public void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws TransportException {
+    public void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
+            throws TransportException {
         this.trans = trans;
         this.V_S = ByteArrayUtils.copyOf(V_S);
         this.V_C = ByteArrayUtils.copyOf(V_C);
@@ -106,7 +108,8 @@ public abstract class AbstractDHG implements KeyExchange {
         trans.write(new SSHPacket(Message.KEXDH_INIT).putMPInt(e));
     }
 
-    public boolean next(Message msg, SSHPacket packet) throws TransportException {
+    public boolean next(Message msg, SSHPacket packet)
+            throws TransportException {
         if (msg != Message.KEXDH_31)
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "Unxpected packet: " + msg);
 
@@ -131,7 +134,8 @@ public abstract class AbstractDHG implements KeyExchange {
         sha.update(buf.array(), 0, buf.available());
         H = sha.digest();
 
-        Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(), KeyType.fromKey(hostKey).toString());
+        Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(),
+                                                        KeyType.fromKey(hostKey).toString());
         signature.init(hostKey, null);
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))

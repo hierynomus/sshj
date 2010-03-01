@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.digest;
 
 /** MD5 Digest. */
-public class MD5 extends BaseDigest {
+public class MD5
+        extends BaseDigest {
 
     /** Named factory for MD5 digest */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Digest> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Digest> {
 
         public Digest create() {
             return new MD5();

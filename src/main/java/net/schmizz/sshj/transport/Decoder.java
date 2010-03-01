@@ -47,7 +47,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Decodes packets from the SSH binary protocol per the current algorithms. */
-final class Decoder extends Converter {
+final class Decoder
+        extends Converter {
 
     private static final int MAX_PACKET_LEN = 256 * 1024;
 
@@ -81,7 +82,8 @@ final class Decoder extends Converter {
      *
      * @return number of bytes needed before further decoding possible
      */
-    private int decode() throws SSHException {
+    private int decode()
+            throws SSHException {
         int need;
 
         /* Decoding loop */
@@ -134,7 +136,8 @@ final class Decoder extends Converter {
         return need;
     }
 
-    private void checkMAC(final byte[] data) throws TransportException {
+    private void checkMAC(final byte[] data)
+            throws TransportException {
         mac.update(seq); // seq num
         mac.update(data, 0, packetLength + 4); // packetLength+4 = entire packet w/o mac
         mac.doFinal(macResult, 0); // compute
@@ -143,13 +146,15 @@ final class Decoder extends Converter {
             throw new TransportException(DisconnectReason.MAC_ERROR, "MAC Error");
     }
 
-    private SSHPacket decompressed() throws TransportException {
+    private SSHPacket decompressed()
+            throws TransportException {
         uncompressBuffer.clear();
         compression.uncompress(inputBuffer, uncompressBuffer);
         return uncompressBuffer;
     }
 
-    private int decryptLength() throws TransportException {
+    private int decryptLength()
+            throws TransportException {
         cipher.update(inputBuffer.array(), 0, cipherSize);
 
         final int len = inputBuffer.readInt(); // Read packet length
@@ -178,7 +183,8 @@ final class Decoder extends Converter {
      * Returns the number of bytes expected in the next call in order to decode the packet length, and if the packet
      * length has already been decoded; to decode the payload. This number is accurate and should be taken to heart.
      */
-    int received(byte[] b, int len) throws SSHException {
+    int received(byte[] b, int len)
+            throws SSHException {
         inputBuffer.putRawBytes(b, 0, len);
         if (needed <= len)
             needed = decode();

@@ -47,7 +47,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /** Transport layer of the SSH protocol. */
-public interface Transport extends SSHPacketHandler {
+public interface Transport
+        extends SSHPacketHandler {
 
     /**
      * Sets the {@code socket} to be used by this transport; and identification information is exchanged. A {@link
@@ -55,11 +56,13 @@ public interface Transport extends SSHPacketHandler {
      *
      * @throws TransportException if there is an error during exchange of identification information
      */
-    void init(String host, int port, InputStream in, OutputStream out) throws TransportException;
+    void init(String host, int port, InputStream in, OutputStream out)
+            throws TransportException;
 
     void addHostKeyVerifier(HostKeyVerifier hkv);
 
-    void doKex() throws TransportException;
+    void doKex()
+            throws TransportException;
 
     /** @return the version string used by this client to identify itself to an SSH server, e.g. "SSHJ_3_0" */
     String getClientVersion();
@@ -110,7 +113,8 @@ public interface Transport extends SSHPacketHandler {
      *
      * @throws IOException if the request failed for any reason
      */
-    void reqService(Service service) throws TransportException;
+    void reqService(Service service)
+            throws TransportException;
 
     /**
      * Sets the currently active {@link net.schmizz.sshj.Service}. Handling of non-transport-layer packets is {@link
@@ -139,7 +143,8 @@ public interface Transport extends SSHPacketHandler {
      *
      * @throws TransportException if an error occured sending the packet
      */
-    long sendUnimplemented() throws TransportException;
+    long sendUnimplemented()
+            throws TransportException;
 
     /**
      * Returns whether this transport is active.
@@ -154,7 +159,8 @@ public interface Transport extends SSHPacketHandler {
      *
      * @throws TransportException
      */
-    void join() throws TransportException;
+    void join()
+            throws TransportException;
 
     /** Send a disconnection packet with reason as {@link DisconnectReason#BY_APPLICATION}, and closes this transport. */
     void disconnect();
@@ -186,5 +192,6 @@ public interface Transport extends SSHPacketHandler {
      *
      * @throws TransportException if an error occurred sending the packet
      */
-    long write(SSHPacket payload) throws TransportException;
+    long write(SSHPacket payload)
+            throws TransportException;
 }

@@ -44,7 +44,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.GeneralSecurityException;
 
 /** Base class for all Cipher implementations delegating to the JCE provider. */
-public class BaseCipher implements Cipher {
+public class BaseCipher
+        implements Cipher {
 
     private static byte[] resize(byte[] data, int size) {
         if (data.length > size) {
@@ -83,7 +84,7 @@ public class BaseCipher implements Cipher {
         try {
             cipher = SecurityUtils.getCipher(transformation);
             cipher.init((mode == Mode.Encrypt ? javax.crypto.Cipher.ENCRYPT_MODE : javax.crypto.Cipher.DECRYPT_MODE),
-                    new SecretKeySpec(key, algorithm), new IvParameterSpec(iv));
+                        new SecretKeySpec(key, algorithm), new IvParameterSpec(iv));
         } catch (GeneralSecurityException e) {
             cipher = null;
             throw new SSHRuntimeException(e);

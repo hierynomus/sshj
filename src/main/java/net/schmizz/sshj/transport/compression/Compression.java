@@ -43,7 +43,8 @@ public interface Compression {
 
     /** Enum identifying if this object will be used to compress or uncompress data. */
     enum Type {
-        Inflater, Deflater
+        Inflater,
+        Deflater
     }
 
     /**
@@ -77,6 +78,7 @@ public interface Compression {
      * @param from the buffer containing the data to uncompress
      * @param to   the buffer receiving the uncompressed data
      */
-    void uncompress(SSHPacket from, SSHPacket to) throws TransportException;
+    void uncompress(SSHPacket from, SSHPacket to)
+            throws TransportException;
 
 }

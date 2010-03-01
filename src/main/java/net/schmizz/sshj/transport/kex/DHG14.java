@@ -41,10 +41,12 @@ package net.schmizz.sshj.transport.kex;
  * DHG14 does not work with the default JCE implementation provided by Sun because it does not support 2048 bits
  * encryption. It requires BouncyCastle to be used.
  */
-public class DHG14 extends AbstractDHG {
+public class DHG14
+        extends AbstractDHG {
 
     /** Named factory for DHG14 key exchange */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
 
         public KeyExchange create() {
             return new DHG14();

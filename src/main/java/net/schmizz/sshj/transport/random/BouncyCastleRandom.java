@@ -44,10 +44,12 @@ import java.security.SecureRandom;
  * BouncyCastle <code>Random</code>. This pseudo random number generator uses the a very fast PRNG from BouncyCastle.
  * The JRE random will be used when creating a new generator to add some random data to the seed.
  */
-public class BouncyCastleRandom implements Random {
+public class BouncyCastleRandom
+        implements Random {
 
     /** Named factory for the BouncyCastle <code>Random</code> */
-    public static class Factory implements net.schmizz.sshj.common.Factory<Random> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory<Random> {
 
         public Random create() {
             return new BouncyCastleRandom();

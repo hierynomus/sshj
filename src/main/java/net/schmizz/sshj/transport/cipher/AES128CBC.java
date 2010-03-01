@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.cipher;
 
 /** AES128CBC cipher */
-public class AES128CBC extends BaseCipher {
+public class AES128CBC
+        extends BaseCipher {
 
     /** Named factory for AES128CBC Cipher */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Cipher> {
         public Cipher create() {
             return new AES128CBC();
         }

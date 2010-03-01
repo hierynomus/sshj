@@ -41,7 +41,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 
-final class Reader extends Thread {
+final class Reader
+        extends Thread {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 

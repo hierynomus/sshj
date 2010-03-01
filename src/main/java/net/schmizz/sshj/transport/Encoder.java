@@ -46,7 +46,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.locks.Lock;
 
 /** Encodes packets into the SSH binary protocol per the current algorithms. */
-final class Encoder extends Converter {
+final class Encoder
+        extends Converter {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -62,7 +63,7 @@ final class Encoder extends Converter {
     private SSHPacket checkHeaderSpace(SSHPacket buffer) {
         if (buffer.rpos() < 5) {
             log.warn("Performance cost: when sending a packet, ensure that "
-                    + "5 bytes are available in front of the buffer");
+                     + "5 bytes are available in front of the buffer");
             SSHPacket nb = new SSHPacket(buffer.available() + 5);
             nb.rpos(5);
             nb.wpos(5);

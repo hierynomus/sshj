@@ -66,7 +66,8 @@ import java.util.List;
  *
  * @see <a href="http://nms.lcs.mit.edu/projects/ssh/README.hashed-hosts">Hashed hostnames spec</a>
  */
-public class OpenSSHKnownHosts implements HostKeyVerifier {
+public class OpenSSHKnownHosts
+        implements HostKeyVerifier {
 
     private static final String LS = System.getProperty("line.separator");
 
@@ -95,7 +96,8 @@ public class OpenSSHKnownHosts implements HostKeyVerifier {
          *
          * @throws SSHException if it could not be parsed for any reason
          */
-        public Entry(String line) throws SSHException {
+        public Entry(String line)
+                throws SSHException {
             String[] parts = line.split(" ");
             if (parts.length != 3)
                 throw new SSHException("Line parts not 3: " + line);
@@ -107,7 +109,8 @@ public class OpenSSHKnownHosts implements HostKeyVerifier {
         }
 
         /** Checks whether this entry is applicable to some {@code hostname} */
-        public boolean appliesTo(String hostname) throws IOException {
+        public boolean appliesTo(String hostname)
+                throws IOException {
             if (!hosts.isEmpty() && hosts.get(0).startsWith("|1|")) { // Hashed hostname
                 final String[] splitted = hosts.get(0).split("\\|");
                 if (splitted.length != 4)
@@ -192,7 +195,8 @@ public class OpenSSHKnownHosts implements HostKeyVerifier {
      *
      * @throws IOException if there is an error reading the file
      */
-    public OpenSSHKnownHosts(File khFile) throws IOException {
+    public OpenSSHKnownHosts(File khFile)
+            throws IOException {
         this.khFile = khFile;
         if (khFile.exists()) {
             BufferedReader br = new BufferedReader(new FileReader(khFile));
@@ -242,7 +246,8 @@ public class OpenSSHKnownHosts implements HostKeyVerifier {
         return false;
     }
 
-    protected boolean hostKeyChangedAction(Entry entry, String hostname, PublicKey key) throws IOException {
+    protected boolean hostKeyChangedAction(Entry entry, String hostname, PublicKey key)
+            throws IOException {
         log.warn("Host key for `{}` has changed!", hostname);
         return false;
     }
@@ -251,7 +256,8 @@ public class OpenSSHKnownHosts implements HostKeyVerifier {
         return entries;
     }
 
-    public void write() throws IOException {
+    public void write()
+            throws IOException {
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile));
         for (Entry entry : entries)
             bos.write((entry.getLine() + LS).getBytes());

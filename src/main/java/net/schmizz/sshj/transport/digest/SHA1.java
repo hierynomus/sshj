@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.digest;
 
 /** SHA1 Digest. */
-public class SHA1 extends BaseDigest {
+public class SHA1
+        extends BaseDigest {
 
     /** Named factory for SHA1 digest */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Digest> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Digest> {
 
         public Digest create() {
             return new SHA1();

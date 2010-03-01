@@ -17,7 +17,8 @@ package net.schmizz.sshj.transport.verification;
 
 import java.security.PublicKey;
 
-public final class InsecureAccepter implements HostKeyVerifier {
+public final class PromiscuousVerifier
+        implements HostKeyVerifier {
 
     public boolean verify(String hostname, int port, PublicKey key) {
         return true;

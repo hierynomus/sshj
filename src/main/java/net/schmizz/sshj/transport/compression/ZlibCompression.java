@@ -43,10 +43,12 @@ import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.transport.TransportException;
 
 /** ZLib based Compression. */
-public class ZlibCompression implements Compression {
+public class ZlibCompression
+        implements Compression {
 
     /** Named factory for the ZLib Compression. */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Compression> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Compression> {
         public Compression create() {
             return new ZlibCompression();
         }
@@ -97,7 +99,8 @@ public class ZlibCompression implements Compression {
         return false;
     }
 
-    public void uncompress(SSHPacket from, SSHPacket to) throws TransportException {
+    public void uncompress(SSHPacket from, SSHPacket to)
+            throws TransportException {
         stream.next_in = from.array();
         stream.next_in_index = from.rpos();
         stream.avail_in = from.available();
@@ -115,7 +118,7 @@ public class ZlibCompression implements Compression {
                     return; // wtf.. but this works *head spins*
                 default:
                     throw new TransportException(DisconnectReason.COMPRESSION_ERROR, "uncompress: inflate returned "
-                            + status);
+                                                                                     + status);
             }
         }
     }

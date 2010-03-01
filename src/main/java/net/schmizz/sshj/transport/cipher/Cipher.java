@@ -39,7 +39,8 @@ package net.schmizz.sshj.transport.cipher;
 public interface Cipher {
 
     enum Mode {
-        Encrypt, Decrypt
+        Encrypt,
+        Decrypt
     }
 
     /**

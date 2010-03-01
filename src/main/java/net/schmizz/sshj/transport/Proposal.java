@@ -137,7 +137,8 @@ class Proposal {
 
     }
 
-    public NegotiatedAlgorithms negotiate(Proposal other) throws TransportException {
+    public NegotiatedAlgorithms negotiate(Proposal other)
+            throws TransportException {
         return new NegotiatedAlgorithms(
                 firstMatch(this.getKeyExchangeAlgorithms(), other.getKeyExchangeAlgorithms()), //
                 firstMatch(this.getSignatureAlgorithms(), other.getSignatureAlgorithms()), //
@@ -150,7 +151,8 @@ class Proposal {
         );
     }
 
-    private static String firstMatch(List<String> a, List<String> b) throws TransportException {
+    private static String firstMatch(List<String> a, List<String> b)
+            throws TransportException {
         for (String aa : a)
             for (String bb : b)
                 if (aa.equals(bb))

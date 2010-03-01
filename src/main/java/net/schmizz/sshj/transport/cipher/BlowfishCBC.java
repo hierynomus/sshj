@@ -36,10 +36,12 @@
 package net.schmizz.sshj.transport.cipher;
 
 /** {@code blowfish-ctr} cipher */
-public class BlowfishCBC extends BaseCipher {
+public class BlowfishCBC
+        extends BaseCipher {
 
     /** Named factory for BlowfishCBC Cipher */
-    public static class Factory implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<Cipher> {
         public Cipher create() {
             return new BlowfishCBC();
         }

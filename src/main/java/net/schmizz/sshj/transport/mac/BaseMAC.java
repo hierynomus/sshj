@@ -43,7 +43,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.GeneralSecurityException;
 
 /** Base class for <code>MAC</code> implementations based on the JCE provider. */
-public class BaseMAC implements MAC {
+public class BaseMAC
+        implements MAC {
 
     private final String algorithm;
     private final int defbsize;

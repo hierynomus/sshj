@@ -42,7 +42,8 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 
 /** Base class for Digest algorithms based on the JCE provider. */
-public class BaseDigest implements Digest {
+public class BaseDigest
+        implements Digest {
 
     private final String algorithm;
     private final int bsize;

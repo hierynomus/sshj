@@ -73,7 +73,8 @@ public interface KeyExchange {
      * @param I_S the server key init packet
      * @param I_C the client key init packet
      */
-    void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C) throws TransportException;
+    void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
+            throws TransportException;
 
     /**
      * Process the next packet
@@ -82,6 +83,7 @@ public interface KeyExchange {
      *
      * @return a boolean indicating if the processing is complete or if more packets are to be received
      */
-    boolean next(Message msg, SSHPacket buffer) throws TransportException;
+    boolean next(Message msg, SSHPacket buffer)
+            throws TransportException;
 
 }
