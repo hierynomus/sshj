@@ -43,7 +43,6 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketException;
 
 
 abstract class SocketClient {
@@ -76,14 +75,14 @@ abstract class SocketClient {
     }
 
     public void connect(String hostname, int port)
-            throws SocketException, IOException {
+            throws IOException {
         this.hostname = hostname;
         connect(InetAddress.getByName(hostname), port);
     }
 
     public void connect(InetAddress host, int port,
                         InetAddress localAddr, int localPort)
-            throws SocketException, IOException {
+            throws IOException {
         socket = socketFactory.createSocket();
         socket.bind(new InetSocketAddress(localAddr, localPort));
         socket.connect(new InetSocketAddress(host, port), connectTimeout);
@@ -92,18 +91,18 @@ abstract class SocketClient {
 
     public void connect(String hostname, int port,
                         InetAddress localAddr, int localPort)
-            throws SocketException, IOException {
+            throws IOException {
         this.hostname = hostname;
         connect(InetAddress.getByName(hostname), port, localAddr, localPort);
     }
 
     public void connect(InetAddress host)
-            throws SocketException, IOException {
+            throws IOException {
         connect(host, defaultPort);
     }
 
     public void connect(String hostname)
-            throws SocketException, IOException {
+            throws IOException {
         connect(hostname, defaultPort);
     }
 
