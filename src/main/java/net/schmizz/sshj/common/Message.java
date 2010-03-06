@@ -63,19 +63,19 @@ public enum Message {
 
     private final byte b;
 
-    private static final Message[] commands = new Message[256];
+    private static final Message[] cache = new Message[256];
 
     static {
         for (Message c : Message.values())
-            if (commands[c.toByte()] == null)
-                commands[c.toByte()] = c;
+            if (cache[c.toByte()] == null)
+                cache[c.toByte()] = c;
     }
 
     public static Message fromByte(byte b) {
-        return commands[b];
+        return cache[b];
     }
 
-    Message(int b) {
+    private Message(int b) {
         this.b = (byte) b;
     }
 

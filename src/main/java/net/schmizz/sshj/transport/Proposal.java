@@ -134,7 +134,6 @@ class Proposal {
 
     public SSHPacket getPacket() {
         return new SSHPacket(packet);
-
     }
 
     public NegotiatedAlgorithms negotiate(Proposal other)

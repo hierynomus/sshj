@@ -119,13 +119,19 @@ public interface Connection {
     /**
      * Set the maximum packet size for the local window this connection recommends to any {@link Channel}'s that ask for
      * it.
+     *
+     * @param maxPacketSize maximum packet size in bytes
      */
     void setMaxPacketSize(int maxPacketSize);
 
-    /** Get the size for the local window this connection recommends to any {@link Channel}'s that ask for it. */
+    /** @return the size for the local window this connection recommends to any {@link Channel}'s that ask for it. */
     int getWindowSize();
 
-    /** Set the size for the local window this connection recommends to any {@link Channel}'s that ask for it. */
+    /**
+     * Set the size for the local window this connection recommends to any {@link Channel}'s that ask for it.
+     *
+     * @param windowSize window size in bytes
+     */
     void setWindowSize(int windowSize);
 
     /** @return the associated {@link Transport}. */

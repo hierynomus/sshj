@@ -48,10 +48,6 @@ public abstract class AbstractService
         return name;
     }
 
-    public int getTimeout() {
-        return this.timeout;
-    }
-
     public void handle(Message msg, SSHPacket buf)
             throws SSHException {
         trans.sendUnimplemented();
@@ -66,6 +62,11 @@ public abstract class AbstractService
         throw new SSHException(DisconnectReason.PROTOCOL_ERROR, "Unexpected: SSH_MSG_UNIMPLEMENTED");
     }
 
+    public void notifyDisconnect()
+            throws SSHException {
+        log.debug("Was notified of disconnect");
+    }
+
     public void request()
             throws TransportException {
         final Service active = trans.getService();
@@ -76,13 +77,12 @@ public abstract class AbstractService
                 trans.reqService(this);
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public int getTimeout() {
+        return this.timeout;
     }
 
-    public void notifyDisconnect()
-            throws SSHException {
-        log.debug("Was notified of disconnect");
+    public void setTimeout(int timeout) {
+        this.timeout = timeout;
     }
 
 }
