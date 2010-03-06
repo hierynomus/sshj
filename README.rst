@@ -10,11 +10,11 @@ Dependencies
 -------------
 
 Required:
-* slf4j
+  * slf4j
 
 Optional:
-* bouncycastle for using high-strength ciphers and for reading openssh private key files
-* jzlib for using zlib compression
+  * bouncycastle for using high-strength ciphers and for reading openssh private key files
+  * jzlib for using zlib compression
 
 Contributing
 -------------
