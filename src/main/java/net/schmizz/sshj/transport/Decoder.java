@@ -177,8 +177,7 @@ final class Decoder
 
     /**
      * Adds {@code len} bytes from {@code b} to the decoder buffer. When a packet has been successfully decoded, hooks
-     * in to {@link net.schmizz.sshj.common.SSHPacketHandler#handle} of the {@link net.schmizz.sshj.common.SSHPacketHandler}
-     * this decoder was initialized with.
+     * in to {@link SSHPacketHandler#handle} of the {@link SSHPacketHandler} this decoder was initialized with.
      * <p/>
      * Returns the number of bytes expected in the next call in order to decode the packet length, and if the packet
      * length has already been decoded; to decode the payload. This number is accurate and should be taken to heart.

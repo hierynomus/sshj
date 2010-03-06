@@ -26,10 +26,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-/**
- * A {@link net.schmizz.sshj.connection.channel.forwarded.ConnectListener} that forwards what is received over the
- * channel to a socket and vice-versa.
- */
+/** A {@link ConnectListener} that forwards what is received over the channel to a socket and vice-versa. */
 public class SocketForwardingConnectListener
         implements ConnectListener {
 

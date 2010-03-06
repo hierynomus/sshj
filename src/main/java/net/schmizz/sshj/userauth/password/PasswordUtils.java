@@ -33,7 +33,7 @@ public class PasswordUtils {
     /**
      * @param password the password as a char[]
      *
-     * @return the constructed {@link net.schmizz.sshj.userauth.password.PasswordFinder}
+     * @return the constructed {@link PasswordFinder}
      */
     public static PasswordFinder createOneOff(final char[] password) {
         if (password == null)

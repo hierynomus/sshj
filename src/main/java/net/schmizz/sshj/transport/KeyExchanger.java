@@ -126,12 +126,12 @@ final class KeyExchanger
         return Arrays.copyOf(sessionID, sessionID.length);
     }
 
-    /** @return Whether key exchange has been completed */
+    /** @return whether key exchange has been completed */
     boolean isKexDone() {
         return done.isSet();
     }
 
-    /** @return Whether key exchange is currently ongoing */
+    /** @return whether key exchange is currently ongoing */
     boolean isKexOngoing() {
         return kexOngoing.get();
     }

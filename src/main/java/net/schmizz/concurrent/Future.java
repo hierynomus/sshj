@@ -125,7 +125,7 @@ public class Future<V, T extends Throwable> {
      * Wait for {@code timeout} seconds for this future's value to be set.
      *
      * @param timeout the timeout in seconds
-     * @param unit
+     * @param unit    time unit
      *
      * @return the value
      *
@@ -157,7 +157,7 @@ public class Future<V, T extends Throwable> {
         }
     }
 
-    /** @return Whether this future has a value set, and no error waiting to pop. */
+    /** @return whether this future has a value set, and no error waiting to pop. */
     public boolean isSet() {
         lock();
         try {
@@ -167,7 +167,7 @@ public class Future<V, T extends Throwable> {
         }
     }
 
-    /** @return Whether this future currently has an error set. */
+    /** @return whether this future currently has an error set. */
     public boolean hasError() {
         lock();
         try {
@@ -177,7 +177,7 @@ public class Future<V, T extends Throwable> {
         }
     }
 
-    /** @return Whether this future has threads waiting on it. */
+    /** @return whether this future has threads waiting on it. */
     public boolean hasWaiters() {
         lock();
         try {

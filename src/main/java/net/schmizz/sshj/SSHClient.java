@@ -154,7 +154,7 @@ public class SSHClient
     /**
      * Constructor that allows specifying a {@code config} to be used.
      *
-     * @param config {@link ConfigImpl} instance
+     * @param config {@link Config} instance
      */
     public SSHClient(Config config) {
         super(DEFAULT_PORT);
@@ -367,7 +367,7 @@ public class SSHClient
         assert !isConnected();
     }
 
-    /** @return associated {@link Connection} instance. */
+    /** @return the associated {@link Connection} instance. */
     public Connection getConnection() {
         return conn;
     }
@@ -575,14 +575,14 @@ public class SSHClient
         return x11f;
     }
 
-    /** @return instantiated {@link SCPFileTransfer} implementation. */
+    /** @return Instantiated {@link SCPFileTransfer} implementation. */
     public SCPFileTransfer newSCPFileTransfer() {
         assert isConnected() && isAuthenticated();
         return new SCPFileTransfer(this);
     }
 
     /**
-     * @return instantiated {@link SFTPClient} implementation.
+     * @return Instantiated {@link SFTPClient} implementation.
      *
      * @throws IOException if there is an error starting the {@code sftp} subsystem
      * @see StatefulSFTPClient

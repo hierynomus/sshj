@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-/** Base class for {@link net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener}'s. */
+/** Base class for {@link ForwardedChannelOpener}'s. */
 public abstract class AbstractForwardedChannelOpener
         implements ForwardedChannelOpener {
 

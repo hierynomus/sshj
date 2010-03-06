@@ -27,7 +27,7 @@ public interface ConnectListener {
      * Channel.Forwarded#confirm() confirm} or {@link Channel.Forwarded#reject(net.schmizz.sshj.connection.channel.OpenFailException.Reason,
      * String)}  reject} that channel.
      *
-     * @param chan the {@link net.schmizz.sshj.connection.channel.Channel.Forwarded forwarded channel}
+     * @param chan the {@link Channel.Forwarded forwarded channel}
      *
      * @throws IOException
      */

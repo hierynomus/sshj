@@ -22,7 +22,7 @@ import net.schmizz.sshj.transport.TransportException;
 
 /**
  * Handles forwarded {@code x11} channels. The actual request to forward X11 should be made from the specific {@link
- * net.schmizz.sshj.connection.channel.direct.Session}.
+ * Session}.
  */
 public class X11Forwarder
         extends AbstractForwardedChannelOpener {

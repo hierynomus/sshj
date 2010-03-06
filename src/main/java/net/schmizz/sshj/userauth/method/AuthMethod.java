@@ -32,8 +32,8 @@ public interface AuthMethod
     String getName();
 
     /**
-     * Initializes this {@link AuthMethod} with the {@link net.schmizz.sshj.userauth.AuthParams parameters} needed for
-     * authentication. This method must be called before requesting authentication with this method.
+     * Initializes this {@link AuthMethod} with the {@link AuthParams parameters} needed for authentication. This method
+     * must be called before requesting authentication with this method.
      */
     void init(AuthParams params);
 

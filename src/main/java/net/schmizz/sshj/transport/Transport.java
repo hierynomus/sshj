@@ -67,15 +67,14 @@ public interface Transport
     /** @return the version string used by this client to identify itself to an SSH server, e.g. "SSHJ_3_0" */
     String getClientVersion();
 
-    /** @return the {@link net.schmizz.sshj.ConfigImpl} associated with this transport. */
+    /** @return the {@link Config} associated with this transport. */
     Config getConfig();
 
     /** @return the timeout that is currently set for blocking operations. */
     int getTimeout();
 
     /**
-     * Set a timeout for method that may block, e.g. {@link #reqService(net.schmizz.sshj.Service)}, {@link
-     * KeyExchanger#waitForDone()}.
+     * Set a timeout for methods that may block.
      *
      * @param timeout the timeout in seconds
      */
@@ -85,10 +84,10 @@ public interface Transport
 
     void setHeartbeatInterval(int interval);
 
-    /** Returns the hostname to which this transport is connected. */
+    /** @return the hostname to which this transport is connected. */
     String getRemoteHost();
 
-    /** Returns the port number on the {@link #getRemoteHost() remote host} to which this transport is connected. */
+    /** @return the port number on the remote host to which this transport is connected. */
     int getRemotePort();
 
     /**
@@ -102,12 +101,12 @@ public interface Transport
 
     byte[] getSessionID();
 
-    /** Returns the currently active {@link net.schmizz.sshj.Service} instance. */
+    /** @return the currently active {@link Service} instance. */
     Service getService();
 
     /**
-     * Request a SSH service represented by a {@link net.schmizz.sshj.Service} instance. A separate call to {@link
-     * #setService} is not needed.
+     * Request a SSH service represented by a {@link Service} instance. A separate call to {@link #setService} is not
+     * needed.
      *
      * @param service the SSH service to be requested
      *
@@ -117,13 +116,13 @@ public interface Transport
             throws TransportException;
 
     /**
-     * Sets the currently active {@link net.schmizz.sshj.Service}. Handling of non-transport-layer packets is {@link
-     * net.schmizz.sshj.Service#handle delegated} to that service.
+     * Sets the currently active {@link Service}. Handling of non-transport-layer packets is {@link Service#handle
+     * delegated} to that service.
      * <p/>
      * For this method to be successful, at least one service request via {@link #reqService} must have been successful
      * (not necessarily for the service being set).
      *
-     * @param service (null-ok) the {@link net.schmizz.sshj.Service}
+     * @param service (null-ok) the {@link Service}
      */
     void setService(Service service);
 
@@ -165,10 +164,7 @@ public interface Transport
     /** Send a disconnection packet with reason as {@link DisconnectReason#BY_APPLICATION}, and closes this transport. */
     void disconnect();
 
-    /**
-     * Send a disconnect packet with the given {@link net.schmizz.sshj.common.DisconnectReason reason}, and closes this
-     * transport.
-     */
+    /** Send a disconnect packet with the given {@link DisconnectReason reason}, and closes this transport. */
     void disconnect(DisconnectReason reason);
 
     /**
@@ -183,10 +179,10 @@ public interface Transport
     /**
      * Write a packet over this transport.
      * <p/>
-     * The {@code payload} {@link net.schmizz.sshj.common.SSHPacket} should have 5 bytes free at the beginning to avoid
-     * a performance penalty associated with making space for header bytes (packet length, padding length).
+     * The {@code payload} {@link SSHPacket} should have 5 bytes free at the beginning to avoid a performance penalty
+     * associated with making space for header bytes (packet length, padding length).
      *
-     * @param payload the {@link net.schmizz.sshj.common.SSHPacket} containing data to send
+     * @param payload the {@link SSHPacket} containing data to send
      *
      * @return sequence number of the sent packet
      *

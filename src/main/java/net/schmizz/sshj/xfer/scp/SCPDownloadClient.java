@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-/** Support for uploading files over a connected {@link net.schmizz.sshj.SSHClient} link using SCP. */
+/** Support for uploading files over a connected link using SCP. */
 public final class SCPDownloadClient
         extends SCPEngine {
 

@@ -29,13 +29,14 @@ import java.security.GeneralSecurityException;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-/** Tests {@link net.schmizz.sshj.common.SSHPacket} functionality */
+/** Tests {@link SSHPacket} functionality */
 public class BufferTest {
     private Buffer.PlainBuffer posBuf;
     private Buffer.PlainBuffer handyBuf;
 
     @Before
-    public void setUp() throws UnsupportedEncodingException, GeneralSecurityException {
+    public void setUp()
+            throws UnsupportedEncodingException, GeneralSecurityException {
         // for position test
         byte[] data = "Hello".getBytes("UTF-8");
         posBuf = new Buffer.PlainBuffer(data);
@@ -74,7 +75,8 @@ public class BufferTest {
     }
 
     @Test
-    public void testPosition() throws UnsupportedEncodingException {
+    public void testPosition()
+            throws UnsupportedEncodingException {
         assertEquals(5, posBuf.wpos());
         assertEquals(0, posBuf.rpos());
         assertEquals(5, posBuf.available());

@@ -26,7 +26,7 @@ public interface UserAuth {
 
     /**
      * Attempt to authenticate {@code username} using each of {@code methods} in order. {@code nextService} is the
-     * {@link net.schmizz.sshj.Service} that will be enabled on successful authentication.
+     * {@link Service} that will be enabled on successful authentication.
      * <p/>
      * Authentication fails if there are no method available, i.e. if all the method failed or there were method
      * available but could not be attempted because the server did not allow them. In this case, a {@code
@@ -53,14 +53,14 @@ public interface UserAuth {
      */
     String getBanner();
 
-    /** @return Saved exceptions that might have been ignored because there were more authentication method available. */
+    /** @return saved exceptions that might have been ignored because there were more authentication method available. */
     Deque<UserAuthException> getSavedExceptions();
 
-    /** @return The {@code timeout} for a method to successfully authenticate before it is abandoned. */
+    /** @return the {@code timeout} for a method to successfully authenticate before it is abandoned. */
     int getTimeout();
 
     /**
-     * @return Whether authentication was partially successful. Some server's may be configured to require multiple
+     * @return whether authentication was partially successful. Some server's may be configured to require multiple
      *         authentications; and this value will be {@code true} if at least one of the method supplied succeeded.
      */
     boolean hadPartialSuccess();

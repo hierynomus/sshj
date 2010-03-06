@@ -20,11 +20,11 @@ import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacketHandler;
 import net.schmizz.sshj.transport.TransportException;
 
-/** Represents a service running on top of the SSH {@link net.schmizz.sshj.transport.Transport transport layer}. */
+/** Represents a service running on top of the SSH transport layer. */
 public interface Service
         extends SSHPacketHandler, ErrorNotifiable {
 
-    /** @return The assigned name for this SSH service. */
+    /** @return the assigned name for this SSH service. */
     String getName();
 
     /**
