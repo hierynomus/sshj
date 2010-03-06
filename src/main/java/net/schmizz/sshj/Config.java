@@ -137,7 +137,7 @@ public interface Config {
 
     /**
      * Set the software version information for identification during SSH connection initialization. For example, {@code
-     * "NET_3_0"}.
+     * "SSHJ_0_1"}.
      *
      * @param version software version info
      */

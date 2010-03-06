@@ -462,15 +462,13 @@ public class Buffer<T extends Buffer<T>> {
     }
 
     public PublicKey readPublicKey() {
-        PublicKey key = null;
         try {
             switch (KeyType.fromString(readString())) {
                 case RSA: {
                     BigInteger e = readMPInt();
                     BigInteger n = readMPInt();
                     KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
-                    key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
-                    break;
+                    return keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
                 }
                 case DSA: {
                     BigInteger p = readMPInt();
@@ -478,8 +476,7 @@ public class Buffer<T extends Buffer<T>> {
                     BigInteger g = readMPInt();
                     BigInteger y = readMPInt();
                     KeyFactory keyFactory = SecurityUtils.getKeyFactory("DSA");
-                    key = keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
-                    break;
+                    return keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
                 }
                 default:
                     assert false;
@@ -487,12 +484,12 @@ public class Buffer<T extends Buffer<T>> {
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
         }
-        return key;
+        return null;
     }
 
     @SuppressWarnings("unchecked")
     public T putPublicKey(PublicKey key) {
-        KeyType type = KeyType.fromKey(key);
+        final KeyType type = KeyType.fromKey(key);
         switch (type) {
             case RSA: {
                 final RSAPublicKey rsaKey = (RSAPublicKey) key;

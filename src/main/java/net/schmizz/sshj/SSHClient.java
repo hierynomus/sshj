@@ -265,7 +265,7 @@ public class SSHClient
     }
 
     /**
-     * Authenticate {@code username} using the {@code "publickey"} authentication method, with keys from some commons
+     * Authenticate {@code username} using the {@code "publickey"} authentication method, with keys from some common
      * locations on the file system. This method relies on {@code ~/.ssh/id_rsa} and {@code ~/.ssh/id_dsa}.
      * <p/>
      * This method does not provide a way to specify a passphrase.

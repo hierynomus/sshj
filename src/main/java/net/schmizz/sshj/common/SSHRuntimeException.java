@@ -35,7 +35,7 @@
  */
 package net.schmizz.sshj.common;
 
-/** Represents unrecoverable exceptions in the {@code org.apache.commons.net.ssh} package. */
+/** Represents unrecoverable exceptions in the {@code net.schmizz.sshj} package. */
 public class SSHRuntimeException
         extends RuntimeException {
 
