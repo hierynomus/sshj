@@ -130,7 +130,7 @@ public class RemotePortForwarder
         public ForwardedTCPIPChannel(Connection conn, int recipient, int remoteWinSize, int remoteMaxPacketSize,
                                      Forward fwd, String origIP, int origPort)
                 throws TransportException {
-            super(TYPE, conn, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
+            super(conn, TYPE, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
             this.fwd = fwd;
         }
 

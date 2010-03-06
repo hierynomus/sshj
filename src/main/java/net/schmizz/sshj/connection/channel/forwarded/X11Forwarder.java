@@ -35,7 +35,7 @@ public class X11Forwarder
 
         public X11Channel(Connection conn, int recipient, int remoteWinSize, int remoteMaxPacketSize, String origIP,
                           int origPort) {
-            super(TYPE, conn, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
+            super(conn, TYPE, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
         }
 
     }

@@ -37,7 +37,7 @@ public class LocalPortForwarder {
         private final Socket sock;
 
         private DirectTCPIPChannel(Connection conn, Socket sock) {
-            super("direct-tcpip", conn);
+            super(conn, "direct-tcpip");
             this.sock = sock;
         }
 

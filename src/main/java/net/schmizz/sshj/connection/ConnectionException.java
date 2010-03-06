@@ -32,10 +32,6 @@ public class ConnectionException
         }
     };
 
-    public ConnectionException() {
-        super();
-    }
-
     public ConnectionException(DisconnectReason code) {
         super(code);
     }

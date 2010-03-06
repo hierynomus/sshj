@@ -53,10 +53,6 @@ public class TransportException
         }
     };
 
-    public TransportException() {
-        super();
-    }
-
     public TransportException(DisconnectReason code) {
         super(code);
     }

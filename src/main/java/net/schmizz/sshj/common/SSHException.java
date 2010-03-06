@@ -40,8 +40,8 @@ import net.schmizz.concurrent.ExceptionChainer;
 import java.io.IOException;
 
 /**
- * Most exceptions in {@code org.apache.commons.net.ssh} are instances of this class. An {@link SSHException} is itself
- * an {@link IOException} and can be caught like that if this level of granularity is not desired.
+ * Most exceptions in the {@code net.schmizz.sshj} package are instances of this class. An {@link SSHException} is
+ * itself an {@link IOException} and can be caught like that if this level of granularity is not desired.
  */
 public class SSHException
         extends IOException {
@@ -58,10 +58,6 @@ public class SSHException
     };
 
     private final DisconnectReason reason;
-
-    public SSHException() {
-        this(DisconnectReason.UNKNOWN, null, null);
-    }
 
     public SSHException(DisconnectReason code) {
         this(code, null, null);
@@ -94,10 +90,6 @@ public class SSHException
         this(DisconnectReason.UNKNOWN, null, cause);
     }
 
-    public int getDisconnectCode() {
-        return reason.toInt();
-    }
-
     public DisconnectReason getDisconnectReason() {
         return reason;
     }
@@ -117,7 +109,7 @@ public class SSHException
         final String cls = getClass().getName();
         final String code = reason != DisconnectReason.UNKNOWN ? "[" + reason + "] " : "";
         final String msg = getMessage() != null ? getMessage() : "";
-        return cls + (code.equals("") && msg.equals("") ? "" : ": ") + code + msg;
+        return cls + (code.isEmpty() && msg.isEmpty() ? "" : ": ") + code + msg;
     }
 
 }

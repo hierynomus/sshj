@@ -16,7 +16,6 @@
 package net.schmizz.sshj.userauth.password;
 
 import java.util.Arrays;
-import java.util.Map;
 
 /** Static utility method and factories */
 public class PasswordUtils {
@@ -53,16 +52,4 @@ public class PasswordUtils {
             };
     }
 
-    public static PasswordFinder createResourceBased(final Map<Resource<?>, String> passwordMap) {
-        return new PasswordFinder() {
-            public char[] reqPassword(Resource<?> resource) {
-                return passwordMap.get(resource).toCharArray();
-            }
-
-            public boolean shouldRetry(Resource<?> resource) {
-                return false;
-            }
-
-        };
-    }
 }

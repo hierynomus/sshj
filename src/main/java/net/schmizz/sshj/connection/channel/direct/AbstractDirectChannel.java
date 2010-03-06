@@ -51,8 +51,8 @@ public abstract class AbstractDirectChannel
         extends AbstractChannel
         implements Channel.Direct {
 
-    protected AbstractDirectChannel(String name, Connection conn) {
-        super(name, conn);
+    protected AbstractDirectChannel(Connection conn, String type) {
+        super(conn, type);
 
         /*
         * We expect to receive channel open confirmation/rejection and want to be able to next this packet.

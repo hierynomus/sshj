@@ -34,10 +34,6 @@ public class SFTPException
 
     };
 
-    public SFTPException() {
-        super();
-    }
-
     public SFTPException(DisconnectReason code) {
         super(code);
     }

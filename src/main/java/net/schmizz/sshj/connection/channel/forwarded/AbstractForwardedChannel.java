@@ -54,9 +54,9 @@ public abstract class AbstractForwardedChannel
     * First 2 args are standard; the others can be parsed from a CHANNEL_OPEN packet.
     */
 
-    protected AbstractForwardedChannel(String type, Connection conn, int recipient, int remoteWinSize,
+    protected AbstractForwardedChannel(Connection conn, String type, int recipient, int remoteWinSize,
                                        int remoteMaxPacketSize, String origIP, int origPort) {
-        super(type, conn);
+        super(conn, type);
         this.origIP = origIP;
         this.origPort = origPort;
         init(recipient, remoteWinSize, remoteMaxPacketSize);

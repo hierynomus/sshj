@@ -67,7 +67,7 @@ public class
     private ChannelInputStream err = new ChannelInputStream(this, trans, lwin);
 
     public SessionChannel(Connection conn) {
-        super("session", conn);
+        super(conn, "session");
     }
 
     public void allocateDefaultPTY()

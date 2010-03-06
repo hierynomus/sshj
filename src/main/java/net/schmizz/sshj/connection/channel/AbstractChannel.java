@@ -102,9 +102,9 @@ public abstract class AbstractChannel
 
     private volatile boolean autoExpand = false;
 
-    protected AbstractChannel(String type, Connection conn) {
-        this.type = type;
+    protected AbstractChannel(Connection conn, String type) {
         this.conn = conn;
+        this.type = type;
         this.trans = conn.getTransport();
 
         id = conn.nextID();
