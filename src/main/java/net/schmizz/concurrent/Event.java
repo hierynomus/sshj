@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @see Future
  */
-public class Event<T extends Exception>
+public class Event<T extends Throwable>
         extends Future<Boolean, T> {
 
     /**

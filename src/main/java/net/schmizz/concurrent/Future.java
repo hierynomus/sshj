@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * For atomic operations on a future, e.g. checking if a value is set and if it is not then setting it - in other words,
  * Compare-And-Set type operations - the associated lock for the future should be acquired while doing so.
  */
-public class Future<V, T extends Exception> {
+public class Future<V, T extends Throwable> {
 
     private final Logger log;
 
@@ -88,7 +88,7 @@ public class Future<V, T extends Exception> {
      *
      * @param e the error
      */
-    public void error(Exception e) {
+    public void error(Throwable e) {
         lock();
         try {
             pendingEx = chainer.chain(e);

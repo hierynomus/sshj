@@ -19,12 +19,12 @@ import java.util.Collection;
 
 public class FutureUtils {
 
-    public static void alertAll(Exception x, Future... futures) {
+    public static void alertAll(Throwable x, Future... futures) {
         for (Future f : futures)
             f.error(x);
     }
 
-    public static void alertAll(Exception x, Collection<? extends Future> futures) {
+    public static void alertAll(Throwable x, Collection<? extends Future> futures) {
         for (Future f : futures)
             f.error(x);
     }
