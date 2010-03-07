@@ -12,26 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * This file may incorporate work covered by the following copyright and
- * permission notice:
- *
- *     Licensed to the Apache Software Foundation (ASF) under one
- *     or more contributor license agreements.  See the NOTICE file
- *     distributed with this work for additional information
- *     regarding copyright ownership.  The ASF licenses this file
- *     to you under the Apache License, Version 2.0 (the
- *     "License"); you may not use this file except in compliance
- *     with the License.  You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *      Unless required by applicable law or agreed to in writing,
- *      software distributed under the License is distributed on an
- *      "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *      KIND, either express or implied.  See the License for the
- *      specific language governing permissions and limitations
- *      under the License.
  */
 package net.schmizz.sshj.transport.verification;
 
@@ -194,12 +174,12 @@ public class OpenSSHKnownHosts
 
         public HashedEntry(String host, PublicKey key)
                 throws IOException {
-            this.hashedHost = hashHost(host);
-            init(key);
             {
                 saltyBytes = new byte[sha1.getBlockSize()];
                 new java.util.Random().nextBytes(saltyBytes);
             }
+            this.hashedHost = hashHost(host);
+            init(key);
         }
 
         public HashedEntry(String line)
@@ -208,13 +188,13 @@ public class OpenSSHKnownHosts
             if (parts.length != 3)
                 throw new SSHException("Line parts not 3: " + line);
             hashedHost = parts[0];
-            init(parts[1], parts[2]);
             {
                 final String[] split = hashedHost.split("\\|");
                 if (split.length != 4)
                     throw new SSHException("Unrecognized format for hashed hostname");
                 salt = split[2];
             }
+            init(parts[1], parts[2]);
         }
 
         public boolean appliesTo(String host)
