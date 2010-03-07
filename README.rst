@@ -31,7 +31,7 @@ compression
   ``zlib`` and ``zlib@openssh.com`` (delayed zlib)
 
 private key files
-   ``pkcs8`` encoded (what openssh uses), ``java.security.KeyPair``
+   ``pkcs8`` encoded (what openssh uses)
 
 If you need something that is not implemented, it shouldn't be too hard to add (do contribute it!)
 
