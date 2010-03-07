@@ -42,8 +42,7 @@ public class UserAuthImpl
 
     private final Deque<UserAuthException> savedEx = new ArrayDeque<UserAuthException>();
 
-    private final Event<UserAuthException> result = new Event<UserAuthException>("userauth result",
-                                                                                 UserAuthException.chainer);
+    private final Event<UserAuthException> result = new Event<UserAuthException>("userauth result", UserAuthException.chainer);
 
     private String username;
     private AuthMethod currentMethod;
@@ -99,7 +98,7 @@ public class UserAuthImpl
                         log.info("`{}` auth failed", meth.getName());
 
                 } else
-                    saveException(currentMethod.getName() + " auth not allowed by server");
+                    saveException(meth.getName() + " auth not allowed by server");
 
         } finally {
             currentMethod = null;
@@ -146,7 +145,6 @@ public class UserAuthImpl
             throw new TransportException(DisconnectReason.PROTOCOL_ERROR);
 
         switch (msg) {
-
             case USERAUTH_BANNER:
                 gotBanner(buf);
                 break;
@@ -161,7 +159,6 @@ public class UserAuthImpl
 
             default:
                 gotUnknown(msg, buf);
-
         }
     }
 
