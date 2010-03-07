@@ -1,4 +1,4 @@
-package net.schmizz.sshj;/*
+/*
  * Copyright 2010 Shikhar Bhushan
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,7 @@ package net.schmizz.sshj;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.schmizz.sshj;
 
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
@@ -48,7 +49,8 @@ public class SmokeTest {
     private static final String fingerprint = "ce:a7:c1:cf:17:3f:96:49:6a:53:1a:05:0b:ba:90:db";
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp()
+            throws IOException {
         ServerSocket s = new ServerSocket(0);
         port = s.getLocalPort();
         s.close();
@@ -65,20 +67,23 @@ public class SmokeTest {
     }
 
     @After
-    public void tearUp() throws IOException, InterruptedException {
+    public void tearUp()
+            throws IOException, InterruptedException {
         ssh.disconnect();
         sshd.stop();
     }
 
     @Test
-    public void testAuthenticate() throws IOException {
+    public void testAuthenticate()
+            throws IOException {
         connect();
         authenticate();
         assertTrue(ssh.isAuthenticated());
     }
 
     @Test
-    public void testConnect() throws IOException {
+    public void testConnect()
+            throws IOException {
         connect();
         assertTrue(ssh.isConnected());
     }
@@ -97,11 +102,13 @@ public class SmokeTest {
     // assertFalse(shell.isOpen());
     // }
 
-    private void authenticate() throws UserAuthException, TransportException {
+    private void authenticate()
+            throws UserAuthException, TransportException {
         ssh.authPassword("same", "same");
     }
 
-    private void connect() throws IOException {
+    private void connect()
+            throws IOException {
         ssh.connect(hostname, port);
     }
 
