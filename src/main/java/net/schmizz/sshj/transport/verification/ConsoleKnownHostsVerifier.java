@@ -39,8 +39,9 @@ public class ConsoleKnownHostsVerifier
 
     @Override
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
+        final KeyType type = KeyType.fromKey(key);
         console.printf("The authenticity of host '%s' can't be established.\n" +
-                       "%s key fingerprint is %s.\n", hostname, KeyType.fromKey(key), SecurityUtils.getFingerprint(key));
+                       "%s key fingerprint is %s.\n", hostname, type, SecurityUtils.getFingerprint(key));
         String response = console.readLine("Are you sure you want to continue connecting (yes/no)? ");
         while (!(response.equalsIgnoreCase(YES) || response.equalsIgnoreCase(NO))) {
             response = console.readLine("Please explicitly enter yes/no: ");
@@ -49,6 +50,7 @@ public class ConsoleKnownHostsVerifier
             try {
                 entries().add(new SimpleEntry(hostname, key));
                 write();
+                console.printf("Warning: Permanently added '%s' (%s) to the list of known hosts.\n", hostname, type);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -62,7 +64,7 @@ public class ConsoleKnownHostsVerifier
             throws IOException {
         final KeyType type = KeyType.fromKey(key);
         final String fp = SecurityUtils.getFingerprint(key);
-        final String path = khFile.getAbsolutePath();
+        final String path = getFile().getAbsolutePath();
         console.printf(
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" +
                 "@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @\n" +
@@ -73,7 +75,9 @@ public class ConsoleKnownHostsVerifier
                 "The fingerprint for the %s key sent by the remote host is\n" +
                 "%s.\n" +
                 "Please contact your system administrator or" +
-                "add correct host key in %s to get rid of this message.\n", type, fp, path);
+                "add correct host key in %s to get rid of this message.\n",
+                type, fp, path);
         return false;
     }
+
 }

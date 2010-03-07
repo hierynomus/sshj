@@ -189,10 +189,10 @@ public class OpenSSHKnownHosts
                 throw new SSHException("Line parts not 3: " + line);
             hashedHost = parts[0];
             {
-                final String[] split = hashedHost.split("\\|");
-                if (split.length != 4)
+                final String[] hostParts = hashedHost.split("\\|");
+                if (hostParts.length != 4)
                     throw new SSHException("Unrecognized format for hashed hostname");
-                salt = split[2];
+                salt = hostParts[2];
             }
             init(parts[1], parts[2]);
         }
@@ -235,13 +235,6 @@ public class OpenSSHKnownHosts
     protected final File khFile;
     protected final List<Entry> entries = new ArrayList<Entry>();
 
-    /**
-     * Constructs a {@code KnownHosts} object from a file location
-     *
-     * @param khFile the file location
-     *
-     * @throws IOException if there is an error reading the file
-     */
     public OpenSSHKnownHosts(File khFile)
             throws IOException {
         this.khFile = khFile;
