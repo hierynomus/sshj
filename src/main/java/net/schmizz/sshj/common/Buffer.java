@@ -508,7 +508,7 @@ public class Buffer<T extends Buffer<T>> {
                 break;
             }
             default:
-                assert false;
+                throw new SSHRuntimeException("Don't know how to encode key: " + key);
         }
         return (T) this;
     }
