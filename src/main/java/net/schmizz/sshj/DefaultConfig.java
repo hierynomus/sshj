@@ -70,8 +70,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Constructor for a {@link ConfigImpl} that is initialized as follows. Items marked with an asterisk are added to the
- * config only if BouncyCastle is in the classpath.
+ * A {@link Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
+ * BouncyCastle is in the classpath.
  * <p/>
  * <ul> <li>{@link ConfigImpl#setKeyExchangeFactories Key exchange}: {@link DHG14}*, {@link DHG1}</li> <li>{@link
  * ConfigImpl#setCipherFactories Ciphers} [1]: {@link AES128CTR}, {@link AES192CTR}, {@link AES256CTR}, {@link
@@ -125,13 +125,13 @@ public class DefaultConfig
 
     protected void initCipherFactories() {
         List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
-                new AES128CTR.Factory(), //
-                new AES192CTR.Factory(), //
-                new AES256CTR.Factory(), //
-                new AES128CBC.Factory(), //
-                new AES192CBC.Factory(), //
-                new AES256CBC.Factory(), //
-                new TripleDESCBC.Factory(), //
+                new AES128CTR.Factory(),
+                new AES192CTR.Factory(),
+                new AES256CTR.Factory(),
+                new AES128CBC.Factory(),
+                new AES192CBC.Factory(),
+                new AES256CBC.Factory(),
+                new TripleDESCBC.Factory(),
                 new BlowfishCBC.Factory()));
 
         // Ref. https://issues.apache.org/jira/browse/SSHD-24
