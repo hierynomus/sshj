@@ -21,6 +21,7 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
+/** Type of key e.g. rsa, dsa */
 public enum KeyType {
 
     /** SSH identifier for RSA keys */

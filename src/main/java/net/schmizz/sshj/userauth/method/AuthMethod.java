@@ -20,32 +20,28 @@ import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.AuthParams;
 import net.schmizz.sshj.userauth.UserAuthException;
 
-/**
- * An authentication method of the <a href="http://www.ietf.org/rfc/rfc4252.txt">SSH Authentication Protocol</a>.
- *
- * @see net.schmizz.sshj.userauth.UserAuth
- */
+/** An authentication method of the <a href="http://www.ietf.org/rfc/rfc4252.txt">SSH Authentication Protocol</a>. */
 public interface AuthMethod
         extends SSHPacketHandler {
 
-    /** Returns assigned name of this authentication method */
+    /** @return assigned name of this authentication method */
     String getName();
 
     /**
-     * Initializes this {@link AuthMethod} with the {@link AuthParams parameters} needed for authentication. This method
-     * must be called before requesting authentication with this method.
+     * This method must be called before requesting authentication with this method.
+     *
+     * @param params parameters needed for authentication
      */
     void init(AuthParams params);
 
     /**
-     * @throws net.schmizz.sshj.userauth.UserAuthException
-     *
-     * @throws TransportException
+     * @throws UserAuthException  if there is an error with the request
+     * @throws TransportException if there is a transport-related error
      */
     void request()
             throws UserAuthException, TransportException;
 
-    /** Returns whether authentication should be reattempted if it failed. */
+    /** @return whether authentication should be reattempted if it failed. */
     boolean shouldRetry();
 
 }

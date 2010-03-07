@@ -38,11 +38,7 @@ package net.schmizz.sshj.signature;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-/**
- * Signature interface for SSH used to sign or verify data.
- * <p/>
- * Usually wraps a javax.crypto.Signature object.
- */
+/** Signature interface for SSH used to sign or verify data. Usually wraps a {@code javax.crypto.Signature} object. */
 public interface Signature {
 
     /**
@@ -55,21 +51,15 @@ public interface Signature {
     void init(PublicKey pubkey, PrivateKey prvkey);
 
     /**
-     * Compute the signature
-     *
-     * @return the computed signature
-     */
-    byte[] sign();
-
-    /**
-     * Convenience method for {@link #update(byte[], int, int)}
+     * Convenience method, same as calling {@link #update(byte[], int, int)} with offset as {@code 0} and {@code
+     * H.length}.
      *
      * @param H the byte-array to update with
      */
     void update(byte[] H);
 
     /**
-     * Update the computed signature with the given data
+     * Update the computed signature with the given data.
      *
      * @param H   byte-array to update with
      * @param off offset within the array
@@ -78,9 +68,16 @@ public interface Signature {
     void update(byte[] H, int off, int len);
 
     /**
-     * Verify against the given signature
+     * Compute the signature.
      *
-     * @param sig
+     * @return the computed signature
+     */
+    byte[] sign();
+
+    /**
+     * Verify against the given signature.
+     *
+     * @param sig the signature to verify against
      *
      * @return {@code true} on successful verification, {@code false} on failure
      */

@@ -43,35 +43,27 @@ public interface Cipher {
         Decrypt
     }
 
-    /**
-     * Retrieves the block size for this cipher
-     *
-     * @return
-     */
+    /** @return the block size for this cipher */
     int getBlockSize();
 
-    /**
-     * Retrieves the size of the initialization vector
-     *
-     * @return
-     */
+    /** @return the size of the initialization vector */
     int getIVSize();
 
     /**
      * Initialize the cipher for encryption or decryption with the given private key and initialization vector
      *
-     * @param mode
-     * @param key
-     * @param iv
+     * @param mode whether this instance wil encrypt or decrypt
+     * @param key  the key for the cipher
+     * @param iv   initialization vector
      */
     void init(Mode mode, byte[] key, byte[] iv);
 
     /**
      * Performs in-place encryption or decryption on the given data.
      *
-     * @param input
-     * @param inputOffset
-     * @param inputLen
+     * @param input       the subject
+     * @param inputOffset offset at which to start
+     * @param inputLen    number of bytes starting at {@code inputOffset}
      */
     void update(byte[] input, int inputOffset, int inputLen);
 

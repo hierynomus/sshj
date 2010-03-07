@@ -18,19 +18,19 @@ package net.schmizz.sshj.userauth;
 
 import net.schmizz.sshj.transport.Transport;
 
-/** The parameters available to authentication method */
+/** The parameters available to authentication methods. */
 public interface AuthParams {
 
-    /** All userauth requests need to include the name of the next service being requested */
+    /** @return name of the next service being requested */
     String getNextServiceName();
 
     /**
-     * Retrieve the transport which will allow sending packets; retrieving information like the session-id, remote
-     * host/port etc. which is needed by some method.
+     * @return the transport which will allow sending packets; retrieving information like the session-id, remote
+     *         host/port etc. which is needed by some method.
      */
     Transport getTransport();
 
-    /** All userauth requests need to include the username */
+    /** @return all userauth requests need to include the username */
     String getUsername();
 
 }

@@ -35,7 +35,7 @@
  */
 package net.schmizz.sshj.transport.cipher;
 
-/** AES128CBC cipher */
+/** {@code aes128-cbc} cipher */
 public class AES128CBC
         extends BaseCipher {
 

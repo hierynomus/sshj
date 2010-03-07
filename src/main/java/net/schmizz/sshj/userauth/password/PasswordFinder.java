@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj.userauth.password;
 
-/** An interface for servicing requests for plaintext passwords. */
+/** Services requests for plaintext passwords. */
 public interface PasswordFinder {
 
     /**
@@ -36,7 +36,7 @@ public interface PasswordFinder {
      * <p/>
      * This method is geared at interactive implementations, and stub implementations may simply return {@code false}.
      *
-     * @param resource
+     * @param resource the resource for which password is being requested
      *
      * @return whether to retry requesting password for a particular resource
      */
