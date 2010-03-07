@@ -58,8 +58,6 @@ import java.util.List;
 
 /**
  * A {@link HostKeyVerifier} implementation for a {@code known_hosts} file i.e. in the format used by OpenSSH.
- * <p/>
- * Hashed hostnames are correctly handled (but not yet for writing back).
  *
  * @see <a href="http://nms.lcs.mit.edu/projects/ssh/README.hashed-hosts">Hashed hostnames spec</a>
  */
