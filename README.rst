@@ -31,7 +31,7 @@ compression
 private key files
    ``pkcs8`` encoded (what openssh uses)
 
-If you need something that is not implemented, it shouldn't be too hard to add since (do contribute it!)
+If you need something that is not implemented, it shouldn't be too hard to add (do contribute it!)
 
 
 Building
