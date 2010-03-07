@@ -28,7 +28,7 @@ public interface SessionFactory {
      * @return the opened {@code session} channel
      *
      * @throws SSHException
-     * @see {@link Session}
+     * @see Session
      */
     Session startSession()
             throws SSHException;

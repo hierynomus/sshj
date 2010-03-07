@@ -46,11 +46,7 @@ import java.security.PublicKey;
 /** Key exchange algorithm. */
 public interface KeyExchange {
 
-    /**
-     * Retrieves the computed H parameter
-     *
-     * @return
-     */
+    /** @return the computed H parameter */
     byte[] getH();
 
     /**
@@ -60,18 +56,22 @@ public interface KeyExchange {
      */
     Digest getHash();
 
+    /** @return the host key determined from server's response packets */
     PublicKey getHostKey();
 
-    /** Retrieves the computed K parameter */
+    /** @return the computed K parameter */
     byte[] getK();
 
     /**
      * Initialize the key exchange algorithm.
      *
-     * @param V_S the server identification string
-     * @param V_C the client identification string
-     * @param I_S the server key init packet
-     * @param I_C the client key init packet
+     * @param trans the transport
+     * @param V_S   the server identification string
+     * @param V_C   the client identification string
+     * @param I_S   the server key init packet
+     * @param I_C   the client key init packet
+     *
+     * @throws TransportException if there is an error sending a packet
      */
     void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
             throws TransportException;
@@ -79,9 +79,12 @@ public interface KeyExchange {
     /**
      * Process the next packet
      *
+     * @param msg    message identifier
      * @param buffer the packet
      *
      * @return a boolean indicating if the processing is complete or if more packets are to be received
+     *
+     * @throws TransportException if there is an error sending a packet
      */
     boolean next(Message msg, SSHPacket buffer)
             throws TransportException;

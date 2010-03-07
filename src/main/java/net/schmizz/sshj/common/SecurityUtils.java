@@ -201,7 +201,7 @@ public class SecurityUtils {
      *
      * @param algorithm MessageDigest algorithm name
      *
-     * @return
+     * @return new instance
      *
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException

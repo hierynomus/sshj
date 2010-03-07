@@ -23,13 +23,12 @@ import java.io.IOException;
 public interface ConnectListener {
 
     /**
-     * Notify this listener of a new forwarded channel. An implementation should firstly {@link
-     * Channel.Forwarded#confirm() confirm} or {@link Channel.Forwarded#reject(net.schmizz.sshj.connection.channel.OpenFailException.Reason,
-     * String)}  reject} that channel.
+     * Notify this listener of a new forwarded channel. An implementation should firstly confirm or reject that
+     * channel.
      *
-     * @param chan the {@link Channel.Forwarded forwarded channel}
+     * @param chan the  forwarded channel
      *
-     * @throws IOException
+     * @throws IOException if there is a problem handling the channel
      */
     void gotConnect(Channel.Forwarded chan)
             throws IOException;

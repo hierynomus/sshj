@@ -89,7 +89,7 @@ public class Buffer<T extends Buffer<T>> {
     protected int rpos;
     protected int wpos;
 
-    /** @see {@link #DEFAULT_SIZE} */
+    /** @see #DEFAULT_SIZE */
     public Buffer() {
         this(DEFAULT_SIZE);
     }

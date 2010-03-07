@@ -56,10 +56,10 @@ public interface Channel
         void confirm()
                 throws TransportException;
 
-        /** Returns the IP of where the forwarded connection originates. */
+        /** @return the IP of where the forwarded connection originates. */
         String getOriginatorIP();
 
-        /** Returns port from which the forwarded connection originates. */
+        /** @return port from which the forwarded connection originates. */
         int getOriginatorPort();
 
         /**
@@ -81,13 +81,13 @@ public interface Channel
             throws TransportException, ConnectionException;
 
     /**
-     * Returns whether auto-expansion of local window is set.
+     * @return whether auto-expansion of local window is set.
      *
      * @see #setAutoExpand(boolean)
      */
     boolean getAutoExpand();
 
-    /** Returns the channel ID */
+    /** @return the channel ID */
     int getID();
 
     /** @return the {@code InputStream} for this channel. */
@@ -121,7 +121,7 @@ public interface Channel
      * Sends an EOF message to the server for this channel; indicating that no more data will be sent by us. The {@code
      * OutputStream} for this channel will be closed and no longer usable.
      *
-     * @throws TransportException
+     * @throws TransportException if there is an error sending the EOF message
      */
     void sendEOF()
             throws TransportException;
@@ -131,7 +131,7 @@ public interface Channel
      * read from that stream. This is useful e.g. when a remote command produces a lot of output that would fill the
      * local window but you are not interested in reading from its {@code InputStream}.
      *
-     * @param autoExpand
+     * @param autoExpand whether local windows should automatically expand
      */
     void setAutoExpand(boolean autoExpand);
 
