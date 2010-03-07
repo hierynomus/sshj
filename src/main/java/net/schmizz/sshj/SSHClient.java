@@ -515,8 +515,12 @@ public class SSHClient
         final File sshDir = OpenSSHKnownHosts.detectSSHDir();
         if (sshDir != null) {
             for (File loc : Arrays.asList(new File(sshDir, "known_hosts"), new File(sshDir, "known_hosts2"))) {
-                loadKnownHosts(loc);
-                loaded = true;
+                try {
+                    loadKnownHosts(loc);
+                    loaded = true;
+                } catch (IOException e) {
+                    // Ignore for now
+                }
             }
         }
         if (!loaded)
@@ -570,7 +574,7 @@ public class SSHClient
      *         server
      */
     public X11Forwarder registerX11Forwarder(ConnectListener listener) {
-        X11Forwarder x11f = new X11Forwarder(conn, listener);
+        final X11Forwarder x11f = new X11Forwarder(conn, listener);
         conn.attach(x11f);
         return x11f;
     }
@@ -606,7 +610,7 @@ public class SSHClient
     public Session startSession()
             throws ConnectionException, TransportException {
         assert isConnected() && isAuthenticated();
-        SessionChannel sess = new SessionChannel(conn);
+        final SessionChannel sess = new SessionChannel(conn);
         sess.open();
         assert sess.isOpen();
         return sess;
@@ -650,7 +654,7 @@ public class SSHClient
             throws TransportException {
         assert trans.isRunning();
 
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
 
         try {
             trans.doKex();
