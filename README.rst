@@ -7,7 +7,7 @@ Features include:
 * password and publickey authentication
 * command, subsystem and shell channels
 * local and remote port forwarding
-* scp + complete SFTP version 3 implementation
+* scp + complete sftp version 3 implementation
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
 
@@ -31,7 +31,7 @@ compression
   ``zlib`` and ``zlib@openssh.com`` (delayed zlib)
 
 private key files
-   ``pkcs8`` (what openssh uses) encoded, ``java.security.KeyPair``
+   ``pkcs8`` encoded (what openssh uses), ``java.security.KeyPair``
 
 If you need something that is not implemented, it shouldn't be too hard to add (do contribute it!)
 
