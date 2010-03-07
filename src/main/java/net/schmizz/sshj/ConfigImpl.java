@@ -95,7 +95,7 @@ public class ConfigImpl
     }
 
     public void setCipherFactories(Factory.Named<Cipher>... cipherFactories) {
-        setCipherFactories(Arrays.<Factory.Named<Cipher>>asList(cipherFactories));
+        setCipherFactories(Arrays.asList(cipherFactories));
     }
 
     public void setCipherFactories(List<Factory.Named<Cipher>> cipherFactories) {
@@ -103,7 +103,7 @@ public class ConfigImpl
     }
 
     public void setCompressionFactories(Factory.Named<Compression>... compressionFactories) {
-        setCompressionFactories(Arrays.<Factory.Named<Compression>>asList(compressionFactories));
+        setCompressionFactories(Arrays.asList(compressionFactories));
     }
 
     public void setCompressionFactories(List<Factory.Named<Compression>> compressionFactories) {
@@ -111,7 +111,7 @@ public class ConfigImpl
     }
 
     public void setFileKeyProviderFactories(Factory.Named<FileKeyProvider>... fileKeyProviderFactories) {
-        setFileKeyProviderFactories(Arrays.<Factory.Named<FileKeyProvider>>asList(fileKeyProviderFactories));
+        setFileKeyProviderFactories(Arrays.asList(fileKeyProviderFactories));
     }
 
     public void setFileKeyProviderFactories(List<Factory.Named<FileKeyProvider>> fileKeyProviderFactories) {
@@ -119,7 +119,7 @@ public class ConfigImpl
     }
 
     public void setKeyExchangeFactories(Factory.Named<KeyExchange>... kexFactories) {
-        setKeyExchangeFactories(Arrays.<Factory.Named<KeyExchange>>asList(kexFactories));
+        setKeyExchangeFactories(Arrays.asList(kexFactories));
     }
 
     public void setKeyExchangeFactories(List<Factory.Named<KeyExchange>> kexFactories) {
@@ -127,7 +127,7 @@ public class ConfigImpl
     }
 
     public void setMACFactories(Factory.Named<MAC>... macFactories) {
-        setMACFactories(Arrays.<Factory.Named<MAC>>asList(macFactories));
+        setMACFactories(Arrays.asList(macFactories));
     }
 
     public void setMACFactories(List<Factory.Named<MAC>> macFactories) {
@@ -139,7 +139,7 @@ public class ConfigImpl
     }
 
     public void setSignatureFactories(Factory.Named<Signature>... signatureFactories) {
-        setSignatureFactories(Arrays.<Factory.Named<Signature>>asList(signatureFactories));
+        setSignatureFactories(Arrays.asList(signatureFactories));
     }
 
     public void setSignatureFactories(List<Factory.Named<Signature>> signatureFactories) {
