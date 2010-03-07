@@ -42,7 +42,6 @@ import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.SSHPacketHandler;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -51,16 +50,31 @@ public interface Transport
         extends SSHPacketHandler {
 
     /**
-     * Sets the {@code socket} to be used by this transport; and identification information is exchanged. A {@link
-     * TransportException} is thrown in case of SSH protocol version incompatibility.
+     * Sets the host information and the streams to be used by this transport. Identification information is exchanged
+     * with the server. A {@link TransportException} is thrown in case of SSH protocol version incompatibility.
+     *
+     * @param host server's hostname
+     * @param port server's port
+     * @param in   input stream for the connection
+     * @param out  output stream for the connection
      *
      * @throws TransportException if there is an error during exchange of identification information
      */
     void init(String host, int port, InputStream in, OutputStream out)
             throws TransportException;
 
+    /**
+     * Adds the specified verifier.
+     *
+     * @param hkv the host key verifier
+     */
     void addHostKeyVerifier(HostKeyVerifier hkv);
 
+    /**
+     * (Re)start key exchange and algorithm negotiation.
+     *
+     * @throws TransportException if there was an error during key exchange
+     */
     void doKex()
             throws TransportException;
 
@@ -110,7 +124,7 @@ public interface Transport
      *
      * @param service the SSH service to be requested
      *
-     * @throws IOException if the request failed for any reason
+     * @throws TransportException if the request failed for any reason
      */
     void reqService(Service service)
             throws TransportException;
@@ -126,7 +140,7 @@ public interface Transport
      */
     void setService(Service service);
 
-    /** Returns whether the transport thinks it is authenticated. */
+    /** @return whether the transport thinks it is authenticated. */
     boolean isAuthenticated();
 
     /**
@@ -146,17 +160,17 @@ public interface Transport
             throws TransportException;
 
     /**
-     * Returns whether this transport is active.
-     * <p/>
-     * The transport is considered to be running if it has been initialized without error via {@link #init} and has not
-     * been disconnected.
+     * @return whether this transport is active.
+     *         <p/>
+     *         The transport is considered to be running if it has been initialized without error via {@link #init} and
+     *         has not been disconnected.
      */
     boolean isRunning();
 
     /**
      * Joins the thread calling this method to the transport's death. The transport dies of exceptional events.
      *
-     * @throws TransportException
+     * @throws TransportException when the transport dies
      */
     void join()
             throws TransportException;
@@ -164,7 +178,11 @@ public interface Transport
     /** Send a disconnection packet with reason as {@link DisconnectReason#BY_APPLICATION}, and closes this transport. */
     void disconnect();
 
-    /** Send a disconnect packet with the given {@link DisconnectReason reason}, and closes this transport. */
+    /**
+     * Send a disconnect packet with the given {@link DisconnectReason reason}, and closes this transport.
+     *
+     * @param reason reason for disconnecting
+     */
     void disconnect(DisconnectReason reason);
 
     /**
