@@ -30,7 +30,7 @@ public interface Connection {
      * Attach a {@link Channel} to this connection. A channel must be attached to the connection if it is to receive any
      * channel-specific data that is received.
      *
-     * @param chan
+     * @param chan the channel
      */
     void attach(Channel chan);
 
@@ -38,35 +38,35 @@ public interface Connection {
      * Attach a {@link ForwardedChannelOpener} to this connection, which will be delegated opening of any {@code
      * CHANNEL_OPEN} packets {@link ForwardedChannelOpener#getChannelType() for which it is responsible}.
      *
-     * @param opener
+     * @param opener an opener for forwarded channels
      */
     void attach(ForwardedChannelOpener opener);
 
     /**
      * Forget an attached {@link Channel}.
      *
-     * @param chan
+     * @param chan the channel
      */
     void forget(Channel chan);
 
     /**
      * Forget an attached {@link ForwardedChannelOpener}.
      *
-     * @param handler
+     * @param opener the opener to forget
      */
-    void forget(ForwardedChannelOpener handler);
+    void forget(ForwardedChannelOpener opener);
 
     /**
-     * Returns an attached {@link Channel} of specified channel-id, or {@code null} if no such channel was attached
+     * @param id number of the channel to retrieve
      *
-     * @param id
+     * @return an attached {@link Channel} of specified channel number, or {@code null} if no such channel was attached
      */
     Channel get(int id);
 
     /**
      * Wait for the situation that no channels are attached (e.g., got closed).
      *
-     * @throws InterruptedException
+     * @throws InterruptedException if the thread is interrupted
      */
     void join()
             throws InterruptedException;
@@ -79,7 +79,7 @@ public interface Connection {
      */
     ForwardedChannelOpener get(String chanType);
 
-    /** Returns an available ID a {@link Channel} can rightfully claim. */
+    /** @return an available ID a {@link Channel} can rightfully claim. */
     int nextID();
 
     /**
@@ -101,11 +101,11 @@ public interface Connection {
     /**
      * Send a {@code SSH_MSG_OPEN_FAILURE} for specified {@code Reason} and {@code message}.
      *
-     * @param recipient
-     * @param reason
-     * @param message
+     * @param recipient number of the recipient channel
+     * @param reason    a reason for the failure
+     * @param message   an explanatory message
      *
-     * @throws TransportException
+     * @throws TransportException if there is a transport-layer error
      */
     void sendOpenFailure(int recipient, OpenFailException.Reason reason, String message)
             throws TransportException;
@@ -138,15 +138,16 @@ public interface Connection {
     Transport getTransport();
 
     /**
-     * @return the {@code timeout} this connection uses for blocking operations and recommends to any {@link Channel
-     *         other} {@link net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener classes} that ask for
-     *         it.
+     * @return the {@code timeout} in seconds that this connection uses for blocking operations and recommends to any
+     *         {@link Channel other} {@link ForwardedChannelOpener classes} that ask for it.
      */
     int getTimeout();
 
     /**
      * Set the {@code timeout} this connection uses for blocking operations and recommends to any {@link Channel other}
      * {@link ForwardedChannelOpener classes} that ask for it.
+     *
+     * @param timeout timeout in seconds
      */
     void setTimeout(int timeout);
 }
