@@ -11,7 +11,7 @@ Features of the library include:
 * local and remote port forwarding
 * scp + complete sftp version 3 implementation
 
-Implementations for the following algorithms are included:
+Implementations of the following algorithms are included:
 
 ciphers
   ``aes{128,192,256}-{cbc,ctr}``, ``blowfish-cbc``, ``3des-cbc``
