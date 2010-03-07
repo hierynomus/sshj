@@ -46,8 +46,8 @@ public class ConsoleKnownHostsVerifier
             response = console.readLine("Please explicitly enter yes/no: ");
         }
         if (response.equalsIgnoreCase(YES)) {
-            entries().add(new Entry(hostname, key));
             try {
+                entries().add(new SimpleEntry(hostname, key));
                 write();
             } catch (IOException e) {
                 throw new RuntimeException(e);
