@@ -277,7 +277,7 @@ public class SSHClient
      */
     public void authPublickey(String username)
             throws UserAuthException, TransportException {
-        String base = System.getProperty("user.home") + File.separator + ".ssh" + File.separator;
+        final String base = System.getProperty("user.home") + File.separator + ".ssh" + File.separator;
         authPublickey(username, base + "id_rsa", base + "id_dsa");
     }
 
@@ -297,7 +297,7 @@ public class SSHClient
     public void authPublickey(String username, Iterable<KeyProvider> keyProviders)
             throws UserAuthException,
                    TransportException {
-        List<AuthMethod> am = new LinkedList<AuthMethod>();
+        final List<AuthMethod> am = new LinkedList<AuthMethod>();
         for (KeyProvider kp : keyProviders)
             am.add(new AuthPublickey(kp));
         auth(username, am);
@@ -340,7 +340,7 @@ public class SSHClient
      */
     public void authPublickey(String username, String... locations)
             throws UserAuthException, TransportException {
-        List<KeyProvider> keyProviders = new LinkedList<KeyProvider>();
+        final List<KeyProvider> keyProviders = new LinkedList<KeyProvider>();
         for (String loc : locations)
             try {
                 log.debug("Attempting to load key from: {}", loc);
