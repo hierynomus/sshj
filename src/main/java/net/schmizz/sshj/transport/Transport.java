@@ -71,7 +71,7 @@ public interface Transport
     void addHostKeyVerifier(HostKeyVerifier hkv);
 
     /**
-     * (Re)start key exchange and algorithm negotiation.
+     * Do key exchange and algorithm negotiation. This can be the initial one or for algorithm renegotiation.
      *
      * @throws TransportException if there was an error during key exchange
      */
@@ -113,6 +113,7 @@ public interface Transport
      */
     String getServerVersion();
 
+    /** @return the session identifier assigned by server */
     byte[] getSessionID();
 
     /** @return the currently active {@link Service} instance. */
