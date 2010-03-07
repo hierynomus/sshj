@@ -94,8 +94,10 @@ public interface Transport
      */
     void setTimeout(int timeout);
 
+    /** @return the interval in seconds at which a heartbeat message is sent to the server */
     int getHeartbeatInterval();
 
+    /** @param interval the interval in seconds, {@code 0} means no hearbeat */
     void setHeartbeatInterval(int interval);
 
     /** @return the hostname to which this transport is connected. */

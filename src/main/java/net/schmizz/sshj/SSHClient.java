@@ -636,7 +636,7 @@ public class SSHClient
             rekey();
     }
 
-    /** On connection establishment, also initialize the SSH transport via {@link Transport#init} and {@link #doKex()}. */
+    /** On connection establishment, also initializes the SSH transport via {@link Transport#init} and {@link #doKex()}. */
     @Override
     protected void onConnect()
             throws IOException {
