@@ -20,7 +20,7 @@ key exchange
   ``diffie-hellman-group1-sha1``, ``diffie-hellman-group14-sha1``
 
 signatures
-  ``ssh-rsa``, ``ssh-dss`` signaures
+  ``ssh-rsa``, ``ssh-dss``
 
 mac
   ``hmac-md5``, ``hmac-md5-96``, ``hmac-sha1``, ``hmac-sha1-96``
