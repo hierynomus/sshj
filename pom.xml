@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>sshj</name>
+    <description>SSHv2 library for Java</description>
+    <url>http://github.com/shikhar/sshj</url>
+    <scm>
+        <url>git://github.com/shikhar/sshj.git</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <groupId>sshj</groupId>
+    <artifactId>sshj</artifactId>
+    <packaging>jar</packaging>
+    <version>0.1-alpha</version>
+
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.5.10</version>
+    </dependency>
+
+</project>
