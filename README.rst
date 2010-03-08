@@ -51,6 +51,12 @@ slf4j_ is required. bouncycastle_ is highly recommended and required for using s
 jzlib_ is required for using zlib compression.
 
 
+Help and discussion
+--------------------
+
+There is a `google group`_.
+
+
 Contributing
 ------------
 
@@ -64,3 +70,5 @@ Fork away!
 .. _bouncycastle: http://www.bouncycastle.org/java.html
 
 .. _jzlib: http://www.jcraft.com/jzlib/
+
+.. _`google group`: http://groups.google.com/group/sshj
