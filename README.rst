@@ -20,7 +20,7 @@ key exchange
   ``diffie-hellman-group1-sha1``, ``diffie-hellman-group14-sha1``
 
 signatures
-  ``ssh-rsa``, ``ssh-dss`` signaures
+  ``ssh-rsa``, ``ssh-dss``
 
 mac
   ``hmac-md5``, ``hmac-md5-96``, ``hmac-sha1``, ``hmac-sha1-96``
@@ -51,6 +51,12 @@ slf4j_ is required. bouncycastle_ is highly recommended and required for using s
 jzlib_ is required for using zlib compression.
 
 
+Help and discussion
+--------------------
+
+There is a `google group`_.
+
+
 Contributing
 ------------
 
@@ -64,3 +70,5 @@ Fork away!
 .. _bouncycastle: http://www.bouncycastle.org/java.html
 
 .. _jzlib: http://www.jcraft.com/jzlib/
+
+.. _`google group`: http://groups.google.com/group/sshj
