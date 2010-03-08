@@ -41,7 +41,7 @@ You will need buildr_. To see available tasks, run::
 
   $ buildr help:tasks
 
-Since there is no official release yet you can use the ``package`` task to create a jar.
+If you just want to create a jar from the sources, use the ``package`` task.
 
 
 Runtime dependencies
