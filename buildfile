@@ -1,5 +1,3 @@
-require 'buildr/scala'
-
 repositories.remote << 'http://www.ibiblio.org/maven2/'
 
 # Dependencies
@@ -12,8 +10,6 @@ BC = 'org.bouncycastle:bcprov-jdk16:jar:1.45'
 
 desc 'SSHv2 library for Java'
 define 'sshj', :version=>'0.1a', :group=>'sshj' do
-    
-    shell.using :scala
     
     compile.with SLF4J, LOG4J, SLF4J_LOG4J, BC, JCRAFT
 
