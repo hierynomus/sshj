@@ -7,7 +7,7 @@
     <description>SSHv2 library for Java</description>
     <url>http://github.com/shikhar/sshj</url>
     <scm>
-        <url>git://github.com/shikhar/sshj.git</url>
+        <url>http://github.com/shikhar/sshj</url>
     </scm>
 
     <licenses>
