@@ -3,7 +3,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>sshj</groupId>
+    <groupId>net.schmizz</groupId>
     <artifactId>sshj</artifactId>
     <packaging>jar</packaging>
     <version>0.1alpha</version>
