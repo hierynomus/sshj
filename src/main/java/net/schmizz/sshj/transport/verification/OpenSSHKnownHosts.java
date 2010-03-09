@@ -44,22 +44,7 @@ import java.util.List;
 public class OpenSSHKnownHosts
         implements HostKeyVerifier {
 
-    public static interface Entry {
-
-        KeyType getType();
-
-        boolean appliesTo(String host)
-                throws IOException;
-
-        PublicKey getKey()
-                throws IOException;
-
-        String getLine();
-
-    }
-
-    public static abstract class BaseEntry
-            implements Entry {
+    public static abstract class Entry {
 
         private KeyType type;
         private PublicKey key;
@@ -116,10 +101,13 @@ public class OpenSSHKnownHosts
 
         protected abstract String getHostPart();
 
+        public abstract boolean appliesTo(String host)
+                throws IOException;
+
     }
 
     public static class SimpleEntry
-            extends BaseEntry {
+            extends Entry {
 
         private final List<String> hosts;
 
@@ -163,7 +151,7 @@ public class OpenSSHKnownHosts
     }
 
     public static class HashedEntry
-            extends BaseEntry {
+            extends Entry {
 
         private final MAC sha1 = new HMACSHA1();
 
