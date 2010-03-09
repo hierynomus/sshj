@@ -72,10 +72,10 @@ public class Event<T extends Throwable>
     }
 
     /**
-     * Await this event to have a definite {@code true} or {@code false} value, for {@code timeout} seconds.
+     * Await this event to have a definite {@code true} or {@code false} value, for {@code timeout} duration.
      *
-     * @param timeout timeout in seconds
-     * @param unit    the time unit
+     * @param timeout timeout
+     * @param unit    the time unit for the timeout
      *
      * @throws T if another thread meanwhile informs this event of an error, or timeout expires
      */

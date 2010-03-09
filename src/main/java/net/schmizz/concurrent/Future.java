@@ -122,10 +122,10 @@ public class Future<V, T extends Throwable> {
     }
 
     /**
-     * Wait for {@code timeout} seconds for this future's value to be set.
+     * Wait for {@code timeout} duration for this future's value to be set.
      *
-     * @param timeout the timeout in seconds
-     * @param unit    time unit
+     * @param timeout the timeout
+     * @param unit    time unit for the timeout
      *
      * @return the value
      *
