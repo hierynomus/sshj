@@ -124,7 +124,7 @@ public class SSHClient
     protected final UserAuth auth;
 
     /** {@code ssh-connection} service */
-    protected final ConnectionImpl conn;
+    protected final Connection conn;
 
     /** Default constructor. Initializes this object using {@link DefaultConfig}. */
     public SSHClient() {
@@ -198,7 +198,7 @@ public class SSHClient
     public void auth(String username, Iterable<AuthMethod> methods)
             throws UserAuthException, TransportException {
         assert isConnected();
-        auth.authenticate(username, conn, methods);
+        auth.authenticate(username, (Service) conn, methods);
     }
 
     /**
@@ -453,9 +453,9 @@ public class SSHClient
      */
     public KeyProvider loadKeys(String location, PasswordFinder passwordFinder)
             throws IOException {
-        File loc = new File(location);
-        FileKeyProvider.Format format = KeyProviderUtil.detectKeyFileFormat(loc);
-        FileKeyProvider fkp = Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format
+        final File loc = new File(location);
+        final FileKeyProvider.Format format = KeyProviderUtil.detectKeyFileFormat(loc);
+        final FileKeyProvider fkp = Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format
                 .toString());
         if (fkp == null)
             throw new SSHException("No provider available for " + format + " key file");
