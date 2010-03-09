@@ -44,8 +44,8 @@ You will need buildr_. To see available tasks, run::
 If you just want to create a jar from the sources, use the ``package`` task.
 
 
-Runtime dependencies
---------------------
+Dependencies
+-------------
 
 slf4j_ is required. bouncycastle_ is highly recommended and required for using some of the crypto algorithms.
 jzlib_ is required for using zlib compression.
