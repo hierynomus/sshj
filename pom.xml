@@ -6,7 +6,7 @@
     <groupId>sshj</groupId>
     <artifactId>sshj</artifactId>
     <packaging>jar</packaging>
-    <version>0.1-alpha</version>
+    <version>0.1alpha</version>
 
     <name>sshj</name>
     <description>SSHv2 library for Java</description>

@@ -9,7 +9,7 @@ JCRAFT = 'com.jcraft:jzlib:jar:1.0.7'
 BC = 'org.bouncycastle:bcprov-jdk15:jar:1.45'
 
 desc 'SSHv2 library for Java'
-define 'sshj', :version=>'0.1a', :group=>'sshj' do
+define 'sshj', :version=>'0.1alpha', :group=>'sshj' do
     
     compile.with(SLF4J, BC, JCRAFT).using(:target=>'1.5')
 
