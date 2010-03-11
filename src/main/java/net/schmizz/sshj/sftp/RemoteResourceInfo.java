@@ -21,16 +21,20 @@ public class RemoteResourceInfo {
     private final FileAttributes attrs;
 
     public RemoteResourceInfo(String parent, String name, FileAttributes attrs) {
-        this.comps = new PathComponents(parent, name);
-        this.attrs = attrs;
+        this(new PathComponents(parent, name), attrs);
     }
 
-    public String getParent() {
-        return comps.getParent();
+    public RemoteResourceInfo(PathComponents comps, FileAttributes attrs) {
+        this.comps = comps;
+        this.attrs = attrs;
     }
 
     public String getPath() {
         return comps.getPath();
+    }
+
+    public String getParent() {
+        return comps.getParent();
     }
 
     public String getName() {
@@ -41,20 +45,12 @@ public class RemoteResourceInfo {
         return attrs;
     }
 
-    public boolean isType(FileMode.Type type) {
-        return attrs.getType() == type;
-    }
-
     public boolean isRegularFile() {
-        return isType(FileMode.Type.REGULAR);
+        return attrs.getType() == FileMode.Type.REGULAR;
     }
 
     public boolean isDirectory() {
-        return isType(FileMode.Type.DIRECTORY);
-    }
-
-    public boolean isSymlink() {
-        return isType(FileMode.Type.SYMKLINK);
+        return attrs.getType() == FileMode.Type.DIRECTORY;
     }
 
     @Override

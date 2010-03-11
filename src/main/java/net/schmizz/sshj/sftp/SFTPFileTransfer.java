@@ -64,9 +64,10 @@ public class SFTPFileTransfer
 
     public void download(String source, String dest)
             throws IOException {
-        PathComponents src = pathHelper.getComponents(source);
-        new Downloader(getModeSetter(), getDownloadFilter()).download(new RemoteResourceInfo(src.getParent(), src
-                .getName(), sftp.stat(source)), new File(dest));
+        final PathComponents pathComponents = pathHelper.getComponents(source);
+        final FileAttributes attributes = sftp.stat(source);
+        new Downloader(getModeSetter(), getDownloadFilter())
+                .download(new RemoteResourceInfo(pathComponents, attributes), new File(dest));
     }
 
     public void setUploadFilter(FileFilter uploadFilter) {
@@ -136,12 +137,19 @@ public class SFTPFileTransfer
         void download(RemoteResourceInfo remote, File local)
                 throws IOException {
             log.info("Downloading [{}] to [{}]", remote, local);
-            if (remote.isDirectory())
-                downloadDir(remote, local);
-            else if (remote.isRegularFile())
-                downloadFile(remote, local);
-            else
-                throw new IOException(remote + " is not a regular file or directory");
+            switch (remote.getAttributes().getType()) {
+                case DIRECTORY:
+                    downloadDir(remote, local);
+                    break;
+                case UNKNOWN: // ... BS servers like wodFTPD
+                    log.warn("Server did not supply information about the type of file at `{}` -- assuming it is a regular file!");
+                case REGULAR:
+                    downloadFile(remote, local);
+                    break;
+                default:
+                    throw new IOException(remote + " is not a regular file or directory");
+
+            }
         }
     }
 
@@ -240,9 +248,8 @@ public class SFTPFileTransfer
             try {
                 final FileInputStream fis = new FileInputStream(local);
                 try {
-                    StreamCopier.copy(fis, //
-                                      rf.getOutputStream(), sftp.getSubsystem().getRemoteMaxPacketSize()
-                                                            - rf.getOutgoingPacketOverhead(), false);
+                    StreamCopier.copy(fis, rf.getOutputStream(), sftp.getSubsystem().getRemoteMaxPacketSize()
+                                                                 - rf.getOutgoingPacketOverhead(), false);
                 } finally {
                     fis.close();
                 }
