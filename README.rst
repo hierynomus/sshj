@@ -34,16 +34,6 @@ private key files
 If you need something that is not implemented, it shouldn't be too hard to add (do contribute it!)
 
 
-Building
---------
-
-You will need buildr_. To see available tasks, run::
-
-  $ buildr help:tasks
-
-If you just want to create a jar from the sources, use the ``package`` task.
-
-
 Dependencies
 -------------
 
