@@ -53,8 +53,8 @@ public class FileMode {
             return UNKNOWN;
         }
 
-        public static int toMask(Type t) {
-            return t.val;
+        public int toMask() {
+            return val;
         }
 
     }

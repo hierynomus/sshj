@@ -178,13 +178,19 @@ public final class FileAttributes {
 
         public Builder withPermissions(Set<FilePermission> perms) {
             mask |= Flag.MODE.get();
-            this.mode = new FileMode(FilePermission.toMask(perms));
+            this.mode = new FileMode((mode != null ? mode.getTypeMask() : 0) | FilePermission.toMask(perms));
             return this;
         }
 
         public Builder withPermissions(int perms) {
             mask |= Flag.MODE.get();
-            this.mode = new FileMode(perms);
+            this.mode = new FileMode((mode != null ? mode.getTypeMask() : 0) | perms);
+            return this;
+        }
+
+        public Builder withType(FileMode.Type type) {
+            mask |= Flag.MODE.get();
+            this.mode = new FileMode(type.toMask() | (mode != null ? mode.getPermissionsMask() : 0));
             return this;
         }
 
@@ -208,7 +214,7 @@ public final class FileAttributes {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("[");
+        final StringBuilder sb = new StringBuilder("[");
 
         if (has(Flag.SIZE))
             sb.append("size=").append(size).append(";");
