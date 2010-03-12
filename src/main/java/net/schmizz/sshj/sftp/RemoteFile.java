@@ -171,7 +171,7 @@ public class RemoteFile
         @Override
         public int read()
                 throws IOException {
-            return read(b, 0, 1) == -1 ? -1 : b[0];
+            return read(b, 0, 1) == -1 ? -1 : b[0] & 0xff;
         }
 
         @Override

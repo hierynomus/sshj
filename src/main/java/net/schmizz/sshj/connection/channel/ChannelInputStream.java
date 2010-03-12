@@ -109,7 +109,7 @@ public final class ChannelInputStream
     public int read()
             throws IOException {
         synchronized (b) {
-            return read(b, 0, 1) == -1 ? -1 : b[0];
+            return read(b, 0, 1) == -1 ? -1 : b[0] & 0xff;
         }
     }
 
