@@ -54,7 +54,7 @@ public interface ModeSetter {
     void setPermissions(File f, int perms)
             throws IOException;
 
-    /** Whether this implementation is interested in preserving mtime and atime. */
+    /** @return whether this implementation is interested in preserving mtime and atime. */
     boolean preservesTimes();
 
 }
