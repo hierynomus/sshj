@@ -120,8 +120,6 @@ abstract class SocketClient {
             output.close();
             output = null;
         }
-        input = null;
-        output = null;
     }
 
     public boolean isConnected() {
