@@ -37,8 +37,7 @@ public class SCPUpload {
             // Present here to demo algorithm renegotiation - could have just put this before connect()
             ssh.useCompression();
 
-            ssh.newSCPFileTransfer()
-                    .upload("/Users/shikhar/well", "/tmp/");
+            ssh.newSCPFileTransfer().upload("/Users/shikhar/well", "/tmp/");
         } finally {
             ssh.disconnect();
         }
