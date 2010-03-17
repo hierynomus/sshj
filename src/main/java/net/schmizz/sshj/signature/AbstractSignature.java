@@ -54,13 +54,13 @@ public abstract class AbstractSignature
         this.algorithm = algorithm;
     }
 
-    public void init(PublicKey pubkey, PrivateKey prvkey) {
+    public void init(PublicKey publicKey, PrivateKey privateKey) {
         try {
             signature = SecurityUtils.getSignature(algorithm);
-            if (pubkey != null)
-                signature.initVerify(pubkey);
-            if (prvkey != null)
-                signature.initSign(prvkey);
+            if (publicKey != null)
+                signature.initVerify(publicKey);
+            if (privateKey != null)
+                signature.initSign(privateKey);
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
         }
@@ -81,19 +81,18 @@ public abstract class AbstractSignature
     protected byte[] extractSig(byte[] sig) {
         if (sig[0] == 0 && sig[1] == 0 && sig[2] == 0) {
             int i = 0;
-            int j;
-            j = sig[i++] << 24 & 0xff000000 //
-                | sig[i++] << 16 & 0x00ff0000 //
-                | sig[i++] << 8 & 0x0000ff00 //
-                | sig[i++] & 0x000000ff;
+            int j = sig[i++] << 24 & 0xff000000
+                    | sig[i++] << 16 & 0x00ff0000
+                    | sig[i++] << 8 & 0x0000ff00
+                    | sig[i++] & 0x000000ff;
             i += j;
-            j = sig[i++] << 24 & 0xff000000 //
-                | sig[i++] << 16 & 0x00ff0000 //
-                | sig[i++] << 8 & 0x0000ff00 //
+            j = sig[i++] << 24 & 0xff000000
+                | sig[i++] << 16 & 0x00ff0000
+                | sig[i++] << 8 & 0x0000ff00
                 | sig[i++] & 0x000000ff;
-            byte[] tmp = new byte[j];
-            System.arraycopy(sig, i, tmp, 0, j);
-            sig = tmp;
+            byte[] newSig = new byte[j];
+            System.arraycopy(sig, i, newSig, 0, j);
+            sig = newSig;
         }
         return sig;
     }

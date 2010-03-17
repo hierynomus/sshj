@@ -72,15 +72,16 @@ public class SignatureDSA
 
         // sig is in ASN.1
         // SEQUENCE::={ r INTEGER, s INTEGER }
-        int len = 0;
-        int index = 3;
-        len = sig[index++] & 0xff;
-        byte[] r = new byte[len];
-        System.arraycopy(sig, index, r, 0, r.length);
-        index = index + len + 1;
-        len = sig[index++] & 0xff;
-        byte[] s = new byte[len];
-        System.arraycopy(sig, index, s, 0, s.length);
+
+        int rIndex = 3;
+        int rLen = sig[rIndex++] & 0xff;
+        byte[] r = new byte[rLen];
+        System.arraycopy(sig, rIndex, r, 0, r.length);
+
+        int sIndex = rIndex + rLen + 1;
+        int sLen = sig[sIndex++] & 0xff;
+        byte[] s = new byte[sLen];
+        System.arraycopy(sig, sIndex, s, 0, s.length);
 
         byte[] result = new byte[40];
 
@@ -91,6 +92,7 @@ public class SignatureDSA
                          result,
                          r.length > 20 ? 0 : 20 - r.length,
                          r.length > 20 ? 20 : r.length);
+
         System.arraycopy(s,
                          s.length > 20 ? 1 : 0,
                          result,
