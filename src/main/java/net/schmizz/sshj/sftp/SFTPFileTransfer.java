@@ -238,7 +238,6 @@ public class SFTPFileTransfer
         private FileAttributes getAttributes(File local)
                 throws IOException {
             final FileAttributes.Builder builder = new FileAttributes.Builder()
-                    .withType(local.isDirectory() ? FileMode.Type.DIRECTORY : FileMode.Type.REGULAR)
                     .withPermissions(getModeGetter().getPermissions(local));
             if (getModeGetter().preservesTimes())
                 builder.withAtimeMtime(getModeGetter().getLastAccessTime(local), getModeGetter().getLastModifiedTime(local));
