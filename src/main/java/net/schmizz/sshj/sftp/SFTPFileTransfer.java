@@ -85,13 +85,33 @@ public class SFTPFileTransfer
 
     private class Downloader {
 
-        private void setAttributes(final RemoteResourceInfo remote, final File local)
+        private void download(final RemoteResourceInfo remote, final File local)
                 throws IOException {
-            final FileAttributes attrs = remote.getAttributes();
-            getModeSetter().setPermissions(local, attrs.getMode().getPermissionsMask());
-            if (getModeSetter().preservesTimes() && attrs.has(FileAttributes.Flag.ACMODTIME)) {
-                getModeSetter().setLastAccessedTime(local, attrs.getAtime());
-                getModeSetter().setLastModifiedTime(local, attrs.getMtime());
+            log.info("Downloading [{}] to [{}]", remote, local);
+            switch (remote.getAttributes().getType()) {
+                case DIRECTORY:
+                    downloadDir(remote, local);
+                    break;
+                case UNKNOWN:
+                    log.warn("Server did not supply information about the type of file at `{}` -- assuming it is a regular file!");
+                case REGULAR:
+                    downloadFile(remote, local);
+                    break;
+                default:
+                    throw new IOException(remote + " is not a regular file or directory");
+            }
+        }
+
+        private void downloadDir(final RemoteResourceInfo remote, final File local)
+                throws IOException {
+            final File adjusted = FileTransferUtil.getTargetDirectory(local, remote.getName());
+            setAttributes(remote, adjusted);
+            final RemoteDirectory rd = sftp.openDir(remote.getPath());
+            try {
+                for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
+                    download(rri, new File(adjusted.getPath(), rri.getName()));
+            } finally {
+                rd.close();
             }
         }
 
@@ -113,40 +133,21 @@ public class SFTPFileTransfer
             }
         }
 
-        private void downloadDir(final RemoteResourceInfo remote, final File local)
+        private void setAttributes(final RemoteResourceInfo remote, final File local)
                 throws IOException {
-            final File adjusted = FileTransferUtil.getTargetDirectory(local, remote.getName());
-            setAttributes(remote, adjusted);
-            final RemoteDirectory rd = sftp.openDir(remote.getPath());
-            try {
-                for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
-                    download(rri, new File(adjusted.getPath(), rri.getName()));
-            } finally {
-                rd.close();
+            final FileAttributes attrs = remote.getAttributes();
+            getModeSetter().setPermissions(local, attrs.getMode().getPermissionsMask());
+            if (getModeSetter().preservesTimes() && attrs.has(FileAttributes.Flag.ACMODTIME)) {
+                getModeSetter().setLastAccessedTime(local, attrs.getAtime());
+                getModeSetter().setLastModifiedTime(local, attrs.getMtime());
             }
         }
 
-        void download(final RemoteResourceInfo remote, final File local)
-                throws IOException {
-            log.info("Downloading [{}] to [{}]", remote, local);
-            switch (remote.getAttributes().getType()) {
-                case DIRECTORY:
-                    downloadDir(remote, local);
-                    break;
-                case UNKNOWN:
-                    log.warn("Server did not supply information about the type of file at `{}` -- assuming it is a regular file!");
-                case REGULAR:
-                    downloadFile(remote, local);
-                    break;
-                default:
-                    throw new IOException(remote + " is not a regular file or directory");
-            }
-        }
     }
 
     private class Uploader {
 
-        void upload(File local, String remote)
+        private void upload(File local, String remote)
                 throws IOException {
             log.info("Uploading [{}] to [{}]", local, remote);
             if (local.isDirectory())
