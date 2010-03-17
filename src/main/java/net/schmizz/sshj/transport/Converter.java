@@ -74,7 +74,7 @@ abstract class Converter {
         this.mac = mac;
         this.compression = compression;
         if (compression != null)
-            compression.init(getCompressionType(), -1);
+            compression.init(getCompressionType());
         this.cipherSize = cipher.getIVSize();
     }
 
@@ -86,6 +86,6 @@ abstract class Converter {
         return compression != null && (authed || !compression.isDelayed());
     }
 
-    abstract Compression.Type getCompressionType();
+    abstract Compression.Mode getCompressionType();
 
 }

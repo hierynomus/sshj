@@ -160,9 +160,8 @@ final class Encoder
     }
 
     @Override
-    Compression.Type getCompressionType() {
-        return Compression.Type.Deflater;
+    Compression.Mode getCompressionType() {
+        return Compression.Mode.DEFLATE;
     }
-
 
 }

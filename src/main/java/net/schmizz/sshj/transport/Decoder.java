@@ -199,8 +199,8 @@ final class Decoder
     }
 
     @Override
-    Compression.Type getCompressionType() {
-        return Compression.Type.Inflater;
+    Compression.Mode getCompressionType() {
+        return Compression.Mode.INFLATE;
     }
 
     int getMaxPacketLength() {

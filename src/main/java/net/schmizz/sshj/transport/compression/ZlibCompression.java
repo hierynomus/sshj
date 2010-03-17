@@ -37,8 +37,8 @@ package net.schmizz.sshj.transport.compression;
 
 import com.jcraft.jzlib.JZlib;
 import com.jcraft.jzlib.ZStream;
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.transport.TransportException;
 
@@ -58,64 +58,65 @@ public class ZlibCompression
         }
     }
 
-    static private final int BUF_SIZE = 4096;
+    private static final int BUF_SIZE = 4096;
+
+    private final byte[] tempBuf = new byte[BUF_SIZE];
 
     private ZStream stream;
-    private final byte[] tmpbuf = new byte[BUF_SIZE];
 
-    /** Create a new instance of a ZLib base compression */
-    public ZlibCompression() {
-    }
-
-    public void compress(SSHPacket buffer) {
-        stream.next_in = buffer.array();
-        stream.next_in_index = buffer.rpos();
-        stream.avail_in = buffer.available();
-        buffer.wpos(buffer.rpos());
-        do {
-            stream.next_out = tmpbuf;
-            stream.next_out_index = 0;
-            stream.avail_out = BUF_SIZE;
-            int status = stream.deflate(JZlib.Z_PARTIAL_FLUSH);
-            switch (status) {
-                case JZlib.Z_OK:
-                    buffer.putRawBytes(tmpbuf, 0, BUF_SIZE - stream.avail_out);
-                    break;
-                default:
-                    throw new SSHRuntimeException("compress: deflate returned " + status);
-            }
-        } while (stream.avail_out == 0);
-    }
-
-    public void init(Type type, int level) {
+    public void init(Mode mode) {
         stream = new ZStream();
-        if (type == Type.Deflater)
-            stream.deflateInit(level);
-        else
-            stream.inflateInit();
+        switch (mode) {
+            case DEFLATE:
+                stream.deflateInit(JZlib.Z_DEFAULT_COMPRESSION);
+                break;
+            case INFLATE:
+                stream.inflateInit();
+                break;
+            default:
+                assert false;
+        }
     }
 
     public boolean isDelayed() {
         return false;
     }
 
-    public void uncompress(SSHPacket from, SSHPacket to)
+    public void compress(Buffer buffer) {
+        stream.next_in = buffer.array();
+        stream.next_in_index = buffer.rpos();
+        stream.avail_in = buffer.available();
+        buffer.wpos(buffer.rpos());
+        do {
+            stream.next_out = tempBuf;
+            stream.next_out_index = 0;
+            stream.avail_out = BUF_SIZE;
+            final int status = stream.deflate(JZlib.Z_PARTIAL_FLUSH);
+            if (status == JZlib.Z_OK) {
+                buffer.putRawBytes(tempBuf, 0, BUF_SIZE - stream.avail_out);
+            } else {
+                throw new SSHRuntimeException("compress: deflate returned " + status);
+            }
+        } while (stream.avail_out == 0);
+    }
+
+
+    public void uncompress(Buffer from, Buffer to)
             throws TransportException {
         stream.next_in = from.array();
         stream.next_in_index = from.rpos();
         stream.avail_in = from.available();
-
         while (true) {
-            stream.next_out = tmpbuf;
+            stream.next_out = tempBuf;
             stream.next_out_index = 0;
             stream.avail_out = BUF_SIZE;
-            int status = stream.inflate(JZlib.Z_PARTIAL_FLUSH);
+            final int status = stream.inflate(JZlib.Z_PARTIAL_FLUSH);
             switch (status) {
                 case JZlib.Z_OK:
-                    to.putRawBytes(tmpbuf, 0, BUF_SIZE - stream.avail_out);
+                    to.putRawBytes(tempBuf, 0, BUF_SIZE - stream.avail_out);
                     break;
                 case JZlib.Z_BUF_ERROR:
-                    return; // wtf.. but this works *head spins*
+                    return;
                 default:
                     throw new TransportException(DisconnectReason.COMPRESSION_ERROR, "uncompress: inflate returned "
                                                                                      + status);

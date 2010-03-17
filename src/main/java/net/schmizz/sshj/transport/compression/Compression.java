@@ -35,34 +35,26 @@
  */
 package net.schmizz.sshj.transport.compression;
 
-import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.transport.TransportException;
 
 /** Interface used to compress the stream of data between the SSH server and clients. */
 public interface Compression {
 
     /** Enum identifying if this object will be used to compress or uncompress data. */
-    enum Type {
-        Inflater,
-        Deflater
+    enum Mode {
+        INFLATE,
+        DEFLATE
     }
-
-    /**
-     * Compress the given buffer in place.
-     *
-     * @param buffer the buffer containing the data to compress s
-     */
-    void compress(SSHPacket buffer);
 
     /**
      * Initialize this object to either compress or uncompress data. This method must be called prior to any calls to
      * either <code>compress</code> or <code>uncompress</code>. Once the object has been initialized, only one of
      * <code>compress</code> or <code>uncompress</code> method can be called.
      *
-     * @param type
-     * @param level
+     * @param mode
      */
-    void init(Type type, int level);
+    void init(Mode mode);
 
     /**
      * Delayed compression is an Open-SSH specific feature which informs both the client and server to not compress data
@@ -73,12 +65,21 @@ public interface Compression {
     boolean isDelayed();
 
     /**
+     * Compress the given buffer in place.
+     *
+     * @param buffer the buffer containing the data to compress s
+     */
+    void compress(Buffer buffer);
+
+    /**
      * Uncompress the data in a buffer into another buffer.
      *
      * @param from the buffer containing the data to uncompress
      * @param to   the buffer receiving the uncompressed data
+     *
+     * @throws TransportException
      */
-    void uncompress(SSHPacket from, SSHPacket to)
+    void uncompress(Buffer from, Buffer to)
             throws TransportException;
 
 }
