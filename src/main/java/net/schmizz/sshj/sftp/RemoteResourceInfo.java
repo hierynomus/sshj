@@ -55,10 +55,7 @@ public class RemoteResourceInfo {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof RemoteResourceInfo) {
-            return (comps.equals(((RemoteResourceInfo) o).comps));
-        }
-        return false;
+        return o instanceof RemoteResourceInfo && (comps.equals(((RemoteResourceInfo) o).comps));
     }
 
     @Override
