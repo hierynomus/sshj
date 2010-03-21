@@ -22,7 +22,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 public class StreamCopier
         extends Thread {
@@ -34,10 +33,9 @@ public class StreamCopier
     }
 
     public static ErrorCallback closeOnErrorCallback(final Closeable... toClose) {
-        final Closeable[] closeables = Arrays.copyOf(toClose, toClose.length);
         return new ErrorCallback() {
             public void onError(IOException ioe) {
-                IOUtils.closeQuietly(closeables);
+                IOUtils.closeQuietly(toClose);
             }
         };
     }
