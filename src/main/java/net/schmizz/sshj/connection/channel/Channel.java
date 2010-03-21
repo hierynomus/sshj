@@ -34,13 +34,12 @@ public interface Channel
         /**
          * Request opening this channel from remote end.
          *
-         * @throws OpenFailException  in case the channel open request was rejected
-         * @throws net.schmizz.sshj.connection.ConnectionException
-         *                            other connection-layer error
-         * @throws TransportException error writing packets etc.
+         * @throws OpenFailException   in case the channel open request was rejected
+         * @throws ConnectionException other connection-layer error
+         * @throws TransportException  error writing packets etc.
          */
         void open()
-                throws OpenFailException, ConnectionException, TransportException;
+                throws ConnectionException, TransportException;
 
     }
 
