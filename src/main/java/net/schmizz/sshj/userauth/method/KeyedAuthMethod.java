@@ -29,7 +29,8 @@ import java.security.PublicKey;
 
 public abstract class KeyedAuthMethod
         extends AbstractAuthMethod {
-    protected KeyProvider kProv;
+
+    protected final KeyProvider kProv;
 
     public KeyedAuthMethod(String name, KeyProvider kProv) {
         super(name);

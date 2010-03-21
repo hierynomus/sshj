@@ -47,8 +47,8 @@ import java.security.SignatureException;
 public abstract class AbstractSignature
         implements Signature {
 
+    protected final String algorithm;
     protected java.security.Signature signature;
-    protected String algorithm;
 
     protected AbstractSignature(String algorithm) {
         this.algorithm = algorithm;

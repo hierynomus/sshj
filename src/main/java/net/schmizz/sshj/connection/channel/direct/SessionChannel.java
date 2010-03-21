@@ -56,6 +56,8 @@ public class
         extends AbstractDirectChannel
         implements Session, Session.Command, Session.Shell, Session.Subsystem {
 
+    private final ChannelInputStream err = new ChannelInputStream(this, trans, lwin);
+
     private Integer exitStatus;
 
     private Signal exitSignal;
@@ -63,8 +65,6 @@ public class
     private String exitErrMsg;
 
     private Boolean canDoFlowControl;
-
-    private ChannelInputStream err = new ChannelInputStream(this, trans, lwin);
 
     public SessionChannel(Connection conn) {
         super(conn, "session");

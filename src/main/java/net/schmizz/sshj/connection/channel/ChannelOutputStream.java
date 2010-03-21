@@ -54,7 +54,7 @@ public final class ChannelOutputStream
         implements ErrorNotifiable {
 
     private final Channel chan;
-    private Transport trans;
+    private final Transport trans;
     private final Window.Remote win;
     private final SSHPacket buffer = new SSHPacket();
     private final byte[] b = new byte[1];
