@@ -41,6 +41,7 @@ import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.digest.Digest;
 
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 /** Key exchange algorithm. */
@@ -55,13 +56,17 @@ public interface KeyExchange {
      * @param I_S   the server key init packet
      * @param I_C   the client key init packet
      *
-     * @throws TransportException if there is an error sending a packet
+     * @throws GeneralSecurityException
+     * @throws TransportException       if there is an error sending a packet
      */
     void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
-            throws TransportException;
+            throws GeneralSecurityException, TransportException;
 
     /** @return the computed H parameter */
     byte[] getH();
+
+    /** @return the computed K parameter */
+    byte[] getK();
 
     /**
      * The message digest used by this key exchange algorithm.
@@ -73,9 +78,6 @@ public interface KeyExchange {
     /** @return the host key determined from server's response packets */
     PublicKey getHostKey();
 
-    /** @return the computed K parameter */
-    byte[] getK();
-
     /**
      * Process the next packet
      *
@@ -84,9 +86,10 @@ public interface KeyExchange {
      *
      * @return a boolean indicating if the processing is complete or if more packets are to be received
      *
-     * @throws TransportException if there is an error sending a packet
+     * @throws GeneralSecurityException
+     * @throws TransportException       if there is an error sending a packet
      */
     boolean next(Message msg, SSHPacket buffer)
-            throws TransportException;
+            throws GeneralSecurityException, TransportException;
 
 }

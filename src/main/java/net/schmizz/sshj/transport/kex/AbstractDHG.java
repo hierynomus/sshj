@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 /**
@@ -81,6 +82,10 @@ public abstract class AbstractDHG
         return ByteArrayUtils.copyOf(H);
     }
 
+    public byte[] getK() {
+        return ByteArrayUtils.copyOf(K);
+    }
+
     public Digest getHash() {
         return sha;
     }
@@ -89,12 +94,8 @@ public abstract class AbstractDHG
         return hostKey;
     }
 
-    public byte[] getK() {
-        return ByteArrayUtils.copyOf(K);
-    }
-
     public void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
-            throws TransportException {
+            throws GeneralSecurityException, TransportException {
         this.trans = trans;
         this.V_S = ByteArrayUtils.copyOf(V_S);
         this.V_C = ByteArrayUtils.copyOf(V_C);
@@ -109,7 +110,7 @@ public abstract class AbstractDHG
     }
 
     public boolean next(Message msg, SSHPacket packet)
-            throws TransportException {
+            throws GeneralSecurityException, TransportException {
         if (msg != Message.KEXDH_31)
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "Unexpected packet: " + msg);
 
@@ -139,7 +140,8 @@ public abstract class AbstractDHG
         signature.init(hostKey, null);
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))
-            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "KeyExchange signature verification failed");
+            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                                         "KeyExchange signature verification failed");
         return true;
     }
 

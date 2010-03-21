@@ -60,8 +60,8 @@ public class DHG14
 
     @Override
     protected void initDH(DH dh) {
-        dh.setG(DHGroupData.getG());
-        dh.setP(DHGroupData.getP14());
+        dh.setG(DHGroupData.G);
+        dh.setP(DHGroupData.P14);
     }
 
 }

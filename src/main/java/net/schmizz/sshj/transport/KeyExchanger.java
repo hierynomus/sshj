@@ -47,6 +47,7 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -228,8 +229,12 @@ final class KeyExchanger
         log.debug("Negotiated algorithms: {}", negotiatedAlgs);
         kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(), negotiatedAlgs
                 .getKeyExchangeAlgorithm());
-        kex.init(transport, transport.getServerID().getBytes(), transport.getClientID().getBytes(), buf
-                .getCompactData(), clientProposal.getPacket().getCompactData());
+        try {
+            kex.init(transport, transport.getServerID().getBytes(), transport.getClientID().getBytes(), buf
+                    .getCompactData(), clientProposal.getPacket().getCompactData());
+        } catch (GeneralSecurityException e) {
+            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, e);
+        }
     }
 
     /**
@@ -347,10 +352,14 @@ final class KeyExchanger
             case FOLLOWUP:
                 ensureKexOngoing();
                 log.info("Received kex followup data");
-                if (kex.next(msg, buf)) {
-                    verifyHost(kex.getHostKey());
-                    sendNewKeys();
-                    expected = Expected.NEWKEYS;
+                try {
+                    if (kex.next(msg, buf)) {
+                        verifyHost(kex.getHostKey());
+                        sendNewKeys();
+                        expected = Expected.NEWKEYS;
+                    }
+                } catch (GeneralSecurityException e) {
+                    throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, e);
                 }
                 break;
 
