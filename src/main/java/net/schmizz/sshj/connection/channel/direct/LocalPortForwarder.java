@@ -54,25 +54,25 @@ public class LocalPortForwarder {
                                                                                }
                                                                            });
 
-            new StreamCopier("chan2soc", getInputStream(), sock.getOutputStream()) //
-                    .bufSize(getLocalMaxPacketSize()) //
-                    .errorCallback(closer) //
-                    .daemon(true) //
+            new StreamCopier("chan2soc", getInputStream(), sock.getOutputStream())
+                    .bufSize(getLocalMaxPacketSize())
+                    .errorCallback(closer)
+                    .daemon(true)
                     .start();
 
-            new StreamCopier("soc2chan", sock.getInputStream(), getOutputStream()) //
-                    .bufSize(getRemoteMaxPacketSize()) //
-                    .errorCallback(closer) //
-                    .daemon(true) //
+            new StreamCopier("soc2chan", sock.getInputStream(), getOutputStream())
+                    .bufSize(getRemoteMaxPacketSize())
+                    .errorCallback(closer)
+                    .daemon(true)
                     .start();
         }
 
         @Override
         protected SSHPacket buildOpenReq() {
-            return super.buildOpenReq() //
-                    .putString(host) //
-                    .putInt(port) //
-                    .putString(ss.getInetAddress().getHostAddress()) //
+            return super.buildOpenReq()
+                    .putString(host)
+                    .putInt(port)
+                    .putString(ss.getInetAddress().getHostAddress())
                     .putInt(ss.getLocalPort());
         }
 
@@ -85,6 +85,19 @@ public class LocalPortForwarder {
     private final String host;
     private final int port;
 
+    /**
+     * Create a local port forwarder with specified binding ({@code listeningAddr}. It does not, however, start
+     * listening unless {@link #listen() explicitly told to}. The {@link javax.net.ServerSocketFactory#getDefault()
+     * default} server socket factory is used.
+     *
+     * @param conn          {@link Connection} implementation
+     * @param listeningAddr {@link SocketAddress} this forwarder will listen on, if {@code null} then an ephemeral port
+     *                      and valid local address will be picked to bind the server socket
+     * @param host          what host the SSH server will further forward to
+     * @param port          port on {@code toHost}
+     *
+     * @throws IOException if there is an error binding on specified {@code listeningAddr}
+     */
     public LocalPortForwarder(Connection conn, SocketAddress listeningAddr, String host, int port)
             throws IOException {
         this(ServerSocketFactory.getDefault(), conn, listeningAddr, host, port);
@@ -94,6 +107,7 @@ public class LocalPortForwarder {
      * Create a local port forwarder with specified binding ({@code listeningAddr}. It does not, however, start
      * listening unless {@link #listen() explicitly told to}.
      *
+     * @param ssf           factory to use for creating the server socket
      * @param conn          {@link Connection} implementation
      * @param listeningAddr {@link SocketAddress} this forwarder will listen on, if {@code null} then an ephemeral port
      *                      and valid local address will be picked to bind the server socket
@@ -112,16 +126,21 @@ public class LocalPortForwarder {
         ss.bind(listeningAddr);
     }
 
+    /** @return the address to which this forwarder is bound for listening */
     public SocketAddress getListeningAddress() {
         return ss.getLocalSocketAddress();
     }
 
-    /** Start listening for incoming connections and forward to remote host as a channel. */
+    /**
+     * Start listening for incoming connections and forward to remote host as a channel.
+     *
+     * @throws IOException
+     */
     public void listen()
             throws IOException {
         log.info("Listening on {}", ss.getLocalSocketAddress());
         Socket sock;
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             sock = ss.accept();
             log.info("Got connection from {}", sock.getRemoteSocketAddress());
             DirectTCPIPChannel chan = new DirectTCPIPChannel(conn, sock);
