@@ -607,7 +607,7 @@ public class SSHClient
      * @throws TransportException     if an error occurs during renegotiation
      */
     public void useCompression()
-            throws ClassNotFoundException, TransportException {
+            throws TransportException {
         trans.getConfig().setCompressionFactories(Arrays.asList(
                 new DelayedZlibCompression.Factory(),
                 new ZlibCompression.Factory(),

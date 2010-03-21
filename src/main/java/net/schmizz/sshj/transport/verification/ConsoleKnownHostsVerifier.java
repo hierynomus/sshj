@@ -60,8 +60,7 @@ public class ConsoleKnownHostsVerifier
     }
 
     @Override
-    protected boolean hostKeyChangedAction(Entry entry, String hostname, PublicKey key)
-            throws IOException {
+    protected boolean hostKeyChangedAction(Entry entry, String hostname, PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
         final String fp = SecurityUtils.getFingerprint(key);
         final String path = getFile().getAbsolutePath();

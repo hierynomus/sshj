@@ -128,13 +128,12 @@ public class RemotePortForwarder
         private final Forward fwd;
 
         public ForwardedTCPIPChannel(Connection conn, int recipient, int remoteWinSize, int remoteMaxPacketSize,
-                                     Forward fwd, String origIP, int origPort)
-                throws TransportException {
+                                     Forward fwd, String origIP, int origPort) {
             super(conn, TYPE, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
             this.fwd = fwd;
         }
 
-        /** Returns the forwarding from which this channel originates. */
+        /** @return the forwarding from which this channel originates. */
         public Forward getParentForward() {
             return fwd;
         }

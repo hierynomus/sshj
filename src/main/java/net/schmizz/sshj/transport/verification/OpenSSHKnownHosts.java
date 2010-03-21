@@ -204,8 +204,7 @@ public class OpenSSHKnownHosts
             return saltyBytes;
         }
 
-        private String getSalt()
-                throws IOException {
+        private String getSalt() {
             if (salt == null) {
                 salt = Base64.encodeBytes(saltyBytes);
             }
@@ -269,8 +268,7 @@ public class OpenSSHKnownHosts
         return false;
     }
 
-    protected boolean hostKeyChangedAction(Entry entry, String hostname, PublicKey key)
-            throws IOException {
+    protected boolean hostKeyChangedAction(Entry entry, String hostname, PublicKey key) {
         log.warn("Host key for `{}` has changed!", hostname);
         return false;
     }
