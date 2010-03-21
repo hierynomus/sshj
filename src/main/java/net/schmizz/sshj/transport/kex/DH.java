@@ -35,7 +35,6 @@
  */
 package net.schmizz.sshj.transport.kex;
 
-import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
 
@@ -95,7 +94,7 @@ public class DH {
             }
             e = ((javax.crypto.interfaces.DHPublicKey) myKpair.getPublic()).getY();
         }
-        return ByteArrayUtils.copyOf(e.toByteArray());
+        return e.toByteArray();
     }
 
     public byte[] getK() {
@@ -110,7 +109,7 @@ public class DH {
             }
             K = new BigInteger(myKeyAgree.generateSecret());
         }
-        return ByteArrayUtils.copyOf(K.toByteArray());
+        return K.toByteArray();
     }
 
 }
