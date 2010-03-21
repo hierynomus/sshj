@@ -50,6 +50,7 @@ import net.schmizz.sshj.transport.digest.SHA1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.security.PublicKey;
 
 /**
@@ -72,7 +73,6 @@ public abstract class AbstractDHG
     private byte[] I_C;
 
     private byte[] e;
-    private byte[] f;
     private byte[] K;
     private byte[] H;
     private PublicKey hostKey;
@@ -111,26 +111,26 @@ public abstract class AbstractDHG
     public boolean next(Message msg, SSHPacket packet)
             throws TransportException {
         if (msg != Message.KEXDH_31)
-            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "Unxpected packet: " + msg);
+            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "Unexpected packet: " + msg);
 
         log.info("Received SSH_MSG_KEXDH_REPLY");
         final byte[] K_S = packet.readBytes();
-        f = packet.readMPIntAsBytes();
+        final byte[] f = packet.readMPIntAsBytes();
         final byte[] sig = packet.readBytes(); // signature sent by server
-        dh.setF(f);
+        dh.setF(new BigInteger(f));
         K = dh.getK();
 
         hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
 
-        final Buffer.PlainBuffer buf = new Buffer.PlainBuffer() // our hash
-                .putString(V_C) // 
-                .putString(V_S) // 
-                .putString(I_C) //
-                .putString(I_S) //
-                .putString(K_S) //
-                .putMPInt(e) //
-                .putMPInt(f) //
-                .putMPInt(K); //
+        final Buffer.PlainBuffer buf = new Buffer.PlainBuffer()
+                .putString(V_C)
+                .putString(V_S)
+                .putString(I_C)
+                .putString(I_S)
+                .putString(K_S)
+                .putMPInt(e)
+                .putMPInt(f)
+                .putMPInt(K);
         sha.update(buf.array(), 0, buf.available());
         H = sha.digest();
 

@@ -46,6 +46,20 @@ import java.security.PublicKey;
 /** Key exchange algorithm. */
 public interface KeyExchange {
 
+    /**
+     * Initialize the key exchange algorithm.
+     *
+     * @param trans the transport
+     * @param V_S   the server identification string
+     * @param V_C   the client identification string
+     * @param I_S   the server key init packet
+     * @param I_C   the client key init packet
+     *
+     * @throws TransportException if there is an error sending a packet
+     */
+    void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
+            throws TransportException;
+
     /** @return the computed H parameter */
     byte[] getH();
 
@@ -61,20 +75,6 @@ public interface KeyExchange {
 
     /** @return the computed K parameter */
     byte[] getK();
-
-    /**
-     * Initialize the key exchange algorithm.
-     *
-     * @param trans the transport
-     * @param V_S   the server identification string
-     * @param V_C   the client identification string
-     * @param I_S   the server key init packet
-     * @param I_C   the client key init packet
-     *
-     * @throws TransportException if there is an error sending a packet
-     */
-    void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
-            throws TransportException;
 
     /**
      * Process the next packet

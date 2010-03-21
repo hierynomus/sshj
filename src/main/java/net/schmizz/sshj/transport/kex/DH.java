@@ -55,10 +55,8 @@ public class DH {
     private BigInteger p;
     private BigInteger g;
     private BigInteger e; // my public key
-    private byte[] e_array;
     private BigInteger f; // your public key
     private BigInteger K; // shared secret key
-    private byte[] K_array;
     private final KeyPairGenerator myKpairGen;
     private final KeyAgreement myKeyAgree;
 
@@ -70,6 +68,18 @@ public class DH {
             throw new SSHRuntimeException(e);
         }
 
+    }
+
+    public void setF(BigInteger f) {
+        this.f = f;
+    }
+
+    public void setG(BigInteger g) {
+        this.g = g;
+    }
+
+    public void setP(BigInteger p) {
+        this.p = p;
     }
 
     public byte[] getE() {
@@ -84,9 +94,8 @@ public class DH {
                 throw new SSHRuntimeException(e);
             }
             e = ((javax.crypto.interfaces.DHPublicKey) myKpair.getPublic()).getY();
-            e_array = e.toByteArray();
         }
-        return ByteArrayUtils.copyOf(e_array);
+        return ByteArrayUtils.copyOf(e.toByteArray());
     }
 
     public byte[] getK() {
@@ -99,35 +108,9 @@ public class DH {
             } catch (GeneralSecurityException e) {
                 throw new SSHRuntimeException(e);
             }
-            byte[] mySharedSecret = myKeyAgree.generateSecret();
-            K = new BigInteger(mySharedSecret);
-            K_array = mySharedSecret;
+            K = new BigInteger(myKeyAgree.generateSecret());
         }
-        return ByteArrayUtils.copyOf(K_array);
-    }
-
-    public void setF(byte[] f) {
-        setF(new BigInteger(f));
-    }
-
-    public void setG(byte[] g) {
-        setG(new BigInteger(g));
-    }
-
-    public void setP(byte[] p) {
-        setP(new BigInteger(p));
-    }
-
-    void setF(BigInteger f) {
-        this.f = f;
-    }
-
-    void setG(BigInteger g) {
-        this.g = g;
-    }
-
-    void setP(BigInteger p) {
-        this.p = p;
+        return ByteArrayUtils.copyOf(K.toByteArray());
     }
 
 }
