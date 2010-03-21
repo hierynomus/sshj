@@ -57,7 +57,7 @@ public interface ModeGetter {
     int getPermissions(File f)
             throws IOException;
 
-    /** Whether this implementation can provide mtime and atime information. */
+    /** @return whether this implementation can provide mtime and atime information. */
     boolean preservesTimes();
 
 }

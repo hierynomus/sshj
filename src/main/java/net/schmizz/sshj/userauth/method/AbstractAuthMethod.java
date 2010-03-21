@@ -35,7 +35,7 @@ public abstract class AbstractAuthMethod
     /** {@link AuthParams} useful for building request. */
     protected AuthParams params;
 
-    /** Create with the {@code name} of this authentication method. */
+    /** @param name the {@code name} of this authentication method. */
     protected AbstractAuthMethod(String name) {
         this.name = name;
     }

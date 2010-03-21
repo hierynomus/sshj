@@ -162,7 +162,6 @@ public final class SCPDownloadClient
         signal("ACK: D");
 
         do {
-            ;
         } while (!process(null, readMessage(), f));
 
         signal("ACK: E");

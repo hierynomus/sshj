@@ -43,8 +43,7 @@ public class AuthHostbased
     protected SSHPacket buildReq()
             throws UserAuthException {
         SSHPacket req = putPubKey(super.buildReq());
-        req.putString(hostname == null ? params.getTransport().getRemoteHost() : hostname) //
-                .putString(hostuser);
+        req.putString(hostname == null ? params.getTransport().getRemoteHost() : hostname).putString(hostuser);
         return putSig(req);
     }
 
