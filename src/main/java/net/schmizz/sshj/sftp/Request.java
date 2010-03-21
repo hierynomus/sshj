@@ -25,11 +25,10 @@ public class Request
     private final Future<Response, SFTPException> responseFuture;
 
     public Request(PacketType type, long reqID) {
-        super();
-        this.reqID = reqID;
+        super(type);
         this.type = type;
+        this.reqID = reqID;
         responseFuture = new Future<Response, SFTPException>("sftp / " + reqID, SFTPException.chainer);
-        putByte(type.toByte());
         putInt(reqID);
     }
 
