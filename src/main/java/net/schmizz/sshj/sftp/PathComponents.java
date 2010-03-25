@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
-class PathComponents {
+public class PathComponents {
 
     public static String adjustForParent(String parent, String path) {
         return (path.startsWith("/")) ? path // Absolute path, nothing to adjust

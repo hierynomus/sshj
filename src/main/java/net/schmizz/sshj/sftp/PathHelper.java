@@ -17,7 +17,7 @@ package net.schmizz.sshj.sftp;
 
 import java.io.IOException;
 
-class PathHelper {
+public class PathHelper {
 
     private final SFTPEngine sftp;
     private String dotDir;
