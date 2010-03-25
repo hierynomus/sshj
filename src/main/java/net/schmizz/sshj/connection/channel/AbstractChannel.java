@@ -78,7 +78,7 @@ public abstract class AbstractChannel
 
     private final Queue<Event<ConnectionException>> chanReqResponseEvents = new LinkedList<Event<ConnectionException>>();
 
-    /* The lock used by #newEvent to create open & close events */
+    /* The lock used by to create the open & close events */
     private final ReentrantLock lock = new ReentrantLock();
     /** Channel open event */
     protected final Event<ConnectionException> open;
