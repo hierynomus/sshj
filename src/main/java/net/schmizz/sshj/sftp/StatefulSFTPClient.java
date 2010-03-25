@@ -37,8 +37,12 @@ public class StatefulSFTPClient
         return PathComponents.adjustForParent(cwd, path);
     }
 
-    public synchronized void cd(String dirname) {
+    public synchronized void cd(String dirname)
+            throws IOException {
         cwd = cwdify(dirname);
+        if (exists(cwd) == null) {
+            throw new SFTPException(cwd + ": does not exist");
+        }
         log.info("CWD = " + cwd);
     }
 
@@ -96,6 +100,18 @@ public class StatefulSFTPClient
     public void mkdir(String dirname)
             throws IOException {
         super.mkdir(cwdify(dirname));
+    }
+
+    @Override
+    public void mkdirs(String path)
+            throws IOException {
+        super.mkdirs(cwdify(path));
+    }
+
+    @Override
+    public FileAttributes exists(String path)
+            throws IOException {
+        return super.exists(cwdify(path));
     }
 
     @Override

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 
 public class SFTPClient {
 
@@ -32,10 +33,12 @@ public class SFTPClient {
 
     private final SFTPEngine sftp;
     private final SFTPFileTransfer xfer;
+    private PathHelper pathHelper;
 
     public SFTPClient(SessionFactory ssh)
             throws IOException {
         this.sftp = new SFTPEngine(ssh).init();
+        this.pathHelper = new PathHelper(sftp);
         this.xfer = new SFTPFileTransfer(sftp);
     }
 
@@ -81,6 +84,38 @@ public class SFTPClient {
     public void mkdir(String dirname)
             throws IOException {
         sftp.makeDir(dirname);
+    }
+
+    public void mkdirs(String path)
+            throws IOException {
+        final Stack<String> dirsToMake = new Stack<String>();
+        for (PathComponents current = pathHelper.getComponents(path); ; current = pathHelper
+                .getComponents(current.getParent())) {
+            final FileAttributes attrs = exists(current.getPath());
+            if (attrs == null) {
+                dirsToMake.push(current.getPath());
+            } else if (attrs.getType() != FileMode.Type.DIRECTORY) {
+                throw new SFTPException(current.getPath() + " exists but is not a directory");
+            } else {
+                break;
+            }
+        }
+        while (!dirsToMake.isEmpty()) {
+            mkdir(dirsToMake.pop());
+        }
+    }
+
+    public FileAttributes exists(String path)
+            throws IOException {
+        try {
+            return sftp.stat(path);
+        } catch (SFTPException sftpe) {
+            if (sftpe.getStatusCode() == Response.StatusCode.NO_SUCH_FILE) {
+                return null;
+            } else {
+                throw sftpe;
+            }
+        }
     }
 
     public void rename(String oldpath, String newpath)
