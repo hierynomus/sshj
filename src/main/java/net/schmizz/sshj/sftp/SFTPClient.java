@@ -33,7 +33,7 @@ public class SFTPClient {
 
     private final SFTPEngine sftp;
     private final SFTPFileTransfer xfer;
-    private PathHelper pathHelper;
+    private final PathHelper pathHelper;
 
     public SFTPClient(SessionFactory ssh)
             throws IOException {
@@ -91,7 +91,7 @@ public class SFTPClient {
         final Stack<String> dirsToMake = new Stack<String>();
         for (PathComponents current = pathHelper.getComponents(path); ; current = pathHelper
                 .getComponents(current.getParent())) {
-            final FileAttributes attrs = exists(current.getPath());
+            final FileAttributes attrs = statExistence(current.getPath());
             if (attrs == null) {
                 dirsToMake.push(current.getPath());
             } else if (attrs.getType() != FileMode.Type.DIRECTORY) {
@@ -105,7 +105,7 @@ public class SFTPClient {
         }
     }
 
-    public FileAttributes exists(String path)
+    public FileAttributes statExistence(String path)
             throws IOException {
         try {
             return sftp.stat(path);

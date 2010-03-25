@@ -40,7 +40,7 @@ public class StatefulSFTPClient
     public synchronized void cd(String dirname)
             throws IOException {
         cwd = cwdify(dirname);
-        if (exists(cwd) == null) {
+        if (statExistence(cwd) == null) {
             throw new SFTPException(cwd + ": does not exist");
         }
         log.info("CWD = " + cwd);
@@ -109,9 +109,9 @@ public class StatefulSFTPClient
     }
 
     @Override
-    public FileAttributes exists(String path)
+    public FileAttributes statExistence(String path)
             throws IOException {
-        return super.exists(cwdify(path));
+        return super.statExistence(cwdify(path));
     }
 
     @Override
