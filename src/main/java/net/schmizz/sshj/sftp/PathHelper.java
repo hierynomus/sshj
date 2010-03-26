@@ -49,7 +49,7 @@ public class PathHelper {
         }
     }
 
-    private String getDotDir()
+    private synchronized String getDotDir()
             throws IOException {
         return (dotDir != null) ? dotDir : (dotDir = canon("."));
     }
