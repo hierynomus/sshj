@@ -28,7 +28,7 @@ public class DefaultModeGetter
 
     @Override
     public long getLastAccessTime(File f) {
-        return 0;
+        return System.currentTimeMillis() / 1000;
     }
 
     @Override
