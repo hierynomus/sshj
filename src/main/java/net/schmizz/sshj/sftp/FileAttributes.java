@@ -25,6 +25,8 @@ import java.util.Set;
 
 public final class FileAttributes {
 
+    public static final FileAttributes EMPTY = new FileAttributes();
+
     public static enum Flag {
 
         SIZE(0x00000001),
@@ -58,7 +60,7 @@ public final class FileAttributes {
     private final long mtime;
     private final Map<String, String> ext = new HashMap<String, String>();
 
-    public FileAttributes() {
+    private FileAttributes() {
         size = atime = mtime = uid = gid = mask = 0;
         mode = new FileMode(0);
     }

@@ -73,7 +73,7 @@ public class SFTPClient {
 
     public RemoteFile open(String filename, Set<OpenMode> mode)
             throws IOException {
-        return open(filename, mode, new FileAttributes());
+        return open(filename, mode, FileAttributes.EMPTY);
     }
 
     public RemoteFile open(String filename)

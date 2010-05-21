@@ -122,7 +122,7 @@ public class SFTPEngine
 
     public RemoteFile open(String filename, Set<OpenMode> modes)
             throws IOException {
-        return open(filename, modes, new FileAttributes());
+        return open(filename, modes, FileAttributes.EMPTY);
     }
 
     public RemoteFile open(String filename)
@@ -155,14 +155,12 @@ public class SFTPEngine
 
     public void makeDir(String path, FileAttributes attrs)
             throws IOException {
-        doRequest(
-                newRequest(PacketType.MKDIR).putString(path).putFileAttributes(attrs)
-        ).ensureStatusPacketIsOK();
+        doRequest(newRequest(PacketType.MKDIR).putString(path).putFileAttributes(attrs)).ensureStatusPacketIsOK();
     }
 
     public void makeDir(String path)
             throws IOException {
-        makeDir(path, new FileAttributes());
+        makeDir(path, FileAttributes.EMPTY);
     }
 
     public void symlink(String linkpath, String targetpath)

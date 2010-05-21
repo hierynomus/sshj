@@ -109,7 +109,7 @@ public class SFTPFileTransfer
         private void downloadDir(final RemoteResourceInfo remote, final File local)
                 throws IOException {
             final File adjusted = FileTransferUtil.getTargetDirectory(local, remote.getName());
-            setAttributes(remote, adjusted);
+            copyAttributes(remote, adjusted);
             final RemoteDirectory rd = sftp.openDir(remote.getPath());
             try {
                 for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
@@ -122,7 +122,7 @@ public class SFTPFileTransfer
         private void downloadFile(final RemoteResourceInfo remote, final File local)
                 throws IOException {
             final File adjusted = FileTransferUtil.getTargetFile(local, remote.getName());
-            setAttributes(remote, adjusted);
+            copyAttributes(remote, adjusted);
             final RemoteFile rf = sftp.open(remote.getPath());
             try {
                 final FileOutputStream fos = new FileOutputStream(adjusted);
@@ -137,7 +137,7 @@ public class SFTPFileTransfer
             }
         }
 
-        private void setAttributes(final RemoteResourceInfo remote, final File local)
+        private void copyAttributes(final RemoteResourceInfo remote, final File local)
                 throws IOException {
             final FileAttributes attrs = remote.getAttributes();
             getModeSetter().setPermissions(local, attrs.getMode().getPermissionsMask());
@@ -172,8 +172,10 @@ public class SFTPFileTransfer
         private void uploadFile(File local, String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
-            final RemoteFile rf = sftp.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC),
-                                            getAttributes(local));
+            final RemoteFile rf = sftp.open(adjusted, EnumSet.of(OpenMode.WRITE,
+                                                                 OpenMode.CREAT,
+                                                                 OpenMode.TRUNC));
+            rf.setAttributes(getAttributes(local));
             try {
                 final FileInputStream fis = new FileInputStream(local);
                 try {
