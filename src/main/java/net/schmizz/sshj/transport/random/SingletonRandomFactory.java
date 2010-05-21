@@ -46,10 +46,12 @@ public class SingletonRandomFactory
         random = factory.create();
     }
 
+    @Override
     public Random create() {
         return this;
     }
 
+    @Override
     public void fill(byte[] bytes, int start, int len) {
         random.fill(bytes, start, len);
     }

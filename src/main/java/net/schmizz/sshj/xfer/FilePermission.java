@@ -67,6 +67,10 @@ public enum FilePermission {
         this.val = val;
     }
 
+    public boolean isIn(int mask) {
+        return (mask & val) == mask;
+    }
+
     public static Set<FilePermission> fromMask(int mask) {
         List<FilePermission> perms = new LinkedList<FilePermission>();
         for (FilePermission p : FilePermission.values())

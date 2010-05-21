@@ -39,12 +39,14 @@ public class SFTPFileTransfer
     private volatile RemoteResourceFilter downloadFilter = defaultRemoteFilter;
 
     private static final FileFilter defaultLocalFilter = new FileFilter() {
+        @Override
         public boolean accept(File pathName) {
             return true;
         }
     };
 
     private static final RemoteResourceFilter defaultRemoteFilter = new RemoteResourceFilter() {
+        @Override
         public boolean accept(RemoteResourceInfo resource) {
             return true;
         }
@@ -55,11 +57,13 @@ public class SFTPFileTransfer
         this.pathHelper = new PathHelper(sftp);
     }
 
+    @Override
     public void upload(String source, String dest)
             throws IOException {
         new Uploader().upload(new File(source), dest);
     }
 
+    @Override
     public void download(String source, String dest)
             throws IOException {
         final PathComponents pathComponents = pathHelper.getComponents(source);

@@ -49,10 +49,12 @@ public class ZlibCompression
     /** Named factory for the ZLib Compression. */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Compression> {
+        @Override
         public Compression create() {
             return new ZlibCompression();
         }
 
+        @Override
         public String getName() {
             return "zlib";
         }
@@ -64,6 +66,7 @@ public class ZlibCompression
 
     private ZStream stream;
 
+    @Override
     public void init(Mode mode) {
         stream = new ZStream();
         switch (mode) {
@@ -78,10 +81,12 @@ public class ZlibCompression
         }
     }
 
+    @Override
     public boolean isDelayed() {
         return false;
     }
 
+    @Override
     public void compress(Buffer buffer) {
         stream.next_in = buffer.array();
         stream.next_in_index = buffer.rpos();
@@ -101,6 +106,7 @@ public class ZlibCompression
     }
 
 
+    @Override
     public void uncompress(Buffer from, Buffer to)
             throws TransportException {
         stream.next_in = from.array();

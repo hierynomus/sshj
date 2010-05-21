@@ -100,6 +100,7 @@ public final class ChannelInputStream
         }
     }
 
+    @Override
     public synchronized void notifyError(SSHException error) {
         this.error = error;
         eof();

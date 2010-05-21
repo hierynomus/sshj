@@ -25,6 +25,7 @@ public class UserAuthException
 
     public static final ExceptionChainer<UserAuthException> chainer = new ExceptionChainer<UserAuthException>() {
 
+        @Override
         public UserAuthException chain(Throwable t) {
             if (t instanceof UserAuthException)
                 return (UserAuthException) t;

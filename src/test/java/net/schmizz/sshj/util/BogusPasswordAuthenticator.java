@@ -22,8 +22,10 @@ import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
 /** Successfully authenticates when username == password. */
-public class BogusPasswordAuthenticator implements PasswordAuthenticator {
+public class BogusPasswordAuthenticator
+        implements PasswordAuthenticator {
 
+    @Override
     public boolean authenticate(String username, String password, ServerSession s) {
         return username.equals(password);
     }

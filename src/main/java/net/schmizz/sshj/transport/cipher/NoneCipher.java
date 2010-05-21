@@ -42,26 +42,32 @@ public class NoneCipher
     /** Named factory for the no-op Cipher */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+        @Override
         public Cipher create() {
             return new NoneCipher();
         }
 
+        @Override
         public String getName() {
             return "none";
         }
     }
 
+    @Override
     public int getBlockSize() {
         return 8;
     }
 
+    @Override
     public int getIVSize() {
         return 8;
     }
 
+    @Override
     public void init(Mode mode, byte[] bytes, byte[] bytes1) {
     }
 
+    @Override
     public void update(byte[] input, int inputOffset, int inputLen) {
     }
 

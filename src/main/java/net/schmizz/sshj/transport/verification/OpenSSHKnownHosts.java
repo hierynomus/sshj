@@ -131,6 +131,7 @@ public class OpenSSHKnownHosts
             init(parts[1], parts[2]);
         }
 
+        @Override
         public boolean appliesTo(String host) {
             for (String h : hosts)
                 if (host.equals(h))
@@ -138,6 +139,7 @@ public class OpenSSHKnownHosts
             return false;
         }
 
+        @Override
         protected String getHostPart() {
             final StringBuilder sb = new StringBuilder();
             for (String host : hosts) {
@@ -185,6 +187,7 @@ public class OpenSSHKnownHosts
             init(parts[1], parts[2]);
         }
 
+        @Override
         public boolean appliesTo(String host)
                 throws IOException {
             return hashedHost.equals(hashHost(host));
@@ -211,6 +214,7 @@ public class OpenSSHKnownHosts
             return salt;
         }
 
+        @Override
         protected String getHostPart() {
             return hashedHost;
         }
@@ -246,6 +250,7 @@ public class OpenSSHKnownHosts
         return khFile;
     }
 
+    @Override
     public boolean verify(final String hostname, final int port, final PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
         if (type == KeyType.UNKNOWN)

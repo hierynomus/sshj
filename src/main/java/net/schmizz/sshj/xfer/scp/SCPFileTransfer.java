@@ -38,11 +38,13 @@ public class SCPFileTransfer
         return new SCPUploadClient(sessionFactory, getModeGetter());
     }
 
+    @Override
     public void download(String remotePath, String localPath)
             throws IOException {
         newSCPDownloadClient().copy(remotePath, localPath);
     }
 
+    @Override
     public void upload(String localPath, String remotePath)
             throws IOException {
         newSCPUploadClient().copy(localPath, remotePath);

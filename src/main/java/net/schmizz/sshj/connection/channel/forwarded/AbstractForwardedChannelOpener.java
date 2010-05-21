@@ -40,14 +40,12 @@ public abstract class AbstractForwardedChannelOpener
         this.conn = conn;
     }
 
+    @Override
     public String getChannelType() {
         return chanType;
     }
 
-    /*
-    * Calls the listener with the new channel in a separate thread.
-    */
-
+    /** Calls the listener with the new channel in a separate thread. */
     protected void callListener(final ConnectListener listener, final Channel.Forwarded chan) {
         new Thread() {
 

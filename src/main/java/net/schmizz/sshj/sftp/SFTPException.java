@@ -25,6 +25,7 @@ public class SFTPException
 
     public static final ExceptionChainer<SFTPException> chainer = new ExceptionChainer<SFTPException>() {
 
+        @Override
         public SFTPException chain(Throwable t) {
             if (t instanceof SFTPException)
                 return (SFTPException) t;

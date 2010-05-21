@@ -125,46 +125,57 @@ public abstract class AbstractChannel
         log.info("Initialized - {}", this);
     }
 
+    @Override
     public boolean getAutoExpand() {
         return autoExpand;
     }
 
+    @Override
     public int getID() {
         return id;
     }
 
+    @Override
     public InputStream getInputStream() {
         return in;
     }
 
+    @Override
     public int getLocalMaxPacketSize() {
         return lwin.getMaxPacketSize();
     }
 
+    @Override
     public int getLocalWinSize() {
         return lwin.getSize();
     }
 
+    @Override
     public OutputStream getOutputStream() {
         return out;
     }
 
+    @Override
     public int getRecipient() {
         return recipient;
     }
 
+    @Override
     public int getRemoteMaxPacketSize() {
         return rwin.getMaxPacketSize();
     }
 
+    @Override
     public int getRemoteWinSize() {
         return rwin.getSize();
     }
 
+    @Override
     public String getType() {
         return type;
     }
 
+    @Override
     public void handle(Message msg, SSHPacket buf)
             throws ConnectionException, TransportException {
         switch (msg) {
@@ -223,6 +234,7 @@ public abstract class AbstractChannel
         IOUtils.closeQuietly(in, out);
     }
 
+    @Override
     public void notifyError(SSHException error) {
         log.debug("Channel #{} got notified of {}", getID(), error.toString());
 
@@ -235,10 +247,12 @@ public abstract class AbstractChannel
         finishOff();
     }
 
+    @Override
     public void setAutoExpand(boolean autoExpand) {
         this.autoExpand = autoExpand;
     }
 
+    @Override
     public void close()
             throws ConnectionException, TransportException {
         lock.lock();
@@ -267,6 +281,7 @@ public abstract class AbstractChannel
         }
     }
 
+    @Override
     public synchronized boolean isOpen() {
         lock.lock();
         try {
@@ -371,6 +386,7 @@ public abstract class AbstractChannel
         in.eof();
     }
 
+    @Override
     public synchronized void sendEOF()
             throws TransportException {
         try {

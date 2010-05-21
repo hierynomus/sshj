@@ -34,6 +34,7 @@ public class StreamCopier
 
     public static ErrorCallback closeOnErrorCallback(final Closeable... toClose) {
         return new ErrorCallback() {
+            @Override
             public void onError(IOException ioe) {
                 IOUtils.closeQuietly(toClose);
             }
@@ -82,6 +83,7 @@ public class StreamCopier
     private boolean keepFlushing = true;
 
     private ErrorCallback errCB = new ErrorCallback() {
+        @Override
         public void onError(IOException ioe) {
         }
     }; // Default null cb

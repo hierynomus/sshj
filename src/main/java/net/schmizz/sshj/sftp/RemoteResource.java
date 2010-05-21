@@ -45,6 +45,7 @@ abstract class RemoteResource
         return requester.newRequest(type).putString(handle);
     }
 
+    @Override
     public void close()
             throws IOException {
         log.info("Closing `{}`", this);

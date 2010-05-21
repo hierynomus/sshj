@@ -60,6 +60,7 @@ public abstract class AbstractDirectChannel
         conn.attach(this);
     }
 
+    @Override
     public void open()
             throws ConnectionException, TransportException {
         trans.write(buildOpenReq());

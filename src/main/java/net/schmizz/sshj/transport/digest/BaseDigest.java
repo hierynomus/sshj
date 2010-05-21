@@ -61,14 +61,17 @@ public class BaseDigest
         this.bsize = bsize;
     }
 
+    @Override
     public byte[] digest() {
         return md.digest();
     }
 
+    @Override
     public int getBlockSize() {
         return bsize;
     }
 
+    @Override
     public void init() {
         try {
             md = SecurityUtils.getMessageDigest(algorithm);
@@ -77,10 +80,12 @@ public class BaseDigest
         }
     }
 
+    @Override
     public void update(byte[] foo) {
         update(foo, 0, foo.length);
     }
 
+    @Override
     public void update(byte[] foo, int start, int len) {
         md.update(foo, start, len);
     }

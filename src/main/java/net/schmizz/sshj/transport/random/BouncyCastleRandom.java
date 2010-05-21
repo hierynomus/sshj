@@ -51,6 +51,7 @@ public class BouncyCastleRandom
     public static class Factory
             implements net.schmizz.sshj.common.Factory<Random> {
 
+        @Override
         public Random create() {
             return new BouncyCastleRandom();
         }
@@ -65,6 +66,7 @@ public class BouncyCastleRandom
         random.addSeedMaterial(seed);
     }
 
+    @Override
     public void fill(byte[] bytes, int start, int len) {
         random.nextBytes(bytes, start, len);
     }

@@ -43,10 +43,12 @@ public class HMACMD5
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<MAC> {
 
+        @Override
         public MAC create() {
             return new HMACMD5();
         }
 
+        @Override
         public String getName() {
             return "hmac-md5";
         }

@@ -40,12 +40,14 @@ public class PasswordUtils {
             return null;
         else
             return new PasswordFinder() {
+                @Override
                 public char[] reqPassword(Resource<?> resource) {
                     char[] cloned = password.clone();
                     blankOut(password);
                     return cloned;
                 }
 
+                @Override
                 public boolean shouldRetry(Resource<?> resource) {
                     return false;
                 }

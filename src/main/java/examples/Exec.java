@@ -35,7 +35,6 @@ public class Exec {
 
             Command cmd = ssh.startSession().exec("ping -c 1 google.com");
 
-            // Pipe.pipe(cmd.getInputStream(), System.out, cmd.getLocalMaxPacketSize(), false);
             System.out.print(cmd.getOutputAsString());
             System.out.println("\n** exit status: " + cmd.getExitStatus());
 

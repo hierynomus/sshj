@@ -66,7 +66,6 @@ class RudimentaryPTY {
 
             if (shell != null)
                 shell.close();
-
             ssh.disconnect();
         }
     }

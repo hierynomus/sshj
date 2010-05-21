@@ -62,6 +62,7 @@ public abstract class AbstractForwardedChannel
         init(recipient, remoteWinSize, remoteMaxPacketSize);
     }
 
+    @Override
     public void confirm()
             throws TransportException {
         log.info("Confirming `{}` channel #{}", getType(), getID());
@@ -74,16 +75,19 @@ public abstract class AbstractForwardedChannel
         open.set();
     }
 
+    @Override
     public void reject(Reason reason, String message)
             throws TransportException {
         log.info("Rejecting `{}` channel: {}", getType(), message);
         conn.sendOpenFailure(getRecipient(), reason, message);
     }
 
+    @Override
     public String getOriginatorIP() {
         return origIP;
     }
 
+    @Override
     public int getOriginatorPort() {
         return origPort;
     }

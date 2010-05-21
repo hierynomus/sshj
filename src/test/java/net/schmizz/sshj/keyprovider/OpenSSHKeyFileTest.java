@@ -49,6 +49,7 @@ public class OpenSSHKeyFileTest {
     final char[] incorrectPassphrase = new char[]{' '};
 
     final PasswordFinder onlyGivesWhenReady = new PasswordFinder() {
+        @Override
         public char[] reqPassword(Resource resource) {
             if (!readyToProvide)
                 throw new AssertionError("Password requested too soon");
@@ -56,6 +57,7 @@ public class OpenSSHKeyFileTest {
             return correctPassphrase;
         }
 
+        @Override
         public boolean shouldRetry(Resource resource) {
             return false;
         }
@@ -64,6 +66,7 @@ public class OpenSSHKeyFileTest {
     int triesLeft = 3;
 
     final PasswordFinder givesOn3rdTry = new PasswordFinder() {
+        @Override
         public char[] reqPassword(Resource resource) {
             if (triesLeft == 0)
                 return correctPassphrase;
@@ -73,6 +76,7 @@ public class OpenSSHKeyFileTest {
             }
         }
 
+        @Override
         public boolean shouldRetry(Resource resource) {
             return triesLeft >= 0;
         }

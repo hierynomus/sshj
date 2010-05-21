@@ -40,6 +40,7 @@ public class SocketForwardingConnectListener
     }
 
     /** On connect, confirm the channel and start forwarding. */
+    @Override
     public void gotConnect(Channel.Forwarded chan)
             throws IOException {
         log.info("New connection from " + chan.getOriginatorIP() + ":" + chan.getOriginatorPort());
@@ -54,6 +55,7 @@ public class SocketForwardingConnectListener
         chan.confirm();
 
         final ErrorCallback closer = StreamCopier.closeOnErrorCallback(chan, new Closeable() {
+            @Override
             public void close()
                     throws IOException {
                 sock.close();

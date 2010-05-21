@@ -20,20 +20,23 @@ import java.io.IOException;
 
 /**
  * Default implementation of {@link ModeGetter} that supplies file permissions as {@code "0644"}, directory permissions
- * as {@code "0755"}, and does not supply mtime and atime.
+ * as {@code "0755"}, and preserves timestamps. Note that there is no way of getting the last access time with Java file
+ * API's so it is returned as the current system time.
  */
 public class DefaultModeGetter
         implements ModeGetter {
 
+    @Override
     public long getLastAccessTime(File f) {
         return 0;
     }
 
+    @Override
     public long getLastModifiedTime(File f) {
-        // return f.lastModified() / 1000;
-        return 0;
+        return f.lastModified() / 1000;
     }
 
+    @Override
     public int getPermissions(File f)
             throws IOException {
         if (f.isDirectory())
@@ -44,8 +47,9 @@ public class DefaultModeGetter
             throw new IOException("Unsupported file type: " + f);
     }
 
+    @Override
     public boolean preservesTimes() {
-        return false;
+        return true;
     }
 
 }

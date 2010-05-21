@@ -29,7 +29,9 @@ public class SFTPDownload {
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
-            ssh.newSFTPClient().get("well", "/tmp/");
+            final String src = "test_file";
+            final String target = "/tmp/";
+            ssh.newSFTPClient().get(src, target);
         } finally {
             ssh.disconnect();
         }

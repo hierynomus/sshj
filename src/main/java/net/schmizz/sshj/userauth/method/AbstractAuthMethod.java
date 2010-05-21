@@ -40,24 +40,29 @@ public abstract class AbstractAuthMethod
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void handle(Message msg, SSHPacket buf)
             throws UserAuthException, TransportException {
         throw new UserAuthException("Unknown packet received during " + getName() + " auth: " + msg);
     }
 
+    @Override
     public void init(AuthParams params) {
         this.params = params;
     }
 
+    @Override
     public void request()
             throws UserAuthException, TransportException {
         params.getTransport().write(buildReq());
     }
 
+    @Override
     public boolean shouldRetry() {
         return false;
     }

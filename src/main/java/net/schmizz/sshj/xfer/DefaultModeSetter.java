@@ -19,27 +19,39 @@ import java.io.File;
 import java.io.IOException;
 
 
-/** Default implementation of {@link ModeSetter} that does not set any permissions or preserve mtime and atime. */
+/**
+ * Default implementation of {@link ModeSetter} attempts to preserve timestamps and permissions to the extent allowed by
+ * Java File API.
+ */
 public class DefaultModeSetter
         implements ModeSetter {
 
+    @Override
     public void setLastAccessedTime(File f, long t)
             throws IOException {
-        // can't do ntn
+        // Can't do anything
     }
 
+    @Override
     public void setLastModifiedTime(File f, long t)
             throws IOException {
-        // f.setLastModified(t * 1000);
+        f.setLastModified(t * 1000);
     }
 
+    @Override
     public void setPermissions(File f, int perms)
             throws IOException {
-        // TODO: set user's rwx permissions; can't do anything about group and world
+        f.setReadable(FilePermission.USR_R.isIn(perms),
+                      !(FilePermission.OTH_R.isIn(perms) || FilePermission.GRP_R.isIn(perms)));
+        f.setWritable(FilePermission.USR_W.isIn(perms),
+                      !(FilePermission.OTH_W.isIn(perms) || FilePermission.GRP_W.isIn(perms)));
+        f.setExecutable(FilePermission.USR_X.isIn(perms),
+                        !(FilePermission.OTH_X.isIn(perms) || FilePermission.GRP_X.isIn(perms)));
     }
 
+    @Override
     public boolean preservesTimes() {
-        return false;
+        return true;
     }
 
 }

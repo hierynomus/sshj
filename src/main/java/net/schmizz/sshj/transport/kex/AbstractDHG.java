@@ -78,22 +78,27 @@ public abstract class AbstractDHG
     private byte[] H;
     private PublicKey hostKey;
 
+    @Override
     public byte[] getH() {
         return ByteArrayUtils.copyOf(H);
     }
 
+    @Override
     public byte[] getK() {
         return ByteArrayUtils.copyOf(K);
     }
 
+    @Override
     public Digest getHash() {
         return sha;
     }
 
+    @Override
     public PublicKey getHostKey() {
         return hostKey;
     }
 
+    @Override
     public void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
             throws GeneralSecurityException, TransportException {
         this.trans = trans;
@@ -109,6 +114,7 @@ public abstract class AbstractDHG
         trans.write(new SSHPacket(Message.KEXDH_INIT).putMPInt(e));
     }
 
+    @Override
     public boolean next(Message msg, SSHPacket packet)
             throws GeneralSecurityException, TransportException {
         if (msg != Message.KEXDH_31)

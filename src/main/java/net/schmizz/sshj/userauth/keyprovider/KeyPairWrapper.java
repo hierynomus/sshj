@@ -37,14 +37,17 @@ public class KeyPairWrapper
         this(new KeyPair(publicKey, privateKey));
     }
 
+    @Override
     public PrivateKey getPrivate() {
         return kp.getPrivate();
     }
 
+    @Override
     public PublicKey getPublic() {
         return kp.getPublic();
     }
 
+    @Override
     public KeyType getType() {
         return type;
     }

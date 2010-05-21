@@ -48,10 +48,12 @@ public class SignatureRSA
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
+        @Override
         public Signature create() {
             return new SignatureRSA();
         }
 
+        @Override
         public String getName() {
             return KeyType.RSA.toString();
         }
@@ -62,6 +64,7 @@ public class SignatureRSA
         super("SHA1withRSA");
     }
 
+    @Override
     public byte[] sign() {
         try {
             return signature.sign();
@@ -70,6 +73,7 @@ public class SignatureRSA
         }
     }
 
+    @Override
     public boolean verify(byte[] sig) {
         sig = extractSig(sig);
         try {

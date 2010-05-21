@@ -76,6 +76,7 @@ public interface Channel
 
 
     /** Close this channel. */
+    @Override
     void close()
             throws TransportException, ConnectionException;
 

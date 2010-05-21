@@ -133,6 +133,7 @@ public final class TransportImpl
         clientID = "SSH-2.0-" + config.getVersion();
     }
 
+    @Override
     public void init(String remoteHost, int remotePort, InputStream in, OutputStream out)
             throws TransportException {
         connInfo = new ConnInfo(remoteHost, remotePort, in, out);
@@ -214,10 +215,12 @@ public final class TransportImpl
         return ident;
     }
 
+    @Override
     public void addHostKeyVerifier(HostKeyVerifier hkv) {
         kexer.addHostKeyVerifier(hkv);
     }
 
+    @Override
     public void doKex()
             throws TransportException {
         kexer.startKex(true);
@@ -227,50 +230,62 @@ public final class TransportImpl
         return kexer.isKexDone();
     }
 
+    @Override
     public int getTimeout() {
         return timeout;
     }
 
+    @Override
     public void setTimeout(int timeout) {
         this.timeout = timeout;
     }
 
+    @Override
     public int getHeartbeatInterval() {
         return heartbeater.getInterval();
     }
 
+    @Override
     public void setHeartbeatInterval(int interval) {
         heartbeater.setInterval(interval);
     }
 
+    @Override
     public String getRemoteHost() {
         return connInfo.host;
     }
 
+    @Override
     public int getRemotePort() {
         return connInfo.port;
     }
 
+    @Override
     public String getClientVersion() {
         return clientID.substring(8);
     }
 
+    @Override
     public Config getConfig() {
         return config;
     }
 
+    @Override
     public String getServerVersion() {
         return serverID == null ? serverID : serverID.substring(8);
     }
 
+    @Override
     public byte[] getSessionID() {
         return kexer.getSessionID();
     }
 
+    @Override
     public synchronized Service getService() {
         return service;
     }
 
+    @Override
     public synchronized void setService(Service service) {
         if (service == null)
             service = nullService;
@@ -279,6 +294,7 @@ public final class TransportImpl
         this.service = service;
     }
 
+    @Override
     public void reqService(Service service)
             throws TransportException {
         serviceAccept.lock();
@@ -305,16 +321,19 @@ public final class TransportImpl
         write(new SSHPacket(Message.SERVICE_REQUEST).putString(serviceName));
     }
 
+    @Override
     public void setAuthenticated() {
         this.authed = true;
         encoder.setAuthenticated();
         decoder.setAuthenticated();
     }
 
+    @Override
     public boolean isAuthenticated() {
         return authed;
     }
 
+    @Override
     public long sendUnimplemented()
             throws TransportException {
         final long seq = decoder.getSequenceNumber();
@@ -322,23 +341,28 @@ public final class TransportImpl
         return write(new SSHPacket(Message.UNIMPLEMENTED).putInt(seq));
     }
 
+    @Override
     public void join()
             throws TransportException {
         close.await();
     }
 
+    @Override
     public boolean isRunning() {
         return reader.isAlive() && !close.isSet();
     }
 
+    @Override
     public void disconnect() {
         disconnect(DisconnectReason.BY_APPLICATION);
     }
 
+    @Override
     public void disconnect(DisconnectReason reason) {
         disconnect(reason, "");
     }
 
+    @Override
     public void disconnect(DisconnectReason reason, String message) {
         close.lock(); // CAS type operation on close
         try {
@@ -357,6 +381,7 @@ public final class TransportImpl
         }
     }
 
+    @Override
     public long write(SSHPacket payload)
             throws TransportException {
         writeLock.lock();
@@ -416,6 +441,7 @@ public final class TransportImpl
      *
      * @throws SSHException if an error occurs during handling (unrecoverable)
      */
+    @Override
     public void handle(Message msg, SSHPacket buf)
             throws SSHException {
         this.msg = msg;

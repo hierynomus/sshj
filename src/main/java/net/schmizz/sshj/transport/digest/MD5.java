@@ -43,10 +43,12 @@ public class MD5
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Digest> {
 
+        @Override
         public Digest create() {
             return new MD5();
         }
 
+        @Override
         public String getName() {
             return "md5";
         }

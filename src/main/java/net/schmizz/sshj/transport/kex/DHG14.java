@@ -48,10 +48,12 @@ public class DHG14
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
 
+        @Override
         public KeyExchange create() {
             return new DHG14();
         }
 
+        @Override
         public String getName() {
             return "diffie-hellman-group14-sha1";
         }

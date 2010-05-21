@@ -142,5 +142,5 @@ public interface Config {
      * @param version software version info
      */
     void setVersion(String version);
-    
+
 }

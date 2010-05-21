@@ -87,10 +87,12 @@ public class SFTPEngine
         return negotiatedVersion;
     }
 
+    @Override
     public synchronized Request newRequest(PacketType type) {
         return new Request(type, reqID = reqID + 1 & 0xffffffffL);
     }
 
+    @Override
     public Response doRequest(Request req)
             throws IOException {
         reader.expectResponseTo(req);

@@ -17,6 +17,7 @@ package examples;
 
 import net.schmizz.sshj.SSHClient;
 
+import java.io.File;
 import java.io.IOException;
 
 /** This example demonstrates uploading of a file over SCP to the SSH server. */
@@ -31,9 +32,12 @@ public class SCPUpload {
             ssh.authPublickey(System.getProperty("user.name"));
 
             // Present here to demo algorithm renegotiation - could have just put this before connect()
+            // Make sure JZlib is in classpath for this to work
             ssh.useCompression();
 
-            ssh.newSCPFileTransfer().upload("/Users/shikhar/well", "/tmp/");
+            final String src = System.getProperty("user.home") + File.separator + "test_file";
+            final String target = "/tmp/";
+            ssh.newSCPFileTransfer().upload(src, target);
         } finally {
             ssh.disconnect();
         }

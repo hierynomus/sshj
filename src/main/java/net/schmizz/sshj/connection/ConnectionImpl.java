@@ -63,19 +63,23 @@ public class ConnectionImpl
         super("ssh-connection", trans);
     }
 
+    @Override
     public void attach(Channel chan) {
         log.info("Attaching `{}` channel (#{})", chan.getType(), chan.getID());
         channels.put(chan.getID(), chan);
     }
 
+    @Override
     public Channel get(int id) {
         return channels.get(id);
     }
 
+    @Override
     public ForwardedChannelOpener get(String chanType) {
         return openers.get(chanType);
     }
 
+    @Override
     public void forget(Channel chan) {
         log.info("Forgetting `{}` channel (#{})", chan.getType(), chan.getID());
         channels.remove(chan.getID());
@@ -85,11 +89,13 @@ public class ConnectionImpl
         }
     }
 
+    @Override
     public void forget(ForwardedChannelOpener opener) {
         log.info("Forgetting opener for `{}` channels: {}", opener.getChannelType(), opener);
         openers.remove(opener.getChannelType());
     }
 
+    @Override
     public void attach(ForwardedChannelOpener opener) {
         log.info("Attaching opener for `{}` channels: {}", opener.getChannelType(), opener);
         openers.put(opener.getChannelType(), opener);
@@ -146,26 +152,32 @@ public class ConnectionImpl
         channels.clear();
     }
 
+    @Override
     public int getMaxPacketSize() {
         return maxPacketSize;
     }
 
+    @Override
     public Transport getTransport() {
         return trans;
     }
 
+    @Override
     public void setMaxPacketSize(int maxPacketSize) {
         this.maxPacketSize = maxPacketSize;
     }
 
+    @Override
     public int getWindowSize() {
         return windowSize;
     }
 
+    @Override
     public void setWindowSize(int windowSize) {
         this.windowSize = windowSize;
     }
 
+    @Override
     public void join()
             throws InterruptedException {
         synchronized (internalSynchronizer) {
@@ -174,10 +186,12 @@ public class ConnectionImpl
         }
     }
 
+    @Override
     public int nextID() {
         return nextID.getAndIncrement();
     }
 
+    @Override
     public Future<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
                                                                     byte[] specifics)
             throws TransportException {
@@ -221,6 +235,7 @@ public class ConnectionImpl
         }
     }
 
+    @Override
     public void sendOpenFailure(int recipient, Reason reason, String message)
             throws TransportException {
         trans.write(new SSHPacket(Message.CHANNEL_OPEN_FAILURE)

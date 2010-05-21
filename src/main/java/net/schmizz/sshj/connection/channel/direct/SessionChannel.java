@@ -46,7 +46,7 @@ import net.schmizz.sshj.transport.TransportException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -70,22 +70,13 @@ public class
         super(conn, "session");
     }
 
+    @Override
     public void allocateDefaultPTY()
             throws ConnectionException, TransportException {
-        // TODO FIXME (maybe?): These modes were originally copied from what SSHD was doing;
-        // and then the echo modes were set to 0 to better serve the PTY example.
-        // Not sure what default PTY modes should be.
-        final Map<PTYMode, Integer> modes = new HashMap<PTYMode, Integer>();
-        modes.put(PTYMode.ISIG, 1);
-        modes.put(PTYMode.ICANON, 1);
-        modes.put(PTYMode.ECHO, 0);
-        modes.put(PTYMode.ECHOE, 0);
-        modes.put(PTYMode.ECHOK, 0);
-        modes.put(PTYMode.ECHONL, 0);
-        modes.put(PTYMode.NOFLSH, 0);
-        allocatePTY("vt100", 0, 0, 0, 0, modes);
+        allocatePTY("vt100", 80, 24, 0, 0, Collections.<PTYMode, Integer>emptyMap());
     }
 
+    @Override
     public void allocatePTY(String term, int cols, int rows, int width, int height, Map<PTYMode, Integer> modes)
             throws ConnectionException, TransportException {
         sendChannelRequest(
@@ -101,10 +92,12 @@ public class
         ).await(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
+    @Override
     public Boolean canDoFlowControl() {
         return canDoFlowControl;
     }
 
+    @Override
     public void changeWindowDimensions(int cols, int rows, int width, int height)
             throws TransportException {
         sendChannelRequest(
@@ -118,6 +111,7 @@ public class
         );
     }
 
+    @Override
     public Command exec(String command)
             throws ConnectionException, TransportException {
         log.info("Will request to exec `{}`", command);
@@ -126,27 +120,33 @@ public class
         return this;
     }
 
+    @Override
     public String getErrorAsString()
             throws IOException {
         return StreamCopier.copyStreamToString(err);
     }
 
+    @Override
     public InputStream getErrorStream() {
         return err;
     }
 
+    @Override
     public String getExitErrorMessage() {
         return exitErrMsg;
     }
 
+    @Override
     public Signal getExitSignal() {
         return exitSignal;
     }
 
+    @Override
     public Integer getExitStatus() {
         return exitStatus;
     }
 
+    @Override
     public String getOutputAsString()
             throws IOException {
         return StreamCopier.copyStreamToString(getInputStream());
@@ -168,6 +168,7 @@ public class
             super.handleRequest(req, buf);
     }
 
+    @Override
     public void reqX11Forwarding(String authProto, String authCookie, int screen)
             throws ConnectionException,
                    TransportException {
@@ -182,23 +183,27 @@ public class
         ).await(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
+    @Override
     public void setEnvVar(String name, String value)
             throws ConnectionException, TransportException {
         sendChannelRequest("env", true, new Buffer.PlainBuffer().putString(name).putString(value))
                 .await(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
+    @Override
     public void signal(Signal sig)
             throws TransportException {
         sendChannelRequest("signal", false, new Buffer.PlainBuffer().putString(sig.toString()));
     }
 
+    @Override
     public Shell startShell()
             throws ConnectionException, TransportException {
         sendChannelRequest("shell", true, null).await(conn.getTimeout(), TimeUnit.SECONDS);
         return this;
     }
 
+    @Override
     public Subsystem startSubsystem(String name)
             throws ConnectionException, TransportException {
         log.info("Will request `{}` subsystem", name);
@@ -207,6 +212,7 @@ public class
         return this;
     }
 
+    @Override
     public Boolean getExitWasCoreDumped() {
         return wasCoreDumped;
     }

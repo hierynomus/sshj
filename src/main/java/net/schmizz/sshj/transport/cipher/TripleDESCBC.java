@@ -42,10 +42,12 @@ public class TripleDESCBC
     /** Named factory for TripleDESCBC Cipher */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+        @Override
         public Cipher create() {
             return new TripleDESCBC();
         }
 
+        @Override
         public String getName() {
             return "3des-cbc";
         }

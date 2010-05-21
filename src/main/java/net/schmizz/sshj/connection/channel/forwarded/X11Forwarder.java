@@ -52,10 +52,13 @@ public class X11Forwarder
     }
 
     /** Internal API */
+    @Override
     public void handleOpen(SSHPacket buf)
             throws ConnectionException, TransportException {
-        callListener(listener, new X11Channel(conn, buf.readInt(), buf.readInt(), buf.readInt(), buf.readString(), buf
-                .readInt()));
+        callListener(listener, new X11Channel(conn,
+                                              buf.readInt(),
+                                              buf.readInt(), buf.readInt(),
+                                              buf.readString(), buf.readInt()));
     }
 
     /** Stop handling {@code x11} channel open requests. De-registers itself with connection layer. */

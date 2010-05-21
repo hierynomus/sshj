@@ -20,6 +20,7 @@ import java.security.PublicKey;
 public final class PromiscuousVerifier
         implements HostKeyVerifier {
 
+    @Override
     public boolean verify(String hostname, int port, PublicKey key) {
         return true;
     }

@@ -43,10 +43,12 @@ public class SHA1
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Digest> {
 
+        @Override
         public Digest create() {
             return new SHA1();
         }
 
+        @Override
         public String getName() {
             return "sha1";
         }

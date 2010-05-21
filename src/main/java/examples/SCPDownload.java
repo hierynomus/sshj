@@ -25,13 +25,14 @@ public class SCPDownload {
     public static void main(String[] args)
             throws IOException {
         SSHClient ssh = new SSHClient();
-        // ssh.useCompression(); // Can lead to significant speedup
+        // ssh.useCompression(); // Can lead to significant speedup (needs JZlib in classpath)
         ssh.loadKnownHosts();
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
-            ssh.newSCPFileTransfer()
-                    .download("well", "/tmp/");
+            final String src = "test_file";
+            final String target = "/tmp/";
+            ssh.newSCPFileTransfer().download(src, target);
         } finally {
             ssh.disconnect();
         }

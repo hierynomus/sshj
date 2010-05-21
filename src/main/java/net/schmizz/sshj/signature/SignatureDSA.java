@@ -48,10 +48,12 @@ public class SignatureDSA
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
+        @Override
         public Signature create() {
             return new SignatureDSA();
         }
 
+        @Override
         public String getName() {
             return KeyType.DSA.toString();
         }
@@ -62,6 +64,7 @@ public class SignatureDSA
         super("SHA1withDSA");
     }
 
+    @Override
     public byte[] sign() {
         byte[] sig;
         try {
@@ -102,6 +105,7 @@ public class SignatureDSA
         return result;
     }
 
+    @Override
     public boolean verify(byte[] sig) {
         sig = extractSig(sig);
 

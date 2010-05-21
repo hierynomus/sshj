@@ -42,10 +42,12 @@ public class AES128CTR
     /** Named factory for AES128CBC Cipher */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+        @Override
         public Cipher create() {
             return new AES128CTR();
         }
 
+        @Override
         public String getName() {
             return "aes128-ctr";
         }

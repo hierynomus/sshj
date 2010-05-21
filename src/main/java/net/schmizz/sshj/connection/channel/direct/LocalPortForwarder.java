@@ -48,6 +48,7 @@ public class LocalPortForwarder {
 
             final ErrorCallback closer = StreamCopier.closeOnErrorCallback(this,
                                                                            new Closeable() {
+                                                                               @Override
                                                                                public void close()
                                                                                        throws IOException {
                                                                                    sock.close();

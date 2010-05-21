@@ -59,6 +59,7 @@ public class UserAuthImpl
 
     // synchronized for mutual exclusion; ensure one authenticate() ever in progress
 
+    @Override
     public synchronized void authenticate(String username, Service nextService, Iterable<AuthMethod> methods)
             throws UserAuthException, TransportException {
         clearState();
@@ -108,14 +109,17 @@ public class UserAuthImpl
         throw new UserAuthException("Exhausted available authentication methods", savedEx.peek());
     }
 
+    @Override
     public String getBanner() {
         return banner;
     }
 
+    @Override
     public String getNextServiceName() {
         return nextService.getName();
     }
 
+    @Override
     public Transport getTransport() {
         return trans;
     }
@@ -126,14 +130,17 @@ public class UserAuthImpl
      *
      * @return deque of saved exceptions
      */
+    @Override
     public Deque<UserAuthException> getSavedExceptions() {
         return savedEx;
     }
 
+    @Override
     public String getUsername() {
         return username;
     }
 
+    @Override
     public boolean hadPartialSuccess() {
         return partialSuccess;
     }

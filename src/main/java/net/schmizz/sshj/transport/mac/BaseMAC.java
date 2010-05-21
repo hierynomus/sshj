@@ -59,14 +59,17 @@ public class BaseMAC
         tmp = new byte[defbsize];
     }
 
+    @Override
     public byte[] doFinal() {
         return mac.doFinal();
     }
 
+    @Override
     public byte[] doFinal(byte[] input) {
         return mac.doFinal(input);
     }
 
+    @Override
     public void doFinal(byte[] buf, int offset) {
         try {
             if (bsize != defbsize) {
@@ -79,10 +82,12 @@ public class BaseMAC
         }
     }
 
+    @Override
     public int getBlockSize() {
         return bsize;
     }
 
+    @Override
     public void init(byte[] key) {
         if (key.length > defbsize) {
             byte[] tmp = new byte[defbsize];
@@ -99,14 +104,17 @@ public class BaseMAC
         }
     }
 
+    @Override
     public void update(byte foo[], int s, int l) {
         mac.update(foo, s, l);
     }
 
+    @Override
     public void update(byte[] foo) {
         mac.update(foo, 0, foo.length);
     }
 
+    @Override
     public void update(long i) {
         tmp[0] = (byte) (i >>> 24);
         tmp[1] = (byte) (i >>> 16);

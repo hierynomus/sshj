@@ -70,14 +70,17 @@ public class BaseCipher
         this.transformation = transformation;
     }
 
+    @Override
     public int getBlockSize() {
         return bsize;
     }
 
+    @Override
     public int getIVSize() {
         return ivsize;
     }
 
+    @Override
     public void init(Mode mode, byte[] key, byte[] iv) {
         key = BaseCipher.resize(key, bsize);
         iv = BaseCipher.resize(iv, ivsize);
@@ -91,6 +94,7 @@ public class BaseCipher
         }
     }
 
+    @Override
     public void update(byte[] input, int inputOffset, int inputLen) {
         try {
             cipher.update(input, inputOffset, inputLen, input, inputOffset);

@@ -48,6 +48,7 @@ public class SSHException
 
     public static final ExceptionChainer<SSHException> chainer = new ExceptionChainer<SSHException>() {
 
+        @Override
         public SSHException chain(Throwable t) {
             if (t instanceof SSHException)
                 return (SSHException) t;

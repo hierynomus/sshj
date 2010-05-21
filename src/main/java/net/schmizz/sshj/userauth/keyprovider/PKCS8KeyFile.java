@@ -40,10 +40,12 @@ public class PKCS8KeyFile
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
+        @Override
         public FileKeyProvider create() {
             return new PKCS8KeyFile();
         }
 
+        @Override
         public String getName() {
             return "PKCS8";
         }
@@ -59,27 +61,32 @@ public class PKCS8KeyFile
 
     protected char[] passphrase; // for blanking out
 
+    @Override
     public PrivateKey getPrivate()
             throws IOException {
         return kp != null ? kp.getPrivate() : (kp = readKeyPair()).getPrivate();
     }
 
+    @Override
     public PublicKey getPublic()
             throws IOException {
         return kp != null ? kp.getPublic() : (kp = readKeyPair()).getPublic();
     }
 
+    @Override
     public KeyType getType()
             throws IOException {
         return type != null ? type : (type = KeyType.fromKey(getPublic()));
     }
 
+    @Override
     public void init(File location) {
         assert location != null;
         this.location = location;
         resource = new PrivateKeyFileResource(location.getAbsolutePath());
     }
 
+    @Override
     public void init(File location, PasswordFinder pwdf) {
         init(location);
         this.pwdf = pwdf;
@@ -90,6 +97,7 @@ public class PKCS8KeyFile
             return null;
         else
             return new org.bouncycastle.openssl.PasswordFinder() {
+                @Override
                 public char[] getPassword() {
                     return passphrase = pwdf.reqPassword(resource);
                 }

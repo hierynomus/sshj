@@ -38,12 +38,7 @@ package net.schmizz.sshj.common;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.Arrays;
 
 public class Buffer<T extends Buffer<T>> {
@@ -463,53 +458,16 @@ public class Buffer<T extends Buffer<T>> {
 
     public PublicKey readPublicKey() {
         try {
-            switch (KeyType.fromString(readString())) {
-                case RSA: {
-                    BigInteger e = readMPInt();
-                    BigInteger n = readMPInt();
-                    KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
-                    return keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
-                }
-                case DSA: {
-                    BigInteger p = readMPInt();
-                    BigInteger q = readMPInt();
-                    BigInteger g = readMPInt();
-                    BigInteger y = readMPInt();
-                    KeyFactory keyFactory = SecurityUtils.getKeyFactory("DSA");
-                    return keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
-                }
-                default:
-                    assert false;
-            }
+            final String type = readString();
+            return KeyType.fromString(type).readPubKeyFromBuffer(type, this);
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
         }
-        return null;
     }
 
     @SuppressWarnings("unchecked")
     public T putPublicKey(PublicKey key) {
-        final KeyType type = KeyType.fromKey(key);
-        switch (type) {
-            case RSA: {
-                final RSAPublicKey rsaKey = (RSAPublicKey) key;
-                putString(type.toString()) // ssh-rsa
-                        .putMPInt(rsaKey.getPublicExponent()) // e
-                        .putMPInt(rsaKey.getModulus()); // n
-                break;
-            }
-            case DSA: {
-                final DSAPublicKey dsaKey = (DSAPublicKey) key;
-                putString(type.toString()) // ssh-dss
-                        .putMPInt(dsaKey.getParams().getP()) // p
-                        .putMPInt(dsaKey.getParams().getQ()) // q
-                        .putMPInt(dsaKey.getParams().getG()) // g
-                        .putMPInt(dsaKey.getY()); // y
-                break;
-            }
-            default:
-                throw new SSHRuntimeException("Don't know how to encode key: " + key);
-        }
+        KeyType.fromKey(key).putPubKeyIntoBuffer(key, this);
         return (T) this;
     }
 

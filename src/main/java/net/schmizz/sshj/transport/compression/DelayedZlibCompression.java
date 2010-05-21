@@ -46,10 +46,12 @@ public class DelayedZlibCompression
     /** Named factory for the ZLib Delayed Compression. */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Compression> {
+        @Override
         public Compression create() {
             return new DelayedZlibCompression();
         }
 
+        @Override
         public String getName() {
             return "zlib@openssh.com";
         }

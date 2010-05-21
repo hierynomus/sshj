@@ -17,6 +17,7 @@ package examples;
 
 import net.schmizz.sshj.SSHClient;
 
+import java.io.File;
 import java.io.IOException;
 
 /** This example demonstrates uploading of a file over SFTP to the SSH server. */
@@ -29,7 +30,9 @@ public class SFTPUpload {
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
-            ssh.newSFTPClient().put("/Users/shikhar/well", "/tmp/");
+            final String src = System.getProperty("user.home") + File.separator + "test_file";
+            final String target = "/tmp/";
+            ssh.newSFTPClient().put(src, target);
         } finally {
             ssh.disconnect();
         }

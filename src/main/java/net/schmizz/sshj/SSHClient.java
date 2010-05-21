@@ -87,7 +87,6 @@ import java.util.List;
  * <p/>
  * <em>A simple example:</em>
  * <p/>
- * <p/>
  * <pre>
  * client = new SSHClient();
  * client.initUserKnownHosts();
@@ -165,6 +164,7 @@ public class SSHClient
      */
     public void addHostKeyVerifier(final String host, final int port, final String fingerprint) {
         addHostKeyVerifier(new HostKeyVerifier() {
+            @Override
             public boolean verify(String h, int p, PublicKey k) {
                 return host.equals(h) && port == p && SecurityUtils.getFingerprint(k).equals(fingerprint);
             }
@@ -587,6 +587,7 @@ public class SSHClient
         doKex();
     }
 
+    @Override
     public Session startSession()
             throws ConnectionException, TransportException {
         assert isConnected() && isAuthenticated();

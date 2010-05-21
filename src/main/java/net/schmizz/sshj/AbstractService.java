@@ -44,29 +44,35 @@ public abstract class AbstractService
         timeout = trans.getTimeout();
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void handle(Message msg, SSHPacket buf)
             throws SSHException {
         trans.sendUnimplemented();
     }
 
+    @Override
     public void notifyError(SSHException error) {
         log.debug("Was notified of {}", error.toString());
     }
 
+    @Override
     public void notifyUnimplemented(long seqNum)
             throws SSHException {
         throw new SSHException(DisconnectReason.PROTOCOL_ERROR, "Unexpected: SSH_MSG_UNIMPLEMENTED");
     }
 
+    @Override
     public void notifyDisconnect()
             throws SSHException {
         log.debug("Was notified of disconnect");
     }
 
+    @Override
     public void request()
             throws TransportException {
         final Service active = trans.getService();

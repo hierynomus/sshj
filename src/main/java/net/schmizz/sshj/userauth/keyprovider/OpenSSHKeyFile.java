@@ -38,10 +38,12 @@ public class OpenSSHKeyFile
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
+        @Override
         public FileKeyProvider create() {
             return new OpenSSHKeyFile();
         }
 
+        @Override
         public String getName() {
             return "OpenSSH";
         }

@@ -331,6 +331,7 @@ final class KeyExchanger
         transport.getDecoder().setAlgorithms(cipher_S2C, mac_S2C, compression_S2C);
     }
 
+    @Override
     public void handle(Message msg, SSHPacket buf)
             throws TransportException {
         switch (expected) {
@@ -378,6 +379,7 @@ final class KeyExchanger
         }
     }
 
+    @Override
     public void notifyError(SSHException error) {
         log.debug("Got notified of {}", error.toString());
         FutureUtils.alertAll(error, kexInitSent, done);

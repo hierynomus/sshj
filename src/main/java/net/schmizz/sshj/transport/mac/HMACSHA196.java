@@ -43,10 +43,12 @@ public class HMACSHA196
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<MAC> {
 
+        @Override
         public MAC create() {
             return new HMACSHA196();
         }
 
+        @Override
         public String getName() {
             return "hmac-sha1-96";
         }

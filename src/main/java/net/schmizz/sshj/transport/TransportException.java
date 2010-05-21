@@ -25,6 +25,7 @@ public class TransportException
 
     /** @see ExceptionChainer */
     public static final ExceptionChainer<TransportException> chainer = new ExceptionChainer<TransportException>() {
+        @Override
         public TransportException chain(Throwable t) {
             if (t instanceof TransportException)
                 return (TransportException) t;

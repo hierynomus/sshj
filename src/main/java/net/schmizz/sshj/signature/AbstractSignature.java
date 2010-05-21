@@ -54,6 +54,7 @@ public abstract class AbstractSignature
         this.algorithm = algorithm;
     }
 
+    @Override
     public void init(PublicKey publicKey, PrivateKey privateKey) {
         try {
             signature = SecurityUtils.getSignature(algorithm);
@@ -66,10 +67,12 @@ public abstract class AbstractSignature
         }
     }
 
+    @Override
     public void update(byte[] foo) {
         update(foo, 0, foo.length);
     }
 
+    @Override
     public void update(byte[] foo, int off, int len) {
         try {
             signature.update(foo, off, len);

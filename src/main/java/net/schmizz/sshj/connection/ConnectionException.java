@@ -24,6 +24,7 @@ public class ConnectionException
         extends SSHException {
 
     public static final ExceptionChainer<ConnectionException> chainer = new ExceptionChainer<ConnectionException>() {
+        @Override
         public ConnectionException chain(Throwable t) {
             if (t instanceof ConnectionException)
                 return (ConnectionException) t;
