@@ -46,7 +46,7 @@ public class RemoteDirectory
                         if (!(name.equals(".") || name.equals("..")) && (filter == null || filter.accept(inf)))
                             rri.add(inf);
                     }
-                    break loop;
+                    break;
 
                 case STATUS:
                     res.ensureStatusIs(StatusCode.EOF);
