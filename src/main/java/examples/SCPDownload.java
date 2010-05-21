@@ -22,10 +22,6 @@ import java.io.IOException;
 /** This example demonstrates downloading of a file over SCP from the SSH server. */
 public class SCPDownload {
 
-//    static {
-//        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-//    }
-
     public static void main(String[] args)
             throws IOException {
         SSHClient ssh = new SSHClient();

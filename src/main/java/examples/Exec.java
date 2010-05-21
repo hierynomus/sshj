@@ -23,10 +23,6 @@ import java.io.IOException;
 /** This examples demonstrates how a remote command can be executed. */
 public class Exec {
 
-    // static {
-    // BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-    // }
-
     public static void main(String... args)
             throws IOException {
         SSHClient ssh = new SSHClient();
@@ -37,7 +33,7 @@ public class Exec {
 
             ssh.authPublickey(System.getProperty("user.name"));
 
-            Command cmd = ssh.startSession().exec("ping google.com -n 1");
+            Command cmd = ssh.startSession().exec("ping -c 1 google.com");
 
             // Pipe.pipe(cmd.getInputStream(), System.out, cmd.getLocalMaxPacketSize(), false);
             System.out.print(cmd.getOutputAsString());

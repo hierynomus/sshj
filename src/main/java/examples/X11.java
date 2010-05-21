@@ -27,10 +27,6 @@ import java.net.InetSocketAddress;
 /** This example demonstrates how forwarding X11 connections from a remote host can be accomplished. */
 public class X11 {
 
-    // static {
-    // BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-    // }
-
     public static void main(String... args)
             throws IOException, InterruptedException {
         SSHClient ssh = new SSHClient();

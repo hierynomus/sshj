@@ -28,10 +28,6 @@ import java.io.IOException;
 /** A very rudimentary psuedo-terminal based on console I/O. */
 class RudimentaryPTY {
 
-//    static {
-//        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-//    }
-
     public static void main(String... args)
             throws IOException {
 

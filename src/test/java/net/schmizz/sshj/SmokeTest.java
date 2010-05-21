@@ -18,9 +18,6 @@ package net.schmizz.sshj;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.util.BogusPasswordAuthenticator;
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.PatternLayout;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
 import org.junit.After;
@@ -35,9 +32,6 @@ import static org.junit.Assert.assertTrue;
 /* Kinda basic right now */
 
 public class SmokeTest {
-    static {
-        BasicConfigurator.configure(new ConsoleAppender(new PatternLayout("%d [%-15.15t] %-5p %-30.30c{1} - %m%n")));
-    }
 
     private SSHClient ssh;
     private SshServer sshd;
