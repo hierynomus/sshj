@@ -38,8 +38,8 @@ public class RemoteFile
 
     public FileAttributes fetchAttributes()
             throws IOException {
-        return requester.doRequest(newRequest(PacketType.FSTAT)) //
-                .ensurePacketTypeIs(PacketType.ATTRS) //
+        return requester.doRequest(newRequest(PacketType.FSTAT))
+                .ensurePacketTypeIs(PacketType.ATTRS)
                 .readFileAttributes();
     }
 
@@ -73,11 +73,10 @@ public class RemoteFile
 
     public void write(long fileOffset, byte[] data, int off, int len)
             throws IOException {
-        requester.doRequest( //
-                             newRequest(PacketType.WRITE) //
-                                     .putUINT64(fileOffset) //
-                                     .putInt(len - off) //
-                                     .putRawBytes(data, off, len) //
+        requester.doRequest(newRequest(PacketType.WRITE)
+                .putUINT64(fileOffset)
+                .putInt(len - off)
+                .putRawBytes(data, off, len)
         ).ensureStatusPacketIsOK();
     }
 
