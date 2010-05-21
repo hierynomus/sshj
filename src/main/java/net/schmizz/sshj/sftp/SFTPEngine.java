@@ -114,7 +114,6 @@ public class SFTPEngine
 
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)
             throws IOException {
-
         final String handle = doRequest(
                 newRequest(PacketType.OPEN).putString(path).putInt(OpenMode.toMask(modes)).putFileAttributes(fa)
         ).ensurePacketTypeIs(PacketType.HANDLE).readString();
