@@ -29,6 +29,8 @@ public abstract class AbstractFileTransfer {
     private volatile ModeGetter modeGetter = defaultModeGetter;
     private volatile ModeSetter modeSetter = defaultModeSetter;
 
+    private volatile ProgressListener progressListener;
+
     public void setModeGetter(ModeGetter modeGetter) {
         this.modeGetter = (modeGetter == null) ? defaultModeGetter : modeGetter;
     }
@@ -43,6 +45,14 @@ public abstract class AbstractFileTransfer {
 
     public ModeSetter getModeSetter() {
         return this.modeSetter;
+    }
+
+    public ProgressListener getProgressListener() {
+        return progressListener;
+    }
+
+    public void setProgressListener(ProgressListener progressListener) {
+        this.progressListener = progressListener;
     }
 
 }
