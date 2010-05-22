@@ -154,28 +154,30 @@ public class SFTPFileTransfer
         private void upload(File local, String remote)
                 throws IOException {
             log.info("Uploading [{}] to [{}]", local, remote);
+            final String adjustedPath;
             if (local.isDirectory())
-                uploadDir(local, remote);
+                adjustedPath = uploadDir(local, remote);
             else if (local.isFile())
-                uploadFile(local, remote);
+                adjustedPath = uploadFile(local, remote);
             else
                 throw new IOException(local + " is not a file or directory");
+            sftp.setAttributes(adjustedPath, getAttributes(local));
         }
 
-        private void uploadDir(File local, String remote)
+        private String uploadDir(File local, String remote)
                 throws IOException {
             final String adjusted = prepareDir(local, remote);
             for (File f : local.listFiles(getUploadFilter()))
                 upload(f, adjusted);
+            return adjusted;
         }
 
-        private void uploadFile(File local, String remote)
+        private String uploadFile(File local, String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
             final RemoteFile rf = sftp.open(adjusted, EnumSet.of(OpenMode.WRITE,
                                                                  OpenMode.CREAT,
                                                                  OpenMode.TRUNC));
-            rf.setAttributes(getAttributes(local));
             try {
                 final FileInputStream fis = new FileInputStream(local);
                 try {
@@ -187,6 +189,7 @@ public class SFTPFileTransfer
             } finally {
                 rf.close();
             }
+            return adjusted;
         }
 
         private String prepareDir(File local, String remote)
@@ -197,7 +200,7 @@ public class SFTPFileTransfer
             } catch (SFTPException e) {
                 if (e.getStatusCode() == StatusCode.NO_SUCH_FILE) {
                     log.debug("probeDir: {} does not exist, creating", remote);
-                    sftp.makeDir(remote, getAttributes(local));
+                    sftp.makeDir(remote);
                     return remote;
                 } else
                     throw e;
@@ -206,11 +209,6 @@ public class SFTPFileTransfer
             if (attrs.getMode().getType() == FileMode.Type.DIRECTORY)
                 if (pathHelper.getComponents(remote).getName().equals(local.getName())) {
                     log.debug("probeDir: {} already exists", remote);
-                    final FileAttributes localAttrs = getAttributes(local);
-                    if (attrs.getMode().getMask() != localAttrs.getMode().getMask()
-                        || (getModeGetter().preservesTimes()
-                            && (attrs.getAtime() != attrs.getAtime() || attrs.getMtime() != localAttrs.getMtime())))
-                        sftp.setAttributes(remote, localAttrs);
                     return remote;
                 } else {
                     log.debug("probeDir: {} already exists, path adjusted for {}", remote, local.getName());
