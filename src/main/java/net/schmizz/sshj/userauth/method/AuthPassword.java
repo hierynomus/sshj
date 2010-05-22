@@ -46,7 +46,7 @@ public class AuthPassword
     @Override
     public SSHPacket buildReq()
             throws UserAuthException {
-        log.info("Requesting password for " + resource);
+        log.info("Requesting password for {}", resource);
         char[] password = pwdf.reqPassword(resource);
         if (password == null)
             throw new UserAuthException("Was given null password for " + resource);
