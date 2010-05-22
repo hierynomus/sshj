@@ -49,11 +49,14 @@ import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+import net.schmizz.sshj.userauth.method.AuthChallengeResponse;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.method.AuthPassword;
 import net.schmizz.sshj.userauth.method.AuthPublickey;
+import net.schmizz.sshj.userauth.method.PasswordResponseProvider;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
+import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -202,36 +205,8 @@ public class SSHClient
     }
 
     /**
-     * Authenticate {@code username} using the {@code "password"} authentication method. The {@code password} array is
-     * blanked out after use.
-     *
-     * @param username user to authenticate
-     * @param password the password to use for authentication
-     *
-     * @throws UserAuthException  in case of authentication failure
-     * @throws TransportException if there was a transport-layer error
-     */
-    public void authPassword(String username, char[] password)
-            throws UserAuthException, TransportException {
-        authPassword(username, PasswordUtils.createOneOff(password));
-    }
-
-    /**
-     * Authenticate {@code username} using the {@code "password"} authentication method.
-     *
-     * @param username user to authenticate
-     * @param pfinder  the {@link PasswordFinder} to use for authentication
-     *
-     * @throws UserAuthException  in case of authentication failure
-     * @throws TransportException if there was a transport-layer error
-     */
-    public void authPassword(String username, PasswordFinder pfinder)
-            throws UserAuthException, TransportException {
-        auth(username, new AuthPassword(pfinder));
-    }
-
-    /**
-     * Authenticate {@code username} using the {@code "password"} authentication method.
+     * Authenticate {@code username} using the {@code "password"} authentication method and as a fallback basic
+     * challenge-response authentication.
      *
      * @param username user to authenticate
      * @param password the password to use for authentication
@@ -242,6 +217,52 @@ public class SSHClient
     public void authPassword(String username, String password)
             throws UserAuthException, TransportException {
         authPassword(username, password.toCharArray());
+    }
+
+    /**
+     * Authenticate {@code username} using the {@code "password"} authentication method and as a fallback basic
+     * challenge-response authentication.. The {@code password} array is blanked out after use.
+     *
+     * @param username user to authenticate
+     * @param password the password to use for authentication
+     *
+     * @throws UserAuthException  in case of authentication failure
+     * @throws TransportException if there was a transport-layer error
+     */
+    public void authPassword(final String username, final char[] password)
+            throws UserAuthException, TransportException {
+        try {
+            authPassword(username, new PasswordFinder() {
+
+                @Override
+                public char[] reqPassword(Resource<?> resource) {
+                    return password.clone();
+                }
+
+                @Override
+                public boolean shouldRetry(Resource<?> resource) {
+                    return false;
+                }
+
+            });
+        } finally {
+            PasswordUtils.blankOut(password);
+        }
+    }
+
+    /**
+     * Authenticate {@code username} using the {@code "password"} authentication method and as a fallback basic
+     * challenge-response authentication.
+     *
+     * @param username user to authenticate
+     * @param pfinder  the {@link PasswordFinder} to use for authentication
+     *
+     * @throws UserAuthException  in case of authentication failure
+     * @throws TransportException if there was a transport-layer error
+     */
+    public void authPassword(String username, PasswordFinder pfinder)
+            throws UserAuthException, TransportException {
+        auth(username, new AuthPassword(pfinder), new AuthChallengeResponse(new PasswordResponseProvider(pfinder)));
     }
 
     /**
