@@ -21,10 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Deque;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 
 public class SFTPClient {
 
@@ -88,7 +89,7 @@ public class SFTPClient {
 
     public void mkdirs(String path)
             throws IOException {
-        final Stack<String> dirsToMake = new Stack<String>();
+        final Deque<String> dirsToMake = new LinkedList<String>();
         for (PathComponents current = pathHelper.getComponents(path); ; current = pathHelper
                 .getComponents(current.getParent())) {
             final FileAttributes attrs = statExistence(current.getPath());
