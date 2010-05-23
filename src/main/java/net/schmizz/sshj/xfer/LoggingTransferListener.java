@@ -16,6 +16,7 @@ public class LoggingTransferListener
     private String name = "";
     private long size = -1;
 
+    @Override
     public void startedDir(String name) {
         dirNames.add(name);
         size = -1;
