@@ -20,6 +20,7 @@ import net.schmizz.sshj.sftp.Response.StatusCode;
 import net.schmizz.sshj.xfer.AbstractFileTransfer;
 import net.schmizz.sshj.xfer.FileTransfer;
 import net.schmizz.sshj.xfer.FileTransferUtil;
+import net.schmizz.sshj.xfer.TransferListener;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -89,27 +90,35 @@ public class SFTPFileTransfer
 
     private class Downloader {
 
+        private final TransferListener listener = getTransferListener();
+
         private void download(final RemoteResourceInfo remote, final File local)
                 throws IOException {
-            log.info("Downloading [{}] to [{}]", remote, local);
+            final File adjustedFile;
             switch (remote.getAttributes().getType()) {
                 case DIRECTORY:
-                    downloadDir(remote, local);
+                    listener.startedDir(remote.getName());
+                    adjustedFile = downloadDir(remote, local);
+                    listener.finishedDir();
                     break;
                 case UNKNOWN:
-                    log.warn("Server did not supply information about the type of file at `{}` -- assuming it is a regular file!");
+                    log.warn("Server did not supply information about the type of file at `{}` " +
+                             "-- assuming it is a regular file!", remote.getPath());
                 case REGULAR:
-                    downloadFile(remote, local);
+                    listener.startedFile(remote.getName(), remote.getAttributes().getSize());
+                    adjustedFile = downloadFile(remote, local);
+                    listener.finishedFile();
                     break;
                 default:
                     throw new IOException(remote + " is not a regular file or directory");
             }
+            copyAttributes(remote, adjustedFile);
+
         }
 
-        private void downloadDir(final RemoteResourceInfo remote, final File local)
+        private File downloadDir(final RemoteResourceInfo remote, final File local)
                 throws IOException {
             final File adjusted = FileTransferUtil.getTargetDirectory(local, remote.getName());
-            copyAttributes(remote, adjusted);
             final RemoteDirectory rd = sftp.openDir(remote.getPath());
             try {
                 for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
@@ -117,24 +126,25 @@ public class SFTPFileTransfer
             } finally {
                 rd.close();
             }
+            return adjusted;
         }
 
-        private void downloadFile(final RemoteResourceInfo remote, final File local)
+        private File downloadFile(final RemoteResourceInfo remote, final File local)
                 throws IOException {
             final File adjusted = FileTransferUtil.getTargetFile(local, remote.getName());
-            copyAttributes(remote, adjusted);
             final RemoteFile rf = sftp.open(remote.getPath());
             try {
                 final FileOutputStream fos = new FileOutputStream(adjusted);
                 try {
                     StreamCopier.copy(rf.getInputStream(), fos, sftp.getSubsystem()
-                            .getLocalMaxPacketSize(), false);
+                            .getLocalMaxPacketSize(), false, listener);
                 } finally {
                     fos.close();
                 }
             } finally {
                 rf.close();
             }
+            return adjusted;
         }
 
         private void copyAttributes(final RemoteResourceInfo remote, final File local)
@@ -151,15 +161,20 @@ public class SFTPFileTransfer
 
     private class Uploader {
 
+        private final TransferListener listener = getTransferListener();
+
         private void upload(File local, String remote)
                 throws IOException {
-            log.info("Uploading [{}] to [{}]", local, remote);
             final String adjustedPath;
-            if (local.isDirectory())
+            if (local.isDirectory()) {
+                listener.startedDir(local.getName());
                 adjustedPath = uploadDir(local, remote);
-            else if (local.isFile())
+                listener.finishedDir();
+            } else if (local.isFile()) {
+                listener.startedFile(local.getName(), local.length());
                 adjustedPath = uploadFile(local, remote);
-            else
+                listener.finishedFile();
+            } else
                 throw new IOException(local + " is not a file or directory");
             sftp.setAttributes(adjustedPath, getAttributes(local));
         }
@@ -181,8 +196,8 @@ public class SFTPFileTransfer
             try {
                 final FileInputStream fis = new FileInputStream(local);
                 try {
-                    StreamCopier.copy(fis, rf.getOutputStream(), sftp.getSubsystem().getRemoteMaxPacketSize()
-                                                                 - rf.getOutgoingPacketOverhead(), false);
+                    final int bufSize = sftp.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead();
+                    StreamCopier.copy(fis, rf.getOutputStream(), bufSize, false, listener);
                 } finally {
                     fis.close();
                 }

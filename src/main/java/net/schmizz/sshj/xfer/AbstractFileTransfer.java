@@ -20,19 +20,18 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractFileTransfer {
 
-    /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    public static final ModeGetter defaultModeGetter = new DefaultModeGetter();
-    public static final ModeSetter defaultModeSetter = new DefaultModeSetter();
+    public static final ModeGetter DEFAULT_MODE_SETTER = new DefaultModeGetter();
+    public static final ModeSetter DEFAULT_MODE_GETTER = new DefaultModeSetter();
+    public static final LoggingTransferListener LOGGING_TRANSFER_LISTENER = new LoggingTransferListener();
 
-    private volatile ModeGetter modeGetter = defaultModeGetter;
-    private volatile ModeSetter modeSetter = defaultModeSetter;
-
-    private volatile ProgressListener progressListener;
+    private volatile ModeGetter modeGetter = DEFAULT_MODE_SETTER;
+    private volatile ModeSetter modeSetter = DEFAULT_MODE_GETTER;
+    private volatile TransferListener transferListener = LOGGING_TRANSFER_LISTENER;
 
     public void setModeGetter(ModeGetter modeGetter) {
-        this.modeGetter = (modeGetter == null) ? defaultModeGetter : modeGetter;
+        this.modeGetter = (modeGetter == null) ? DEFAULT_MODE_SETTER : modeGetter;
     }
 
     public ModeGetter getModeGetter() {
@@ -40,19 +39,19 @@ public abstract class AbstractFileTransfer {
     }
 
     public void setModeSetter(ModeSetter modeSetter) {
-        this.modeSetter = (modeSetter == null) ? defaultModeSetter : modeSetter;
+        this.modeSetter = (modeSetter == null) ? DEFAULT_MODE_GETTER : modeSetter;
     }
 
     public ModeSetter getModeSetter() {
         return this.modeSetter;
     }
 
-    public ProgressListener getProgressListener() {
-        return progressListener;
+    public TransferListener getTransferListener() {
+        return transferListener;
     }
 
-    public void setProgressListener(ProgressListener progressListener) {
-        this.progressListener = progressListener;
+    public void setTransferListener(TransferListener transferListener) {
+        this.transferListener = (transferListener == null) ? LOGGING_TRANSFER_LISTENER : transferListener;
     }
 
 }

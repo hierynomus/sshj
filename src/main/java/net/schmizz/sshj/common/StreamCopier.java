@@ -41,10 +41,15 @@ public class StreamCopier
         };
     }
 
-    public static long copy(InputStream in, OutputStream out, int bufSize, boolean keepFlushing)
+    public interface Listener {
+        void reportProgress(long transferred);
+    }
+
+    public static long copy(InputStream in, OutputStream out, int bufSize, boolean keepFlushing, Listener listener)
             throws IOException {
         long count = 0;
 
+        final boolean reportProgress = listener != null;
         final long startTime = System.currentTimeMillis();
 
         final byte[] buf = new byte[bufSize];
@@ -54,6 +59,8 @@ public class StreamCopier
             count += read;
             if (keepFlushing)
                 out.flush();
+            if (reportProgress)
+                listener.reportProgress(count);
         }
         if (!keepFlushing)
             out.flush();
@@ -63,6 +70,11 @@ public class StreamCopier
         LOG.info(sizeKiB + " KiB transferred  in {} seconds ({} KiB/s)", timeSeconds, (sizeKiB / timeSeconds));
 
         return count;
+    }
+
+    public static long copy(InputStream in, OutputStream out, int bufSize, boolean keepFlushing)
+            throws IOException {
+        return copy(in, out, bufSize, keepFlushing, null);
     }
 
     public static String copyStreamToString(InputStream stream)

@@ -20,6 +20,7 @@ import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.FileTransferUtil;
 import net.schmizz.sshj.xfer.ModeSetter;
+import net.schmizz.sshj.xfer.TransferListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,8 +36,8 @@ public final class SCPDownloadClient
 
     private boolean recursive = true;
 
-    SCPDownloadClient(SessionFactory host, ModeSetter modeSetter) {
-        super(host);
+    SCPDownloadClient(SessionFactory host, TransferListener listener, ModeSetter modeSetter) {
+        super(host, listener);
         this.modeSetter = modeSetter;
     }
 
@@ -98,17 +99,6 @@ public final class SCPDownloadClient
         return Integer.parseInt(cmd.substring(1), 8);
     }
 
-    private void prepare(File f, int perms, String tMsg)
-            throws IOException {
-        modeSetter.setPermissions(f, perms);
-
-        if (tMsg != null && modeSetter.preservesTimes()) {
-            String[] tMsgParts = tokenize(tMsg, 4); // e.g. T<mtime> 0 <atime> 0
-            modeSetter.setLastModifiedTime(f, parseLong(tMsgParts[0].substring(1), "last modified time"));
-            modeSetter.setLastAccessedTime(f, parseLong(tMsgParts[2], "last access time"));
-        }
-    }
-
     private boolean process(String bufferedTMsg, String msg, File f)
             throws IOException {
         if (msg.length() < 1)
@@ -150,41 +140,53 @@ public final class SCPDownloadClient
 
     private void processDirectory(String dMsg, String tMsg, File f)
             throws IOException {
-        String[] dMsgParts = tokenize(dMsg, 3); // e.g. D0755 0 <dirname>
-
-        long length = parseLong(dMsgParts[1], "dir length");
+        final String[] dMsgParts = tokenize(dMsg, 3); // D<perms> 0 <dirname>
+        final long length = parseLong(dMsgParts[1], "dir length");
+        final String dirname = dMsgParts[2];
         if (length != 0)
             throw new IOException("Remote SCP command sent strange directory length: " + length);
-
-        f = FileTransferUtil.getTargetDirectory(f, dMsgParts[2]);
-        prepare(f, parsePermissions(dMsgParts[0]), tMsg);
-
-        signal("ACK: D");
-
-        do {
-        } while (!process(null, readMessage(), f));
-
-        signal("ACK: E");
+        listener.startedDir(dirname);
+        {
+            f = FileTransferUtil.getTargetDirectory(f, dirname);
+            signal("ACK: D");
+            do {
+            } while (!process(null, readMessage(), f));
+            setAttributes(f, parsePermissions(dMsgParts[0]), tMsg);
+            signal("ACK: E");
+        }
+        listener.finishedDir();
     }
 
     private void processFile(String cMsg, String tMsg, File f)
             throws IOException {
-        String[] cMsgParts = tokenize(cMsg, 3);
-
-        long length = parseLong(cMsgParts[1], "length");
-
-        f = FileTransferUtil.getTargetFile(f, cMsgParts[2]);
-        prepare(f, parsePermissions(cMsgParts[0]), tMsg);
-
-        signal("Remote can start transfer");
-        final FileOutputStream fos = new FileOutputStream(f);
-        try {
-            transfer(scp.getInputStream(), fos, scp.getLocalMaxPacketSize(), length);
-        } finally {
-            IOUtils.closeQuietly(fos);
+        final String[] cMsgParts = tokenize(cMsg, 3); // C<perms> <size> <filename>
+        final long length = parseLong(cMsgParts[1], "length");
+        final String filename = cMsgParts[2];
+        listener.startedFile(filename, length);
+        {
+            f = FileTransferUtil.getTargetFile(f, filename);
+            signal("Remote can start transfer");
+            final FileOutputStream fos = new FileOutputStream(f);
+            try {
+                transfer(scp.getInputStream(), fos, scp.getLocalMaxPacketSize(), length);
+            } finally {
+                IOUtils.closeQuietly(fos);
+            }
+            check("Remote agrees transfer done");
+            setAttributes(f, parsePermissions(cMsgParts[0]), tMsg);
+            signal("Transfer done");
         }
-        check("Remote agrees transfer done");
-        signal("Transfer done");
+        listener.finishedFile();
+    }
+
+    private void setAttributes(File f, int perms, String tMsg)
+            throws IOException {
+        modeSetter.setPermissions(f, perms);
+        if (tMsg != null && modeSetter.preservesTimes()) {
+            String[] tMsgParts = tokenize(tMsg, 4); // e.g. T<mtime> 0 <atime> 0
+            modeSetter.setLastModifiedTime(f, parseLong(tMsgParts[0].substring(1), "last modified time"));
+            modeSetter.setLastAccessedTime(f, parseLong(tMsgParts[2], "last access time"));
+        }
     }
 
     private String[] tokenize(String msg, int numPartsExpected)

@@ -24,6 +24,7 @@ import java.io.IOException;
 public class SCPFileTransfer
         extends AbstractFileTransfer
         implements FileTransfer {
+
     private final SessionFactory sessionFactory;
 
     public SCPFileTransfer(SessionFactory sessionFactory) {
@@ -31,11 +32,11 @@ public class SCPFileTransfer
     }
 
     public SCPDownloadClient newSCPDownloadClient() {
-        return new SCPDownloadClient(sessionFactory, getModeSetter());
+        return new SCPDownloadClient(sessionFactory, getTransferListener(), getModeSetter());
     }
 
     public SCPUploadClient newSCPUploadClient() {
-        return new SCPUploadClient(sessionFactory, getModeGetter());
+        return new SCPUploadClient(sessionFactory, getTransferListener(), getModeGetter());
     }
 
     @Override

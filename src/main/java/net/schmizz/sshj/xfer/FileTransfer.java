@@ -33,8 +33,8 @@ public interface FileTransfer {
 
     void setModeSetter(ModeSetter modeSetter);
 
-    ProgressListener getProgressListener();
+    TransferListener getTransferListener();
 
-    void setProgressListener(ProgressListener listener);
+    void setTransferListener(TransferListener listener);
 
 }

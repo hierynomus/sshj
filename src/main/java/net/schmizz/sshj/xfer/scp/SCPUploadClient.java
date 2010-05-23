@@ -19,6 +19,7 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.ModeGetter;
+import net.schmizz.sshj.xfer.TransferListener;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -36,8 +37,8 @@ public final class SCPUploadClient
 
     private FileFilter fileFilter;
 
-    SCPUploadClient(SessionFactory host, ModeGetter modeGetter) {
-        super(host);
+    SCPUploadClient(SessionFactory host, TransferListener listener, ModeGetter modeGetter) {
+        super(host, listener);
         this.modeGetter = modeGetter;
     }
 
@@ -80,30 +81,29 @@ public final class SCPUploadClient
 
     private void process(File f)
             throws IOException {
-        if (f.isDirectory())
+        if (f.isDirectory()) {
+            listener.startedDir(f.getName());
             sendDirectory(f);
-        else if (f.isFile())
+            listener.finishedDir();
+        } else if (f.isFile()) {
+            listener.startedFile(f.getName(), f.length());
             sendFile(f);
-        else
+            listener.finishedFile();
+        } else
             throw new IOException(f + " is not a regular file or directory");
     }
 
     private void sendDirectory(File f)
             throws IOException {
-        log.info("Entering directory `{}`", f.getName());
         preserveTimeIfPossible(f);
         sendMessage("D0" + getPermString(f) + " 0 " + f.getName());
-
         for (File child : getChildren(f))
             process(child);
-
         sendMessage("E");
-        log.info("Exiting directory `{}`", f.getName());
     }
 
     private void sendFile(File f)
             throws IOException {
-        log.info("Sending `{}`...", f.getName());
         preserveTimeIfPossible(f);
         final InputStream src = new FileInputStream(f);
         try {

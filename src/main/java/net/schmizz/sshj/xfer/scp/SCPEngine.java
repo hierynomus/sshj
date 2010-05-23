@@ -19,6 +19,7 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
+import net.schmizz.sshj.xfer.TransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,13 +60,15 @@ abstract class SCPEngine {
     final Logger log = LoggerFactory.getLogger(getClass());
 
     final SessionFactory host;
+    final TransferListener listener;
     final Queue<String> warnings = new LinkedList<String>();
 
     Command scp;
     int exitStatus;
 
-    SCPEngine(SessionFactory host) {
+    SCPEngine(SessionFactory host, TransferListener listener) {
         this.host = host;
+        this.listener = listener;
     }
 
     public int copy(String sourcePath, String targetPath)
@@ -201,6 +204,7 @@ abstract class SCPEngine {
         while (count < len && (read = in.read(buf, 0, (int) Math.min(bufSize, len - count))) != -1) {
             out.write(buf, 0, read);
             count += read;
+            listener.reportProgress(count);
         }
         out.flush();
 
