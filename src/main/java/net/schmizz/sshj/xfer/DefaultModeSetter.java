@@ -35,18 +35,21 @@ public class DefaultModeSetter
     @Override
     public void setLastModifiedTime(File f, long t)
             throws IOException {
-        f.setLastModified(t * 1000);
+        if (!f.setLastModified(t * 1000))
+            throw new IOException("Error setting last modified time for " + f);
     }
 
     @Override
     public void setPermissions(File f, int perms)
             throws IOException {
-        f.setReadable(FilePermission.USR_R.isIn(perms),
-                      !(FilePermission.OTH_R.isIn(perms) || FilePermission.GRP_R.isIn(perms)));
-        f.setWritable(FilePermission.USR_W.isIn(perms),
-                      !(FilePermission.OTH_W.isIn(perms) || FilePermission.GRP_W.isIn(perms)));
-        f.setExecutable(FilePermission.USR_X.isIn(perms),
-                        !(FilePermission.OTH_X.isIn(perms) || FilePermission.GRP_X.isIn(perms)));
+        final boolean r = f.setReadable(FilePermission.USR_R.isIn(perms),
+                                        !(FilePermission.OTH_R.isIn(perms) || FilePermission.GRP_R.isIn(perms)));
+        final boolean w = f.setWritable(FilePermission.USR_W.isIn(perms),
+                                        !(FilePermission.OTH_W.isIn(perms) || FilePermission.GRP_W.isIn(perms)));
+        final boolean x = f.setExecutable(FilePermission.USR_X.isIn(perms),
+                                          !(FilePermission.OTH_X.isIn(perms) || FilePermission.GRP_X.isIn(perms)));
+        if (!(r && w && x))
+            throw new IOException("Error setting permissions for " + f);
     }
 
     @Override
