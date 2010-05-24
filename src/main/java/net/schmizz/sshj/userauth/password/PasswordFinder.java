@@ -22,7 +22,7 @@ public interface PasswordFinder {
      * Request password for specified resource.
      * <p/>
      * This method may return {@code null} when the request cannot be serviced, e.g. when the user cancels a password
-     * prompt. The consequences of returning {@code null} are specific to the requestor.
+     * prompt.
      *
      * @param resource the resource for which password is being requested
      *

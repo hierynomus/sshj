@@ -28,6 +28,8 @@ public class PasswordResponseProvider
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
+    private static final char[] EMPTY_RESPONSE = new char[0];
+
     private final PasswordFinder pwdf;
     private Resource resource;
     private boolean gaveOnce;
@@ -48,13 +50,13 @@ public class PasswordResponseProvider
     }
 
     @Override
-    public String getResponse(String prompt, boolean echo) {
+    public char[] getResponse(String prompt, boolean echo) {
         if (!gaveOnce && !echo && prompt.toLowerCase().contains("password")) {
             gaveOnce = true;
             log.debug("prompt = `{}`", prompt);
-            return new String(pwdf.reqPassword(resource));
+            return pwdf.reqPassword(resource);
         }
-        return "";
+        return EMPTY_RESPONSE;
     }
 
     @Override

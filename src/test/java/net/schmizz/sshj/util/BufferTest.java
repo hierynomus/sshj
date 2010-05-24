@@ -29,7 +29,7 @@ import java.security.GeneralSecurityException;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-/** Tests {@link SSHPacket} functionality */
+/** Tests {@link Buffer} functionality */
 public class BufferTest {
     private Buffer.PlainBuffer posBuf;
     private Buffer.PlainBuffer handyBuf;
@@ -69,7 +69,7 @@ public class BufferTest {
     public void testPassword() {
         char[] pass = "lolcatz".toCharArray();
         // test if put correctly as a string
-        assertEquals(new Buffer.PlainBuffer().putPassword(pass).readString(), "lolcatz");
+        assertEquals(new Buffer.PlainBuffer().putSensitiveString(pass).readString(), "lolcatz");
         // test that char[] was blanked out
         assertArrayEquals(pass, "       ".toCharArray());
     }

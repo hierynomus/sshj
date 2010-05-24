@@ -18,42 +18,29 @@ package net.schmizz.sshj.userauth.method;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
-import net.schmizz.sshj.userauth.AuthParams;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.password.AccountResource;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.Resource;
 
 /** Implements the {@code password} authentication method. Password-change request handling is not currently supported. */
 public class AuthPassword
         extends AbstractAuthMethod {
 
     private final PasswordFinder pwdf;
-    private Resource resource;
 
     public AuthPassword(PasswordFinder pwdf) {
         super("password");
         this.pwdf = pwdf;
-
-    }
-
-    @Override
-    public void init(AuthParams params) {
-        super.init(params);
-        resource = new AccountResource(params.getUsername(), params.getTransport().getRemoteHost());
     }
 
     @Override
     public SSHPacket buildReq()
             throws UserAuthException {
-        log.info("Requesting password for {}", resource);
-        char[] password = pwdf.reqPassword(resource);
-        if (password == null)
-            throw new UserAuthException("Was given null password for " + resource);
-        else
-            return super.buildReq() // the generic stuff
-                    .putBoolean(false) // no, we are not responding to a CHANGEREQ
-                    .putPassword(password);
+        final AccountResource accountResource = makeAccountResource();
+        log.info("Requesting password for {}", accountResource);
+        return super.buildReq() // the generic stuff
+                .putBoolean(false) // no, we are not responding to a CHANGEREQ
+                .putSensitiveString(pwdf.reqPassword(accountResource));
     }
 
     @Override
@@ -71,7 +58,7 @@ public class AuthPassword
      */
     @Override
     public boolean shouldRetry() {
-        return pwdf.shouldRetry(resource);
+        return pwdf.shouldRetry(makeAccountResource());
     }
 
 }

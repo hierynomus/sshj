@@ -20,6 +20,7 @@ import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.AuthParams;
 import net.schmizz.sshj.userauth.UserAuthException;
+import net.schmizz.sshj.userauth.password.AccountResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,10 @@ public abstract class AbstractAuthMethod
                 .putString(params.getNextServiceName()) // the service that we'd like on success
                 .putString(name); // name of auth method
 
+    }
+
+    protected AccountResource makeAccountResource() {
+        return new AccountResource(params.getUsername(), params.getTransport().getRemoteHost());
     }
 
 }

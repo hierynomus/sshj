@@ -440,19 +440,19 @@ public class Buffer<T extends Buffer<T>> {
      * This is useful when a plaintext password needs to be sent. If {@code passwd} is {@code null}, an empty string is
      * written.
      *
-     * @param passwd (null-ok) the password as a character array
+     * @param str (null-ok) the password as a character array
      *
      * @return this
      */
     @SuppressWarnings("unchecked")
-    public T putPassword(char[] passwd) {
-        if (passwd == null)
+    public T putSensitiveString(char[] str) {
+        if (str == null)
             return putString("");
-        putInt(passwd.length);
-        ensureCapacity(passwd.length);
-        for (char c : passwd)
+        putInt(str.length);
+        ensureCapacity(str.length);
+        for (char c : str)
             data[wpos++] = (byte) c;
-        Arrays.fill(passwd, ' ');
+        Arrays.fill(str, ' ');
         return (T) this;
     }
 

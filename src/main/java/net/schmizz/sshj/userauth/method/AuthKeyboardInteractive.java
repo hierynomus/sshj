@@ -18,30 +18,17 @@ package net.schmizz.sshj.userauth.method;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
-import net.schmizz.sshj.userauth.AuthParams;
 import net.schmizz.sshj.userauth.UserAuthException;
-import net.schmizz.sshj.userauth.password.AccountResource;
-import net.schmizz.sshj.userauth.password.Resource;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** Implements the {@code keyboard-interactive} authentication method. */
-public class AuthChallengeResponse
+public class AuthKeyboardInteractive
         extends AbstractAuthMethod {
 
     private final ChallengeResponseProvider provider;
-    private Resource resource;
 
-    public AuthChallengeResponse(ChallengeResponseProvider provider) {
+    public AuthKeyboardInteractive(ChallengeResponseProvider provider) {
         super("keyboard-interactive");
         this.provider = provider;
-    }
-
-    @Override
-    public void init(AuthParams params) {
-        super.init(params);
-        resource = new AccountResource(params.getUsername(), params.getTransport().getRemoteHost());
     }
 
     @Override
@@ -62,36 +49,39 @@ public class AuthChallengeResponse
         return sb.toString();
     }
 
+    private static class CharArrWrap {
+        private final char[] arr;
+
+        private CharArrWrap(char[] arr) {
+            this.arr = arr;
+        }
+    }
+
     @Override
     public void handle(Message cmd, SSHPacket buf)
             throws UserAuthException, TransportException {
-        if (cmd == Message.USERAUTH_60) {
-            provider.init(resource, buf.readString(), buf.readString());
+        if (cmd != Message.USERAUTH_60) {
+            super.handle(cmd, buf);
+        } else {
+            provider.init(makeAccountResource(), buf.readString(), buf.readString());
             buf.readString(); // lang-tag
             final int numPrompts = buf.readInt();
-            final List<String> userReplies = new ArrayList<String>(numPrompts);
+            final CharArrWrap[] userReplies = new CharArrWrap[numPrompts];
             for (int i = 0; i < numPrompts; i++) {
-                userReplies.add(provider.getResponse(buf.readString(), buf.readBoolean()));
+                userReplies[i] = new CharArrWrap(provider.getResponse(buf.readString(), buf.readBoolean()));
             }
             respond(userReplies);
-        } else
-            super.handle(cmd, buf);
+        }
     }
 
-    private void respond(List<String> userReplies)
+    private void respond(CharArrWrap[] userReplies)
             throws TransportException {
-        final SSHPacket pkt = new SSHPacket(Message.USERAUTH_INFO_RESPONSE)
-                .putInt(userReplies.size());
-        for (String response : userReplies) {
-            pkt.putString(response);
-        }
+        final SSHPacket pkt = new SSHPacket(Message.USERAUTH_INFO_RESPONSE).putInt(userReplies.length);
+        for (final CharArrWrap response : userReplies)
+            pkt.putSensitiveString(response.arr);
         params.getTransport().write(pkt);
     }
 
-    /**
-     * Returns {@code true} if the associated {@link net.schmizz.sshj.userauth.password.PasswordFinder} tells that we
-     * should retry with a new password that it will supply.
-     */
     @Override
     public boolean shouldRetry() {
         return provider.shouldRetry();

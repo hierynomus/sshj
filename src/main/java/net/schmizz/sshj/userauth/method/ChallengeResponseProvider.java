@@ -25,7 +25,7 @@ public interface ChallengeResponseProvider {
 
     void init(Resource resource, String name, String instruction);
 
-    String getResponse(String prompt, boolean echo);
+    char[] getResponse(String prompt, boolean echo);
 
     boolean shouldRetry();
 

@@ -49,7 +49,7 @@ import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
-import net.schmizz.sshj.userauth.method.AuthChallengeResponse;
+import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.method.AuthPassword;
 import net.schmizz.sshj.userauth.method.AuthPublickey;
@@ -262,7 +262,7 @@ public class SSHClient
      */
     public void authPassword(String username, PasswordFinder pfinder)
             throws UserAuthException, TransportException {
-        auth(username, new AuthPassword(pfinder), new AuthChallengeResponse(new PasswordResponseProvider(pfinder)));
+        auth(username, new AuthPassword(pfinder), new AuthKeyboardInteractive(new PasswordResponseProvider(pfinder)));
     }
 
     /**
