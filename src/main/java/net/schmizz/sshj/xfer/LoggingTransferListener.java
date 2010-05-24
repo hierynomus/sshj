@@ -3,7 +3,7 @@ package net.schmizz.sshj.xfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LoggingTransferListener
@@ -11,7 +11,7 @@ public class LoggingTransferListener
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final List<String> dirNames = new LinkedList<String>();
+    private final List<String> dirNames = new ArrayList<String>();
     private String base = "";
     private String name = "";
     private long size = -1;
