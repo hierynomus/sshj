@@ -43,7 +43,7 @@ public abstract class KeyedAuthMethod
         try {
             key = kProv.getPublic();
         } catch (IOException ioe) {
-            throw new UserAuthException("Problem getting public key", ioe);
+            throw new UserAuthException("Problem getting public key from " + kProv, ioe);
         }
 
         // public key as 2 strings: [ key type | key blob ]
@@ -59,7 +59,7 @@ public abstract class KeyedAuthMethod
         try {
             key = kProv.getPrivate();
         } catch (IOException ioe) {
-            throw new UserAuthException("Problem getting private key", ioe);
+            throw new UserAuthException("Problem getting private key from " + kProv, ioe);
         }
 
         final String kt = KeyType.fromKey(key).toString();

@@ -21,8 +21,6 @@ import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 
-import java.io.IOException;
-
 /**
  * Implements the {@code "publickey"} SSH authentication method.
  * <p/>
@@ -60,11 +58,7 @@ public class AuthPublickey
      */
     private SSHPacket buildReq(boolean signed)
             throws UserAuthException {
-        try {
-            kProv.getPublic();
-        } catch (IOException ioe) {
-            throw new UserAuthException("Problem getting public key", ioe);
-        }
+        log.debug("Attempting authentication using {}", kProv);
         return putPubKey(super.buildReq().putBoolean(signed));
     }
 
@@ -76,7 +70,7 @@ public class AuthPublickey
      */
     private void sendSignedReq()
             throws UserAuthException, TransportException {
-        log.debug("Sending signed request");
+        log.debug("Key acceptable, sending signed request");
         params.getTransport().write(putSig(buildReq(true)));
     }
 

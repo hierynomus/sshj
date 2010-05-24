@@ -15,11 +15,13 @@
  */
 package net.schmizz.sshj.userauth.password;
 
-public class PrivateKeyFileResource
-        extends Resource<String> {
+import java.io.File;
 
-    public PrivateKeyFileResource(String path) {
-        super(path);
+public class PrivateKeyFileResource
+        extends Resource<File> {
+
+    public PrivateKeyFileResource(File privateKeyFile) {
+        super(privateKeyFile);
     }
 
 }

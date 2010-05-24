@@ -20,7 +20,6 @@ import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
-import net.schmizz.sshj.userauth.password.Resource;
 import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMReader;
 import org.slf4j.Logger;
@@ -53,8 +52,7 @@ public class PKCS8KeyFile
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected PasswordFinder pwdf;
-    protected File location;
-    protected Resource resource;
+    protected PrivateKeyFileResource resource;
     protected KeyPair kp;
 
     protected KeyType type;
@@ -82,8 +80,7 @@ public class PKCS8KeyFile
     @Override
     public void init(File location) {
         assert location != null;
-        this.location = location;
-        resource = new PrivateKeyFileResource(location.getAbsolutePath());
+        resource = new PrivateKeyFileResource(location.getAbsoluteFile());
     }
 
     @Override
@@ -114,7 +111,7 @@ public class PKCS8KeyFile
             for (; ;) {
                 // while the PasswordFinder tells us we should retry
                 try {
-                    r = new PEMReader(new InputStreamReader(new FileInputStream(location)), pFinder);
+                    r = new PEMReader(new InputStreamReader(new FileInputStream(resource.getDetail())), pFinder);
                     o = r.readObject();
                 } catch (EncryptionException e) {
                     if (pwdf.shouldRetry(resource))
@@ -131,7 +128,7 @@ public class PKCS8KeyFile
         }
 
         if (o == null)
-            throw new IOException("Could not read key pair from: " + location);
+            throw new IOException("Could not read key pair from: " + resource);
         if (o instanceof KeyPair)
             kp = (KeyPair) o;
         else
@@ -139,4 +136,8 @@ public class PKCS8KeyFile
         return kp;
     }
 
+    @Override
+    public String toString() {
+        return "PKCS8KeyFile{resource=" + resource + "}";
+    }
 }

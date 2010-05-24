@@ -78,7 +78,6 @@ public abstract class AbstractAuthMethod
                 .putString(params.getUsername()) // username goes first
                 .putString(params.getNextServiceName()) // the service that we'd like on success
                 .putString(name); // name of auth method
-
     }
 
     protected AccountResource makeAccountResource() {
