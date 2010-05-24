@@ -49,10 +49,10 @@ public class AuthChallengeResponse
             throws UserAuthException {
         return super.buildReq() // the generic stuff
                 .putString("") // lang-tag
-                .putString(getCommaSeparatedSubmethodList());
+                .putString(buildCommaSeparatedSubmethodList());
     }
 
-    private String getCommaSeparatedSubmethodList() {
+    private String buildCommaSeparatedSubmethodList() {
         StringBuilder sb = new StringBuilder();
         for (String submethod : provider.getSubmethods()) {
             if (sb.length() > 0)
