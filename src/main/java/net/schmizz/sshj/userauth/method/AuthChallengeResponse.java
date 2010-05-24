@@ -38,10 +38,6 @@ public class AuthChallengeResponse
         this.provider = provider;
     }
 
-    public AuthChallengeResponse(ChallengeResponseProvider provider, List<String> submethods) {
-        this(provider);
-    }
-
     @Override
     public void init(AuthParams params) {
         super.init(params);
