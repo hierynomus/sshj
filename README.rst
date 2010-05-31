@@ -37,7 +37,7 @@ If you need something that is not implemented, it shouldn't be too hard to add (
 Dependencies
 -------------
 
-Java 1.6+. slf4j_ is required. bouncycastle_ is highly recommended and required for using some of the crypto algorithms.
+Java 6+. slf4j_ is required. bouncycastle_ is highly recommended and required for using some of the crypto algorithms.
 jzlib_ is required for using zlib compression.
 
 
