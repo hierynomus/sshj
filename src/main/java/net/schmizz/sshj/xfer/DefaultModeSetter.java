@@ -15,6 +15,9 @@
  */
 package net.schmizz.sshj.xfer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -26,6 +29,8 @@ import java.io.IOException;
 public class DefaultModeSetter
         implements ModeSetter {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
     @Override
     public void setLastAccessedTime(File f, long t)
             throws IOException {
@@ -36,7 +41,7 @@ public class DefaultModeSetter
     public void setLastModifiedTime(File f, long t)
             throws IOException {
         if (!f.setLastModified(t * 1000))
-            throw new IOException("Error setting last modified time for " + f);
+            log.warn("Could not set last modified time for {} to {}", f, t);
     }
 
     @Override
@@ -49,7 +54,7 @@ public class DefaultModeSetter
         final boolean x = f.setExecutable(FilePermission.USR_X.isIn(perms),
                                           !(FilePermission.OTH_X.isIn(perms) || FilePermission.GRP_X.isIn(perms)));
         if (!(r && w && x))
-            throw new IOException("Error setting permissions for " + f);
+            log.warn("Could not set permissions for {} to {}", f, Integer.toString(perms, 16));
     }
 
     @Override
