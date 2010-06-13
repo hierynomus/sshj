@@ -6,7 +6,7 @@
     <groupId>net.schmizz</groupId>
     <artifactId>sshj</artifactId>
     <packaging>jar</packaging>
-    <version>0.2.3-SNAPSHOT</version>
+    <version>0.2.3</version>
 
     <name>sshj</name>
     <description>SSHv2 library for Java</description>
