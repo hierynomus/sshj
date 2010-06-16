@@ -156,20 +156,18 @@ public class SSHClient
     }
 
     /**
-     * Add a {@link HostKeyVerifier} that will verify any host at given {@code hostname:port} and a host key that has
-     * the given {@code fingerprint}, e.g. {@code "4b:69:6c:72:6f:79:20:77:61:73:20:68:65:72:65:21"}
+     * Add a {@link HostKeyVerifier} that will verify any host that's able to claim a host key with the given {@code
+     * fingerprint}, e.g. {@code "4b:69:6c:72:6f:79:20:77:61:73:20:68:65:72:65:21"}
      *
-     * @param host        the hostname / IP address
-     * @param port        the port for which the {@code fingerprint} applies
      * @param fingerprint expected fingerprint in colon-delimited format (16 octets in hex delimited by a colon)
      *
      * @see SecurityUtils#getFingerprint
      */
-    public void addHostKeyVerifier(final String host, final int port, final String fingerprint) {
+    public void addHostKeyVerifier(final String fingerprint) {
         addHostKeyVerifier(new HostKeyVerifier() {
             @Override
             public boolean verify(String h, int p, PublicKey k) {
-                return host.equals(h) && port == p && SecurityUtils.getFingerprint(k).equals(fingerprint);
+                return SecurityUtils.getFingerprint(k).equals(fingerprint);
             }
         });
     }
