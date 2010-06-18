@@ -49,7 +49,6 @@ public abstract class KeyedAuthMethod
         // public key as 2 strings: [ key type | key blob ]
         reqBuf.putString(KeyType.fromKey(key).toString())
                 .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
-
         return reqBuf;
     }
 

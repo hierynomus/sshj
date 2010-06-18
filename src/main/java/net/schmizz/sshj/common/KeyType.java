@@ -40,16 +40,16 @@ public enum KeyType {
             final BigInteger n = buf.readMPInt();
             final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
             return keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
-
         }
+
         @Override
         public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final RSAPublicKey rsaKey = (RSAPublicKey) pk;
             buf.putString(sType)
                     .putMPInt(rsaKey.getPublicExponent()) // e
                     .putMPInt(rsaKey.getModulus()); // n
-
         }
+
         @Override
         protected boolean isMyType(Key key) {
             return (key instanceof RSAPublicKey || key instanceof RSAPrivateKey);
@@ -70,6 +70,7 @@ public enum KeyType {
             final KeyFactory keyFactory = SecurityUtils.getKeyFactory("DSA");
             return keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
         }
+
         @Override
         public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final DSAPublicKey dsaKey = (DSAPublicKey) pk;
