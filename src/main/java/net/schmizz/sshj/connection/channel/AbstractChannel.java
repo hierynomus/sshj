@@ -332,7 +332,7 @@ public abstract class AbstractChannel
     protected void receiveInto(ChannelInputStream stream, SSHPacket buf)
             throws ConnectionException, TransportException {
         final int len = buf.readInt();
-        if (len < 0 || len > getLocalMaxPacketSize() || len < buf.available())
+        if (len < 0 || len > getLocalMaxPacketSize() || len > buf.available())
             throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Bad item length: " + len);
         if (log.isTraceEnabled())
             log.trace("IN #{}: {}", id, ByteArrayUtils.printHex(buf.array(), buf.rpos(), len));
