@@ -134,6 +134,7 @@ public class DefaultConfig
                 new TripleDESCBC.Factory(),
                 new BlowfishCBC.Factory()));
 
+        boolean warn = false;
         // Ref. https://issues.apache.org/jira/browse/SSHD-24
         // "AES256 and AES192 requires unlimited cryptography extension"
         for (Iterator<Factory.Named<Cipher>> i = avail.iterator(); i.hasNext();) {
@@ -144,10 +145,12 @@ public class DefaultConfig
                 final byte[] iv = new byte[c.getIVSize()];
                 c.init(Cipher.Mode.Encrypt, key, iv);
             } catch (Exception e) {
-                log.warn("Disabling cipher `{}`: cipher strengths apparently limited by JCE policy", f.getName());
+                warn = true;
                 i.remove();
             }
         }
+        if (warn)
+            log.warn("Disabling high-strength ciphers: cipher strengths apparently limited by JCE policy");
 
         setCipherFactories(avail);
     }
