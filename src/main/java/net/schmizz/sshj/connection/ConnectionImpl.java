@@ -250,7 +250,7 @@ public class ConnectionImpl
         super.notifyDisconnect();
         FutureUtils.alertAll(new ConnectionException("Disconnected."), globalReqFutures);
         for (Channel chan : channels.values())
-            chan.close();
+            chan.finishOff();
     }
 
 }

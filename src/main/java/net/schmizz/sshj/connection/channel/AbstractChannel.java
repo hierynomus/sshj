@@ -302,8 +302,8 @@ public abstract class AbstractChannel
         rwin.expand(howMuch);
     }
 
-    /** Called when this channel's end-of-life has been reached. Subclasses may override but must call super. */
-    protected void finishOff() {
+    @Override
+    public void finishOff() {
         conn.forget(this);
         close.set();
     }
