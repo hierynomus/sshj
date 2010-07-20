@@ -62,7 +62,7 @@ public abstract class AbstractChannel
         implements Channel {
 
     /** Logger */
-    protected final Logger log;
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     /** Transport layer */
     protected final Transport trans;
@@ -109,9 +109,7 @@ public abstract class AbstractChannel
 
         id = conn.nextID();
 
-        log = LoggerFactory.getLogger("chan#" + id);
-
-        lwin = new Window.Local(id, conn.getWindowSize(), conn.getMaxPacketSize());
+        lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize());
         in = new ChannelInputStream(this, trans, lwin);
 
         open = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, lock);
@@ -120,7 +118,7 @@ public abstract class AbstractChannel
 
     protected void init(int recipient, int remoteWinSize, int remoteMaxPacketSize) {
         this.recipient = recipient;
-        rwin = new Window.Remote(id, remoteWinSize, remoteMaxPacketSize);
+        rwin = new Window.Remote(remoteWinSize, remoteMaxPacketSize);
         out = new ChannelOutputStream(this, trans, rwin);
         log.info("Initialized - {}", this);
     }

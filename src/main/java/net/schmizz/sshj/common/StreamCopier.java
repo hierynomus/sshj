@@ -86,7 +86,7 @@ public class StreamCopier
         return sb.toString();
     }
 
-    private final Logger log;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final InputStream in;
     private final OutputStream out;
@@ -103,9 +103,7 @@ public class StreamCopier
     public StreamCopier(String name, InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;
-
-        setName("streamCopier");
-        log = LoggerFactory.getLogger(name);
+        setName(name);
     }
 
     public StreamCopier bufSize(int size) {

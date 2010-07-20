@@ -32,8 +32,9 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Future<V, T extends Throwable> {
 
-    private final Logger log;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
+    private final String name;
     private final ExceptionChainer<T> chainer;
     private final ReentrantLock lock;
     private final Condition cond;
@@ -60,7 +61,7 @@ public class Future<V, T extends Throwable> {
      * @param lock    lock to use
      */
     public Future(String name, ExceptionChainer<T> chainer, ReentrantLock lock) {
-        this.log = LoggerFactory.getLogger("<< " + name + " >>");
+        this.name = name;
         this.chainer = chainer;
         this.lock = lock == null ? new ReentrantLock() : lock;
         this.cond = this.lock.newCondition();
@@ -74,7 +75,7 @@ public class Future<V, T extends Throwable> {
     public void set(V val) {
         lock();
         try {
-            log.debug("Setting to `{}`", val);
+            log.debug("Setting <<{}>> to `{}`", name, val);
             this.val = val;
             cond.signalAll();
         } finally {
@@ -139,14 +140,14 @@ public class Future<V, T extends Throwable> {
                 throw pendingEx;
             if (val != null)
                 return val;
-            log.debug("Awaiting");
+            log.debug("Awaiting <<{}>>", name);
             while (val == null && pendingEx == null)
                 if (timeout == 0)
                     cond.await();
                 else if (!cond.await(timeout, unit))
                     throw chainer.chain(new TimeoutException("Timeout expired"));
             if (pendingEx != null) {
-                log.error("Woke to: {}", pendingEx.toString());
+                log.error("<<{}>> woke to: {}", name, pendingEx.toString());
                 throw pendingEx;
             }
             return val;

@@ -59,7 +59,7 @@ public final class ChannelInputStream
         extends InputStream
         implements ErrorNotifiable {
 
-    private final Logger log;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Channel chan;
     private final Transport trans;
@@ -71,8 +71,6 @@ public final class ChannelInputStream
     private SSHException error;
 
     public ChannelInputStream(Channel chan, Transport trans, Window.Local win) {
-        log = LoggerFactory.getLogger("<< chan#" + chan.getID() + " / input stream >>");
-
         this.chan = chan;
         this.trans = trans;
         this.win = win;

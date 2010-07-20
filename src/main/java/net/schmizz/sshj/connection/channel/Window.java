@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class Window {
 
-    protected final Logger log;
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final Object lock = new Object();
 
@@ -30,8 +30,7 @@ public abstract class Window {
 
     protected int size;
 
-    public Window(int chanID, String kindOfWindow, int initialWinSize, int maxPacketSize) {
-        log = LoggerFactory.getLogger("<< chan#" + chanID + " / " + kindOfWindow + " >>");
+    public Window(int initialWinSize, int maxPacketSize) {
         size = initialWinSize;
         this.maxPacketSize = maxPacketSize;
     }
@@ -70,8 +69,8 @@ public abstract class Window {
     public static final class Remote
             extends Window {
 
-        public Remote(int chanID, int initialWinSize, int maxPacketSize) {
-            super(chanID, "remote win", initialWinSize, maxPacketSize);
+        public Remote(int initialWinSize, int maxPacketSize) {
+            super(initialWinSize, maxPacketSize);
         }
 
         public void waitAndConsume(int howMuch)
@@ -98,8 +97,8 @@ public abstract class Window {
         private final int initialSize;
         private final int threshold;
 
-        public Local(int chanID, int initialWinSize, int maxPacketSize) {
-            super(chanID, "local win", initialWinSize, maxPacketSize);
+        public Local(int initialWinSize, int maxPacketSize) {
+            super(initialWinSize, maxPacketSize);
             this.initialSize = initialWinSize;
             threshold = Math.min(maxPacketSize * 20, initialSize / 4);
         }
