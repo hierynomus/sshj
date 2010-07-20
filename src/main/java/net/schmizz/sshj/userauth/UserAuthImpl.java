@@ -224,7 +224,7 @@ public class UserAuthImpl
     }
 
     private void saveException(UserAuthException e) {
-        log.error("Saving for later - {}", e.toString());
+        log.debug("Saving for later - {}", e.toString());
         savedEx.push(e);
     }
 
