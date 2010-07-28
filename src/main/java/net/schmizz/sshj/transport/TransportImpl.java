@@ -421,8 +421,8 @@ public final class TransportImpl
                     .putInt(reason.toInt())
                     .putString(message)
                     .putString(""));
-        } catch (IOException logged) {
-            log.warn("Error writing packet: {}", logged);
+        } catch (IOException worthless) {
+            log.debug("Error writing packet: {}", worthless.toString());
         }
     }
 

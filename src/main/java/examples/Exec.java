@@ -16,6 +16,7 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 
 import java.io.IOException;
@@ -25,18 +26,20 @@ public class Exec {
 
     public static void main(String... args)
             throws IOException {
-        SSHClient ssh = new SSHClient();
+        final SSHClient ssh = new SSHClient();
         ssh.loadKnownHosts();
 
         ssh.connect("localhost");
         try {
-
             ssh.authPublickey(System.getProperty("user.name"));
-
-            Command cmd = ssh.startSession().exec("ping -c 1 google.com");
-
-            System.out.print(cmd.getOutputAsString());
-            System.out.println("\n** exit status: " + cmd.getExitStatus());
+            final Session session = ssh.startSession();
+            try {
+                final Command cmd = session.exec("ping -c 1 google.com");
+                System.out.print(cmd.getOutputAsString());
+                System.out.println("\n** exit status: " + cmd.getExitStatus());
+            } finally {
+                session.close();
+            }
 
         } finally {
             ssh.disconnect();

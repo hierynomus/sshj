@@ -16,6 +16,7 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.sftp.SFTPClient;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,14 +26,19 @@ public class SFTPUpload {
 
     public static void main(String[] args)
             throws IOException {
-        SSHClient ssh = new SSHClient();
+        final SSHClient ssh = new SSHClient();
         ssh.loadKnownHosts();
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
             final String src = System.getProperty("user.home") + File.separator + "test_file";
             final String target = "/tmp/";
-            ssh.newSFTPClient().put(src, target);
+            final SFTPClient sftp = ssh.newSFTPClient();
+            try {
+                sftp.put(src, target);
+            } finally {
+                sftp.close();
+            }
         } finally {
             ssh.disconnect();
         }

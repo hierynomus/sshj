@@ -302,8 +302,7 @@ public abstract class AbstractChannel
         rwin.expand(howMuch);
     }
 
-    @Override
-    public void finishOff() {
+    protected void finishOff() {
         conn.forget(this);
         close.set();
     }

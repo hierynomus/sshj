@@ -30,6 +30,7 @@ import net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -248,9 +249,9 @@ public class ConnectionImpl
     public void notifyDisconnect()
             throws SSHException {
         super.notifyDisconnect();
-        FutureUtils.alertAll(new ConnectionException("Disconnected."), globalReqFutures);
-        for (Channel chan : channels.values())
-            chan.finishOff();
+        final ConnectionException ex = new ConnectionException("Disconnected.");
+        FutureUtils.alertAll(ex, globalReqFutures);
+        ErrorNotifiable.Util.alertAll(ex, new HashSet<Channel>(channels.values()));
     }
 
 }

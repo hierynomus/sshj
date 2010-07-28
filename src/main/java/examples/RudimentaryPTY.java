@@ -37,35 +37,35 @@ class RudimentaryPTY {
         ssh.addHostKeyVerifier(new ConsoleKnownHostsVerifier(khFile, System.console()));
 
         ssh.connect("localhost");
-
-        Shell shell = null;
-
         try {
 
             ssh.authPublickey(System.getProperty("user.name"));
 
             final Session session = ssh.startSession();
-            session.allocateDefaultPTY();
+            try {
 
-            shell = session.startShell();
+                session.allocateDefaultPTY();
 
-            new StreamCopier("stdout", shell.getInputStream(), System.out)
-                    .bufSize(shell.getLocalMaxPacketSize())
-                    .start();
+                final Shell shell = session.startShell();
 
-            new StreamCopier("stderr", shell.getErrorStream(), System.err)
-                    .bufSize(shell.getLocalMaxPacketSize())
-                    .start();
+                new StreamCopier("stdout", shell.getInputStream(), System.out)
+                        .bufSize(shell.getLocalMaxPacketSize())
+                        .start();
 
-            // Now make System.in act as stdin. To exit, hit Ctrl+D (since that results in an EOF on System.in)
-            // This is kinda messy because java only allows console input after you hit return
-            // But this is just an example... a GUI app could implement a proper PTY
-            StreamCopier.copy(System.in, shell.getOutputStream(), shell.getRemoteMaxPacketSize(), true);
+                new StreamCopier("stderr", shell.getErrorStream(), System.err)
+                        .bufSize(shell.getLocalMaxPacketSize())
+                        .start();
+
+                // Now make System.in act as stdin. To exit, hit Ctrl+D (since that results in an EOF on System.in)
+                // This is kinda messy because java only allows console input after you hit return
+                // But this is just an example... a GUI app could implement a proper PTY
+                StreamCopier.copy(System.in, shell.getOutputStream(), shell.getRemoteMaxPacketSize(), true);
+
+            } finally {
+                session.close();
+            }
 
         } finally {
-
-            if (shell != null)
-                shell.close();
             ssh.disconnect();
         }
     }

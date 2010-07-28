@@ -21,6 +21,7 @@ import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.EnumSet;
@@ -30,7 +31,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class SFTPEngine
-        implements Requester {
+        implements Requester, Closeable {
 
     /** Logger */
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -231,6 +232,12 @@ public class SFTPEngine
 
     public int getTimeout() {
         return timeout;
+    }
+
+    @Override
+    public void close()
+            throws IOException {
+        sub.close();
     }
 
 }

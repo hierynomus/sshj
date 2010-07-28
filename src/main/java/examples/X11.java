@@ -29,7 +29,7 @@ public class X11 {
 
     public static void main(String... args)
             throws IOException, InterruptedException {
-        SSHClient ssh = new SSHClient();
+        final SSHClient ssh = new SSHClient();
 
         // Compression makes X11 more feasible over slower connections
         // ssh.useCompression();
@@ -55,7 +55,7 @@ public class X11 {
             */
             sess.reqX11Forwarding("MIT-MAGIC-COOKIE-1", "b0956167c9ad8f34c8a2788878307dc9", 0);
 
-            Command cmd = sess.exec("/usr/X11/bin/xcalc");
+            final Command cmd = sess.exec("/usr/X11/bin/xcalc");
 
             new StreamCopier("stdout", cmd.getInputStream(), System.out).start();
             new StreamCopier("stderr", cmd.getErrorStream(), System.err).start();

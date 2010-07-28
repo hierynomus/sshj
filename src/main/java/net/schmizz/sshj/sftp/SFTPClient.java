@@ -20,6 +20,7 @@ import net.schmizz.sshj.xfer.FilePermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.EnumSet;
@@ -27,7 +28,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class SFTPClient {
+public class SFTPClient
+        implements Closeable {
 
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -236,6 +238,12 @@ public class SFTPClient {
     public void put(String source, String dest)
             throws IOException {
         xfer.upload(source, dest);
+    }
+
+    @Override
+    public void close()
+            throws IOException {
+        sftp.close();
     }
 
 }

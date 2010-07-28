@@ -16,6 +16,7 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.sftp.SFTPClient;
 
 import java.io.IOException;
 
@@ -24,14 +25,19 @@ public class SFTPDownload {
 
     public static void main(String[] args)
             throws IOException {
-        SSHClient ssh = new SSHClient();
+        final SSHClient ssh = new SSHClient();
         ssh.loadKnownHosts();
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
             final String src = "test_file";
             final String target = "/tmp/";
-            ssh.newSFTPClient().get(src, target);
+            final SFTPClient sftp = ssh.newSFTPClient();
+            try {
+                sftp.get(src, target);
+            } finally {
+                sftp.close();
+            }
         } finally {
             ssh.disconnect();
         }

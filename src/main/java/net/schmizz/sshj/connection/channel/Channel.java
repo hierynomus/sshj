@@ -117,9 +117,6 @@ public interface Channel
     /** @return whether the channel is open. */
     boolean isOpen();
 
-    /** Called when this channel's end-of-life has been reached. Subclasses may override but must call super. */
-    void finishOff();
-
     /**
      * Sends an EOF message to the server for this channel; indicating that no more data will be sent by us. The {@code
      * OutputStream} for this channel will be closed and no longer usable.
