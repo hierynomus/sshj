@@ -50,8 +50,6 @@ final class Heartbeater
 
     private int interval;
 
-    private boolean started;
-
     Heartbeater(TransportImpl trans) {
         this.trans = trans;
         setName("heartbeater");
