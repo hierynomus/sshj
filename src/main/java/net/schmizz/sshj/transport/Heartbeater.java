@@ -59,29 +59,29 @@ final class Heartbeater
 
     synchronized void setInterval(int interval) {
         this.interval = interval;
-        if (interval != 0) {
-            if (!started)
-                start();
-            notify();
-        }
+        if (interval > 0 && getState() == Thread.State.NEW)
+            start();
+        notify();
     }
 
     synchronized int getInterval() {
         return interval;
     }
 
+    synchronized private int getPositiveInterval()
+            throws InterruptedException {
+        while (interval <= 0)
+            wait();
+        return interval;
+    }
+
     @Override
     public void run() {
+        log.debug("Starting");
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                int hi;
-                synchronized (this) {
-                    while ((hi = interval) == 0)
-                        wait();
-                }
-                if (!started)
-                    started = true;
-                else if (trans.isRunning()) {
+                final int hi = getPositiveInterval();
+                if (trans.isRunning()) {
                     log.info("Sending heartbeat since {} seconds elapsed", hi);
                     trans.write(new SSHPacket(Message.IGNORE));
                 }
@@ -96,4 +96,5 @@ final class Heartbeater
 
         log.debug("Stopping");
     }
+
 }
