@@ -77,7 +77,7 @@ final class Heartbeater
     public void run() {
         log.debug("Starting");
         try {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (!isInterrupted()) {
                 final int hi = getPositiveInterval();
                 if (trans.isRunning()) {
                     log.info("Sending heartbeat since {} seconds elapsed", hi);
@@ -86,7 +86,7 @@ final class Heartbeater
                 Thread.sleep(hi * 1000);
             }
         } catch (Exception e) {
-            if (Thread.currentThread().isInterrupted()) {
+            if (isInterrupted()) {
                 // We are meant to shut up and draw to a close if interrupted
             } else
                 trans.die(e);

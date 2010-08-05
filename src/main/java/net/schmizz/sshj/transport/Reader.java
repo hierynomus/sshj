@@ -41,22 +41,20 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 
-final class Reader
+public final class Reader
         extends Thread {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final TransportImpl trans;
 
-    Reader(TransportImpl trans) {
+    public Reader(TransportImpl trans) {
         this.trans = trans;
         setName("reader");
     }
 
     @Override
     public void run() {
-        final Thread curThread = Thread.currentThread();
-
         try {
 
             final Decoder decoder = trans.getDecoder();
@@ -66,7 +64,7 @@ final class Reader
 
             int needed = 1;
 
-            while (!curThread.isInterrupted()) {
+            while (!isInterrupted()) {
                 int read = inp.read(recvbuf, 0, needed);
                 if (read == -1)
                     throw new TransportException("Broken transport; encountered EOF");
@@ -75,7 +73,7 @@ final class Reader
             }
 
         } catch (Exception e) {
-            if (curThread.isInterrupted()) {
+            if (isInterrupted()) {
                 // We are meant to shut up and draw to a close if interrupted
             } else
                 trans.die(e);
