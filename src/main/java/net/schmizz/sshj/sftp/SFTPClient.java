@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.FilePermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,19 +33,18 @@ public class SFTPClient
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final SFTPEngine sftp;
+    private final SFTPEngine engine;
     private final SFTPFileTransfer xfer;
     private final PathHelper pathHelper;
 
-    public SFTPClient(SessionFactory ssh)
-            throws IOException {
-        this.sftp = new SFTPEngine(ssh).init();
-        this.pathHelper = new PathHelper(sftp);
-        this.xfer = new SFTPFileTransfer(sftp);
+    public SFTPClient(SFTPEngine engine) {
+        this.engine = engine;
+        this.pathHelper = new PathHelper(engine);
+        this.xfer = new SFTPFileTransfer(engine);
     }
 
     public SFTPEngine getSFTPEngine() {
-        return sftp;
+        return engine;
     }
 
     public SFTPFileTransfer getFileTansfer() {
@@ -60,7 +58,7 @@ public class SFTPClient
 
     public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
             throws IOException {
-        final RemoteDirectory dir = sftp.openDir(path);
+        final RemoteDirectory dir = engine.openDir(path);
         try {
             return dir.scan(filter);
         } finally {
@@ -71,7 +69,7 @@ public class SFTPClient
     public RemoteFile open(String filename, Set<OpenMode> mode, FileAttributes attrs)
             throws IOException {
         log.debug("Opening `{}`", filename);
-        return sftp.open(filename, mode, attrs);
+        return engine.open(filename, mode, attrs);
     }
 
     public RemoteFile open(String filename, Set<OpenMode> mode)
@@ -86,7 +84,7 @@ public class SFTPClient
 
     public void mkdir(String dirname)
             throws IOException {
-        sftp.makeDir(dirname);
+        engine.makeDir(dirname);
     }
 
     public void mkdirs(String path)
@@ -111,7 +109,7 @@ public class SFTPClient
     public FileAttributes statExistence(String path)
             throws IOException {
         try {
-            return sftp.stat(path);
+            return engine.stat(path);
         } catch (SFTPException sftpe) {
             if (sftpe.getStatusCode() == Response.StatusCode.NO_SUCH_FILE) {
                 return null;
@@ -123,31 +121,31 @@ public class SFTPClient
 
     public void rename(String oldpath, String newpath)
             throws IOException {
-        sftp.rename(oldpath, newpath);
+        engine.rename(oldpath, newpath);
     }
 
     public void rm(String filename)
             throws IOException {
-        sftp.remove(filename);
+        engine.remove(filename);
     }
 
     public void rmdir(String dirname)
             throws IOException {
-        sftp.removeDir(dirname);
+        engine.removeDir(dirname);
     }
 
     public void symlink(String linkpath, String targetpath)
             throws IOException {
-        sftp.symlink(linkpath, targetpath);
+        engine.symlink(linkpath, targetpath);
     }
 
     public int version() {
-        return sftp.getOperativeProtocolVersion();
+        return engine.getOperativeProtocolVersion();
     }
 
     public void setattr(String path, FileAttributes attrs)
             throws IOException {
-        sftp.setAttributes(path, attrs);
+        engine.setAttributes(path, attrs);
     }
 
     public int uid(String path)
@@ -187,17 +185,17 @@ public class SFTPClient
 
     public String readlink(String path)
             throws IOException {
-        return sftp.readLink(path);
+        return engine.readLink(path);
     }
 
     public FileAttributes stat(String path)
             throws IOException {
-        return sftp.stat(path);
+        return engine.stat(path);
     }
 
     public FileAttributes lstat(String path)
             throws IOException {
-        return sftp.lstat(path);
+        return engine.lstat(path);
     }
 
     public void chown(String path, int uid)
@@ -222,7 +220,7 @@ public class SFTPClient
 
     public String canonicalize(String path)
             throws IOException {
-        return sftp.canonicalize(path);
+        return engine.canonicalize(path);
     }
 
     public long size(String path)
@@ -243,7 +241,7 @@ public class SFTPClient
     @Override
     public void close()
             throws IOException {
-        sftp.close();
+        engine.close();
     }
 
 }

@@ -34,9 +34,11 @@ public class PacketReader
     private final Map<Long, Future<Response, SFTPException>> futures = new ConcurrentHashMap<Long, Future<Response, SFTPException>>();
     private final SFTPPacket<Response> packet = new SFTPPacket<Response>();
     private final byte[] lenBuf = new byte[4];
+    private final SFTPEngine engine;
 
-    public PacketReader(InputStream in) {
-        this.in = in;
+    public PacketReader(SFTPEngine engine) {
+        this.engine = engine;
+        this.in = engine.getSubsystem().getInputStream();
         setName("sftp reader");
     }
 
@@ -78,7 +80,7 @@ public class PacketReader
     @Override
     public void run() {
         try {
-            while (true) {
+            while (!isInterrupted()) {
                 readPacket();
                 handle();
             }
@@ -90,7 +92,7 @@ public class PacketReader
 
     public void handle()
             throws SFTPException {
-        Response resp = new Response(packet);
+        Response resp = new Response(packet, engine.getOperativeProtocolVersion());
         Future<Response, SFTPException> future = futures.remove(resp.getRequestID());
         log.debug("Received {} packet", resp.getType());
         if (future == null)

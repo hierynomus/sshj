@@ -33,37 +33,41 @@ import java.util.concurrent.TimeUnit;
 public class SFTPEngine
         implements Requester, Closeable {
 
-    /** Logger */
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
-    public static final int PROTOCOL_VERSION = 3;
-
+    public static final int MAX_SUPPORTED_VERSION = 3;
     public static final int DEFAULT_TIMEOUT = 30;
 
-    private volatile int timeout = DEFAULT_TIMEOUT;
+    /** Logger */
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final Subsystem sub;
-    private final PacketReader reader;
-    private final OutputStream out;
+    protected volatile int timeout = DEFAULT_TIMEOUT;
 
-    private long reqID;
-    private int negotiatedVersion;
-    private final Map<String, String> serverExtensions = new HashMap<String, String>();
+    protected final int clientVersion;
+    protected final Subsystem sub;
+    protected final PacketReader reader;
+    protected final OutputStream out;
+
+    protected long reqID;
+    protected int operativeVersion;
+    protected final Map<String, String> serverExtensions = new HashMap<String, String>();
 
     public SFTPEngine(SessionFactory ssh)
             throws SSHException {
-        sub = ssh.startSession().startSubsystem("sftp");
-        out = sub.getOutputStream();
-        reader = new PacketReader(sub.getInputStream());
+        this(ssh, MAX_SUPPORTED_VERSION);
     }
 
-    public Subsystem getSubsystem() {
-        return sub;
+    public SFTPEngine(SessionFactory ssh, int clientVersion)
+            throws SSHException {
+        if (clientVersion > MAX_SUPPORTED_VERSION)
+            throw new SFTPException("Max. supported protocol version is: " + MAX_SUPPORTED_VERSION);
+        this.clientVersion = clientVersion;
+        sub = ssh.startSession().startSubsystem("sftp");
+        out = sub.getOutputStream();
+        reader = new PacketReader(this);
     }
 
     public SFTPEngine init()
             throws IOException {
-        transmit(new SFTPPacket<Request>(PacketType.INIT).putInt(PROTOCOL_VERSION));
+        transmit(new SFTPPacket<Request>(PacketType.INIT).putInt(clientVersion));
 
         final SFTPPacket<Response> response = reader.readPacket();
 
@@ -71,10 +75,10 @@ public class SFTPEngine
         if (type != PacketType.VERSION)
             throw new SFTPException("Expected INIT packet, received: " + type);
 
-        negotiatedVersion = response.readInt();
-        log.info("Client version {}, server version {}", PROTOCOL_VERSION, negotiatedVersion);
-        if (negotiatedVersion < PROTOCOL_VERSION)
-            throw new SFTPException("Server reported protocol version: " + negotiatedVersion);
+        operativeVersion = response.readInt();
+        log.info("Client version {}, server version {}", clientVersion, operativeVersion);
+        if (operativeVersion < clientVersion)
+            throw new SFTPException("Server reported protocol version: " + operativeVersion);
 
         while (response.available() > 0)
             serverExtensions.put(response.readString(), response.readString());
@@ -84,8 +88,16 @@ public class SFTPEngine
         return this;
     }
 
+    public Subsystem getSubsystem() {
+        return sub;
+    }
+
     public int getOperativeProtocolVersion() {
-        return negotiatedVersion;
+        return operativeVersion;
+    }
+
+    public Request newExtendedRequest(String reqName) {
+        return newRequest(PacketType.EXTENDED).putString(reqName);
     }
 
     @Override
@@ -100,17 +112,6 @@ public class SFTPEngine
         log.debug("Sending {}", req);
         transmit(req);
         return req.getResponseFuture().get(timeout, TimeUnit.SECONDS);
-    }
-
-    private synchronized void transmit(SFTPPacket<Request> payload)
-            throws IOException {
-        final int len = payload.available();
-        out.write((len >>> 24) & 0xff);
-        out.write((len >>> 16) & 0xff);
-        out.write((len >>> 8) & 0xff);
-        out.write(len & 0xff);
-        out.write(payload.array(), payload.rpos(), len);
-        out.flush();
     }
 
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)
@@ -148,6 +149,8 @@ public class SFTPEngine
 
     public String readLink(String path)
             throws IOException {
+        if (operativeVersion < 3)
+            throw new SFTPException("READLINK is not supported in SFTPv" + operativeVersion);
         return readSingleName(
                 doRequest(
                         newRequest(PacketType.READLINK).putString(path)
@@ -166,6 +169,8 @@ public class SFTPEngine
 
     public void symlink(String linkpath, String targetpath)
             throws IOException {
+        if (operativeVersion < 3)
+            throw new SFTPException("SYMLINK is not supported in SFTPv" + operativeVersion);
         doRequest(
                 newRequest(PacketType.SYMLINK).putString(linkpath).putString(targetpath)
         ).ensureStatusPacketIsOK();
@@ -185,13 +190,6 @@ public class SFTPEngine
         ).ensureStatusIs(Response.StatusCode.OK);
     }
 
-    private FileAttributes stat(PacketType pt, String path)
-            throws IOException {
-        return doRequest(newRequest(pt).putString(path))
-                .ensurePacketTypeIs(PacketType.ATTRS)
-                .readFileAttributes();
-    }
-
     public FileAttributes stat(String path)
             throws IOException {
         return stat(PacketType.STAT, path);
@@ -204,6 +202,8 @@ public class SFTPEngine
 
     public void rename(String oldPath, String newPath)
             throws IOException {
+        if (operativeVersion < 1)
+            throw new SFTPException("RENAME is not supported in SFTPv" + operativeVersion);
         doRequest(
                 newRequest(PacketType.RENAME).putString(oldPath).putString(newPath)
         ).ensureStatusPacketIsOK();
@@ -215,15 +215,6 @@ public class SFTPEngine
                 doRequest(
                         newRequest(PacketType.REALPATH).putString(path)
                 ));
-    }
-
-    private static String readSingleName(Response res)
-            throws IOException {
-        res.ensurePacketTypeIs(PacketType.NAME);
-        if (res.readInt() == 1)
-            return res.readString();
-        else
-            throw new SFTPException("Unexpected data in " + res.getType() + " packet");
     }
 
     public void setTimeout(int timeout) {
@@ -238,6 +229,33 @@ public class SFTPEngine
     public void close()
             throws IOException {
         sub.close();
+    }
+
+    protected FileAttributes stat(PacketType pt, String path)
+            throws IOException {
+        return doRequest(newRequest(pt).putString(path))
+                .ensurePacketTypeIs(PacketType.ATTRS)
+                .readFileAttributes();
+    }
+
+    protected static String readSingleName(Response res)
+            throws IOException {
+        res.ensurePacketTypeIs(PacketType.NAME);
+        if (res.readInt() == 1)
+            return res.readString();
+        else
+            throw new SFTPException("Unexpected data in " + res.getType() + " packet");
+    }
+
+    protected synchronized void transmit(SFTPPacket<Request> payload)
+            throws IOException {
+        final int len = payload.available();
+        out.write((len >>> 24) & 0xff);
+        out.write((len >>> 16) & 0xff);
+        out.write((len >>> 8) & 0xff);
+        out.write(len & 0xff);
+        out.write(payload.array(), payload.rpos(), len);
+        out.flush();
     }
 
 }

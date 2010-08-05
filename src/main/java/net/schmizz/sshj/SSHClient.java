@@ -33,6 +33,7 @@ import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder.Forward
 import net.schmizz.sshj.connection.channel.forwarded.X11Forwarder;
 import net.schmizz.sshj.connection.channel.forwarded.X11Forwarder.X11Channel;
 import net.schmizz.sshj.sftp.SFTPClient;
+import net.schmizz.sshj.sftp.SFTPEngine;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
@@ -592,8 +593,21 @@ public class SSHClient
      */
     public SFTPClient newSFTPClient()
             throws IOException {
+        return newSFTPClient(SFTPEngine.MAX_SUPPORTED_VERSION);
+    }
+
+    /**
+     * @param version the protocol version to use
+     *
+     * @return Instantiated {@link SFTPClient} implementation.
+     *
+     * @throws IOException if there is an error starting the {@code sftp} subsystem
+     * @see StatefulSFTPClient
+     */
+    public SFTPClient newSFTPClient(int version)
+            throws IOException {
         assert isConnected() && isAuthenticated();
-        return new SFTPClient(this);
+        return new SFTPClient(new SFTPEngine(this, version).init());
     }
 
     /**

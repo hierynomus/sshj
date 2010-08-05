@@ -67,7 +67,6 @@ public class SFTPException
 
     public StatusCode getStatusCode() {
         return (sc == null) ? StatusCode.UNKNOWN : sc;
-
     }
 
     public SFTPException(StatusCode sc, String msg) {

@@ -47,13 +47,19 @@ public class Response
 
     }
 
+    private final int protocolVersion;
     private final PacketType type;
     private final long reqID;
 
-    public Response(Buffer<Response> pk) {
+    public Response(Buffer<Response> pk, int protocolVersion) {
         super(pk);
+        this.protocolVersion = protocolVersion;
         this.type = readType();
         this.reqID = readLong();
+    }
+
+    public int getProtocolVersion() {
+        return protocolVersion;
     }
 
     public long getRequestID() {
@@ -72,7 +78,7 @@ public class Response
             throws SFTPException {
         if (getType() != pt)
             if (getType() == PacketType.STATUS)
-                throw new SFTPException(readStatusCode(), readString());
+                error(readStatusCode());
             else
                 throw new SFTPException("Unexpected packet " + getType());
         return this;
@@ -85,10 +91,15 @@ public class Response
 
     public Response ensureStatusIs(StatusCode acceptable)
             throws SFTPException {
-        StatusCode sc = readStatusCode();
+        final StatusCode sc = readStatusCode();
         if (sc != acceptable)
-            throw new SFTPException(sc, readString());
+            error(sc);
         return this;
+    }
+
+    private String error(StatusCode sc)
+            throws SFTPException {
+        throw new SFTPException(sc, protocolVersion < 3 ? sc.toString() : readString());
     }
 
 }

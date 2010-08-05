@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.IOException;
 
-abstract class RemoteResource
+public abstract class RemoteResource
         implements Closeable {
 
     /** Logger */

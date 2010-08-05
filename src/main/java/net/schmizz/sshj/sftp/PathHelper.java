@@ -19,11 +19,11 @@ import java.io.IOException;
 
 public class PathHelper {
 
-    private final SFTPEngine sftp;
+    private final SFTPEngine engine;
     private String dotDir;
 
-    public PathHelper(SFTPEngine sftp) {
-        this.sftp = sftp;
+    public PathHelper(SFTPEngine engine) {
+        this.engine = engine;
     }
 
     public PathComponents getComponents(String path)
@@ -56,7 +56,7 @@ public class PathHelper {
 
     private String canon(String path)
             throws IOException {
-        return sftp.canonicalize(path);
+        return engine.canonicalize(path);
     }
 
 }

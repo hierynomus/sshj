@@ -15,8 +15,6 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -26,9 +24,9 @@ public class StatefulSFTPClient
 
     private String cwd;
 
-    public StatefulSFTPClient(SessionFactory ssh)
+    public StatefulSFTPClient(SFTPEngine engine)
             throws IOException {
-        super(ssh);
+        super(engine);
         this.cwd = getSFTPEngine().canonicalize(".");
         log.info("Start dir = " + cwd);
     }

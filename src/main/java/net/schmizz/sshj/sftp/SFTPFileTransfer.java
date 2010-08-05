@@ -33,7 +33,7 @@ public class SFTPFileTransfer
         extends AbstractFileTransfer
         implements FileTransfer {
 
-    private final SFTPEngine sftp;
+    private final SFTPEngine engine;
     private final PathHelper pathHelper;
 
     private volatile FileFilter uploadFilter = defaultLocalFilter;
@@ -53,9 +53,9 @@ public class SFTPFileTransfer
         }
     };
 
-    public SFTPFileTransfer(SFTPEngine sftp) {
-        this.sftp = sftp;
-        this.pathHelper = new PathHelper(sftp);
+    public SFTPFileTransfer(SFTPEngine engine) {
+        this.engine = engine;
+        this.pathHelper = new PathHelper(engine);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class SFTPFileTransfer
     public void download(String source, String dest)
             throws IOException {
         final PathComponents pathComponents = pathHelper.getComponents(source);
-        final FileAttributes attributes = sftp.stat(source);
+        final FileAttributes attributes = engine.stat(source);
         new Downloader().download(new RemoteResourceInfo(pathComponents, attributes), new File(dest));
     }
 
@@ -119,7 +119,7 @@ public class SFTPFileTransfer
         private File downloadDir(final RemoteResourceInfo remote, final File local)
                 throws IOException {
             final File adjusted = FileTransferUtil.getTargetDirectory(local, remote.getName());
-            final RemoteDirectory rd = sftp.openDir(remote.getPath());
+            final RemoteDirectory rd = engine.openDir(remote.getPath());
             try {
                 for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
                     download(rri, new File(adjusted.getPath(), rri.getName()));
@@ -132,11 +132,11 @@ public class SFTPFileTransfer
         private File downloadFile(final RemoteResourceInfo remote, final File local)
                 throws IOException {
             final File adjusted = FileTransferUtil.getTargetFile(local, remote.getName());
-            final RemoteFile rf = sftp.open(remote.getPath());
+            final RemoteFile rf = engine.open(remote.getPath());
             try {
                 final FileOutputStream fos = new FileOutputStream(adjusted);
                 try {
-                    StreamCopier.copy(rf.getInputStream(), fos, sftp.getSubsystem()
+                    StreamCopier.copy(rf.getInputStream(), fos, engine.getSubsystem()
                             .getLocalMaxPacketSize(), false, listener);
                 } finally {
                     fos.close();
@@ -176,7 +176,7 @@ public class SFTPFileTransfer
                 listener.finishedFile();
             } else
                 throw new IOException(local + " is not a file or directory");
-            sftp.setAttributes(adjustedPath, getAttributes(local));
+            engine.setAttributes(adjustedPath, getAttributes(local));
         }
 
         private String uploadDir(File local, String remote)
@@ -190,13 +190,13 @@ public class SFTPFileTransfer
         private String uploadFile(File local, String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
-            final RemoteFile rf = sftp.open(adjusted, EnumSet.of(OpenMode.WRITE,
-                                                                 OpenMode.CREAT,
-                                                                 OpenMode.TRUNC));
+            final RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE,
+                                                                   OpenMode.CREAT,
+                                                                   OpenMode.TRUNC));
             try {
                 final FileInputStream fis = new FileInputStream(local);
                 try {
-                    final int bufSize = sftp.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead();
+                    final int bufSize = engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead();
                     StreamCopier.copy(fis, rf.getOutputStream(), bufSize, false, listener);
                 } finally {
                     fis.close();
@@ -211,11 +211,11 @@ public class SFTPFileTransfer
                 throws IOException {
             final FileAttributes attrs;
             try {
-                attrs = sftp.stat(remote);
+                attrs = engine.stat(remote);
             } catch (SFTPException e) {
                 if (e.getStatusCode() == StatusCode.NO_SUCH_FILE) {
                     log.debug("probeDir: {} does not exist, creating", remote);
-                    sftp.makeDir(remote);
+                    engine.makeDir(remote);
                     return remote;
                 } else
                     throw e;
@@ -237,7 +237,7 @@ public class SFTPFileTransfer
                 throws IOException {
             final FileAttributes attrs;
             try {
-                attrs = sftp.stat(remote);
+                attrs = engine.stat(remote);
             } catch (SFTPException e) {
                 if (e.getStatusCode() == StatusCode.NO_SUCH_FILE) {
                     log.debug("probeFile: {} does not exist", remote);
