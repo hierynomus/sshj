@@ -97,7 +97,7 @@ public class Response
         return this;
     }
 
-    private String error(StatusCode sc)
+    protected String error(StatusCode sc)
             throws SFTPException {
         throw new SFTPException(sc, protocolVersion < 3 ? sc.toString() : readString());
     }
