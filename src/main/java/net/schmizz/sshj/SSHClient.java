@@ -593,21 +593,8 @@ public class SSHClient
      */
     public SFTPClient newSFTPClient()
             throws IOException {
-        return newSFTPClient(SFTPEngine.MAX_SUPPORTED_VERSION);
-    }
-
-    /**
-     * @param version the protocol version to use
-     *
-     * @return Instantiated {@link SFTPClient} implementation.
-     *
-     * @throws IOException if there is an error starting the {@code sftp} subsystem
-     * @see StatefulSFTPClient
-     */
-    public SFTPClient newSFTPClient(int version)
-            throws IOException {
         assert isConnected() && isAuthenticated();
-        return new SFTPClient(new SFTPEngine(this, version).init());
+        return new SFTPClient(new SFTPEngine(this).init());
     }
 
     /**

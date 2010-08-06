@@ -41,7 +41,6 @@ public class SFTPEngine
 
     protected volatile int timeout = DEFAULT_TIMEOUT;
 
-    protected final int clientVersion;
     protected final Subsystem sub;
     protected final PacketReader reader;
     protected final OutputStream out;
@@ -52,14 +51,6 @@ public class SFTPEngine
 
     public SFTPEngine(SessionFactory ssh)
             throws SSHException {
-        this(ssh, MAX_SUPPORTED_VERSION);
-    }
-
-    public SFTPEngine(SessionFactory ssh, int clientVersion)
-            throws SSHException {
-        if (clientVersion > MAX_SUPPORTED_VERSION)
-            throw new SFTPException("Max. supported protocol version is: " + MAX_SUPPORTED_VERSION);
-        this.clientVersion = clientVersion;
         sub = ssh.startSession().startSubsystem("sftp");
         out = sub.getOutputStream();
         reader = new PacketReader(this);
@@ -67,7 +58,7 @@ public class SFTPEngine
 
     public SFTPEngine init()
             throws IOException {
-        transmit(new SFTPPacket<Request>(PacketType.INIT).putInt(clientVersion));
+        transmit(new SFTPPacket<Request>(PacketType.INIT).putInt(MAX_SUPPORTED_VERSION));
 
         final SFTPPacket<Response> response = reader.readPacket();
 
@@ -76,9 +67,9 @@ public class SFTPEngine
             throw new SFTPException("Expected INIT packet, received: " + type);
 
         operativeVersion = response.readInt();
-        log.info("Client version {}, server version {}", clientVersion, operativeVersion);
-        if (clientVersion < operativeVersion)
-            throw new SFTPException("Server reported protocol version: " + operativeVersion);
+        log.info("Server version {}", operativeVersion);
+        if (MAX_SUPPORTED_VERSION < operativeVersion)
+            throw new SFTPException("Server reported incompatible protocol version: " + operativeVersion);
 
         while (response.available() > 0)
             serverExtensions.put(response.readString(), response.readString());
