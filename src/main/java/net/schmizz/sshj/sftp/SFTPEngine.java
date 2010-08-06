@@ -77,7 +77,7 @@ public class SFTPEngine
 
         operativeVersion = response.readInt();
         log.info("Client version {}, server version {}", clientVersion, operativeVersion);
-        if (operativeVersion < clientVersion)
+        if (clientVersion < operativeVersion)
             throw new SFTPException("Server reported protocol version: " + operativeVersion);
 
         while (response.available() > 0)
