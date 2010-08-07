@@ -121,7 +121,6 @@ public enum KeyType {
 
     public abstract void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf);
 
-
     protected abstract boolean isMyType(Key key);
 
     public static KeyType fromKey(Key key) {
