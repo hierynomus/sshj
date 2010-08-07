@@ -19,8 +19,6 @@ import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 
-// TODO check if this even works...!
-
 /** Implements the {@code hostbased} SSH authentication method. */
 public class AuthHostbased
         extends KeyedAuthMethod {
@@ -28,22 +26,17 @@ public class AuthHostbased
     protected final String hostname;
     protected final String hostuser;
 
-    public AuthHostbased(KeyProvider kProv, String hostuser) {
-        this(kProv, hostuser, null);
-    }
-
-    public AuthHostbased(KeyProvider kProv, String hostuser, String hostname) {
+    public AuthHostbased(KeyProvider kProv, String hostname, String hostuser) {
         super("hostbased", kProv);
-        assert hostuser != null;
-        this.hostuser = hostuser;
         this.hostname = hostname;
+        this.hostuser = hostuser;
     }
 
     @Override
     protected SSHPacket buildReq()
             throws UserAuthException {
-        SSHPacket req = putPubKey(super.buildReq());
-        req.putString(hostname == null ? params.getTransport().getRemoteHost() : hostname).putString(hostuser);
+        final SSHPacket req = putPubKey(super.buildReq());
+        req.putString(hostname).putString(hostuser);
         return putSig(req);
     }
 
