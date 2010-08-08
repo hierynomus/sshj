@@ -67,8 +67,7 @@ public enum Message {
 
     static {
         for (Message c : Message.values())
-            if (cache[c.toByte()] == null)
-                cache[c.toByte()] = c;
+            cache[c.toByte()] = c;
     }
 
     public static Message fromByte(byte b) {

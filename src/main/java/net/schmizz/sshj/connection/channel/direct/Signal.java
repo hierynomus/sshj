@@ -27,8 +27,7 @@ public enum Signal {
     INT("INT"),
     KILL("KILL"),
     PIPE("PIPE"),
-    QUIT(
-            "QUIT"),
+    QUIT("QUIT"),
     SEGV("SEGV"),
     TERM("TERM"),
     USR1("USR1"),

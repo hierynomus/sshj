@@ -52,8 +52,7 @@ public enum PacketType {
 
     static {
         for (PacketType t : PacketType.values())
-            if (cache[t.toByte() & 0xff] == null)
-                cache[t.toByte() & 0xff] = t;
+            cache[t.toByte() & 0xff] = t;
     }
 
     private PacketType(int b) {
