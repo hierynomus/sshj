@@ -68,13 +68,13 @@ public enum FilePermission {
     }
 
     public boolean isIn(int mask) {
-        return (mask & val) == mask;
+        return (mask & val) == val;
     }
 
     public static Set<FilePermission> fromMask(int mask) {
-        List<FilePermission> perms = new LinkedList<FilePermission>();
+        final List<FilePermission> perms = new LinkedList<FilePermission>();
         for (FilePermission p : FilePermission.values())
-            if ((mask & p.val) == p.val)
+            if (p.isIn(mask))
                 perms.add(p);
         return new HashSet<FilePermission>(perms);
     }
