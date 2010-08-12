@@ -19,20 +19,20 @@ package net.schmizz.sshj.connection.channel.direct;
 /** Various signals that may be sent or received. The signals are from POSIX and simply miss the {@code "SIG_"} prefix. */
 public enum Signal {
 
-    ABRT("ABRT"),
-    ALRM("ALRM"),
-    FPE("FPE"),
-    HUP("HUP"),
-    ILL("ILL"),
-    INT("INT"),
-    KILL("KILL"),
-    PIPE("PIPE"),
-    QUIT("QUIT"),
-    SEGV("SEGV"),
-    TERM("TERM"),
-    USR1("USR1"),
-    USR2("USR2"),
-    UNKNOWN("UNKNOWN");
+    ABRT,
+    ALRM,
+    FPE,
+    HUP,
+    ILL,
+    INT,
+    KILL,
+    PIPE,
+    QUIT,
+    SEGV,
+    TERM,
+    USR1,
+    USR2,
+    UNKNOWN;
 
     /**
      * Create from the string representation used when the signal is received as part of an SSH packet.
@@ -43,20 +43,9 @@ public enum Signal {
      */
     public static Signal fromString(String name) {
         for (Signal sig : Signal.values())
-            if (sig.name.equals(name))
+            if (sig.toString().equals(name))
                 return sig;
         return UNKNOWN;
-    }
-
-    private final String name;
-
-    private Signal(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
     }
 
 }
