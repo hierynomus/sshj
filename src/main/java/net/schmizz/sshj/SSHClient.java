@@ -95,13 +95,15 @@ import java.util.List;
  * client = new SSHClient();
  * client.initUserKnownHosts();
  * client.connect(&quot;hostname&quot;);
- * try
- * {
+ * try {
  *     client.authPassword(&quot;username&quot;, &quot;password&quot;);
- *     client.startSession().exec(&quot;true&quot;);
- *     client.getConnection().join();
- * } finally
- * {
+ *     final Session session = client.startSession();
+ *     try {
+ *          session.exec(&quot;true&quot;);
+ *          client.getConnection().join();
+ *     } finally {
+ *          session.close();
+ *    } finally {
  *     client.disconnect();
  * }
  * </pre>
@@ -118,7 +120,6 @@ public class SSHClient
 
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
 
     /** Transport layer */
     protected final Transport trans;
