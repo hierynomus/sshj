@@ -18,6 +18,7 @@ package net.schmizz.sshj.common;
 /** SSH message identifiers */
 public enum Message {
 
+    UNKNOWN(0),
     DISCONNECT(1),
     IGNORE(2),
     UNIMPLEMENTED(3),
@@ -68,6 +69,10 @@ public enum Message {
     static {
         for (Message c : Message.values())
             cache[c.toByte()] = c;
+        for (int i = 0; i < 256; i++) {
+            if (cache[i] == null)
+                cache[i] = UNKNOWN;
+        }
     }
 
     public static Message fromByte(byte b) {

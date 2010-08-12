@@ -76,11 +76,7 @@ public class SSHPacket
      * @return the message identifier
      */
     public Message readMessageID() {
-        byte b = readByte();
-        Message cmd = Message.fromByte(b);
-        if (cmd == null)
-            throw new BufferException("Unknown message ID: " + b);
-        return cmd;
+        return Message.fromByte(readByte());
     }
 
     /**
