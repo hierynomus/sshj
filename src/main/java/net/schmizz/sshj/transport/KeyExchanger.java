@@ -92,8 +92,7 @@ final class KeyExchanger
     private Proposal clientProposal;
     private NegotiatedAlgorithms negotiatedAlgs;
 
-    private final Event<TransportException> kexInitSent = new Event<TransportException>("kexinit sent",
-                                                                                        TransportException.chainer);
+    private final Event<TransportException> kexInitSent = new Event<TransportException>("kexinit sent", TransportException.chainer);
 
     private final Event<TransportException> done;
 
