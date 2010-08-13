@@ -9,7 +9,7 @@ Features of the library include:
 * password and publickey authentication
 * command, subsystem and shell channels
 * local and remote port forwarding
-* scp + complete sftp version 3 implementation
+* scp + complete sftp version 0-3 implementation
 
 Implementations of the following algorithms are included:
 
@@ -37,8 +37,7 @@ If you need something that is not implemented, it shouldn't be too hard to add (
 Dependencies
 -------------
 
-Java 6+. slf4j_ is required. bouncycastle_ is highly recommended and required for using some of the crypto algorithms.
-jzlib_ is required for using zlib compression.
+Java 6+. slf4j_ is required. bouncycastle_ is highly recommended and required for using some of the crypto algorithms. jzlib_ is required for using zlib compression.
 
 
 Help and discussion
@@ -52,8 +51,6 @@ Contributing
 
 Fork away!
 
-
-.. _buildr: http://buildr.apache.org/installing.html
 
 .. _slf4j: http://www.slf4j.org/download.html
 
