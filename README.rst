@@ -6,7 +6,7 @@ To get started, have a look at one of the examples. Hopefully you will find the 
 Features of the library include:
 
 * reading known_hosts files for host key verification
-* password and publickey authentication
+* publickey, password and keyboard-interactive authentication
 * command, subsystem and shell channels
 * local and remote port forwarding
 * scp + complete sftp version 0-3 implementation
