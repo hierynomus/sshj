@@ -135,4 +135,7 @@ public interface Channel
      */
     void setAutoExpand(boolean autoExpand);
 
+    void join()
+            throws ConnectionException;
+
 }

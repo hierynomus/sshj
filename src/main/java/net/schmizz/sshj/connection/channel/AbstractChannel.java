@@ -83,7 +83,7 @@ public abstract class AbstractChannel
     /** Channel open event */
     protected final Event<ConnectionException> open;
     /** Channel close event */
-    private final Event<ConnectionException> close;
+    protected final Event<ConnectionException> close;
 
     /* Access to these fields should be synchronized using this object */
     private boolean eofSent;
@@ -265,6 +265,11 @@ public abstract class AbstractChannel
         } finally {
             lock.unlock();
         }
+    }
+
+    public void join()
+            throws ConnectionException {
+        close.await();
     }
 
     protected synchronized void sendClose()
