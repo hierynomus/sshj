@@ -73,7 +73,7 @@ public class
     @Override
     public void allocateDefaultPTY()
             throws ConnectionException, TransportException {
-        allocatePTY("vt100", 80, 24, 0, 0, Collections.<PTYMode, Integer>emptyMap());
+        allocatePTY("dummy", 80, 24, 0, 0, Collections.<PTYMode, Integer>emptyMap());
     }
 
     @Override
