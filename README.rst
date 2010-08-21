@@ -1,3 +1,8 @@
+.. image:: http://api.flattr.com/button/button-compact-static-100x17.png
+    :align: right
+    :alt: Flattr this
+    :target: http://flattr.com/thing/49085/sshj-ssh-scp-and-sftp-library-for-java
+
 sshj - SSHv2 library for Java
 ==============================
 
