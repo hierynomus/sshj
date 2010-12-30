@@ -35,10 +35,7 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.SSHPacket;
-import net.schmizz.sshj.common.StreamCopier;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.ChannelInputStream;
@@ -50,7 +47,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/** {@link Session} implementation. */
+/**
+ * {@link Session} implementation.
+ */
 public class
         SessionChannel
         extends AbstractDirectChannel
@@ -171,7 +170,7 @@ public class
     @Override
     public void reqX11Forwarding(String authProto, String authCookie, int screen)
             throws ConnectionException,
-                   TransportException {
+            TransportException {
         sendChannelRequest(
                 "x11-req",
                 true,
@@ -236,6 +235,12 @@ public class
             receiveInto(err, buf);
         else
             super.gotExtendedData(dataTypeCode, buf);
+    }
+
+    @Override
+    public void notifyError(SSHException error) {
+        err.notifyError(error);
+        super.notifyError(error);
     }
 
 }
