@@ -169,8 +169,7 @@ public class
 
     @Override
     public void reqX11Forwarding(String authProto, String authCookie, int screen)
-            throws ConnectionException,
-            TransportException {
+            throws ConnectionException, TransportException {
         sendChannelRequest(
                 "x11-req",
                 true,
