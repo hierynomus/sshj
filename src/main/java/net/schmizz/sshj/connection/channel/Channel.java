@@ -23,6 +23,7 @@ import net.schmizz.sshj.transport.TransportException;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 /** A channel is the basic medium for application-layer data on top of an SSH transport. */
 public interface Channel
@@ -136,6 +137,9 @@ public interface Channel
     void setAutoExpand(boolean autoExpand);
 
     void join()
+            throws ConnectionException;
+
+    void join(int timeout, TimeUnit unit)
             throws ConnectionException;
 
 }

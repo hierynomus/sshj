@@ -20,6 +20,7 @@ import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /** This examples demonstrates how a remote command can be executed. */
 public class Exec {
@@ -36,6 +37,7 @@ public class Exec {
             try {
                 final Command cmd = session.exec("ping -c 1 google.com");
                 System.out.print(cmd.getOutputAsString());
+                cmd.join(5, TimeUnit.SECONDS);
                 System.out.println("\n** exit status: " + cmd.getExitStatus());
             } finally {
                 session.close();

@@ -272,6 +272,11 @@ public abstract class AbstractChannel
         close.await();
     }
 
+    public void join(int timeout, TimeUnit unit)
+            throws ConnectionException {
+        close.await(timeout, unit);
+    }
+
     protected synchronized void sendClose()
             throws TransportException {
         try {
