@@ -50,8 +50,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * {@link Session} implementation.
  */
-public class
-        SessionChannel
+public class SessionChannel
         extends AbstractDirectChannel
         implements Session, Session.Command, Session.Shell, Session.Subsystem {
 
@@ -64,6 +63,8 @@ public class
     private String exitErrMsg;
 
     private Boolean canDoFlowControl;
+
+    private boolean usedUp;
 
     public SessionChannel(Connection conn) {
         super(conn, "session");
@@ -113,9 +114,11 @@ public class
     @Override
     public Command exec(String command)
             throws ConnectionException, TransportException {
+        checkReuse();
         log.info("Will request to exec `{}`", command);
         sendChannelRequest("exec", true, new Buffer.PlainBuffer().putString(command))
                 .await(conn.getTimeout(), TimeUnit.SECONDS);
+        usedUp = true;
         return this;
     }
 
@@ -197,16 +200,20 @@ public class
     @Override
     public Shell startShell()
             throws ConnectionException, TransportException {
+        checkReuse();
         sendChannelRequest("shell", true, null).await(conn.getTimeout(), TimeUnit.SECONDS);
+        usedUp = true;
         return this;
     }
 
     @Override
     public Subsystem startSubsystem(String name)
             throws ConnectionException, TransportException {
+        checkReuse();
         log.info("Will request `{}` subsystem", name);
         sendChannelRequest("subsystem", true, new Buffer.PlainBuffer().putString(name))
                 .await(conn.getTimeout(), TimeUnit.SECONDS);
+        usedUp = true;
         return this;
     }
 
@@ -240,6 +247,11 @@ public class
     public void notifyError(SSHException error) {
         err.notifyError(error);
         super.notifyError(error);
+    }
+
+    private void checkReuse() {
+        if (usedUp)
+            throw new SSHRuntimeException("This session channel is all used up");
     }
 
 }
