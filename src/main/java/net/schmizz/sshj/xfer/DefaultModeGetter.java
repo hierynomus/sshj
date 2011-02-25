@@ -46,6 +46,27 @@ public class DefaultModeGetter
         else
             throw new IOException("Unsupported file type: " + f);
     }
+    
+    @Override
+    public long getLastAccessTime(LocalFile f) {
+        return System.currentTimeMillis() / 1000;
+    }
+
+    @Override
+    public long getLastModifiedTime(LocalFile f) {
+        return f.lastModified() / 1000;
+    }
+
+    @Override
+    public int getPermissions(LocalFile f)
+            throws IOException {
+        if (f.isDirectory())
+            return 0755;
+        else if (f.isFile())
+            return 0644;
+        else
+            throw new IOException("Unsupported file type: " + f);
+    }
 
     @Override
     public boolean preservesTimes() {

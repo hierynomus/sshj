@@ -45,6 +45,7 @@ public interface ModeGetter {
     long getLastModifiedTime(File f)
             throws IOException;
 
+
     /**
      * Returns the permissions for {@code f}.
      *
@@ -56,7 +57,44 @@ public interface ModeGetter {
      */
     int getPermissions(File f)
             throws IOException;
+    
+    /**
+     * Returns last access time for {@code f}.
+     *
+     * @param f the file
+     *
+     * @return time in seconds since Unix epoch
+     *
+     * @throws IOException
+     */
+    long getLastAccessTime(LocalFile f)
+            throws IOException;
 
+    /**
+     * Returns last modified time for {@code f}.
+     *
+     * @param f the file
+     *
+     * @return time in seconds since Unix epoch
+     *
+     * @throws IOException
+     */
+    long getLastModifiedTime(LocalFile f)
+            throws IOException;
+
+
+    /**
+     * Returns the permissions for {@code f}.
+     *
+     * @param f the file
+     *
+     * @return permissions in octal format, e.g. 0644
+     *
+     * @throws IOException
+     */
+    int getPermissions(LocalFile f)
+            throws IOException;
+    
     /** @return whether this implementation can provide mtime and atime information. */
     boolean preservesTimes();
 
