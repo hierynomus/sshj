@@ -61,7 +61,6 @@ abstract class SCPEngine {
 
     final SessionFactory host;
     final TransferListener listener;
-    final Queue<String> warnings = new LinkedList<String>();
 
     Command scp;
     int exitStatus;
@@ -86,19 +85,6 @@ abstract class SCPEngine {
         return exitStatus;
     }
 
-    public Queue<String> getWarnings() {
-        return warnings;
-    }
-
-    public boolean hadWarnings() {
-        return !warnings.isEmpty();
-    }
-
-    void addWarning(String warning) {
-        log.warn(warning);
-        warnings.add(warning);
-    }
-
     void check(String what)
             throws IOException {
         int code = scp.getInputStream().read();
@@ -111,9 +97,7 @@ abstract class SCPEngine {
             case 0: // OK
                 log.debug(what);
                 return;
-            case 1:
-                addWarning(readMessage());
-                break;
+            case 1: // Warning? not
             case 2:
                 throw new SCPException("Remote SCP command had error: " + readMessage());
             default:
@@ -123,7 +107,6 @@ abstract class SCPEngine {
 
     void cleanSlate() {
         exitStatus = -1;
-        warnings.clear();
     }
 
     void execSCPWith(List<Arg> args, String path)

@@ -123,9 +123,6 @@ public final class SCPDownloadClient
                 return true;
 
             case (char) 1:
-                addWarning(msg.substring(1));
-                break;
-
             case (char) 2:
                 throw new SCPException("Remote SCP command returned error: " + msg.substring(1));
 
