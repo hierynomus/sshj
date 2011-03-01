@@ -181,7 +181,7 @@ public class StatefulSFTPClient
     @Override
     public void put(String source, String dest)
             throws IOException {
-        super.get(source, cwdify(dest));
+        super.put(source, cwdify(dest));
     }
 
 }
