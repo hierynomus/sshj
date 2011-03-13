@@ -17,93 +17,42 @@ package net.schmizz.sshj;
 
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
-import net.schmizz.sshj.util.BogusPasswordAuthenticator;
-import org.apache.sshd.SshServer;
-import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
+import net.schmizz.sshj.util.BasicFixture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 
 import static org.junit.Assert.assertTrue;
 
 /* Kinda basic right now */
-
 public class SmokeTest {
 
-    private SSHClient ssh;
-    private SshServer sshd;
-
-    private final String hostname = "localhost";
-    private int port;
-
-    private static final String hostkey = "src/test/resources/hostkey.pem";
-    private static final String fingerprint = "ce:a7:c1:cf:17:3f:96:49:6a:53:1a:05:0b:ba:90:db";
+    private final BasicFixture fixture = new BasicFixture();
 
     @Before
     public void setUp()
             throws IOException {
-        ServerSocket s = new ServerSocket(0);
-        port = s.getLocalPort();
-        s.close();
-
-        sshd = SshServer.setUpDefaultServer();
-        sshd.setPort(port);
-        sshd.setKeyPairProvider(new FileKeyPairProvider(new String[]{hostkey}));
-        // sshd.setShellFactory(new EchoShellFactory());
-        sshd.setPasswordAuthenticator(new BogusPasswordAuthenticator());
-        sshd.start();
-
-        ssh = new SSHClient();
-        ssh.addHostKeyVerifier(fingerprint);
+        fixture.init(false);
     }
 
     @After
-    public void tearUp()
+    public void tearDown()
             throws IOException, InterruptedException {
-        ssh.disconnect();
-        sshd.stop();
+        fixture.done();
     }
 
     @Test
-    public void testAuthenticate()
+    public void connected()
             throws IOException {
-        connect();
-        authenticate();
-        assertTrue(ssh.isAuthenticated());
+        assertTrue(fixture.getClient().isConnected());
     }
 
     @Test
-    public void testConnect()
-            throws IOException {
-        connect();
-        assertTrue(ssh.isConnected());
-    }
-
-    // @Test
-    // // TODO -- test I/O
-    // public void testShell() throws IOException
-    // {
-    // connect();
-    // authenticate();
-    //        
-    // Shell shell = ssh.startSession().startShell();
-    // assertTrue(shell.isOpen());
-    //        
-    // shell.close();
-    // assertFalse(shell.isOpen());
-    // }
-
-    private void authenticate()
-            throws UserAuthException, TransportException {
-        ssh.authPassword("same", "same");
-    }
-
-    private void connect()
-            throws IOException {
-        ssh.connect(hostname, port);
+    public void authenticated() throws UserAuthException, TransportException {
+        fixture.dummyAuth();
+        assertTrue(fixture.getClient().isAuthenticated());
     }
 
 }

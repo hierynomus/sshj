@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj;
 
+import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.ErrorNotifiable;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacketHandler;
@@ -48,7 +49,7 @@ public interface Service
     void request()
             throws TransportException;
 
-    void notifyDisconnect()
+    void notifyDisconnect(DisconnectReason reason)
             throws SSHException;
 
 }

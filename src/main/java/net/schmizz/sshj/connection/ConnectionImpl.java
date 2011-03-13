@@ -246,10 +246,10 @@ public class ConnectionImpl
     }
 
     @Override
-    public void notifyDisconnect()
+    public void notifyDisconnect(DisconnectReason reason)
             throws SSHException {
-        super.notifyDisconnect();
-        final ConnectionException ex = new ConnectionException("Disconnected.");
+        super.notifyDisconnect(reason);
+        final ConnectionException ex = new ConnectionException("Disconnected");
         FutureUtils.alertAll(ex, globalReqFutures);
         ErrorNotifiable.Util.alertAll(ex, new HashSet<Channel>(channels.values()));
     }

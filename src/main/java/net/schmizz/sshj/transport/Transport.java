@@ -44,6 +44,7 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 /** Transport layer of the SSH protocol. */
 public interface Transport
@@ -171,12 +172,18 @@ public interface Transport
     boolean isRunning();
 
     /**
-     * Joins the thread calling this method to the transport's death. The transport dies of exceptional events.
+     * Joins the thread calling this method to the transport's death.
      *
-     * @throws TransportException when the transport dies
+     * @throws TransportException if the transport dies of an exception
      */
     void join()
             throws TransportException;
+    /**
+     * Joins the thread calling this method to the transport's death.
+     *
+     * @throws TransportException if the transport dies of an exception
+     */
+    void join(int timeout, TimeUnit unit) throws TransportException;
 
     /** Send a disconnection packet with reason as {@link DisconnectReason#BY_APPLICATION}, and closes this transport. */
     void disconnect();
@@ -211,4 +218,17 @@ public interface Transport
      */
     long write(SSHPacket payload)
             throws TransportException;
+
+    /**
+     * Specify a {@code listener} that will be notified upon disconnection.
+     *
+     * @param listener
+     */
+    void setDisconnectListener(DisconnectListener listener);
+
+    /**
+     * @return the current disconnect listener.
+     */
+    DisconnectListener getDisconnectListener();
+
 }

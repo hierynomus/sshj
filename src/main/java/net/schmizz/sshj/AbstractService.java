@@ -67,7 +67,7 @@ public abstract class AbstractService
     }
 
     @Override
-    public void notifyDisconnect()
+    public void notifyDisconnect(DisconnectReason reason)
             throws SSHException {
         log.debug("Was notified of disconnect");
     }

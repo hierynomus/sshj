@@ -85,6 +85,13 @@ public final class TransportImpl
 
     private final Service nullService = new NullService(this);
 
+    private final DisconnectListener nullDisconnectListener = new DisconnectListener() {
+        @Override
+        public void notifyDisconnect(DisconnectReason reason) {
+            log.debug("Default disconnect listener - {}", reason);
+        }
+    };
+
     private final Config config;
 
     private final KeyExchanger kexer;
@@ -97,11 +104,9 @@ public final class TransportImpl
 
     private final Decoder decoder;
 
-    private final Event<TransportException> serviceAccept = new Event<TransportException>("service accept",
-                                                                                          TransportException.chainer);
+    private final Event<TransportException> serviceAccept = new Event<TransportException>("service accept", TransportException.chainer);
 
-    private final Event<TransportException> close = new Event<TransportException>("transport close",
-                                                                                  TransportException.chainer);
+    private final Event<TransportException> close = new Event<TransportException>("transport close", TransportException.chainer);
 
     /** Client version identification string */
     private final String clientID;
@@ -112,6 +117,8 @@ public final class TransportImpl
 
     /** Currently active service e.g. UserAuthService, ConnectionService */
     private volatile Service service = nullService;
+
+    private DisconnectListener disconnectListener = nullDisconnectListener;
 
     private ConnInfo connInfo;
 
@@ -210,7 +217,7 @@ public final class TransportImpl
 
         if (!ident.startsWith("SSH-2.0-") && !ident.startsWith("SSH-1.99-"))
             throw new TransportException(DisconnectReason.PROTOCOL_VERSION_NOT_SUPPORTED,
-                                         "Server does not support SSHv2, identified as: " + ident);
+                    "Server does not support SSHv2, identified as: " + ident);
 
         return ident;
     }
@@ -348,6 +355,12 @@ public final class TransportImpl
     }
 
     @Override
+    public void join(int timeout, TimeUnit unit)
+            throws TransportException {
+        close.await(timeout, unit);
+    }
+
+    @Override
     public boolean isRunning() {
         return reader.isAlive() && !close.isSet();
     }
@@ -364,10 +377,11 @@ public final class TransportImpl
 
     @Override
     public void disconnect(DisconnectReason reason, String message) {
-        close.lock(); // CAS type operation on close
+        close.lock();
         try {
+            disconnectListener.notifyDisconnect(reason);
             try {
-                service.notifyDisconnect();
+                service.notifyDisconnect(reason);
             } catch (SSHException logged) {
                 log.warn("{} did not handle disconnect cleanly: {}", service, logged);
             }
@@ -379,6 +393,16 @@ public final class TransportImpl
         } finally {
             close.unlock();
         }
+    }
+
+    @Override
+    public void setDisconnectListener(DisconnectListener listener) {
+        this.disconnectListener = listener == null ? nullDisconnectListener : listener;
+    }
+
+    @Override
+    public DisconnectListener getDisconnectListener() {
+        return disconnectListener;
     }
 
     @Override
@@ -501,7 +525,7 @@ public final class TransportImpl
         try {
             if (!serviceAccept.hasWaiters())
                 throw new TransportException(DisconnectReason.PROTOCOL_ERROR,
-                                             "Got a service accept notification when none was awaited");
+                        "Got a service accept notification when none was awaited");
             serviceAccept.set();
         } finally {
             serviceAccept.unlock();
@@ -539,6 +563,8 @@ public final class TransportImpl
                 log.error("Dying because - {}", ex.toString());
 
                 final SSHException causeOfDeath = SSHException.chainer.chain(ex);
+
+                disconnectListener.notifyDisconnect(causeOfDeath.getDisconnectReason());
 
                 FutureUtils.alertAll(causeOfDeath, close, serviceAccept);
                 kexer.notifyError(causeOfDeath);
