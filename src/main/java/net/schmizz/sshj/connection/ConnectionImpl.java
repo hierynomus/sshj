@@ -141,19 +141,6 @@ public class ConnectionImpl
     }
 
     @Override
-    public void notifyError(SSHException error) {
-        super.notifyError(error);
-
-        synchronized (globalReqFutures) {
-            FutureUtils.alertAll(error, globalReqFutures);
-            globalReqFutures.clear();
-        }
-
-        ErrorNotifiable.Util.alertAll(error, channels.values());
-        channels.clear();
-    }
-
-    @Override
     public int getMaxPacketSize() {
         return maxPacketSize;
     }
@@ -246,12 +233,14 @@ public class ConnectionImpl
     }
 
     @Override
-    public void notifyDisconnect(DisconnectReason reason)
-            throws SSHException {
-        super.notifyDisconnect(reason);
-        final ConnectionException ex = new ConnectionException("Disconnected");
-        FutureUtils.alertAll(ex, globalReqFutures);
-        ErrorNotifiable.Util.alertAll(ex, new HashSet<Channel>(channels.values()));
+    public void notifyError(SSHException error) {
+        super.notifyError(error);
+        synchronized (globalReqFutures) {
+            FutureUtils.alertAll(error, globalReqFutures);
+            globalReqFutures.clear();
+        }
+        ErrorNotifiable.Util.alertAll(error, channels.values());
+        channels.clear();
     }
 
 }

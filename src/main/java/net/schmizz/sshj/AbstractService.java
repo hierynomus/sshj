@@ -57,19 +57,13 @@ public abstract class AbstractService
 
     @Override
     public void notifyError(SSHException error) {
-        log.debug("Was notified of {}", error.toString());
+        log.debug("Notified of {}", error.toString());
     }
 
     @Override
     public void notifyUnimplemented(long seqNum)
             throws SSHException {
         throw new SSHException(DisconnectReason.PROTOCOL_ERROR, "Unexpected: SSH_MSG_UNIMPLEMENTED");
-    }
-
-    @Override
-    public void notifyDisconnect(DisconnectReason reason)
-            throws SSHException {
-        log.debug("Was notified of disconnect");
     }
 
     @Override

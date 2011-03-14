@@ -380,11 +380,7 @@ public final class TransportImpl
         close.lock();
         try {
             disconnectListener.notifyDisconnect(reason);
-            try {
-                service.notifyDisconnect(reason);
-            } catch (SSHException logged) {
-                log.warn("{} did not handle disconnect cleanly: {}", service, logged);
-            }
+            getService().notifyError(new TransportException(reason, "Disconnected"));
             if (!close.isSet()) {
                 sendDisconnect(reason, message);
                 finishOff();
