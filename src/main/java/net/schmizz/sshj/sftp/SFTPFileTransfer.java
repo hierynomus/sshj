@@ -15,19 +15,21 @@
  */
 package net.schmizz.sshj.sftp;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.EnumSet;
+
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.sftp.Response.StatusCode;
 import net.schmizz.sshj.xfer.AbstractFileTransfer;
+import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.FileTransfer;
 import net.schmizz.sshj.xfer.FileTransferUtil;
+import net.schmizz.sshj.xfer.LocalFile;
 import net.schmizz.sshj.xfer.TransferListener;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.EnumSet;
 
 public class SFTPFileTransfer
         extends AbstractFileTransfer
@@ -61,8 +63,14 @@ public class SFTPFileTransfer
     @Override
     public void upload(String source, String dest)
             throws IOException {
-        new Uploader().upload(new File(source), dest);
+        new Uploader().upload(new FileSystemFile(source), dest);
     }
+    
+    @Override
+    public void upload(LocalFile localFile, String remotePath)
+			throws IOException {
+    	new Uploader().upload(localFile, remotePath);
+	}
 
     @Override
     public void download(String source, String dest)
@@ -163,7 +171,7 @@ public class SFTPFileTransfer
 
         private final TransferListener listener = getTransferListener();
 
-        private void upload(File local, String remote)
+        private void upload(LocalFile local, String remote)
                 throws IOException {
             final String adjustedPath;
             if (local.isDirectory()) {
@@ -179,22 +187,22 @@ public class SFTPFileTransfer
             engine.setAttributes(adjustedPath, getAttributes(local));
         }
 
-        private String uploadDir(File local, String remote)
+        private String uploadDir(LocalFile local, String remote)
                 throws IOException {
             final String adjusted = prepareDir(local, remote);
-            for (File f : local.listFiles(getUploadFilter()))
+            for (LocalFile f : local.getChildren(getUploadFilter()))
                 upload(f, adjusted);
             return adjusted;
         }
 
-        private String uploadFile(File local, String remote)
+        private String uploadFile(LocalFile local, String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
             final RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE,
                                                                    OpenMode.CREAT,
                                                                    OpenMode.TRUNC));
             try {
-                final FileInputStream fis = new FileInputStream(local);
+                final InputStream fis = local.stream();
                 try {
                     final int bufSize = engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead();
                     StreamCopier.copy(fis, rf.getOutputStream(), bufSize, false, listener);
@@ -207,7 +215,7 @@ public class SFTPFileTransfer
             return adjusted;
         }
 
-        private String prepareDir(File local, String remote)
+        private String prepareDir(LocalFile local, String remote)
                 throws IOException {
             final FileAttributes attrs;
             try {
@@ -233,7 +241,7 @@ public class SFTPFileTransfer
                 throw new IOException(attrs.getMode().getType() + " file already exists at " + remote);
         }
 
-        private String prepareFile(File local, String remote)
+        private String prepareFile(LocalFile local, String remote)
                 throws IOException {
             final FileAttributes attrs;
             try {
@@ -255,7 +263,7 @@ public class SFTPFileTransfer
             }
         }
 
-        private FileAttributes getAttributes(File local)
+        private FileAttributes getAttributes(LocalFile local)
                 throws IOException {
             final FileAttributes.Builder builder = new FileAttributes.Builder()
                     .withPermissions(getModeGetter().getPermissions(local));

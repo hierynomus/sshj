@@ -1,6 +1,7 @@
 package net.schmizz.sshj.xfer;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -70,6 +71,12 @@ public class InMemoryFile implements LocalFile {
 
 	@Override
 	public Iterable<LocalFile> getChildren() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public Iterable<LocalFile> getChildren(FileFilter filter)
+			throws IOException {
 		return Collections.emptyList();
 	}
 }

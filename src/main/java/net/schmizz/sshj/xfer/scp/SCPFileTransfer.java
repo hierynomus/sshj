@@ -57,6 +57,7 @@ public class SCPFileTransfer
         newSCPUploadClient().copy(new FileSystemFile(localPath), remotePath);
     }
 
+    @Override
 	public void upload(LocalFile localFile, String remotePath)
 			throws IOException {
 		newSCPUploadClient().copy(localFile, remotePath);

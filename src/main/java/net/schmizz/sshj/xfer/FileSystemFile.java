@@ -57,6 +57,12 @@ public class FileSystemFile implements LocalFile {
 		return getChildren(file);
 	}
 
+	@Override
+	public Iterable<LocalFile> getChildren(FileFilter filter) throws IOException {
+		setFileFilter(filter);
+		return getChildren(file);
+	}
+	
 	private Iterable<LocalFile> getChildren(File f) throws IOException {
 		Collection<LocalFile> files = new ArrayList<LocalFile>();
 		File[] childFiles = fileFilter == null ? f.listFiles() : f.listFiles(fileFilter);
