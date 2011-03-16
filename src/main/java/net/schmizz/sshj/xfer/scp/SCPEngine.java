@@ -15,23 +15,22 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.TransferListener;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-
 /** @see <a href="http://blogs.sun.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
-abstract class SCPEngine {
+class SCPEngine {
 
     static enum Arg {
         SOURCE('f'),
@@ -68,17 +67,6 @@ abstract class SCPEngine {
     SCPEngine(SessionFactory host, TransferListener listener) {
         this.host = host;
         this.listener = listener;
-    }
-
-    public int copy(String sourcePath, String targetPath)
-            throws IOException {
-        cleanSlate();
-        try {
-            startCopy(sourcePath, targetPath);
-        } finally {
-            exit();
-        }
-        return exitStatus;
     }
 
     public int getExitStatus() {
@@ -172,9 +160,6 @@ abstract class SCPEngine {
         scp.getOutputStream().write(0);
         scp.getOutputStream().flush();
     }
-
-    abstract void startCopy(String sourcePath, String targetPath)
-            throws IOException;
 
     void transfer(InputStream in, OutputStream out, int bufSize, long len)
             throws IOException {

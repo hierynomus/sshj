@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.AbstractFileTransfer;
+import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.FileTransfer;
 import net.schmizz.sshj.xfer.LocalFile;
 
@@ -49,7 +50,7 @@ public class SCPFileTransfer
     @Override
     public void upload(String localPath, String remotePath)
             throws IOException {
-        newSCPUploadClient().copy(localPath, remotePath);
+        newSCPUploadClient().copy(new FileSystemFile(localPath), remotePath);
     }
 
 	public void upload(LocalFile localFile, String remotePath)
