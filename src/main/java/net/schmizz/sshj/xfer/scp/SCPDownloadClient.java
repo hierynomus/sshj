@@ -148,7 +148,7 @@ public final class SCPDownloadClient {
         final String dirname = dMsgParts[2];
         if (length != 0)
             throw new IOException("Remote SCP command sent strange directory length: " + length);
-        engine.listener.startedDir(dirname);
+        engine.startedDir(dirname);
         {
             f = FileTransferUtil.getTargetDirectory(f, dirname);
             engine.signal("ACK: D");
@@ -157,15 +157,15 @@ public final class SCPDownloadClient {
             setAttributes(f, parsePermissions(dMsgParts[0]), tMsg);
             engine.signal("ACK: E");
         }
-        engine.listener.finishedDir();
+        engine.finishedDir();
     }
 
-    private void processFile(String cMsg, String tMsg, File f)
+	private void processFile(String cMsg, String tMsg, File f)
             throws IOException {
         final String[] cMsgParts = tokenize(cMsg, 3); // C<perms> <size> <filename>
         final long length = parseLong(cMsgParts[1], "length");
         final String filename = cMsgParts[2];
-        engine.listener.startedFile(filename, length);
+        engine.startedFile(length, filename);
         {
             f = FileTransferUtil.getTargetFile(f, filename);
             engine.signal("Remote can start transfer");
@@ -179,10 +179,10 @@ public final class SCPDownloadClient {
             setAttributes(f, parsePermissions(cMsgParts[0]), tMsg);
             engine.signal("Transfer done");
         }
-        engine.listener.finishedFile();
+        engine.finishedFile();
     }
 
-    private void setAttributes(File f, int perms, String tMsg)
+	private void setAttributes(File f, int perms, String tMsg)
             throws IOException {
         modeSetter.setPermissions(f, perms);
         if (tMsg != null && modeSetter.preservesTimes()) {

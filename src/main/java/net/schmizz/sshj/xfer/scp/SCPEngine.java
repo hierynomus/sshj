@@ -24,6 +24,7 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
+import net.schmizz.sshj.xfer.LocalFile;
 import net.schmizz.sshj.xfer.TransferListener;
 
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ class SCPEngine {
     final Logger log = LoggerFactory.getLogger(getClass());
 
     final SessionFactory host;
-    final TransferListener listener;
+    private final TransferListener listener;
 
     Command scp;
     int exitStatus;
@@ -184,4 +185,27 @@ class SCPEngine {
             throw new IOException("Had EOF before transfer completed");
     }
 
+    void startedDir(final String dirname) {
+    	listener.startedDir(dirname);
+    }
+
+	void startedDir(LocalFile f) {
+		listener.startedDir(f.getName());
+	}
+
+	void finishedDir() {
+		listener.finishedDir();
+	}
+
+	void startedFile(final long length, final String filename) {
+		listener.startedFile(filename, length);
+	}
+
+	void startedFile(LocalFile f) {
+		listener.startedFile(f.getName(), f.length());
+	}
+
+	void finishedFile() {
+		listener.finishedFile();
+	}
 }
