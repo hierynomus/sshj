@@ -23,10 +23,8 @@ import java.util.List;
 
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.FileTransferUtil;
 import net.schmizz.sshj.xfer.ModeSetter;
-import net.schmizz.sshj.xfer.TransferListener;
 import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 /** Support for uploading files over a connected link using SCP. */
@@ -38,8 +36,8 @@ public final class SCPDownloadClient {
 
 	private SCPEngine engine;
 
-    SCPDownloadClient(SessionFactory host, TransferListener listener, ModeSetter modeSetter) {
-        engine = new SCPEngine(host, listener);
+    SCPDownloadClient(SCPEngine engine, ModeSetter modeSetter) {
+        this.engine = engine;
         this.modeSetter = modeSetter;
     }
 
@@ -52,7 +50,7 @@ public final class SCPDownloadClient {
         } finally {
         	engine.exit();
         }
-        return engine.exitStatus;
+        return engine.getExitStatus();
     }
 
     public boolean getRecursive() {
@@ -171,7 +169,7 @@ public final class SCPDownloadClient {
             engine.signal("Remote can start transfer");
             final FileOutputStream fos = new FileOutputStream(f);
             try {
-            	engine.transfer(engine.scp.getInputStream(), fos, engine.scp.getLocalMaxPacketSize(), length);
+            	engine.transfertFromRemote(length, fos);
             } finally {
                 IOUtils.closeQuietly(fos);
             }

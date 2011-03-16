@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,17 +54,16 @@ class SCPEngine {
         }
     }
 
-    static final String SCP_COMMAND = "scp";
+    private static final String SCP_COMMAND = "scp";
+    private static final char LF = '\n';
 
-    static final char LF = '\n';
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
-    final Logger log = LoggerFactory.getLogger(getClass());
-
-    final SessionFactory host;
+    private final SessionFactory host;
     private final TransferListener listener;
 
-    Command scp;
-    int exitStatus;
+    private Command scp;
+    private int exitStatus;
 
     SCPEngine(SessionFactory host, TransferListener listener) {
         this.host = host;
@@ -161,8 +161,18 @@ class SCPEngine {
         scp.getOutputStream().write(0);
         scp.getOutputStream().flush();
     }
+    
+    void transfertToRemote(LocalFile f, final InputStream src)
+    		throws IOException {
+    	transfer(src, scp.getOutputStream(), scp.getRemoteMaxPacketSize(), f.length());
+    }
+    
+    void transfertFromRemote(final long length, final FileOutputStream fos) 
+    		throws IOException {
+    	transfer(scp.getInputStream(), fos, scp.getLocalMaxPacketSize(), length);
+    }
 
-    void transfer(InputStream in, OutputStream out, int bufSize, long len)
+    private void transfer(InputStream in, OutputStream out, int bufSize, long len)
             throws IOException {
         final byte[] buf = new byte[bufSize];
         long count = 0;

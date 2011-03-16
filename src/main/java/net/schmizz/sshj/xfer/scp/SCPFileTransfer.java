@@ -34,11 +34,15 @@ public class SCPFileTransfer
     }
 
     public SCPDownloadClient newSCPDownloadClient() {
-        return new SCPDownloadClient(sessionFactory, getTransferListener(), getModeSetter());
+        return new SCPDownloadClient(getSCPEngine(), getModeSetter());
     }
 
     public SCPUploadClient newSCPUploadClient() {
-        return new SCPUploadClient(sessionFactory, getTransferListener(), getModeGetter());
+        return new SCPUploadClient(getSCPEngine(), getModeGetter());
+    }
+
+    private SCPEngine getSCPEngine() {
+    	return new SCPEngine(sessionFactory, getTransferListener());
     }
 
     @Override

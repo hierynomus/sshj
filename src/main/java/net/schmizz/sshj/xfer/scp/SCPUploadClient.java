@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedList;
@@ -23,10 +22,8 @@ import java.util.List;
 
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.LocalFile;
 import net.schmizz.sshj.xfer.ModeGetter;
-import net.schmizz.sshj.xfer.TransferListener;
 import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 /** Support for uploading files over a connected link using SCP. */
@@ -36,8 +33,8 @@ public final class SCPUploadClient {
 
     private SCPEngine engine;
 
-    SCPUploadClient(SessionFactory host, TransferListener listener, ModeGetter modeGetter) {
-        engine = new SCPEngine(host, listener);
+    SCPUploadClient(SCPEngine engine, ModeGetter modeGetter) {
+        this.engine = engine;
         this.modeGetter = modeGetter;
     }
 
@@ -50,10 +47,7 @@ public final class SCPUploadClient {
 	    } finally {
 	    	engine.exit();
 	    }
-	    return engine.exitStatus;
-    }
-
-    public void setFileFilter(FileFilter fileFilter) {
+	    return engine.getExitStatus();
     }
 
     private synchronized void startCopy(LocalFile sourceFile, String targetPath)
@@ -102,7 +96,7 @@ public final class SCPUploadClient {
 		final InputStream src = f.stream();
 		try {
 			engine.sendMessage("C0" + getPermString(f) + " " + f.length() + " " + f.getName());
-			engine.transfer(src, engine.scp.getOutputStream(), engine.scp.getRemoteMaxPacketSize(), f.length());
+			engine.transfertToRemote(f, src);
 			engine.signal("Transfer done");
 			engine.check("Remote agrees transfer done");
 		} finally {
