@@ -11,7 +11,7 @@ Features of the library include:
 * local and remote port forwarding
 * scp + complete sftp version 0-3 implementation
 
-Implementations of the following algorithms are included:
+Implementations / adapters for the following algorithms are included:
 
 ciphers
   ``aes{128,192,256}-{cbc,ctr}``, ``blowfish-cbc``, ``3des-cbc``
@@ -31,7 +31,7 @@ compression
 private key files
    ``pkcs8`` encoded (what openssh uses)
 
-If you need something that is not implemented, it shouldn't be too hard to add (do contribute it!)
+If you need something that is not included, it shouldn't be too hard to add (do contribute it!)
 
 
 Dependencies
