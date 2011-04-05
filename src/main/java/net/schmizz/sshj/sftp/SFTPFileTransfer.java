@@ -15,21 +15,19 @@
  */
 package net.schmizz.sshj.sftp;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.EnumSet;
-
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.sftp.Response.StatusCode;
 import net.schmizz.sshj.xfer.AbstractFileTransfer;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.FileTransfer;
-import net.schmizz.sshj.xfer.FileTransferUtil;
 import net.schmizz.sshj.xfer.LocalFile;
+import net.schmizz.sshj.xfer.LocalFileFilter;
 import net.schmizz.sshj.xfer.TransferListener;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.EnumSet;
 
 public class SFTPFileTransfer
         extends AbstractFileTransfer
@@ -38,22 +36,8 @@ public class SFTPFileTransfer
     private final SFTPEngine engine;
     private final PathHelper pathHelper;
 
-    private volatile FileFilter uploadFilter = defaultLocalFilter;
-    private volatile RemoteResourceFilter downloadFilter = defaultRemoteFilter;
-
-    private static final FileFilter defaultLocalFilter = new FileFilter() {
-        @Override
-        public boolean accept(File pathName) {
-            return true;
-        }
-    };
-
-    private static final RemoteResourceFilter defaultRemoteFilter = new RemoteResourceFilter() {
-        @Override
-        public boolean accept(RemoteResourceInfo resource) {
-            return true;
-        }
-    };
+    private volatile LocalFileFilter uploadFilter;
+    private volatile RemoteResourceFilter downloadFilter;
 
     public SFTPFileTransfer(SFTPEngine engine) {
         this.engine = engine;
@@ -65,30 +49,36 @@ public class SFTPFileTransfer
             throws IOException {
         new Uploader().upload(new FileSystemFile(source), dest);
     }
-    
-    @Override
-    public void upload(LocalFile localFile, String remotePath)
-			throws IOException {
-    	new Uploader().upload(localFile, remotePath);
-	}
 
     @Override
     public void download(String source, String dest)
             throws IOException {
-        final PathComponents pathComponents = pathHelper.getComponents(source);
-        final FileAttributes attributes = engine.stat(source);
-        new Downloader().download(new RemoteResourceInfo(pathComponents, attributes), new File(dest));
+        download(source, new FileSystemFile(dest));
     }
 
-    public void setUploadFilter(FileFilter uploadFilter) {
-        this.uploadFilter = (this.uploadFilter == null) ? defaultLocalFilter : uploadFilter;
+    @Override
+    public void upload(LocalFile localFile, String remotePath)
+            throws IOException {
+        new Uploader().upload(localFile, remotePath);
+    }
+
+    @Override
+    public void download(String source, LocalFile dest)
+            throws IOException {
+        final PathComponents pathComponents = pathHelper.getComponents(source);
+        final FileAttributes attributes = engine.stat(source);
+        new Downloader().download(new RemoteResourceInfo(pathComponents, attributes), dest);
+    }
+
+    public void setUploadFilter(LocalFileFilter uploadFilter) {
+        this.uploadFilter = uploadFilter;
     }
 
     public void setDownloadFilter(RemoteResourceFilter downloadFilter) {
-        this.downloadFilter = (this.downloadFilter == null) ? defaultRemoteFilter : downloadFilter;
+        this.downloadFilter = downloadFilter;
     }
 
-    public FileFilter getUploadFilter() {
+    public LocalFileFilter getUploadFilter() {
         return uploadFilter;
     }
 
@@ -100,9 +90,9 @@ public class SFTPFileTransfer
 
         private final TransferListener listener = getTransferListener();
 
-        private void download(final RemoteResourceInfo remote, final File local)
+        private void download(final RemoteResourceInfo remote, final LocalFile local)
                 throws IOException {
-            final File adjustedFile;
+            final LocalFile adjustedFile;
             switch (remote.getAttributes().getType()) {
                 case DIRECTORY:
                     listener.startedDir(remote.getName());
@@ -111,7 +101,7 @@ public class SFTPFileTransfer
                     break;
                 case UNKNOWN:
                     log.warn("Server did not supply information about the type of file at `{}` " +
-                             "-- assuming it is a regular file!", remote.getPath());
+                                     "-- assuming it is a regular file!", remote.getPath());
                 case REGULAR:
                     listener.startedFile(remote.getName(), remote.getAttributes().getSize());
                     adjustedFile = downloadFile(remote, local);
@@ -124,30 +114,30 @@ public class SFTPFileTransfer
 
         }
 
-        private File downloadDir(final RemoteResourceInfo remote, final File local)
+        private LocalFile downloadDir(final RemoteResourceInfo remote, final LocalFile local)
                 throws IOException {
-            final File adjusted = FileTransferUtil.getTargetDirectory(local, remote.getName());
+            final LocalFile adjusted = local.getTargetDirectory(remote.getName());
             final RemoteDirectory rd = engine.openDir(remote.getPath());
             try {
                 for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
-                    download(rri, new File(adjusted.getPath(), rri.getName()));
+                    download(rri, adjusted.getChild(rri.getName()));
             } finally {
                 rd.close();
             }
             return adjusted;
         }
 
-        private File downloadFile(final RemoteResourceInfo remote, final File local)
+        private LocalFile downloadFile(final RemoteResourceInfo remote, final LocalFile local)
                 throws IOException {
-            final File adjusted = FileTransferUtil.getTargetFile(local, remote.getName());
+            final LocalFile adjusted = local.getTargetFile(remote.getName());
             final RemoteFile rf = engine.open(remote.getPath());
             try {
-                final FileOutputStream fos = new FileOutputStream(adjusted);
+                final OutputStream os = adjusted.getOutputStream();
                 try {
-                    StreamCopier.copy(rf.getInputStream(), fos, engine.getSubsystem()
-                            .getLocalMaxPacketSize(), false, listener);
+                    StreamCopier.copy(rf.getInputStream(), os,
+                                      engine.getSubsystem().getLocalMaxPacketSize(), false, listener);
                 } finally {
-                    fos.close();
+                    os.close();
                 }
             } finally {
                 rf.close();
@@ -155,13 +145,13 @@ public class SFTPFileTransfer
             return adjusted;
         }
 
-        private void copyAttributes(final RemoteResourceInfo remote, final File local)
+        private void copyAttributes(final RemoteResourceInfo remote, final LocalFile local)
                 throws IOException {
             final FileAttributes attrs = remote.getAttributes();
-            getModeSetter().setPermissions(local, attrs.getMode().getPermissionsMask());
-            if (getModeSetter().preservesTimes() && attrs.has(FileAttributes.Flag.ACMODTIME)) {
-                getModeSetter().setLastAccessedTime(local, attrs.getAtime());
-                getModeSetter().setLastModifiedTime(local, attrs.getMtime());
+            local.setPermissions(attrs.getMode().getPermissionsMask());
+            if (local.preservesTimes() && attrs.has(FileAttributes.Flag.ACMODTIME)) {
+                local.setLastAccessedTime(attrs.getAtime());
+                local.setLastModifiedTime(attrs.getMtime());
             }
         }
 
@@ -202,7 +192,7 @@ public class SFTPFileTransfer
                                                                    OpenMode.CREAT,
                                                                    OpenMode.TRUNC));
             try {
-                final InputStream fis = local.stream();
+                final InputStream fis = local.getInputStream();
                 try {
                     final int bufSize = engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead();
                     StreamCopier.copy(fis, rf.getOutputStream(), bufSize, false, listener);
@@ -265,10 +255,9 @@ public class SFTPFileTransfer
 
         private FileAttributes getAttributes(LocalFile local)
                 throws IOException {
-            final FileAttributes.Builder builder = new FileAttributes.Builder()
-                    .withPermissions(getModeGetter().getPermissions(local));
-            if (getModeGetter().preservesTimes())
-                builder.withAtimeMtime(getModeGetter().getLastAccessTime(local), getModeGetter().getLastModifiedTime(local));
+            final FileAttributes.Builder builder = new FileAttributes.Builder().withPermissions(local.getPermissions());
+            if (local.preservesTimes())
+                builder.withAtimeMtime(local.getLastAccessTime(), local.getLastModifiedTime());
             return builder.build();
         }
 

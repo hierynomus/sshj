@@ -16,6 +16,7 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.xfer.FileSystemFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,8 +37,7 @@ public class SCPUpload {
             ssh.useCompression();
 
             final String src = System.getProperty("user.home") + File.separator + "test_file";
-            final String target = "/tmp/";
-            ssh.newSCPFileTransfer().upload(src, target);
+            ssh.newSCPFileTransfer().upload(new FileSystemFile(src), "/tmp/");
         } finally {
             ssh.disconnect();
         }

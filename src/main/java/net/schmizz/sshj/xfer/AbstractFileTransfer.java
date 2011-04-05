@@ -22,29 +22,9 @@ public abstract class AbstractFileTransfer {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    public static final ModeGetter DEFAULT_MODE_SETTER = new DefaultModeGetter();
-    public static final ModeSetter DEFAULT_MODE_GETTER = new DefaultModeSetter();
     public static final LoggingTransferListener LOGGING_TRANSFER_LISTENER = new LoggingTransferListener();
 
-    private volatile ModeGetter modeGetter = DEFAULT_MODE_SETTER;
-    private volatile ModeSetter modeSetter = DEFAULT_MODE_GETTER;
     private volatile TransferListener transferListener = LOGGING_TRANSFER_LISTENER;
-
-    public void setModeGetter(ModeGetter modeGetter) {
-        this.modeGetter = (modeGetter == null) ? DEFAULT_MODE_SETTER : modeGetter;
-    }
-
-    public ModeGetter getModeGetter() {
-        return this.modeGetter;
-    }
-
-    public void setModeSetter(ModeSetter modeSetter) {
-        this.modeSetter = (modeSetter == null) ? DEFAULT_MODE_GETTER : modeSetter;
-    }
-
-    public ModeSetter getModeSetter() {
-        return this.modeSetter;
-    }
 
     public TransferListener getTransferListener() {
         return transferListener;

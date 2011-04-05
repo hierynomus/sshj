@@ -15,24 +15,8 @@
  */
 package net.schmizz.sshj.xfer;
 
-import java.io.IOException;
+public interface LocalFileFilter {
 
-public interface FileTransfer {
-
-    void upload(String localPath, String remotePath)
-            throws IOException;
-
-    void download(String remotePath, String localPath)
-            throws IOException;
-
-    void upload(LocalFile localFile, String remotePath)
-			throws IOException;
-
-    void download(String remotePath, LocalFile localFile)
-            throws IOException;
-
-    TransferListener getTransferListener();
-
-    void setTransferListener(TransferListener listener);
+    boolean accept(LocalFile file);
 
 }

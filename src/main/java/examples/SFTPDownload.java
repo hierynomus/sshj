@@ -17,6 +17,7 @@ package examples;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.SFTPClient;
+import net.schmizz.sshj.xfer.FileSystemFile;
 
 import java.io.IOException;
 
@@ -30,11 +31,9 @@ public class SFTPDownload {
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
-            final String src = "test_file";
-            final String target = "/tmp/";
             final SFTPClient sftp = ssh.newSFTPClient();
             try {
-                sftp.get(src, target);
+                sftp.get("test_file", new FileSystemFile("/tmp"));
             } finally {
                 sftp.close();
             }

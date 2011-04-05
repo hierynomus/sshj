@@ -15,24 +15,100 @@
  */
 package net.schmizz.sshj.xfer;
 
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+
+// TODO Document all methods properly
 
 public interface LocalFile {
 
-	String getName();
+    String getName();
 
-	boolean isDirectory();
 	boolean isFile();
+
+    boolean isDirectory();
 
 	long length();
 
-	long lastModified();
-	
-	InputStream stream() throws IOException;
+	InputStream getInputStream() throws IOException;
 
-	Iterable<LocalFile> getChildren() throws IOException;
-	Iterable<LocalFile> getChildren(FileFilter filter) throws IOException;
+    OutputStream getOutputStream() throws IOException;
+
+	Iterable<? extends LocalFile> getChildren() throws IOException;
+
+    Iterable<? extends LocalFile> getChildren(LocalFileFilter filter) throws IOException;
+
+    /**
+     * Returns last access time for the underlying file.
+     *
+     * @return time in seconds since Unix epoch
+     *
+     * @throws IOException
+     */
+    long getLastAccessTime()
+            throws IOException;
+
+    /**
+     * Returns last access time for the underlying file.
+     *
+     * @return time in seconds since Unix epoch
+     *
+     * @throws IOException
+     */
+    long getLastModifiedTime()
+            throws IOException;
+
+    /**
+     * Returns the permissions for the underlying file
+     *
+     * @return permissions in octal format, e.g. 0644
+     *
+     * @throws IOException
+     */
+    int getPermissions()
+            throws IOException;
+
+    /**
+     * Set the last access time for the underlying file.
+     *
+     * @param t time in seconds since Unix epoch
+     *
+     * @throws IOException
+     */
+    void setLastAccessedTime(long t)
+            throws IOException;
+
+    /**
+     * Set the last modified time for the underlying file.
+     *
+     * @param f the file
+     * @param t time in seconds since Unix epoch
+     *
+     * @throws IOException
+     */
+    void setLastModifiedTime(long t)
+            throws IOException;
+
+    /**
+     * Set the permissions for the underlying file.
+     *
+     * @param f     the file
+     * @param perms permissions in octal format, e.g. 0644
+     *
+     * @throws IOException
+     */
+    void setPermissions(int perms)
+            throws IOException;
+
+    /** @return whether this implementation is interested in preserving mtime and atime. */
+    boolean preservesTimes();
+
+    /** @return A child file of this directory having {@code name} as filename */
+    LocalFile getChild(String name);
+
+    LocalFile getTargetFile(String filename) throws IOException;
+
+    LocalFile getTargetDirectory(String dirname) throws IOException;
 
 }

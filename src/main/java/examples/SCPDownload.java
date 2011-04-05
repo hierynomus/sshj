@@ -16,6 +16,7 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.xfer.FileSystemFile;
 
 import java.io.IOException;
 
@@ -30,9 +31,7 @@ public class SCPDownload {
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
-            final String src = "test_file";
-            final String target = "/tmp/";
-            ssh.newSCPFileTransfer().download(src, target);
+            ssh.newSCPFileTransfer().download("test_file", new FileSystemFile("/tmp/"));
         } finally {
             ssh.disconnect();
         }

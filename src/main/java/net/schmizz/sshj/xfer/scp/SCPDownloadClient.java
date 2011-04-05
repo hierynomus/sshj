@@ -15,38 +15,32 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
 import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.xfer.FileTransferUtil;
-import net.schmizz.sshj.xfer.ModeSetter;
+import net.schmizz.sshj.xfer.LocalFile;
 import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 /** Support for uploading files over a connected link using SCP. */
 public final class SCPDownloadClient {
 
-    private final ModeSetter modeSetter;
-
     private boolean recursive = true;
 
 	private SCPEngine engine;
 
-    SCPDownloadClient(SCPEngine engine, ModeSetter modeSetter) {
+    SCPDownloadClient(SCPEngine engine) {
         this.engine = engine;
-        this.modeSetter = modeSetter;
     }
 
     /** Download a file from {@code sourcePath} on the connected host to {@code targetPath} locally. */
-    public synchronized int copy(String sourcePath, String targetPath)
+    public synchronized int copy(String sourcePath, LocalFile targetFile)
             throws IOException {
     	engine.cleanSlate();
         try {
-            startCopy(sourcePath, targetPath);
+            startCopy(sourcePath, targetFile);
         } finally {
         	engine.exit();
         }
@@ -61,28 +55,23 @@ public final class SCPDownloadClient {
         this.recursive = recursive;
     }
 
-    void startCopy(String sourcePath, String targetPath)
+    void startCopy(String sourcePath, LocalFile targetFile)
             throws IOException {
-        init(sourcePath);
-
-        engine.signal("Start status OK");
-
-        String msg = engine.readMessage(true);
-        do
-            process(null, msg, new File(targetPath));
-        while ((msg = engine.readMessage(false)) != null);
-    }
-
-    private void init(String source)
-            throws SSHException {
         List<Arg> args = new LinkedList<Arg>();
         args.add(Arg.SOURCE);
         args.add(Arg.QUIET);
         if (recursive)
             args.add(Arg.RECURSIVE);
-        if (modeSetter.preservesTimes())
+        if (targetFile.preservesTimes())
             args.add(Arg.PRESERVE_TIMES);
-        engine.execSCPWith(args, source);
+        engine.execSCPWith(args, sourcePath);
+
+        engine.signal("Start status OK");
+
+        String msg = engine.readMessage(true);
+        do
+            process(null, msg, targetFile);
+        while ((msg = engine.readMessage(false)) != null);
     }
 
     private long parseLong(String longString, String valType)
@@ -103,7 +92,7 @@ public final class SCPDownloadClient {
         return Integer.parseInt(cmd.substring(1), 8);
     }
 
-    private boolean process(String bufferedTMsg, String msg, File f)
+    private boolean process(String bufferedTMsg, String msg, LocalFile f)
             throws IOException {
         if (msg.length() < 1)
             throw new SCPException("Could not parse message `" + msg + "`");
@@ -139,7 +128,7 @@ public final class SCPDownloadClient {
         return false;
     }
 
-    private void processDirectory(String dMsg, String tMsg, File f)
+    private void processDirectory(String dMsg, String tMsg, LocalFile f)
             throws IOException {
         final String[] dMsgParts = tokenize(dMsg, 3); // D<perms> 0 <dirname>
         final long length = parseLong(dMsgParts[1], "dir length");
@@ -148,7 +137,7 @@ public final class SCPDownloadClient {
             throw new IOException("Remote SCP command sent strange directory length: " + length);
         engine.startedDir(dirname);
         {
-            f = FileTransferUtil.getTargetDirectory(f, dirname);
+            f = f.getTargetDirectory(dirname);
             engine.signal("ACK: D");
             do {
             } while (!process(null, engine.readMessage(), f));
@@ -158,20 +147,20 @@ public final class SCPDownloadClient {
         engine.finishedDir();
     }
 
-	private void processFile(String cMsg, String tMsg, File f)
+	private void processFile(String cMsg, String tMsg, LocalFile f)
             throws IOException {
         final String[] cMsgParts = tokenize(cMsg, 3); // C<perms> <size> <filename>
         final long length = parseLong(cMsgParts[1], "length");
         final String filename = cMsgParts[2];
         engine.startedFile(length, filename);
         {
-            f = FileTransferUtil.getTargetFile(f, filename);
+            f = f.getTargetFile(filename);
             engine.signal("Remote can start transfer");
-            final FileOutputStream fos = new FileOutputStream(f);
+            final OutputStream os = f.getOutputStream();
             try {
-            	engine.transfertFromRemote(length, fos);
+            	engine.transferFromRemote(length, os);
             } finally {
-                IOUtils.closeQuietly(fos);
+                IOUtils.closeQuietly(os);
             }
             engine.check("Remote agrees transfer done");
             setAttributes(f, parsePermissions(cMsgParts[0]), tMsg);
@@ -180,13 +169,13 @@ public final class SCPDownloadClient {
         engine.finishedFile();
     }
 
-	private void setAttributes(File f, int perms, String tMsg)
+	private void setAttributes(LocalFile f, int perms, String tMsg)
             throws IOException {
-        modeSetter.setPermissions(f, perms);
-        if (tMsg != null && modeSetter.preservesTimes()) {
+        f.setPermissions(perms);
+        if (tMsg != null && f.preservesTimes()) {
             String[] tMsgParts = tokenize(tMsg, 4); // e.g. T<mtime> 0 <atime> 0
-            modeSetter.setLastModifiedTime(f, parseLong(tMsgParts[0].substring(1), "last modified time"));
-            modeSetter.setLastAccessedTime(f, parseLong(tMsgParts[2], "last access time"));
+            f.setLastModifiedTime(parseLong(tMsgParts[0].substring(1), "last modified time"));
+            f.setLastAccessedTime(parseLong(tMsgParts[2], "last access time"));
         }
     }
 

@@ -34,21 +34,15 @@ public class SCPFileTransfer
     }
 
     public SCPDownloadClient newSCPDownloadClient() {
-        return new SCPDownloadClient(getSCPEngine(), getModeSetter());
+        return new SCPDownloadClient(newSCPEngine());
     }
 
     public SCPUploadClient newSCPUploadClient() {
-        return new SCPUploadClient(getSCPEngine(), getModeGetter());
+        return new SCPUploadClient(newSCPEngine());
     }
 
-    private SCPEngine getSCPEngine() {
+    private SCPEngine newSCPEngine() {
     	return new SCPEngine(sessionFactory, getTransferListener());
-    }
-
-    @Override
-    public void download(String remotePath, String localPath)
-            throws IOException {
-        newSCPDownloadClient().copy(remotePath, localPath);
     }
 
     @Override
@@ -58,8 +52,21 @@ public class SCPFileTransfer
     }
 
     @Override
+    public void download(String remotePath, String localPath)
+            throws IOException {
+        download(remotePath, new FileSystemFile(localPath));
+    }
+
+    @Override
+    public void download(String remotePath, LocalFile localFile)
+            throws IOException {
+        newSCPDownloadClient().copy(remotePath, localFile);
+    }
+
+    @Override
 	public void upload(LocalFile localFile, String remotePath)
 			throws IOException {
 		newSCPUploadClient().copy(localFile, remotePath);
 	}
+
 }

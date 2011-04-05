@@ -15,80 +15,210 @@
  */
 package net.schmizz.sshj.xfer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+public class FileSystemFile
+        implements LocalFile {
 
-public class FileSystemFile implements LocalFile {
+    protected final Logger log = LoggerFactory.getLogger(getClass());
 
-	private File file;
-	private FileFilter fileFilter;
+    private final File file;
 
-	public FileSystemFile(String path) {
-		this.file = new File(path);
-	}
-	
-	public void setFileFilter(FileFilter fileFilter) {
-		this.fileFilter = fileFilter;
-	}
+    public FileSystemFile(String path) {
+        this(new File(path));
+    }
 
-	@Override
-	public String getName() {
-		return file.getName();
-	}
+    public FileSystemFile(File file) {
+        this.file = file;
+    }
 
-	@Override
-	public boolean isDirectory() {
-		return file.isDirectory();
-	}
+    public File getFile() {
+        return file;
+    }
 
-	@Override
-	public boolean isFile() {
-		return file.isFile();
-	}
+    @Override
+    public String getName() {
+        return file.getName();
+    }
 
-	@Override
-	public long length() {
-		return file.length();
-	}
+    @Override
+    public boolean isFile() {
+        return file.isFile();
+    }
 
-	@Override
-	public long lastModified() {
-		return file.lastModified();
-	}
+    @Override
+    public boolean isDirectory() {
+        return file.isDirectory();
+    }
 
-	@Override
-	public InputStream stream() throws IOException {
-		return new FileInputStream(file);
-	}
+    @Override
+    public long length() {
+        return file.length();
+    }
 
-	@Override
-	public Iterable<LocalFile> getChildren() throws IOException {
-		return getChildren(file);
-	}
+    @Override
+    public InputStream getInputStream()
+            throws IOException {
+        return new FileInputStream(file);
+    }
 
-	@Override
-	public Iterable<LocalFile> getChildren(FileFilter filter) throws IOException {
-		setFileFilter(filter);
-		return getChildren(file);
-	}
-	
-	private Iterable<LocalFile> getChildren(File f) throws IOException {
-		Collection<LocalFile> files = new ArrayList<LocalFile>();
-		File[] childFiles = fileFilter == null ? f.listFiles() : f.listFiles(fileFilter);
-		if (childFiles == null)
-			throw new IOException("Error listing files in directory: " + f);
-		
-		for (File childFile : childFiles) {
-			FileSystemFile localChild = new FileSystemFile(childFile.getName());
-			localChild.setFileFilter(fileFilter);
-			files.add(localChild);
-		}
-		return files;
-	}
+    @Override
+    public OutputStream getOutputStream()
+            throws IOException {
+        return new FileOutputStream(file);
+    }
+
+    @Override
+    public Iterable<FileSystemFile> getChildren()
+            throws IOException {
+        return getChildren(null);
+    }
+
+    @Override
+    public Iterable<FileSystemFile> getChildren(final LocalFileFilter filter)
+            throws IOException {
+        final Map<File, FileSystemFile> cache = new HashMap<File, FileSystemFile>();
+
+        File[] childFiles = filter == null ? file.listFiles() : file.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                final FileSystemFile fsf = new FileSystemFile(file);
+                cache.put(file, fsf);
+                return filter.accept(fsf);
+            }
+        });
+
+        if (childFiles == null)
+            throw new IOException("Error listing files in directory: " + this);
+
+        final List<FileSystemFile> children = new ArrayList<FileSystemFile>();
+        for (File f : childFiles) {
+            children.add(cache.get(f));
+        }
+        return children;
+    }
+
+    @Override
+    public long getLastAccessTime()
+            throws IOException {
+        return System.currentTimeMillis() / 1000;
+    }
+
+    @Override
+    public long getLastModifiedTime()
+            throws IOException {
+        return file.lastModified() / 1000;
+    }
+
+    @Override
+    public int getPermissions()
+            throws IOException {
+        if (isDirectory())
+            return 0755;
+        else if (isFile())
+            return 0644;
+        else
+            throw new IOException("Unsupported file type");
+    }
+
+    @Override
+    public void setLastAccessedTime(long t)
+            throws IOException {
+        // ...
+    }
+
+    @Override
+    public void setLastModifiedTime(long t)
+            throws IOException {
+        if (!file.setLastModified(t * 1000))
+            log.warn("Could not set last modified time for {} to {}", file, t);
+    }
+
+    @Override
+    public void setPermissions(int perms)
+            throws IOException {
+        final boolean r = file.setReadable(FilePermission.USR_R.isIn(perms),
+                                           !(FilePermission.OTH_R.isIn(perms) || FilePermission.GRP_R.isIn(perms)));
+        final boolean w = file.setWritable(FilePermission.USR_W.isIn(perms),
+                                           !(FilePermission.OTH_W.isIn(perms) || FilePermission.GRP_W.isIn(perms)));
+        final boolean x = file.setExecutable(FilePermission.USR_X.isIn(perms),
+                                             !(FilePermission.OTH_X.isIn(perms) || FilePermission.GRP_X.isIn(perms)));
+        if (!(r && w && x))
+            log.warn("Could not set permissions for {} to {}", file, Integer.toString(perms, 16));
+    }
+
+    @Override
+    public boolean preservesTimes() {
+        return true;
+    }
+
+    @Override
+    public FileSystemFile getChild(String name) {
+        return new FileSystemFile(new File(file, name));
+    }
+
+    @Override
+    public FileSystemFile getTargetFile(String filename)
+            throws IOException {
+        FileSystemFile f = this;
+
+        if (f.isDirectory())
+            f = f.getChild(filename);
+
+        if (!f.getFile().exists()) {
+            if (!f.getFile().createNewFile())
+                throw new IOException("Could not create: " + file);
+        } else if (f.isDirectory())
+            throw new IOException("A directory by the same name already exists: " + f);
+
+        return f;
+    }
+
+    @Override
+    public FileSystemFile getTargetDirectory(String dirname)
+            throws IOException {
+        FileSystemFile f = this;
+
+        if (f.getFile().exists())
+            if (f.isDirectory()) {
+                if (!f.getName().equals(dirname))
+                    f = f.getChild(dirname);
+            } else
+                throw new IOException(f + " - already exists as a file; directory required");
+
+        if (!f.getFile().exists() && !f.getFile().mkdir())
+            throw new IOException("Failed to create directory: " + f);
+
+        return f;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return (other instanceof FileSystemFile)
+                && file.equals(((FileSystemFile) other).file);
+    }
+
+    @Override
+    public int hashCode() {
+        return file != null ? file.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return file.toString();
+    }
+
 }

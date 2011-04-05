@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -162,14 +161,14 @@ class SCPEngine {
         scp.getOutputStream().flush();
     }
     
-    void transfertToRemote(LocalFile f, final InputStream src)
+    void transferToRemote(LocalFile f, final InputStream src)
     		throws IOException {
     	transfer(src, scp.getOutputStream(), scp.getRemoteMaxPacketSize(), f.length());
     }
     
-    void transfertFromRemote(final long length, final FileOutputStream fos) 
+    void transferFromRemote(final long length, final OutputStream os)
     		throws IOException {
-    	transfer(scp.getInputStream(), fos, scp.getLocalMaxPacketSize(), length);
+    	transfer(scp.getInputStream(), os, scp.getLocalMaxPacketSize(), length);
     }
 
     private void transfer(InputStream in, OutputStream out, int bufSize, long len)
@@ -218,4 +217,5 @@ class SCPEngine {
 	void finishedFile() {
 		listener.finishedFile();
 	}
+
 }
