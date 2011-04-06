@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 public class FileSystemFile
-        implements LocalFile {
+        implements LocalSourceFile, LocalDestFile {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -65,7 +65,7 @@ public class FileSystemFile
     }
 
     @Override
-    public long length() {
+    public long getLength() {
         return file.length();
     }
 
@@ -79,12 +79,6 @@ public class FileSystemFile
     public OutputStream getOutputStream()
             throws IOException {
         return new FileOutputStream(file);
-    }
-
-    @Override
-    public Iterable<FileSystemFile> getChildren()
-            throws IOException {
-        return getChildren(null);
     }
 
     @Override
@@ -109,6 +103,11 @@ public class FileSystemFile
             children.add(cache.get(f));
         }
         return children;
+    }
+
+    @Override
+    public boolean providesAtimeMtime() {
+        return true;
     }
 
     @Override
@@ -158,11 +157,6 @@ public class FileSystemFile
                                              !(FilePermission.OTH_X.isIn(perms) || FilePermission.GRP_X.isIn(perms)));
         if (!(r && w && x))
             log.warn("Could not set permissions for {} to {}", file, Integer.toString(perms, 16));
-    }
-
-    @Override
-    public boolean preservesTimes() {
-        return true;
     }
 
     @Override

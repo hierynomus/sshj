@@ -20,8 +20,9 @@ import net.schmizz.sshj.sftp.Response.StatusCode;
 import net.schmizz.sshj.xfer.AbstractFileTransfer;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.FileTransfer;
-import net.schmizz.sshj.xfer.LocalFile;
+import net.schmizz.sshj.xfer.LocalDestFile;
 import net.schmizz.sshj.xfer.LocalFileFilter;
+import net.schmizz.sshj.xfer.LocalSourceFile;
 import net.schmizz.sshj.xfer.TransferListener;
 
 import java.io.IOException;
@@ -57,13 +58,13 @@ public class SFTPFileTransfer
     }
 
     @Override
-    public void upload(LocalFile localFile, String remotePath)
+    public void upload(LocalSourceFile localFile, String remotePath)
             throws IOException {
         new Uploader().upload(localFile, remotePath);
     }
 
     @Override
-    public void download(String source, LocalFile dest)
+    public void download(String source, LocalDestFile dest)
             throws IOException {
         final PathComponents pathComponents = pathHelper.getComponents(source);
         final FileAttributes attributes = engine.stat(source);
@@ -90,9 +91,9 @@ public class SFTPFileTransfer
 
         private final TransferListener listener = getTransferListener();
 
-        private void download(final RemoteResourceInfo remote, final LocalFile local)
+        private void download(final RemoteResourceInfo remote, final LocalDestFile local)
                 throws IOException {
-            final LocalFile adjustedFile;
+            final LocalDestFile adjustedFile;
             switch (remote.getAttributes().getType()) {
                 case DIRECTORY:
                     listener.startedDir(remote.getName());
@@ -114,9 +115,9 @@ public class SFTPFileTransfer
 
         }
 
-        private LocalFile downloadDir(final RemoteResourceInfo remote, final LocalFile local)
+        private LocalDestFile downloadDir(final RemoteResourceInfo remote, final LocalDestFile local)
                 throws IOException {
-            final LocalFile adjusted = local.getTargetDirectory(remote.getName());
+            final LocalDestFile adjusted = local.getTargetDirectory(remote.getName());
             final RemoteDirectory rd = engine.openDir(remote.getPath());
             try {
                 for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
@@ -127,9 +128,9 @@ public class SFTPFileTransfer
             return adjusted;
         }
 
-        private LocalFile downloadFile(final RemoteResourceInfo remote, final LocalFile local)
+        private LocalDestFile downloadFile(final RemoteResourceInfo remote, final LocalDestFile local)
                 throws IOException {
-            final LocalFile adjusted = local.getTargetFile(remote.getName());
+            final LocalDestFile adjusted = local.getTargetFile(remote.getName());
             final RemoteFile rf = engine.open(remote.getPath());
             try {
                 final OutputStream os = adjusted.getOutputStream();
@@ -145,11 +146,11 @@ public class SFTPFileTransfer
             return adjusted;
         }
 
-        private void copyAttributes(final RemoteResourceInfo remote, final LocalFile local)
+        private void copyAttributes(final RemoteResourceInfo remote, final LocalDestFile local)
                 throws IOException {
             final FileAttributes attrs = remote.getAttributes();
             local.setPermissions(attrs.getMode().getPermissionsMask());
-            if (local.preservesTimes() && attrs.has(FileAttributes.Flag.ACMODTIME)) {
+            if (attrs.has(FileAttributes.Flag.ACMODTIME)) {
                 local.setLastAccessedTime(attrs.getAtime());
                 local.setLastModifiedTime(attrs.getMtime());
             }
@@ -161,7 +162,7 @@ public class SFTPFileTransfer
 
         private final TransferListener listener = getTransferListener();
 
-        private void upload(LocalFile local, String remote)
+        private void upload(LocalSourceFile local, String remote)
                 throws IOException {
             final String adjustedPath;
             if (local.isDirectory()) {
@@ -169,7 +170,7 @@ public class SFTPFileTransfer
                 adjustedPath = uploadDir(local, remote);
                 listener.finishedDir();
             } else if (local.isFile()) {
-                listener.startedFile(local.getName(), local.length());
+                listener.startedFile(local.getName(), local.getLength());
                 adjustedPath = uploadFile(local, remote);
                 listener.finishedFile();
             } else
@@ -177,15 +178,15 @@ public class SFTPFileTransfer
             engine.setAttributes(adjustedPath, getAttributes(local));
         }
 
-        private String uploadDir(LocalFile local, String remote)
+        private String uploadDir(LocalSourceFile local, String remote)
                 throws IOException {
             final String adjusted = prepareDir(local, remote);
-            for (LocalFile f : local.getChildren(getUploadFilter()))
+            for (LocalSourceFile f : local.getChildren(getUploadFilter()))
                 upload(f, adjusted);
             return adjusted;
         }
 
-        private String uploadFile(LocalFile local, String remote)
+        private String uploadFile(LocalSourceFile local, String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
             final RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE,
@@ -205,7 +206,7 @@ public class SFTPFileTransfer
             return adjusted;
         }
 
-        private String prepareDir(LocalFile local, String remote)
+        private String prepareDir(LocalSourceFile local, String remote)
                 throws IOException {
             final FileAttributes attrs;
             try {
@@ -231,7 +232,7 @@ public class SFTPFileTransfer
                 throw new IOException(attrs.getMode().getType() + " file already exists at " + remote);
         }
 
-        private String prepareFile(LocalFile local, String remote)
+        private String prepareFile(LocalSourceFile local, String remote)
                 throws IOException {
             final FileAttributes attrs;
             try {
@@ -253,10 +254,10 @@ public class SFTPFileTransfer
             }
         }
 
-        private FileAttributes getAttributes(LocalFile local)
+        private FileAttributes getAttributes(LocalSourceFile local)
                 throws IOException {
             final FileAttributes.Builder builder = new FileAttributes.Builder().withPermissions(local.getPermissions());
-            if (local.preservesTimes())
+            if (local.providesAtimeMtime())
                 builder.withAtimeMtime(local.getLastAccessTime(), local.getLastModifiedTime());
             return builder.build();
         }

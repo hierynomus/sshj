@@ -16,7 +16,8 @@
 package net.schmizz.sshj.sftp;
 
 import net.schmizz.sshj.xfer.FilePermission;
-import net.schmizz.sshj.xfer.LocalFile;
+import net.schmizz.sshj.xfer.LocalDestFile;
+import net.schmizz.sshj.xfer.LocalSourceFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -239,12 +240,12 @@ public class SFTPClient
         xfer.upload(source, dest);
     }
 
-    public void get(String source, LocalFile dest)
+    public void get(String source, LocalDestFile dest)
             throws IOException {
         xfer.download(source, dest);
     }
 
-    public void put(LocalFile source, String dest)
+    public void put(LocalSourceFile source, String dest)
             throws IOException {
         xfer.upload(source, dest);
     }

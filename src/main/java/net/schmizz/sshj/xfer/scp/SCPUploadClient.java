@@ -16,7 +16,7 @@
 package net.schmizz.sshj.xfer.scp;
 
 import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.xfer.LocalFile;
+import net.schmizz.sshj.xfer.LocalSourceFile;
 import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 import java.io.IOException;
@@ -34,7 +34,7 @@ public final class SCPUploadClient {
     }
 
     /** Upload a local file from {@code localFile} to {@code targetPath} on the remote host. */
-    public synchronized int copy(LocalFile sourceFile, String remotePath)
+    public synchronized int copy(LocalSourceFile sourceFile, String remotePath)
             throws IOException {
         engine.cleanSlate();
         try {
@@ -45,48 +45,48 @@ public final class SCPUploadClient {
         return engine.getExitStatus();
     }
 
-    private synchronized void startCopy(LocalFile sourceFile, String targetPath)
+    private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
             throws IOException {
         List<Arg> args = new LinkedList<Arg>();
         args.add(Arg.SINK);
         args.add(Arg.RECURSIVE);
-        if (sourceFile.preservesTimes())
+        if (sourceFile.providesAtimeMtime())
             args.add(Arg.PRESERVE_TIMES);
         engine.execSCPWith(args, targetPath);
         engine.check("Start status OK");
         process(sourceFile);
     }
 
-    private void process(LocalFile f)
+    private void process(LocalSourceFile f)
             throws IOException {
         if (f.isDirectory()) {
-            engine.startedDir(f);
+            engine.startedDir(f.getName());
             sendDirectory(f);
             engine.finishedDir();
         } else if (f.isFile()) {
-            engine.startedFile(f);
+            engine.startedFile(f.getName(), f.getLength());
             sendFile(f);
             engine.finishedFile();
         } else
             throw new IOException(f + " is not a regular file or directory");
     }
 
-    private void sendDirectory(LocalFile f)
+    private void sendDirectory(LocalSourceFile f)
             throws IOException {
         preserveTimeIfPossible(f);
         engine.sendMessage("D0" + getPermString(f) + " 0 " + f.getName());
-        for (LocalFile child : f.getChildren())
+        for (LocalSourceFile child : f.getChildren(null))
             process(child);
         engine.sendMessage("E");
     }
 
-    private void sendFile(LocalFile f)
+    private void sendFile(LocalSourceFile f)
             throws IOException {
         preserveTimeIfPossible(f);
         final InputStream src = f.getInputStream();
         try {
-            engine.sendMessage("C0" + getPermString(f) + " " + f.length() + " " + f.getName());
-            engine.transferToRemote(f, src);
+            engine.sendMessage("C0" + getPermString(f) + " " + f.getLength() + " " + f.getName());
+            engine.transferToRemote(src, f.getLength());
             engine.signal("Transfer done");
             engine.check("Remote agrees transfer done");
         } finally {
@@ -94,13 +94,13 @@ public final class SCPUploadClient {
         }
     }
 
-    private void preserveTimeIfPossible(LocalFile f)
+    private void preserveTimeIfPossible(LocalSourceFile f)
             throws IOException {
-        if (f.preservesTimes())
+        if (f.providesAtimeMtime())
             engine.sendMessage("T" + f.getLastModifiedTime() + " 0 " + f.getLastAccessTime() + " 0");
     }
 
-    private String getPermString(LocalFile f)
+    private String getPermString(LocalSourceFile f)
             throws IOException {
         return Integer.toOctalString(f.getPermissions() & 07777);
     }

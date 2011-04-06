@@ -24,7 +24,6 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
-import net.schmizz.sshj.xfer.LocalFile;
 import net.schmizz.sshj.xfer.TransferListener;
 
 import org.slf4j.Logger;
@@ -160,15 +159,15 @@ class SCPEngine {
         scp.getOutputStream().write(0);
         scp.getOutputStream().flush();
     }
-    
-    void transferToRemote(LocalFile f, final InputStream src)
+
+    void transferToRemote(final InputStream src, final long length)
     		throws IOException {
-    	transfer(src, scp.getOutputStream(), scp.getRemoteMaxPacketSize(), f.length());
+    	transfer(src, scp.getOutputStream(), scp.getRemoteMaxPacketSize(), length);
     }
-    
-    void transferFromRemote(final long length, final OutputStream os)
+
+    void transferFromRemote(final OutputStream dest, final long length)
     		throws IOException {
-    	transfer(scp.getInputStream(), os, scp.getLocalMaxPacketSize(), length);
+    	transfer(scp.getInputStream(), dest, scp.getLocalMaxPacketSize(), length);
     }
 
     private void transfer(InputStream in, OutputStream out, int bufSize, long len)
@@ -198,20 +197,12 @@ class SCPEngine {
     	listener.startedDir(dirname);
     }
 
-	void startedDir(LocalFile f) {
-		listener.startedDir(f.getName());
-	}
-
 	void finishedDir() {
 		listener.finishedDir();
 	}
 
-	void startedFile(final long length, final String filename) {
+	void startedFile(final String filename, final long length) {
 		listener.startedFile(filename, length);
-	}
-
-	void startedFile(LocalFile f) {
-		listener.startedFile(f.getName(), f.length());
 	}
 
 	void finishedFile() {

@@ -19,123 +19,45 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
-public class InMemoryDestFile
-        implements LocalFile {
+public abstract class InMemoryDestFile
+        implements LocalDestFile {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected final String filename;
-    protected final OutputStream outStream;
-
-    public InMemoryDestFile(String filename, OutputStream outStream) {
-        this.filename = filename;
-        this.outStream = outStream;
-    }
-
     @Override
-    public String getName() {
-        return filename;
-    }
-
-    @Override
-    public LocalFile getTargetFile(String filename)
+    public InMemoryDestFile getTargetFile(String filename)
             throws IOException {
-        if (filename.equals(this.filename))
-            return this;
-        else
-            throw new IOException("Filename mismatch");
-    }
-
-    @Override
-    public boolean isFile() {
-        return true;
-    }
-
-    @Override
-    public boolean isDirectory() {
-        return false;
-    }
-
-    @Override
-    public OutputStream getOutputStream()
-            throws IOException {
-        return outStream;
-    }
-
-    // Everything else is unimplemented
-
-    @Override
-    public long length() {
-        return 0;
-    }
-
-    @Override
-    public InputStream getInputStream()
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public Iterable<LocalFile> getChildren()
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public Iterable<LocalFile> getChildren(LocalFileFilter filter)
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public long getLastAccessTime()
-            throws IOException {
-        return 0;
-    }
-
-    @Override
-    public long getLastModifiedTime()
-            throws IOException {
-        return 0;
-    }
-
-    @Override
-    public int getPermissions()
-            throws IOException {
-        return 0;
+        return this;
     }
 
     @Override
     public void setLastAccessedTime(long t)
             throws IOException {
+        log.info("atime = {}", t);
     }
 
     @Override
     public void setLastModifiedTime(long t)
             throws IOException {
+        log.info("mtime = {}", t);
     }
 
     @Override
     public void setPermissions(int perms)
             throws IOException {
+        log.info("permissions = {}", Integer.toOctalString(perms));
     }
 
     @Override
-    public boolean preservesTimes() {
-        return false;
+    public LocalDestFile getTargetDirectory(String dirname)
+            throws IOException {
+        throw new AssertionError("Unimplemented");
     }
 
     @Override
-    public LocalFile getChild(String name) {
-        return null;
-    }
-
-    @Override
-    public LocalFile getTargetDirectory(String dirname) {
-        return null;
+    public LocalDestFile getChild(String name) {
+        throw new AssertionError("Unimplemented");
     }
 
 }

@@ -25,10 +25,10 @@ public interface FileTransfer {
     void download(String remotePath, String localPath)
             throws IOException;
 
-    void upload(LocalFile localFile, String remotePath)
+    void upload(LocalSourceFile localFile, String remotePath)
 			throws IOException;
 
-    void download(String remotePath, LocalFile localFile)
+    void download(String remotePath, LocalDestFile localFile)
             throws IOException;
 
     TransferListener getTransferListener();

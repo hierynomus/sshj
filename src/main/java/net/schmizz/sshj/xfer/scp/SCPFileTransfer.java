@@ -21,7 +21,8 @@ import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.AbstractFileTransfer;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.FileTransfer;
-import net.schmizz.sshj.xfer.LocalFile;
+import net.schmizz.sshj.xfer.LocalDestFile;
+import net.schmizz.sshj.xfer.LocalSourceFile;
 
 public class SCPFileTransfer
         extends AbstractFileTransfer
@@ -58,13 +59,13 @@ public class SCPFileTransfer
     }
 
     @Override
-    public void download(String remotePath, LocalFile localFile)
+    public void download(String remotePath, LocalDestFile localFile)
             throws IOException {
         newSCPDownloadClient().copy(remotePath, localFile);
     }
 
     @Override
-	public void upload(LocalFile localFile, String remotePath)
+	public void upload(LocalSourceFile localFile, String remotePath)
 			throws IOException {
 		newSCPUploadClient().copy(localFile, remotePath);
 	}

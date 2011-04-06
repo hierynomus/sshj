@@ -17,6 +17,6 @@ package net.schmizz.sshj.xfer;
 
 public interface LocalFileFilter {
 
-    boolean accept(LocalFile file);
+    boolean accept(LocalSourceFile file);
 
 }

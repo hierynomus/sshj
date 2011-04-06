@@ -19,37 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
-public class InMemorySourceFile
-        implements LocalFile {
+public abstract class InMemorySourceFile
+        implements LocalSourceFile {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
-    protected final String filename;
-    protected final long length;
-    protected final InputStream inStream;
-
-    public InMemorySourceFile(String filename, long length, InputStream inStream) {
-        this.filename = filename;
-        this.length = length;
-        this.inStream = inStream;
-    }
-
-    @Override
-    public String getName() {
-        return filename;
-    }
-
-    @Override
-    public LocalFile getTargetFile(String filename)
-            throws IOException {
-        if (filename.equals(this.filename))
-            return this;
-        else
-            throw new IOException("Filename mismatch");
-    }
 
     @Override
     public boolean isFile() {
@@ -62,82 +36,32 @@ public class InMemorySourceFile
     }
 
     @Override
-    public long length() {
-        return length;
-    }
-
-    @Override
-    public InputStream getInputStream()
-            throws IOException {
-        return inStream;
-    }
-
-    @Override
     public int getPermissions()
             throws IOException {
         return 0644;
     }
 
-    // Everything else is unimplemented
-
     @Override
-    public OutputStream getOutputStream()
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public Iterable<LocalFile> getChildren()
-            throws IOException {
-        return null;
-    }
-
-    @Override
-    public Iterable<LocalFile> getChildren(LocalFileFilter filter)
-            throws IOException {
-        return null;
+    public boolean providesAtimeMtime() {
+        return false;
     }
 
     @Override
     public long getLastAccessTime()
             throws IOException {
-        return 0;
+        throw new AssertionError("Unimplemented");
     }
 
     @Override
     public long getLastModifiedTime()
             throws IOException {
-        return 0;
+        throw new AssertionError("Unimplemented");
     }
 
     @Override
-    public void setLastAccessedTime(long t)
+    public Iterable<? extends LocalSourceFile> getChildren(LocalFileFilter filter)
             throws IOException {
-    }
-
-    @Override
-    public void setLastModifiedTime(long t)
-            throws IOException {
-    }
-
-    @Override
-    public void setPermissions(int perms)
-            throws IOException {
-    }
-
-    @Override
-    public boolean preservesTimes() {
-        return false;
-    }
-
-    @Override
-    public LocalFile getChild(String name) {
-        return null;
-    }
-
-    @Override
-    public LocalFile getTargetDirectory(String dirname) {
-        return null;
+        throw new AssertionError("Unimplemented");
     }
 
 }
