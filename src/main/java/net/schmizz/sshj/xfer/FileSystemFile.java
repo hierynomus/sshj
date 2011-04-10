@@ -84,14 +84,10 @@ public class FileSystemFile
     @Override
     public Iterable<FileSystemFile> getChildren(final LocalFileFilter filter)
             throws IOException {
-        final Map<File, FileSystemFile> cache = new HashMap<File, FileSystemFile>();
-
         File[] childFiles = filter == null ? file.listFiles() : file.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                final FileSystemFile fsf = new FileSystemFile(file);
-                cache.put(file, fsf);
-                return filter.accept(fsf);
+                return filter.accept(new FileSystemFile(file));
             }
         });
 
@@ -100,7 +96,7 @@ public class FileSystemFile
 
         final List<FileSystemFile> children = new ArrayList<FileSystemFile>();
         for (File f : childFiles) {
-            children.add(cache.get(f));
+            children.add(new FileSystemFile(f));
         }
         return children;
     }
@@ -207,7 +203,7 @@ public class FileSystemFile
 
     @Override
     public int hashCode() {
-        return file != null ? file.hashCode() : 0;
+        return file.hashCode();
     }
 
     @Override
