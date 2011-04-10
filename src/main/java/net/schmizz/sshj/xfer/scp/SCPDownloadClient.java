@@ -29,9 +29,9 @@ import java.util.List;
 /** Support for uploading files over a connected link using SCP. */
 public final class SCPDownloadClient {
 
-    private boolean recursive = true;
+    private boolean recursiveMode = true;
 
-    private SCPEngine engine;
+    private final SCPEngine engine;
 
     SCPDownloadClient(SCPEngine engine) {
         this.engine = engine;
@@ -49,12 +49,12 @@ public final class SCPDownloadClient {
         return engine.getExitStatus();
     }
 
-    public boolean getRecursive() {
-        return recursive;
+    public boolean getRecursiveMode() {
+        return recursiveMode;
     }
 
-    public void setRecursive(boolean recursive) {
-        this.recursive = recursive;
+    public void setRecursiveMode(boolean recursive) {
+        this.recursiveMode = recursive;
     }
 
     void startCopy(String sourcePath, LocalDestFile targetFile)
@@ -63,7 +63,7 @@ public final class SCPDownloadClient {
         args.add(Arg.SOURCE);
         args.add(Arg.QUIET);
         args.add(Arg.PRESERVE_TIMES);
-        if (recursive)
+        if (recursiveMode)
             args.add(Arg.RECURSIVE);
         engine.execSCPWith(args, sourcePath);
 

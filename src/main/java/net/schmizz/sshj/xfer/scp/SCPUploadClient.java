@@ -27,7 +27,7 @@ import java.util.List;
 /** Support for uploading files over a connected link using SCP. */
 public final class SCPUploadClient {
 
-    private SCPEngine engine;
+    private final SCPEngine engine;
 
     SCPUploadClient(SCPEngine engine) {
         this.engine = engine;
