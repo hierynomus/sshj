@@ -101,7 +101,11 @@ class SCPEngine {
         StringBuilder cmd = new StringBuilder(SCP_COMMAND);
         for (Arg arg : args)
             cmd.append(" ").append(arg);
-        cmd.append(" ").append((path == null || path.equals("")) ? "." : path);
+        cmd.append(" ");
+        if (path == null || path.isEmpty())
+            cmd.append(".");
+        else
+            cmd.append("'").append(path.replaceAll("'", "\\'")).append("'");
         scp = host.startSession().exec(cmd.toString());
     }
 
