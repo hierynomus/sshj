@@ -135,8 +135,10 @@ public class SFTPFileTransfer
             try {
                 final OutputStream os = adjusted.getOutputStream();
                 try {
-                    StreamCopier.copy(rf.getInputStream(), os,
-                                      engine.getSubsystem().getLocalMaxPacketSize(), false, listener);
+                    new StreamCopier("sftp download", rf.getInputStream(), os)
+                            .bufSize(engine.getSubsystem().getLocalMaxPacketSize())
+                            .listener(listener)
+                            .copy();
                 } finally {
                     os.close();
                 }
@@ -195,8 +197,10 @@ public class SFTPFileTransfer
             try {
                 final InputStream fis = local.getInputStream();
                 try {
-                    final int bufSize = engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead();
-                    StreamCopier.copy(fis, rf.getOutputStream(), bufSize, false, listener);
+                    new StreamCopier("sftp upload", fis, rf.getOutputStream())
+                            .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
+                            .listener(listener)
+                            .copy();
                 } finally {
                     fis.close();
                 }

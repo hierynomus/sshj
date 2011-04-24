@@ -15,19 +15,19 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.SSHException;
+import net.schmizz.sshj.common.StreamCopier;
+import net.schmizz.sshj.connection.channel.direct.Session.Command;
+import net.schmizz.sshj.connection.channel.direct.SessionFactory;
+import net.schmizz.sshj.xfer.TransferListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.connection.channel.direct.Session.Command;
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
-import net.schmizz.sshj.xfer.TransferListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** @see <a href="http://blogs.sun.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
 class SCPEngine {
@@ -164,53 +164,38 @@ class SCPEngine {
         scp.getOutputStream().flush();
     }
 
-    void transferToRemote(final InputStream src, final long length)
-    		throws IOException {
-    	transfer(src, scp.getOutputStream(), scp.getRemoteMaxPacketSize(), length);
-    }
-
-    void transferFromRemote(final OutputStream dest, final long length)
-    		throws IOException {
-    	transfer(scp.getInputStream(), dest, scp.getLocalMaxPacketSize(), length);
-    }
-
-    private void transfer(InputStream in, OutputStream out, int bufSize, long len)
+    long transferToRemote(final InputStream src, final long length)
             throws IOException {
-        final byte[] buf = new byte[bufSize];
-        long count = 0;
-        int read = 0;
+        return transfer(src, scp.getOutputStream(), scp.getRemoteMaxPacketSize(), length);
+    }
 
-        final long startTime = System.currentTimeMillis();
+    long transferFromRemote(final OutputStream dest, final long length)
+            throws IOException {
+        return transfer(scp.getInputStream(), dest, scp.getLocalMaxPacketSize(), length);
+    }
 
-        while (count < len && (read = in.read(buf, 0, (int) Math.min(bufSize, len - count))) != -1) {
-            out.write(buf, 0, read);
-            count += read;
-            listener.reportProgress(count);
-        }
-        out.flush();
-
-        final double sizeKiB = count / 1024.0;
-        final double timeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
-        log.info(sizeKiB + " KiB transferred  in {} seconds ({} KiB/s)", timeSeconds, (sizeKiB / timeSeconds));
-
-        if (read == -1)
-            throw new IOException("Had EOF before transfer completed");
+    private long transfer(InputStream in, OutputStream out, int bufSize, long len)
+            throws IOException {
+        return new StreamCopier("scp engine", in, out)
+                .bufSize(bufSize).length(len)
+                .listener(listener)
+                .copy();
     }
 
     void startedDir(final String dirname) {
-    	listener.startedDir(dirname);
+        listener.startedDir(dirname);
     }
 
-	void finishedDir() {
-		listener.finishedDir();
-	}
+    void finishedDir() {
+        listener.finishedDir();
+    }
 
-	void startedFile(final String filename, final long length) {
-		listener.startedFile(filename, length);
-	}
+    void startedFile(final String filename, final long length) {
+        listener.startedFile(filename, length);
+    }
 
-	void finishedFile() {
-		listener.finishedFile();
-	}
+    void finishedFile() {
+        listener.finishedFile();
+    }
 
 }

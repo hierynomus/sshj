@@ -26,10 +26,18 @@ import java.io.OutputStream;
 public class StreamCopier
         extends Thread {
 
-    private static final Logger LOG = LoggerFactory.getLogger(StreamCopier.class);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public interface ErrorCallback {
+
         void onError(IOException ioe);
+
+    }
+
+    public interface Listener {
+
+        void reportProgress(long transferred);
+
     }
 
     public static ErrorCallback closeOnErrorCallback(final Closeable... toClose) {
@@ -41,42 +49,6 @@ public class StreamCopier
         };
     }
 
-    public interface Listener {
-        void reportProgress(long transferred);
-    }
-
-    public static long copy(InputStream in, OutputStream out, int bufSize, boolean keepFlushing, Listener listener)
-            throws IOException {
-        long count = 0;
-
-        final boolean reportProgress = listener != null;
-        final long startTime = System.currentTimeMillis();
-
-        final byte[] buf = new byte[bufSize];
-        int read;
-        while ((read = in.read(buf)) != -1) {
-            out.write(buf, 0, read);
-            count += read;
-            if (keepFlushing)
-                out.flush();
-            if (reportProgress)
-                listener.reportProgress(count);
-        }
-        if (!keepFlushing)
-            out.flush();
-
-        final double sizeKiB = count / 1024.0;
-        final double timeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
-        LOG.info(sizeKiB + " KiB transferred  in {} seconds ({} KiB/s)", timeSeconds, (sizeKiB / timeSeconds));
-
-        return count;
-    }
-
-    public static long copy(InputStream in, OutputStream out, int bufSize, boolean keepFlushing)
-            throws IOException {
-        return copy(in, out, bufSize, keepFlushing, null);
-    }
-
     public static String copyStreamToString(InputStream stream)
             throws IOException {
         final StringBuilder sb = new StringBuilder();
@@ -86,19 +58,28 @@ public class StreamCopier
         return sb.toString();
     }
 
+    private static final ErrorCallback NULL_CALLBACK = new ErrorCallback() {
+        @Override
+        public void onError(IOException ioe) {
+        }
+    };
+
+    private static final Listener NULL_LISTENER = new Listener() {
+        @Override
+        public void reportProgress(long transferred) {
+        }
+    };
+
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final InputStream in;
     private final OutputStream out;
-
     private int bufSize = 1;
-    private boolean keepFlushing = true;
+    private boolean keepFlushing = false;
+    private long length = -1;
 
-    private ErrorCallback errCB = new ErrorCallback() {
-        @Override
-        public void onError(IOException ioe) {
-        }
-    }; // Default null cb
+    private Listener listener = NULL_LISTENER;
+    private ErrorCallback errCB = NULL_CALLBACK;
 
     public StreamCopier(String name, InputStream in, OutputStream out) {
         this.in = in;
@@ -106,13 +87,30 @@ public class StreamCopier
         setName(name);
     }
 
-    public StreamCopier bufSize(int size) {
-        bufSize = size;
+    public StreamCopier bufSize(int bufSize) {
+        this.bufSize = bufSize;
         return this;
     }
 
-    public StreamCopier keepFlushing(boolean choice) {
-        keepFlushing = choice;
+    public StreamCopier keepFlushing(boolean keepFlushing) {
+        this.keepFlushing = keepFlushing;
+        return this;
+    }
+
+    public StreamCopier listener(Listener listener) {
+        if (listener == null) listener = NULL_LISTENER;
+        this.listener = listener;
+        return this;
+    }
+
+    public StreamCopier errorCallback(ErrorCallback errCB) {
+        if (errCB == null) errCB = NULL_CALLBACK;
+        this.errCB = errCB;
+        return this;
+    }
+
+    public StreamCopier length(long length) {
+        this.length = length;
         return this;
     }
 
@@ -121,16 +119,50 @@ public class StreamCopier
         return this;
     }
 
-    public StreamCopier errorCallback(ErrorCallback errCB) {
-        this.errCB = errCB;
-        return this;
+    public long copy()
+            throws IOException {
+        final byte[] buf = new byte[bufSize];
+        long count = 0;
+        int read = 0;
+
+        final long startTime = System.currentTimeMillis();
+
+        if (length == -1) {
+            while ((read = in.read(buf)) != -1)
+                count = write(buf, count, read);
+        } else {
+            while (count < length && (read = in.read(buf, 0, (int) Math.min(bufSize, length - count))) != -1)
+                count = write(buf, count, read);
+        }
+
+        if (!keepFlushing)
+            out.flush();
+
+        final double timeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
+        final double sizeKiB = count / 1024.0;
+        logger.info(sizeKiB + " KiB transferred  in {} seconds ({} KiB/s)", timeSeconds, (sizeKiB / timeSeconds));
+
+        if (length != -1 && read == -1)
+            throw new IOException("Encountered EOF, could not transfer " + length + " bytes");
+
+        return count;
+    }
+
+    private long write(byte[] buf, long count, int read)
+            throws IOException {
+        out.write(buf, 0, read);
+        count += read;
+        if (keepFlushing)
+            out.flush();
+        listener.reportProgress(count);
+        return count;
     }
 
     @Override
     public void run() {
         try {
             log.debug("Wil pipe from {} to {}", in, out);
-            copy(in, out, bufSize, keepFlushing);
+            copy();
             log.debug("EOF on {}", in);
         } catch (IOException ioe) {
             log.error("In pipe from {} to {}: " + ioe.toString(), in, out);
