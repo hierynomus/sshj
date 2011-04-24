@@ -49,15 +49,6 @@ public class StreamCopier
         };
     }
 
-    public static String copyStreamToString(InputStream stream)
-            throws IOException {
-        final StringBuilder sb = new StringBuilder();
-        int read;
-        while ((read = stream.read()) != -1)
-            sb.append((char) read);
-        return sb.toString();
-    }
-
     private static final ErrorCallback NULL_CALLBACK = new ErrorCallback() {
         @Override
         public void onError(IOException ioe) {

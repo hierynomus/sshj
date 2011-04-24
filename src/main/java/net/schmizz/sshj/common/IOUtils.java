@@ -38,8 +38,10 @@ package net.schmizz.sshj.common;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class IOUtils {
 
@@ -53,6 +55,17 @@ public class IOUtils {
             } catch (IOException logged) {
                 LOG.warn("Error closing {} - {}", c, logged);
             }
+    }
+
+    public static ByteArrayOutputStream pipeStream(InputStream stream)
+            throws IOException {
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buf = new byte[1024];
+        int read;
+        while ((read = (stream.read(buf))) != -1)
+            bos.write(buf, 0, read);
+        bos.flush();
+        return bos;
     }
 
 }

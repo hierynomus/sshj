@@ -77,7 +77,7 @@ class SCPEngine {
         int code = scp.getInputStream().read();
         switch (code) {
             case -1:
-                String stderr = scp.getErrorAsString();
+                String stderr = IOUtils.pipeStream(scp.getErrorStream()).toString();
                 if (!stderr.isEmpty())
                     stderr = ". Additional info: `" + stderr + "`";
                 throw new SCPException("EOF while expecting response to protocol message" + stderr);

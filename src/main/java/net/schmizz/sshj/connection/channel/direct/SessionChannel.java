@@ -35,7 +35,11 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
-import net.schmizz.sshj.common.*;
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.SSHException;
+import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.ChannelInputStream;
@@ -47,9 +51,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-/**
- * {@link Session} implementation.
- */
+/** {@link Session} implementation. */
 public class SessionChannel
         extends AbstractDirectChannel
         implements Session, Session.Command, Session.Shell, Session.Subsystem {
@@ -123,12 +125,6 @@ public class SessionChannel
     }
 
     @Override
-    public String getErrorAsString()
-            throws IOException {
-        return StreamCopier.copyStreamToString(err);
-    }
-
-    @Override
     public InputStream getErrorStream() {
         return err;
     }
@@ -146,12 +142,6 @@ public class SessionChannel
     @Override
     public Integer getExitStatus() {
         return exitStatus;
-    }
-
-    @Override
-    public String getOutputAsString()
-            throws IOException {
-        return StreamCopier.copyStreamToString(getInputStream());
     }
 
     @Override
@@ -252,6 +242,18 @@ public class SessionChannel
     private void checkReuse() {
         if (usedUp)
             throw new SSHRuntimeException("This session channel is all used up");
+    }
+
+    @Override
+    @Deprecated
+    public String getOutputAsString() throws IOException {
+        return IOUtils.pipeStream(getInputStream()).toString();
+    }
+
+    @Override
+    @Deprecated
+    public String getErrorAsString() throws IOException {
+        return IOUtils.pipeStream(getErrorStream()).toString();
     }
 
 }

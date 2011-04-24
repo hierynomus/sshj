@@ -43,16 +43,6 @@ public interface Session
     interface Command
             extends Channel {
 
-        /**
-         * Read from the command's {@code stderr} stream into a string (blocking).
-         *
-         * @return the commands {@code stderr} output as a string
-         *
-         * @throws IOException if error reading from the stream
-         */
-        String getErrorAsString()
-                throws IOException;
-
         /** Returns the command's {@code stderr} stream. */
         InputStream getErrorStream();
 
@@ -82,16 +72,6 @@ public interface Session
         Boolean getExitWasCoreDumped();
 
         /**
-         * Read from the command's {@code stdout} stream into a string (blocking).
-         *
-         * @return the command's {@code stdout} output as a string
-         *
-         * @throws IOException if error reading from the stream
-         */
-        String getOutputAsString()
-                throws IOException;
-
-        /**
          * Send a signal to the remote command.
          *
          * @param signal the signal
@@ -100,6 +80,12 @@ public interface Session
          */
         void signal(Signal signal)
                 throws TransportException;
+
+        @Deprecated
+        String getOutputAsString() throws IOException;
+
+        @Deprecated
+        String getErrorAsString() throws IOException;
 
     }
 

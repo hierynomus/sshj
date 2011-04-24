@@ -16,6 +16,7 @@
 package examples;
 
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 
@@ -36,13 +37,12 @@ public class Exec {
             final Session session = ssh.startSession();
             try {
                 final Command cmd = session.exec("ping -c 1 google.com");
-                System.out.print(cmd.getOutputAsString());
+                System.out.println(IOUtils.pipeStream(cmd.getInputStream()).toString());
                 cmd.join(5, TimeUnit.SECONDS);
                 System.out.println("\n** exit status: " + cmd.getExitStatus());
             } finally {
                 session.close();
             }
-
         } finally {
             ssh.disconnect();
         }
