@@ -42,10 +42,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 public class IOUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(IOUtils.class);
+
+    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static void closeQuietly(Closeable... closeables) {
         for (Closeable c : closeables)
@@ -57,15 +60,11 @@ public class IOUtils {
             }
     }
 
-    public static ByteArrayOutputStream pipeStream(InputStream stream)
+    public static ByteArrayOutputStream readFully(InputStream stream)
             throws IOException {
-        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] buf = new byte[1024];
-        int read;
-        while ((read = (stream.read(buf))) != -1)
-            bos.write(buf, 0, read);
-        bos.flush();
-        return bos;
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        new StreamCopier(stream, baos).copy();
+        return baos;
     }
 
 }

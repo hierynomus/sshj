@@ -247,13 +247,13 @@ public class SessionChannel
     @Override
     @Deprecated
     public String getOutputAsString() throws IOException {
-        return IOUtils.pipeStream(getInputStream()).toString();
+        return IOUtils.readFully(getInputStream()).toString();
     }
 
     @Override
     @Deprecated
     public String getErrorAsString() throws IOException {
-        return IOUtils.pipeStream(getErrorStream()).toString();
+        return IOUtils.readFully(getErrorStream()).toString();
     }
 
 }

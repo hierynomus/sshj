@@ -69,10 +69,10 @@ public final class SCPDownloadClient {
 
         engine.signal("Start status OK");
 
-        String msg = engine.readMessage(true);
+        String msg = engine.readMessage();
         do
             process(null, msg, targetFile);
-        while ((msg = engine.readMessage(false)) != null);
+        while (!(msg = engine.readMessage()).isEmpty());
     }
 
     private long parseLong(String longString, String valType)
@@ -102,7 +102,7 @@ public final class SCPDownloadClient {
 
             case 'T':
                 engine.signal("ACK: T");
-                process(msg, engine.readMessage(true), f);
+                process(msg, engine.readMessage(), f);
                 break;
 
             case 'C':

@@ -427,20 +427,16 @@ public class Buffer<T extends Buffer<T>> {
     }
 
     public T putString(String string) {
-        try {
-            return putString(string.getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            throw new SSHRuntimeException(e);
-        }
+        return putString(string.getBytes(IOUtils.UTF8));
     }
 
     /**
      * Writes a char-array as an SSH string and then blanks it out.
      * <p/>
-     * This is useful when a plaintext password needs to be sent. If {@code passwd} is {@code null}, an empty string is
+     * This is useful when a plaintext password needs to be sent. If {@code str} is {@code null}, an empty string is
      * written.
      *
-     * @param str (null-ok) the password as a character array
+     * @param str (null-ok) the string as a character array
      *
      * @return this
      */

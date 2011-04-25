@@ -57,8 +57,8 @@ public class X11 {
 
             final Command cmd = sess.exec("/usr/X11/bin/xcalc");
 
-            new StreamCopier("stdout", cmd.getInputStream(), System.out).start();
-            new StreamCopier("stderr", cmd.getErrorStream(), System.err).start();
+            new StreamCopier(cmd.getInputStream(), System.out).spawn("stdout");
+            new StreamCopier(cmd.getErrorStream(), System.err).spawn("stderr");
 
             // Wait for session & X11 channel to get closed
             ssh.getConnection().join();

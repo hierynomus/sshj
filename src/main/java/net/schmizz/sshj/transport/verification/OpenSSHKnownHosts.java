@@ -196,7 +196,7 @@ public class OpenSSHKnownHosts
         private String hashHost(String host)
                 throws IOException {
             sha1.init(getSaltyBytes());
-            return "|1|" + getSalt() + "|" + Base64.encodeBytes(sha1.doFinal(host.getBytes()));
+            return "|1|" + getSalt() + "|" + Base64.encodeBytes(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
         }
 
         private byte[] getSaltyBytes()
@@ -289,7 +289,7 @@ public class OpenSSHKnownHosts
         final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile));
         try {
             for (Entry entry : entries)
-                bos.write((entry.getLine() + LS).getBytes());
+                bos.write((entry.getLine() + LS).getBytes(IOUtils.UTF8));
         } finally {
             bos.close();
         }

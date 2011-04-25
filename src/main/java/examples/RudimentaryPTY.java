@@ -48,22 +48,19 @@ class RudimentaryPTY {
 
                 final Shell shell = session.startShell();
 
-                new StreamCopier("stdout", shell.getInputStream(), System.out)
+                new StreamCopier(shell.getInputStream(), System.out)
                         .bufSize(shell.getLocalMaxPacketSize())
-                        .keepFlushing(true)
-                        .start();
+                        .spawn("stdout");
 
-                new StreamCopier("stderr", shell.getErrorStream(), System.err)
+                new StreamCopier(shell.getErrorStream(), System.err)
                         .bufSize(shell.getLocalMaxPacketSize())
-                        .keepFlushing(true)
-                        .start();
+                        .spawn("stderr");
 
                 // Now make System.in act as stdin. To exit, hit Ctrl+D (since that results in an EOF on System.in)
                 // This is kinda messy because java only allows console input after you hit return
                 // But this is just an example... a GUI app could implement a proper PTY
-                new StreamCopier("stdin", System.in, shell.getOutputStream())
+                new StreamCopier(System.in, shell.getOutputStream())
                         .bufSize(shell.getRemoteMaxPacketSize())
-                        .keepFlushing(true)
                         .copy();
 
             } finally {

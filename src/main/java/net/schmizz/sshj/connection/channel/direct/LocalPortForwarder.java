@@ -55,17 +55,15 @@ public class LocalPortForwarder {
                                                                                }
                                                                            });
 
-            new StreamCopier("chan2soc", getInputStream(), sock.getOutputStream())
+            new StreamCopier(getInputStream(), sock.getOutputStream())
                     .bufSize(getLocalMaxPacketSize())
                     .errorCallback(closer)
-                    .daemon(true)
-                    .start();
+                    .spawnDaemon("chan2soc");
 
-            new StreamCopier("soc2chan", sock.getInputStream(), getOutputStream())
+            new StreamCopier(sock.getInputStream(), getOutputStream())
                     .bufSize(getRemoteMaxPacketSize())
                     .errorCallback(closer)
-                    .daemon(true)
-                    .start();
+                    .spawnDaemon("soc2chan");
         }
 
         @Override

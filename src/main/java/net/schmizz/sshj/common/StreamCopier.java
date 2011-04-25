@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.common;
 
+import net.schmizz.concurrent.Event;
+import net.schmizz.concurrent.ExceptionChainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,11 +24,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
-public class StreamCopier
-        extends Thread {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+public class StreamCopier {
 
     public interface ErrorCallback {
 
@@ -36,7 +36,7 @@ public class StreamCopier
 
     public interface Listener {
 
-        void reportProgress(long transferred);
+        void reportProgress(long transferred) throws IOException;
 
     }
 
@@ -65,17 +65,25 @@ public class StreamCopier
 
     private final InputStream in;
     private final OutputStream out;
-    private int bufSize = 1;
-    private boolean keepFlushing = false;
-    private long length = -1;
 
     private Listener listener = NULL_LISTENER;
     private ErrorCallback errCB = NULL_CALLBACK;
 
-    public StreamCopier(String name, InputStream in, OutputStream out) {
+    private int bufSize = 1;
+    private boolean keepFlushing = true;
+    private long length = -1;
+
+    private final Event<IOException> doneEvent =
+            new Event<IOException>("copyDone", new ExceptionChainer<IOException>() {
+                @Override
+                public IOException chain(Throwable t) {
+                    return (t instanceof IOException) ? (IOException) t : new IOException(t);
+                }
+            });
+
+    public StreamCopier(InputStream in, OutputStream out) {
         this.in = in;
         this.out = out;
-        setName(name);
     }
 
     public StreamCopier bufSize(int bufSize) {
@@ -105,8 +113,41 @@ public class StreamCopier
         return this;
     }
 
-    public StreamCopier daemon(boolean choice) {
-        setDaemon(choice);
+    public StreamCopier spawn(String name) {
+        return spawn(name, false);
+    }
+
+    public StreamCopier spawnDaemon(String name) {
+        return spawn(name, true);
+    }
+
+    private StreamCopier spawn(final String name, final boolean daemon) {
+        new Thread() {
+            {
+                setName(name);
+                setDaemon(daemon);
+            }
+
+            @Override
+            public void run() {
+                try {
+                    log.debug("Will copy from {} to {}", in, out);
+                    copy();
+                    log.debug("Done copying from {}", in);
+                    doneEvent.set();
+                } catch (IOException ioe) {
+                    log.error("In pipe from {} to {}: {}" + ioe.toString(), in, out);
+                    doneEvent.error(ioe);
+                    errCB.onError(ioe);
+                }
+            }
+        }.start();
+        return this;
+    }
+
+    public StreamCopier join(int timeout, TimeUnit unit)
+            throws IOException {
+        doneEvent.await(timeout, unit);
         return this;
     }
 
@@ -131,7 +172,7 @@ public class StreamCopier
 
         final double timeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         final double sizeKiB = count / 1024.0;
-        logger.info(sizeKiB + " KiB transferred  in {} seconds ({} KiB/s)", timeSeconds, (sizeKiB / timeSeconds));
+        log.info(sizeKiB + " KiB transferred  in {} seconds ({} KiB/s)", timeSeconds, (sizeKiB / timeSeconds));
 
         if (length != -1 && read == -1)
             throw new IOException("Encountered EOF, could not transfer " + length + " bytes");
@@ -147,18 +188,6 @@ public class StreamCopier
             out.flush();
         listener.reportProgress(count);
         return count;
-    }
-
-    @Override
-    public void run() {
-        try {
-            log.debug("Wil pipe from {} to {}", in, out);
-            copy();
-            log.debug("EOF on {}", in);
-        } catch (IOException ioe) {
-            log.error("In pipe from {} to {}: " + ioe.toString(), in, out);
-            errCB.onError(ioe);
-        }
     }
 
 }

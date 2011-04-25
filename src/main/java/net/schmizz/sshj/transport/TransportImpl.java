@@ -148,7 +148,7 @@ public final class TransportImpl
         try {
 
             log.info("Client identity string: {}", clientID);
-            connInfo.out.write((clientID + "\r\n").getBytes());
+            connInfo.out.write((clientID + "\r\n").getBytes(IOUtils.UTF8));
 
             // Read server's ID
             final Buffer.PlainBuffer buf = new Buffer.PlainBuffer();

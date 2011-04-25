@@ -62,17 +62,15 @@ public class SocketForwardingConnectListener
             }
         });
 
-        new StreamCopier("soc2chan", sock.getInputStream(), chan.getOutputStream())
+        new StreamCopier(sock.getInputStream(), chan.getOutputStream())
                 .bufSize(chan.getRemoteMaxPacketSize())
                 .errorCallback(closer)
-                .daemon(true)
-                .start();
+                .spawnDaemon("soc2chan");
 
-        new StreamCopier("chan2soc", chan.getInputStream(), sock.getOutputStream())
+        new StreamCopier(chan.getInputStream(), sock.getOutputStream())
                 .bufSize(chan.getLocalMaxPacketSize())
                 .errorCallback(closer)
-                .daemon(true)
-                .start();
+                .spawnDaemon("chan2soc");
     }
 
 }

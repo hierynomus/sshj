@@ -37,7 +37,17 @@ package net.schmizz.sshj.transport;
 
 import net.schmizz.concurrent.Event;
 import net.schmizz.concurrent.FutureUtils;
-import net.schmizz.sshj.common.*;
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.DisconnectReason;
+import net.schmizz.sshj.common.ErrorNotifiable;
+import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.Message;
+import net.schmizz.sshj.common.SSHException;
+import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.SSHPacketHandler;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;
 import net.schmizz.sshj.transport.digest.Digest;
@@ -92,7 +102,8 @@ final class KeyExchanger
     private Proposal clientProposal;
     private NegotiatedAlgorithms negotiatedAlgs;
 
-    private final Event<TransportException> kexInitSent = new Event<TransportException>("kexinit sent", TransportException.chainer);
+    private final Event<TransportException> kexInitSent =
+            new Event<TransportException>("kexinit sent", TransportException.chainer);
 
     private final Event<TransportException> done;
 
@@ -208,11 +219,11 @@ final class KeyExchanger
                 return;
         }
 
-        throw new TransportException(DisconnectReason.HOST_KEY_NOT_VERIFIABLE, "Could not verify `"
-                                                                               + KeyType
-                .fromKey(key) + "` host key with fingerprint `" + SecurityUtils.getFingerprint(key)
-                                                                               + "` for `" + transport
-                .getRemoteHost() + "` on port " + transport.getRemotePort());
+        throw new TransportException(DisconnectReason.HOST_KEY_NOT_VERIFIABLE,
+                                     "Could not verify `" + KeyType.fromKey(key)
+                                             + "` host key with fingerprint `" + SecurityUtils.getFingerprint(key)
+                                             + "` for `" + transport.getRemoteHost()
+                                             + "` on port " + transport.getRemotePort());
     }
 
     private void setKexDone() {
@@ -229,8 +240,11 @@ final class KeyExchanger
         kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(), negotiatedAlgs
                 .getKeyExchangeAlgorithm());
         try {
-            kex.init(transport, transport.getServerID().getBytes(), transport.getClientID().getBytes(), buf
-                    .getCompactData(), clientProposal.getPacket().getCompactData());
+            kex.init(transport,
+                     transport.getServerID().getBytes(IOUtils.UTF8),
+                     transport.getClientID().getBytes(IOUtils.UTF8),
+                     buf.getCompactData(),
+                     clientProposal.getPacket().getCompactData());
         } catch (GeneralSecurityException e) {
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, e);
         }
@@ -321,10 +335,12 @@ final class KeyExchanger
                                                       negotiatedAlgs.getServer2ClientMACAlgorithm());
         mac_S2C.init(integrityKey_S2C);
 
-        final Compression compression_S2C = Factory.Named.Util.create(transport.getConfig().getCompressionFactories(),
-                                                                      negotiatedAlgs.getServer2ClientCompressionAlgorithm());
-        final Compression compression_C2S = Factory.Named.Util.create(transport.getConfig().getCompressionFactories(),
-                                                                      negotiatedAlgs.getClient2ServerCompressionAlgorithm());
+        final Compression compression_S2C =
+                Factory.Named.Util.create(transport.getConfig().getCompressionFactories(),
+                                          negotiatedAlgs.getServer2ClientCompressionAlgorithm());
+        final Compression compression_C2S =
+                Factory.Named.Util.create(transport.getConfig().getCompressionFactories(),
+                                          negotiatedAlgs.getClient2ServerCompressionAlgorithm());
 
         transport.getEncoder().setAlgorithms(cipher_C2S, mac_C2S, compression_C2S);
         transport.getDecoder().setAlgorithms(cipher_S2C, mac_S2C, compression_S2C);
