@@ -657,14 +657,7 @@ public class SSHClient
         assert trans.isRunning();
 
         final long start = System.currentTimeMillis();
-
-        try {
-            trans.doKex();
-        } catch (TransportException te) {
-            trans.disconnect(DisconnectReason.KEY_EXCHANGE_FAILED);
-            throw te;
-        }
-
+        trans.doKex();
         log.info("Key exchange took {} seconds", (System.currentTimeMillis() - start) / 1000.0);
     }
 
