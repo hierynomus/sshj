@@ -20,40 +20,18 @@ import net.schmizz.concurrent.ExceptionChainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
 
 public class StreamCopier {
 
-    public interface ErrorCallback {
-
-        void onError(IOException ioe);
-
-    }
-
     public interface Listener {
 
-        void reportProgress(long transferred) throws IOException;
+        void reportProgress(long transferred)
+                throws IOException;
 
     }
-
-    public static ErrorCallback closeOnErrorCallback(final Closeable... toClose) {
-        return new ErrorCallback() {
-            @Override
-            public void onError(IOException ioe) {
-                IOUtils.closeQuietly(toClose);
-            }
-        };
-    }
-
-    private static final ErrorCallback NULL_CALLBACK = new ErrorCallback() {
-        @Override
-        public void onError(IOException ioe) {
-        }
-    };
 
     private static final Listener NULL_LISTENER = new Listener() {
         @Override
@@ -67,19 +45,10 @@ public class StreamCopier {
     private final OutputStream out;
 
     private Listener listener = NULL_LISTENER;
-    private ErrorCallback errCB = NULL_CALLBACK;
 
     private int bufSize = 1;
     private boolean keepFlushing = true;
     private long length = -1;
-
-    private final Event<IOException> doneEvent =
-            new Event<IOException>("copyDone", new ExceptionChainer<IOException>() {
-                @Override
-                public IOException chain(Throwable t) {
-                    return (t instanceof IOException) ? (IOException) t : new IOException(t);
-                }
-            });
 
     public StreamCopier(InputStream in, OutputStream out) {
         this.in = in;
@@ -102,26 +71,28 @@ public class StreamCopier {
         return this;
     }
 
-    public StreamCopier errorCallback(ErrorCallback errCB) {
-        if (errCB == null) errCB = NULL_CALLBACK;
-        this.errCB = errCB;
-        return this;
-    }
-
     public StreamCopier length(long length) {
         this.length = length;
         return this;
     }
 
-    public StreamCopier spawn(String name) {
+    public Event<IOException> spawn(String name) {
         return spawn(name, false);
     }
 
-    public StreamCopier spawnDaemon(String name) {
+    public Event<IOException> spawnDaemon(String name) {
         return spawn(name, true);
     }
 
-    private StreamCopier spawn(final String name, final boolean daemon) {
+    private Event<IOException> spawn(final String name, final boolean daemon) {
+        final Event<IOException> doneEvent =
+                new Event<IOException>("copyDone", new ExceptionChainer<IOException>() {
+                    @Override
+                    public IOException chain(Throwable t) {
+                        return (t instanceof IOException) ? (IOException) t : new IOException(t);
+                    }
+                });
+
         new Thread() {
             {
                 setName(name);
@@ -136,19 +107,12 @@ public class StreamCopier {
                     log.debug("Done copying from {}", in);
                     doneEvent.set();
                 } catch (IOException ioe) {
-                    log.error("In pipe from {} to {}: {}" + ioe.toString(), in, out);
+                    log.error("In pipe from {} to {}: " + ioe.toString(), in, out);
                     doneEvent.error(ioe);
-                    errCB.onError(ioe);
                 }
             }
         }.start();
-        return this;
-    }
-
-    public StreamCopier join(int timeout, TimeUnit unit)
-            throws IOException {
-        doneEvent.await(timeout, unit);
-        return this;
+        return doneEvent;
     }
 
     public long copy()

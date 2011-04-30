@@ -50,7 +50,7 @@ public abstract class AbstractForwardedChannelOpener
         new Thread() {
 
             {
-                setName("ConnectListener");
+                setName("chanopener");
             }
 
             @Override

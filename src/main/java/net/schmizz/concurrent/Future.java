@@ -119,7 +119,7 @@ public class Future<V, T extends Throwable> {
      */
     public V get()
             throws T {
-        return get(0, TimeUnit.SECONDS);
+        return tryGet(0, TimeUnit.SECONDS);
     }
 
     /**
@@ -134,6 +134,27 @@ public class Future<V, T extends Throwable> {
      */
     public V get(long timeout, TimeUnit unit)
             throws T {
+        final V value = tryGet(timeout, unit);
+        if (value == null)
+            throw chainer.chain(new TimeoutException("Timeout expired"));
+        else
+            return value;
+    }
+
+    /**
+     * Wait for {@code timeout} duration for this future's value to be set.
+     *
+     * If the value is not set by the time the timeout expires, returns {@code null}.
+     *
+     * @param timeout the timeout
+     * @param unit    time unit for the timeout
+     *
+     * @return the value or {@code null}
+     *
+     * @throws T in case another thread informs the future of an error meanwhile
+     */
+    public V tryGet(long timeout, TimeUnit unit)
+            throws T {
         lock();
         try {
             if (pendingEx != null)
@@ -145,7 +166,7 @@ public class Future<V, T extends Throwable> {
                 if (timeout == 0)
                     cond.await();
                 else if (!cond.await(timeout, unit))
-                    throw chainer.chain(new TimeoutException("Timeout expired"));
+                    return null;
             if (pendingEx != null) {
                 log.error("<<{}>> woke to: {}", name, pendingEx.toString());
                 throw pendingEx;
@@ -202,6 +223,11 @@ public class Future<V, T extends Throwable> {
      */
     public void unlock() {
         lock.unlock();
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
 }

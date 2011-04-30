@@ -84,4 +84,19 @@ public class Event<T extends Throwable>
         super.get(timeout, unit);
     }
 
+    /**
+     * Await this event to have a definite {@code true} or {@code false} value, for {@code timeout} duration.
+     *
+     * If the definite value is not available by the time timeout expires, returns {@code null}.
+     *
+     * @param timeout timeout
+     * @param unit    the time unit for the timeout
+     *
+     * @throws T if another thread meanwhile informs this event of an error
+     */
+    public boolean tryAwait(long timeout, TimeUnit unit)
+            throws T {
+        return super.tryGet(timeout, unit) != null;
+    }
+
 }

@@ -15,16 +15,17 @@
  */
 package net.schmizz.sshj.connection.channel.forwarded;
 
+import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.StreamCopier;
-import net.schmizz.sshj.common.StreamCopier.ErrorCallback;
 import net.schmizz.sshj.connection.channel.Channel;
+import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.concurrent.TimeUnit;
 
 /** A {@link ConnectListener} that forwards what is received over the channel to a socket and vice-versa. */
 public class SocketForwardingConnectListener
@@ -54,23 +55,15 @@ public class SocketForwardingConnectListener
         // ok so far -- could connect, let's confirm the channel
         chan.confirm();
 
-        final ErrorCallback closer = StreamCopier.closeOnErrorCallback(chan, new Closeable() {
-            @Override
-            public void close()
-                    throws IOException {
-                sock.close();
-            }
-        });
-
-        new StreamCopier(sock.getInputStream(), chan.getOutputStream())
+        final Event<IOException> soc2chan = new StreamCopier(sock.getInputStream(), chan.getOutputStream())
                 .bufSize(chan.getRemoteMaxPacketSize())
-                .errorCallback(closer)
                 .spawnDaemon("soc2chan");
 
-        new StreamCopier(chan.getInputStream(), sock.getOutputStream())
+        final Event<IOException> chan2soc = new StreamCopier(chan.getInputStream(), sock.getOutputStream())
                 .bufSize(chan.getLocalMaxPacketSize())
-                .errorCallback(closer)
                 .spawnDaemon("chan2soc");
+
+        SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, chan2soc, soc2chan, chan, sock);
     }
 
 }

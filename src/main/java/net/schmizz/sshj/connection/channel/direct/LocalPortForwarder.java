@@ -15,19 +15,20 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
+import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.StreamCopier;
-import net.schmizz.sshj.common.StreamCopier.ErrorCallback;
 import net.schmizz.sshj.connection.Connection;
+import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ServerSocketFactory;
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.util.concurrent.TimeUnit;
 
 public class LocalPortForwarder {
 
@@ -45,34 +46,22 @@ public class LocalPortForwarder {
                 throws IOException {
             sock.setSendBufferSize(getLocalMaxPacketSize());
             sock.setReceiveBufferSize(getRemoteMaxPacketSize());
-
-            final ErrorCallback closer = StreamCopier.closeOnErrorCallback(this,
-                                                                           new Closeable() {
-                                                                               @Override
-                                                                               public void close()
-                                                                                       throws IOException {
-                                                                                   sock.close();
-                                                                               }
-                                                                           });
-
-            new StreamCopier(getInputStream(), sock.getOutputStream())
-                    .bufSize(getLocalMaxPacketSize())
-                    .errorCallback(closer)
-                    .spawnDaemon("chan2soc");
-
-            new StreamCopier(sock.getInputStream(), getOutputStream())
+            final Event<IOException> soc2chan = new StreamCopier(sock.getInputStream(), getOutputStream())
                     .bufSize(getRemoteMaxPacketSize())
-                    .errorCallback(closer)
                     .spawnDaemon("soc2chan");
-        }
+            final Event<IOException> chan2soc = new StreamCopier(getInputStream(), sock.getOutputStream())
+                    .bufSize(getLocalMaxPacketSize())
+                    .spawnDaemon("chan2soc");
+            SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, soc2chan, chan2soc, this, sock);
+       }
 
         @Override
         protected SSHPacket buildOpenReq() {
             return super.buildOpenReq()
-                    .putString(host)
-                    .putInt(port)
-                    .putString(ss.getInetAddress().getHostAddress())
-                    .putInt(ss.getLocalPort());
+                        .putString(host)
+                        .putInt(port)
+                        .putString(ss.getInetAddress().getHostAddress())
+                        .putInt(ss.getLocalPort());
         }
 
     }
@@ -146,6 +135,7 @@ public class LocalPortForwarder {
             chan.open();
             chan.start();
         }
+        log.info("Interrupted!");
     }
 
 }
