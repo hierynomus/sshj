@@ -33,7 +33,7 @@ public class PasswordResponseProvider
     private static final char[] EMPTY_RESPONSE = new char[0];
 
     private static final Collection<String> DEFAULT_ACCEPTABLE_PROMPTS =
-            Collections.unmodifiableCollection(Arrays.asList("Password:"));
+            Collections.unmodifiableCollection(Arrays.asList("Password:", "Password: "));
 
     private final Collection<String> acceptablePrompts;
     private final PasswordFinder pwdf;
