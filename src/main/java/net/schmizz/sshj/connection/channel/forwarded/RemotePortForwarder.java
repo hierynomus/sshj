@@ -196,7 +196,7 @@ public class RemotePortForwarder
         final byte[] specifics = new Buffer.PlainBuffer().putString(forward.address).putInt(forward.port)
                 .getCompactData();
         return conn.sendGlobalRequest(reqName, true, specifics)
-                .get(conn.getTimeout(), TimeUnit.SECONDS);
+                .retrieve(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
     /** @return the active forwards. */

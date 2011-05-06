@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj.userauth;
 
-import net.schmizz.concurrent.Event;
+import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Service;
 import net.schmizz.sshj.common.DisconnectReason;
@@ -42,7 +42,8 @@ public class UserAuthImpl
 
     private final Deque<UserAuthException> savedEx = new ArrayDeque<UserAuthException>();
 
-    private final Event<UserAuthException> result = new Event<UserAuthException>("userauth result", UserAuthException.chainer);
+    private final Promise<Boolean, UserAuthException> result
+            = new Promise<Boolean, UserAuthException>("userauth result", UserAuthException.chainer);
 
     private String username;
     private AuthMethod currentMethod;
@@ -172,7 +173,7 @@ public class UserAuthImpl
     @Override
     public void notifyError(SSHException error) {
         super.notifyError(error);
-        result.error(error);
+        result.deliverError(error);
     }
 
     private void clearState() {
@@ -194,14 +195,14 @@ public class UserAuthImpl
             currentMethod.request();
         else {
             saveException(currentMethod.getName() + " auth failed");
-            result.set(false);
+            result.deliver(false);
         }
     }
 
     private void gotSuccess() {
         trans.setAuthenticated(); // So it can put delayed compression into force if applicable
         trans.setService(nextService); // We aren't in charge anymore, next service is
-        result.set(true);
+        result.deliver(true);
     }
 
     private void gotUnknown(Message msg, SSHPacket buf)
@@ -215,7 +216,7 @@ public class UserAuthImpl
         try {
             currentMethod.handle(msg, buf);
         } catch (UserAuthException e) {
-            result.error(e);
+            result.deliverError(e);
         }
     }
 
@@ -234,7 +235,7 @@ public class UserAuthImpl
         result.clear();
         meth.init(this);
         meth.request();
-        return result.get(timeout, TimeUnit.SECONDS);
+        return result.retrieve(timeout, TimeUnit.SECONDS);
     }
 
 }

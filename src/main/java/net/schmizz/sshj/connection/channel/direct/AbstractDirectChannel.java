@@ -73,7 +73,7 @@ public abstract class AbstractDirectChannel
     }
 
     private void gotOpenFailure(SSHPacket buf) {
-        open.error(new OpenFailException(getType(), buf.readInt(), buf.readString()));
+        open.deliverError(new OpenFailException(getType(), buf.readInt(), buf.readString()));
         finishOff();
     }
 

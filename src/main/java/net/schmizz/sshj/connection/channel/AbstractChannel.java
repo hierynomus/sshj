@@ -36,7 +36,7 @@
 package net.schmizz.sshj.connection.channel;
 
 import net.schmizz.concurrent.Event;
-import net.schmizz.concurrent.FutureUtils;
+import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.DisconnectReason;
@@ -236,8 +236,8 @@ public abstract class AbstractChannel
     public void notifyError(SSHException error) {
         log.debug("Channel #{} got notified of {}", getID(), error.toString());
 
-        FutureUtils.alertAll(error, open, close);
-        FutureUtils.alertAll(error, chanReqResponseEvents);
+        ErrorDeliveryUtil.alertEvents(error, open, close);
+        ErrorDeliveryUtil.alertEvents(error, chanReqResponseEvents);
 
         in.notifyError(error);
         out.notifyError(error);
@@ -258,7 +258,7 @@ public abstract class AbstractChannel
             try {
                 sendClose();
             } catch (TransportException e) {
-                if (!close.hasError())
+                if (!close.inError())
                     throw e;
             }
             close.await(conn.getTimeout(), TimeUnit.SECONDS);
@@ -372,7 +372,7 @@ public abstract class AbstractChannel
             if (success)
                 responseEvent.set();
             else
-                responseEvent.error(new ConnectionException("Request failed"));
+                responseEvent.deliverError(new ConnectionException("Request failed"));
         } else
             throw new ConnectionException(
                     DisconnectReason.PROTOCOL_ERROR,

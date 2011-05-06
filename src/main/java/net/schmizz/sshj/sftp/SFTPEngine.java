@@ -102,7 +102,7 @@ public class SFTPEngine
         reader.expectResponseTo(req);
         log.debug("Sending {}", req);
         transmit(req);
-        return req.getResponseFuture().get(timeout, TimeUnit.SECONDS);
+        return req.getResponsePromise().retrieve(timeout, TimeUnit.SECONDS);
     }
 
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)

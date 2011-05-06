@@ -24,13 +24,13 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Represents future data of the parameterized type {@code V} and allows waiting on it. An exception may also be
+ * Represents promised data of the parameterized type {@code V} and allows waiting on it. An exception may also be
  * delivered to a waiter, and will be of the parameterized type {@code T}.
  * <p/>
- * For atomic operations on a future, e.g. checking if a value is set and if it is not then setting it - in other words,
- * Compare-And-Set type operations - the associated lock for the future should be acquired while doing so.
+ * For atomic operations on a promise, e.g. checking if a value is delivered and if it is not then setting it, the
+ * associated lock for the promise should be acquired while doing so.
  */
-public class Future<V, T extends Throwable> {
+public class Promise<V, T extends Throwable> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -43,24 +43,24 @@ public class Future<V, T extends Throwable> {
     private T pendingEx;
 
     /**
-     * Creates this future with given {@code name} and exception {@code chainer}. Allocates a new {@link
-     * java.util.concurrent.locks.Lock lock} object for this future.
+     * Creates this promise with given {@code name} and exception {@code chainer}. Allocates a new {@link
+     * java.util.concurrent.locks.Lock lock} object for this promise.
      *
-     * @param name    name of this future
+     * @param name    name of this promise
      * @param chainer {@link ExceptionChainer} that will be used for chaining exceptions
      */
-    public Future(String name, ExceptionChainer<T> chainer) {
+    public Promise(String name, ExceptionChainer<T> chainer) {
         this(name, chainer, null);
     }
 
     /**
-     * Creates this future with given {@code name}, exception {@code chainer}, and associated {@code lock}.
+     * Creates this promise with given {@code name}, exception {@code chainer}, and associated {@code lock}.
      *
-     * @param name    name of this future
+     * @param name    name of this promise
      * @param chainer {@link ExceptionChainer} that will be used for chaining exceptions
      * @param lock    lock to use
      */
-    public Future(String name, ExceptionChainer<T> chainer, ReentrantLock lock) {
+    public Promise(String name, ExceptionChainer<T> chainer, ReentrantLock lock) {
         this.name = name;
         this.chainer = chainer;
         this.lock = lock == null ? new ReentrantLock() : lock;
@@ -68,73 +68,73 @@ public class Future<V, T extends Throwable> {
     }
 
     /**
-     * Set this future's value to {@code val}. Any waiters will be delivered this value.
+     * Set this promise's value to {@code val}. Any waiters will be delivered this value.
      *
      * @param val the value
      */
-    public void set(V val) {
-        lock();
+    public void deliver(V val) {
+        lock.lock();
         try {
             log.debug("Setting <<{}>> to `{}`", name, val);
             this.val = val;
             cond.signalAll();
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
     /**
-     * Queues error that will be thrown in any waiting thread or any thread that attempts to wait on this future
+     * Queues error that will be thrown in any waiting thread or any thread that attempts to wait on this promise
      * hereafter.
      *
      * @param e the error
      */
-    public void error(Throwable e) {
-        lock();
+    public void deliverError(Throwable e) {
+        lock.lock();
         try {
             pendingEx = chainer.chain(e);
             cond.signalAll();
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
-    /** Clears this future by setting its value and queued exception to {@code null}. */
+    /** Clears this promise by setting its value and queued exception to {@code null}. */
     public void clear() {
-        lock();
+        lock.lock();
         try {
             pendingEx = null;
-            set(null);
+            deliver(null);
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
     /**
-     * Wait indefinitely for this future's value to be set.
+     * Wait indefinitely for this promise's value to be deliver.
      *
      * @return the value
      *
-     * @throws T in case another thread informs the future of an error meanwhile
+     * @throws T in case another thread informs the promise of an error meanwhile
      */
-    public V get()
+    public V retrieve()
             throws T {
-        return tryGet(0, TimeUnit.SECONDS);
+        return tryRetrieve(0, TimeUnit.SECONDS);
     }
 
     /**
-     * Wait for {@code timeout} duration for this future's value to be set.
+     * Wait for {@code timeout} duration for this promise's value to be deliver.
      *
      * @param timeout the timeout
      * @param unit    time unit for the timeout
      *
      * @return the value
      *
-     * @throws T in case another thread informs the future of an error meanwhile, or the timeout expires
+     * @throws T in case another thread informs the promise of an error meanwhile, or the timeout expires
      */
-    public V get(long timeout, TimeUnit unit)
+    public V retrieve(long timeout, TimeUnit unit)
             throws T {
-        final V value = tryGet(timeout, unit);
+        final V value = tryRetrieve(timeout, unit);
         if (value == null)
             throw chainer.chain(new TimeoutException("Timeout expired"));
         else
@@ -142,20 +142,20 @@ public class Future<V, T extends Throwable> {
     }
 
     /**
-     * Wait for {@code timeout} duration for this future's value to be set.
-     *
-     * If the value is not set by the time the timeout expires, returns {@code null}.
+     * Wait for {@code timeout} duration for this promise's value to be deliver.
+     * <p/>
+     * If the value is not deliver by the time the timeout expires, returns {@code null}.
      *
      * @param timeout the timeout
      * @param unit    time unit for the timeout
      *
      * @return the value or {@code null}
      *
-     * @throws T in case another thread informs the future of an error meanwhile
+     * @throws T in case another thread informs the promise of an error meanwhile
      */
-    public V tryGet(long timeout, TimeUnit unit)
+    public V tryRetrieve(long timeout, TimeUnit unit)
             throws T {
-        lock();
+        lock.lock();
         try {
             if (pendingEx != null)
                 throw pendingEx;
@@ -175,52 +175,46 @@ public class Future<V, T extends Throwable> {
         } catch (InterruptedException ie) {
             throw chainer.chain(ie);
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
-    /** @return whether this future has a value set, and no error waiting to pop. */
-    public boolean isSet() {
-        lock();
+    /** @return whether this promise has a value delivered, and no error waiting to pop. */
+    public boolean isDelivered() {
+        lock.lock();
         try {
             return pendingEx == null && val != null;
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
-    /** @return whether this future currently has an error set. */
-    public boolean hasError() {
-        lock();
+    /** @return whether this promise has been delivered an error. */
+    public boolean inError() {
+        lock.lock();
         try {
             return pendingEx != null;
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
-    /** @return whether this future has threads waiting on it. */
+    /** @return whether this promise has threads waiting on it. */
     public boolean hasWaiters() {
-        lock();
+        lock.lock();
         try {
             return lock.hasWaiters(cond);
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
-    /**
-     * Lock using the associated lock. Use as part of a {@code try-finally} construct in conjunction with {@link
-     * #unlock()}.
-     */
+    /** Acquire the lock associated with this promise. */
     public void lock() {
         lock.lock();
     }
 
-    /**
-     * Unlock using the associated lock. Use as part of a {@code try-finally} construct in conjunction with {@link
-     * #lock()}.
-     */
+    /** Release the lock associated with this promise. */
     public void unlock() {
         lock.unlock();
     }

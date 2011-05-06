@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.concurrent.Future;
+import net.schmizz.concurrent.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class PacketReader
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final InputStream in;
-    private final Map<Long, Future<Response, SFTPException>> futures = new ConcurrentHashMap<Long, Future<Response, SFTPException>>();
+    private final Map<Long, Promise<Response, SFTPException>> promises = new ConcurrentHashMap<Long, Promise<Response, SFTPException>>();
     private final SFTPPacket<Response> packet = new SFTPPacket<Response>();
     private final byte[] lenBuf = new byte[4];
     private final SFTPEngine engine;
@@ -85,25 +85,25 @@ public class PacketReader
                 handle();
             }
         } catch (IOException e) {
-            for (Future<Response, SFTPException> future : futures.values())
-                future.error(e);
+            for (Promise<Response, SFTPException> promise : promises.values())
+                promise.deliverError(e);
         }
     }
 
     public void handle()
             throws SFTPException {
         Response resp = new Response(packet, engine.getOperativeProtocolVersion());
-        Future<Response, SFTPException> future = futures.remove(resp.getRequestID());
+        Promise<Response, SFTPException> promise = promises.remove(resp.getRequestID());
         log.debug("Received {} packet", resp.getType());
-        if (future == null)
+        if (promise == null)
             throw new SFTPException("Received [" + resp.readType() + "] response for request-id " + resp.getRequestID()
                                     + ", no such request was made");
         else
-            future.set(resp);
+            promise.deliver(resp);
     }
 
     public void expectResponseTo(Request req) {
-        futures.put(req.getRequestID(), req.getResponseFuture());
+        promises.put(req.getRequestID(), req.getResponsePromise());
     }
 
 }

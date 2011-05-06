@@ -15,8 +15,8 @@
  */
 package net.schmizz.sshj.connection;
 
-import net.schmizz.concurrent.Future;
-import net.schmizz.concurrent.FutureUtils;
+import net.schmizz.concurrent.Promise;
+import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.ErrorNotifiable;
@@ -30,7 +30,6 @@ import net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
@@ -50,7 +49,7 @@ public class ConnectionImpl
 
     private final Map<String, ForwardedChannelOpener> openers = new ConcurrentHashMap<String, ForwardedChannelOpener>();
 
-    private final Queue<Future<SSHPacket, ConnectionException>> globalReqFutures = new LinkedList<Future<SSHPacket, ConnectionException>>();
+    private final Queue<Promise<SSHPacket, ConnectionException>> globalReqPromises = new LinkedList<Promise<SSHPacket, ConnectionException>>();
 
     private int windowSize = 2048 * 1024;
     private int maxPacketSize = 32 * 1024;
@@ -180,34 +179,34 @@ public class ConnectionImpl
     }
 
     @Override
-    public Future<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
+    public Promise<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
                                                                     byte[] specifics)
             throws TransportException {
-        synchronized (globalReqFutures) {
+        synchronized (globalReqPromises) {
             log.info("Making global request for `{}`", name);
             trans.write(new SSHPacket(Message.GLOBAL_REQUEST).putString(name)
                     .putBoolean(wantReply).putRawBytes(specifics));
 
-            Future<SSHPacket, ConnectionException> future = null;
+            Promise<SSHPacket, ConnectionException> promise = null;
             if (wantReply) {
-                future = new Future<SSHPacket, ConnectionException>("global req for " + name, ConnectionException.chainer);
-                globalReqFutures.add(future);
+                promise = new Promise<SSHPacket, ConnectionException>("global req for " + name, ConnectionException.chainer);
+                globalReqPromises.add(promise);
             }
-            return future;
+            return promise;
         }
     }
 
     private void gotGlobalReqResponse(SSHPacket response)
             throws ConnectionException {
-        synchronized (globalReqFutures) {
-            Future<SSHPacket, ConnectionException> gr = globalReqFutures.poll();
+        synchronized (globalReqPromises) {
+            Promise<SSHPacket, ConnectionException> gr = globalReqPromises.poll();
             if (gr == null)
                 throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
                                               "Got a global request response when none was requested");
             else if (response == null)
-                gr.error(new ConnectionException("Global request [" + gr + "] failed"));
+                gr.deliverError(new ConnectionException("Global request [" + gr + "] failed"));
             else
-                gr.set(response);
+                gr.deliver(response);
         }
     }
 
@@ -235,9 +234,9 @@ public class ConnectionImpl
     @Override
     public void notifyError(SSHException error) {
         super.notifyError(error);
-        synchronized (globalReqFutures) {
-            FutureUtils.alertAll(error, globalReqFutures);
-            globalReqFutures.clear();
+        synchronized (globalReqPromises) {
+            ErrorDeliveryUtil.alertPromises(error, globalReqPromises);
+            globalReqPromises.clear();
         }
         ErrorNotifiable.Util.alertAll(error, channels.values());
         channels.clear();

@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj.connection;
 
-import net.schmizz.concurrent.Future;
+import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException;
@@ -89,12 +89,12 @@ public interface Connection {
      * @param wantReply whether a reply is requested
      * @param specifics {@link SSHPacket} containing fields specific to the request
      *
-     * @return a {@link Future} for the reply data (in case {@code wantReply} is true) which allows waiting on the
+     * @return a {@link net.schmizz.concurrent.Promise} for the reply data (in case {@code wantReply} is true) which allows waiting on the
      *         reply, or {@code null} if a reply is not requested.
      *
      * @throws TransportException if there is an error sending the request
      */
-    public Future<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
+    public Promise<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
                                                                     byte[] specifics)
             throws TransportException;
 

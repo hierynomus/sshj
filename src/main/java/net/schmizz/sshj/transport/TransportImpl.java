@@ -36,7 +36,7 @@
 package net.schmizz.sshj.transport;
 
 import net.schmizz.concurrent.Event;
-import net.schmizz.concurrent.FutureUtils;
+import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.Service;
@@ -562,7 +562,7 @@ public final class TransportImpl
 
                 disconnectListener.notifyDisconnect(causeOfDeath.getDisconnectReason());
 
-                FutureUtils.alertAll(causeOfDeath, close, serviceAccept);
+                ErrorDeliveryUtil.alertEvents(causeOfDeath, close, serviceAccept);
                 kexer.notifyError(causeOfDeath);
                 getService().notifyError(causeOfDeath);
                 setService(nullService);

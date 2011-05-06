@@ -108,7 +108,7 @@ public class StreamCopier {
                     doneEvent.set();
                 } catch (IOException ioe) {
                     log.error("In pipe from {} to {}: " + ioe.toString(), in, out);
-                    doneEvent.error(ioe);
+                    doneEvent.deliverError(ioe);
                 }
             }
         }.start();

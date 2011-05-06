@@ -36,7 +36,7 @@
 package net.schmizz.sshj.transport;
 
 import net.schmizz.concurrent.Event;
-import net.schmizz.concurrent.FutureUtils;
+import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.ErrorNotifiable;
@@ -397,7 +397,7 @@ final class KeyExchanger
     @Override
     public void notifyError(SSHException error) {
         log.debug("Got notified of {}", error.toString());
-        FutureUtils.alertAll(error, kexInitSent, done);
+        ErrorDeliveryUtil.alertEvents(error, kexInitSent, done);
     }
 
 }
