@@ -23,7 +23,7 @@ package net.schmizz.sshj.userauth.method;
 public class AuthNone
         extends AbstractAuthMethod {
 
-    AuthNone() {
+    public AuthNone() {
         super("none");
     }
 
