@@ -29,6 +29,22 @@ public abstract class Resource<H> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Resource))
+            return false;
+        Resource resource = (Resource) o;
+        return detail == null ? resource.detail == null : detail.equals(resource.detail);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return detail != null ? detail.hashCode() : 0;
+    }
+
+    @Override
     public String toString() {
         return "[" + getClass().getSimpleName() + "] " + detail;
     }
