@@ -26,7 +26,12 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Event<T extends Throwable> {
 
-    private static final Object SOME = new Object();
+    private static final Object SOME = new Object() {
+        @Override
+        public String toString() {
+            return "SOME";
+        }
+    };
 
     private final Promise<Object, T> promise;
 
