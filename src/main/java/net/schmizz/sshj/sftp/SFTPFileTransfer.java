@@ -40,9 +40,15 @@ public class SFTPFileTransfer
     private volatile LocalFileFilter uploadFilter;
     private volatile RemoteResourceFilter downloadFilter;
 
+    public SFTPFileTransfer(SFTPEngine engine, PathHelper pathHelper) {
+        this.engine = engine;
+        this.pathHelper = pathHelper;
+    }
+
+    @Deprecated
     public SFTPFileTransfer(SFTPEngine engine) {
         this.engine = engine;
-        this.pathHelper = new PathHelper(engine);
+        this.pathHelper = new PathHelper(engine, PathHelper.DEFAULT_SEPARATOR);
     }
 
     @Override

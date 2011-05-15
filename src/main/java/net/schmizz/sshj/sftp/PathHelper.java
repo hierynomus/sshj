@@ -19,11 +19,16 @@ import java.io.IOException;
 
 public class PathHelper {
 
+    public static final String DEFAULT_SEPARATOR = "/";
+
     private final SFTPEngine engine;
+    private final String separator;
+
     private String dotDir;
 
-    public PathHelper(SFTPEngine engine) {
+    public PathHelper(SFTPEngine engine, String separator) {
         this.engine = engine;
+        this.separator = separator;
     }
 
     public PathComponents getComponents(String path)
@@ -31,7 +36,7 @@ public class PathHelper {
         if (path.isEmpty() || path.equals("."))
             return getComponents(getDotDir());
 
-        final int lastSlash = path.lastIndexOf("/");
+        final int lastSlash = path.lastIndexOf(separator);
 
         if (lastSlash == -1)
             if (path.equals(".."))

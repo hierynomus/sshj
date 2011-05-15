@@ -40,9 +40,13 @@ public class SFTPClient
     private final PathHelper pathHelper;
 
     public SFTPClient(SFTPEngine engine) {
+        this(engine, PathHelper.DEFAULT_SEPARATOR);
+    }
+
+    public SFTPClient(SFTPEngine engine, String separator) {
         this.engine = engine;
-        this.pathHelper = new PathHelper(engine);
-        this.xfer = new SFTPFileTransfer(engine);
+        this.pathHelper = new PathHelper(engine, separator);
+        this.xfer = new SFTPFileTransfer(engine, pathHelper);
     }
 
     public SFTPEngine getSFTPEngine() {
