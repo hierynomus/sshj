@@ -17,23 +17,23 @@ package net.schmizz.sshj.sftp;
 
 public class PathComponents {
 
-    public static String adjustForParent(String parent, String path) {
-        return (path.startsWith("/")) ? path // Absolute path, nothing to adjust
-                                      : (parent + (parent.endsWith("/") ? "" : "/") + path); // Relative path
+    static String adjustForParent(String parent, String path, String pathSep) {
+        return (path.startsWith(pathSep)) ? path // Absolute path, nothing to adjust
+                : (parent + (parent.endsWith(pathSep) ? "" : pathSep) + path); // Relative path
     }
 
-    private static String trimFinalSlash(String path) {
-        return path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+    static String trimTrailingSeparator(String somePath, String pathSep) {
+        return somePath.endsWith(pathSep) ? somePath.substring(0, somePath.length() - pathSep.length()) : somePath;
     }
 
     private final String parent;
     private final String name;
     private final String path;
 
-    public PathComponents(String parent, String name) {
+    public PathComponents(String parent, String name, String pathSep) {
         this.parent = parent;
         this.name = name;
-        this.path = adjustForParent(parent, name);
+        this.path = trimTrailingSeparator(adjustForParent(parent, name, pathSep), pathSep);
     }
 
     public String getParent() {
@@ -50,17 +50,12 @@ public class PathComponents {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof PathComponents) {
-            final PathComponents that = (PathComponents) o;
-            return (trimFinalSlash(path).equals(trimFinalSlash(that.path)));
-        }
-
-        return false;
+        return this == o || ((o instanceof PathComponents) && path.equals(((PathComponents) o).path));
     }
 
     @Override
     public int hashCode() {
-        return trimFinalSlash(path).hashCode();
+        return path.hashCode();
     }
 
     @Override

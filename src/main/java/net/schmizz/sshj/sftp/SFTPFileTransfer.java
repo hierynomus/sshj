@@ -35,20 +35,12 @@ public class SFTPFileTransfer
         implements FileTransfer {
 
     private final SFTPEngine engine;
-    private final PathHelper pathHelper;
 
     private volatile LocalFileFilter uploadFilter;
     private volatile RemoteResourceFilter downloadFilter;
 
-    public SFTPFileTransfer(SFTPEngine engine, PathHelper pathHelper) {
-        this.engine = engine;
-        this.pathHelper = pathHelper;
-    }
-
-    @Deprecated
     public SFTPFileTransfer(SFTPEngine engine) {
         this.engine = engine;
-        this.pathHelper = new PathHelper(engine, PathHelper.DEFAULT_SEPARATOR);
     }
 
     @Override
@@ -72,7 +64,7 @@ public class SFTPFileTransfer
     @Override
     public void download(String source, LocalDestFile dest)
             throws IOException {
-        final PathComponents pathComponents = pathHelper.getComponents(source);
+        final PathComponents pathComponents = engine.getPathHelper().getComponents(source);
         final FileAttributes attributes = engine.stat(source);
         new Downloader().download(new RemoteResourceInfo(pathComponents, attributes), dest);
     }
@@ -233,12 +225,12 @@ public class SFTPFileTransfer
             }
 
             if (attrs.getMode().getType() == FileMode.Type.DIRECTORY)
-                if (pathHelper.getComponents(remote).getName().equals(local.getName())) {
+                if (engine.getPathHelper().getComponents(remote).getName().equals(local.getName())) {
                     log.debug("probeDir: {} already exists", remote);
                     return remote;
                 } else {
                     log.debug("probeDir: {} already exists, path adjusted for {}", remote, local.getName());
-                    return prepareDir(local, PathComponents.adjustForParent(remote, local.getName()));
+                    return prepareDir(local, engine.getPathHelper().adjustForParent(remote, local.getName()));
                 }
             else
                 throw new IOException(attrs.getMode().getType() + " file already exists at " + remote);
@@ -258,7 +250,7 @@ public class SFTPFileTransfer
             }
             if (attrs.getMode().getType() == FileMode.Type.DIRECTORY) {
                 log.debug("probeFile: {} was directory, path adjusted for {}", remote, local.getName());
-                remote = PathComponents.adjustForParent(remote, local.getName());
+                remote = engine.getPathHelper().adjustForParent(remote, local.getName());
                 return remote;
             } else {
                 log.debug("probeFile: {} is a {} file that will be replaced", remote, attrs.getMode().getType());

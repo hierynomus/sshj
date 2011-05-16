@@ -42,7 +42,8 @@ public class RemoteDirectory
                         final String name = res.readString();
                         res.readString(); // long name - IGNORED - shdve never been in the protocol
                         final FileAttributes attrs = res.readFileAttributes();
-                        RemoteResourceInfo inf = new RemoteResourceInfo(path, name, attrs);
+                        final PathComponents comps = requester.getPathHelper().getComponents(path, name);
+                        final RemoteResourceInfo inf = new RemoteResourceInfo(comps, attrs);
                         if (!(name.equals(".") || name.equals("..")) && (filter == null || filter.accept(inf)))
                             rri.add(inf);
                     }

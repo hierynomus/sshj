@@ -19,16 +19,32 @@ import java.io.IOException;
 
 public class PathHelper {
 
-    public static final String DEFAULT_SEPARATOR = "/";
+    public static final String DEFAULT_PATH_SEPARATOR = "/";
 
     private final SFTPEngine engine;
-    private final String separator;
+    private final String pathSep;
 
     private String dotDir;
 
-    public PathHelper(SFTPEngine engine, String separator) {
+    public PathHelper(SFTPEngine engine, String pathSep) {
         this.engine = engine;
-        this.separator = separator;
+        this.pathSep = pathSep;
+    }
+
+    public String adjustForParent(String parent, String path) {
+        return PathComponents.adjustForParent(parent, path, pathSep);
+    }
+
+    public String trimTrailingSeparator(String path) {
+        return PathComponents.trimTrailingSeparator(path, pathSep);
+    }
+
+    public String getPathSeparator() {
+        return pathSep;
+    }
+
+    public PathComponents getComponents(String parent, String name) {
+        return new PathComponents(parent, name, pathSep);
     }
 
     public PathComponents getComponents(String path)
@@ -36,21 +52,21 @@ public class PathHelper {
         if (path.isEmpty() || path.equals("."))
             return getComponents(getDotDir());
 
-        final int lastSlash = path.lastIndexOf(separator);
+        final int lastSlash = path.lastIndexOf(pathSep);
 
-        if (lastSlash == -1)
+        if (lastSlash == -1) // Relative path
             if (path.equals(".."))
                 return getComponents(canon(path));
             else
-                return new PathComponents(getDotDir(), path);
+                return getComponents(getDotDir(), path);
 
-        final String name = path.substring(lastSlash + 1);
+        final String name = path.substring(lastSlash + pathSep.length());
 
         if (name.equals(".") || name.equals(".."))
             return getComponents(canon(path));
         else {
             final String parent = path.substring(0, lastSlash);
-            return new PathComponents(parent, name);
+            return getComponents(parent, name);
         }
     }
 

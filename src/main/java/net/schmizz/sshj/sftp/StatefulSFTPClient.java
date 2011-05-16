@@ -32,7 +32,7 @@ public class StatefulSFTPClient
     }
 
     private synchronized String cwdify(String path) {
-        return PathComponents.adjustForParent(cwd, path);
+        return engine.getPathHelper().adjustForParent(cwd, path);
     }
 
     public synchronized void cd(String dirname)

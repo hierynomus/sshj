@@ -41,6 +41,8 @@ public class SFTPEngine
 
     protected volatile int timeout = DEFAULT_TIMEOUT;
 
+    protected final PathHelper pathHelper;
+
     protected final Subsystem sub;
     protected final PacketReader reader;
     protected final OutputStream out;
@@ -51,9 +53,14 @@ public class SFTPEngine
 
     public SFTPEngine(SessionFactory ssh)
             throws SSHException {
+        this(ssh, PathHelper.DEFAULT_PATH_SEPARATOR);
+    }
+
+    public SFTPEngine(SessionFactory ssh, String pathSep) throws SSHException {
         sub = ssh.startSession().startSubsystem("sftp");
         out = sub.getOutputStream();
         reader = new PacketReader(this);
+        pathHelper = new PathHelper(this, pathSep);
     }
 
     public SFTPEngine init()
@@ -89,6 +96,11 @@ public class SFTPEngine
 
     public Request newExtendedRequest(String reqName) {
         return newRequest(PacketType.EXTENDED).putString(reqName);
+    }
+
+    @Override
+    public PathHelper getPathHelper() {
+        return pathHelper;
     }
 
     @Override

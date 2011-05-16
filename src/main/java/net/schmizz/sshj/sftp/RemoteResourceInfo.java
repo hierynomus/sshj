@@ -20,10 +20,6 @@ public class RemoteResourceInfo {
     private final PathComponents comps;
     private final FileAttributes attrs;
 
-    public RemoteResourceInfo(String parent, String name, FileAttributes attrs) {
-        this(new PathComponents(parent, name), attrs);
-    }
-
     public RemoteResourceInfo(PathComponents comps, FileAttributes attrs) {
         this.comps = comps;
         this.attrs = attrs;

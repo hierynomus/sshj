@@ -35,18 +35,12 @@ public class SFTPClient
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final SFTPEngine engine;
-    private final SFTPFileTransfer xfer;
-    private final PathHelper pathHelper;
+    protected final SFTPEngine engine;
+    protected final SFTPFileTransfer xfer;
 
     public SFTPClient(SFTPEngine engine) {
-        this(engine, PathHelper.DEFAULT_SEPARATOR);
-    }
-
-    public SFTPClient(SFTPEngine engine, String separator) {
         this.engine = engine;
-        this.pathHelper = new PathHelper(engine, separator);
-        this.xfer = new SFTPFileTransfer(engine, pathHelper);
+        this.xfer = new SFTPFileTransfer(engine);
     }
 
     public SFTPEngine getSFTPEngine() {
@@ -96,8 +90,8 @@ public class SFTPClient
     public void mkdirs(String path)
             throws IOException {
         final Deque<String> dirsToMake = new LinkedList<String>();
-        for (PathComponents current = pathHelper.getComponents(path); ; current = pathHelper
-                .getComponents(current.getParent())) {
+        for (PathComponents current = engine.getPathHelper().getComponents(path); ;
+             current = engine.getPathHelper().getComponents(current.getParent())) {
             final FileAttributes attrs = statExistence(current.getPath());
             if (attrs == null) {
                 dirsToMake.push(current.getPath());
