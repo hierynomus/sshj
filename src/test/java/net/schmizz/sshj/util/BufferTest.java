@@ -59,7 +59,7 @@ public class BufferTest {
         assertEquals(handyBuf.putString("some string").readString(), "some string");
 
         // uint32
-        assertEquals(handyBuf.putInt(0xffffffffL).readLong(), 0xffffffffL);
+        assertEquals(handyBuf.putUInt32(0xffffffffL).readUInt32(), 0xffffffffL);
     }
 
     @Test

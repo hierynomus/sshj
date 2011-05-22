@@ -68,21 +68,21 @@ public abstract class AbstractDirectChannel
     }
 
     private void gotOpenConfirmation(SSHPacket buf) {
-        init(buf.readInt(), buf.readInt(), buf.readInt());
+        init(buf.readUInt32AsInt(), buf.readUInt32AsInt(), buf.readUInt32AsInt());
         open.set();
     }
 
     private void gotOpenFailure(SSHPacket buf) {
-        open.deliverError(new OpenFailException(getType(), buf.readInt(), buf.readString()));
+        open.deliverError(new OpenFailException(getType(), buf.readUInt32AsInt(), buf.readString()));
         finishOff();
     }
 
     protected SSHPacket buildOpenReq() {
         return new SSHPacket(Message.CHANNEL_OPEN)
                 .putString(getType())
-                .putInt(getID())
-                .putInt(getLocalWinSize())
-                .putInt(getLocalMaxPacketSize());
+                .putUInt32(getID())
+                .putUInt32(getLocalWinSize())
+                .putUInt32(getLocalMaxPacketSize());
     }
 
     @Override

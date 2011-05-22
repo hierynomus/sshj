@@ -103,7 +103,7 @@ public class ConnectionImpl
 
     private Channel getChannel(SSHPacket buffer)
             throws ConnectionException {
-        int recipient = buffer.readInt();
+        int recipient = buffer.readUInt32AsInt();
         Channel channel = get(recipient);
         if (channel != null)
             return channel;
@@ -218,7 +218,7 @@ public class ConnectionImpl
             openers.get(type).handleOpen(buf);
         else {
             log.warn("No opener found for `{}` CHANNEL_OPEN request -- rejecting", type);
-            sendOpenFailure(buf.readInt(), OpenFailException.Reason.UNKNOWN_CHANNEL_TYPE, "");
+            sendOpenFailure(buf.readUInt32AsInt(), OpenFailException.Reason.UNKNOWN_CHANNEL_TYPE, "");
         }
     }
 
@@ -226,8 +226,8 @@ public class ConnectionImpl
     public void sendOpenFailure(int recipient, Reason reason, String message)
             throws TransportException {
         trans.write(new SSHPacket(Message.CHANNEL_OPEN_FAILURE)
-                .putInt(recipient)
-                .putInt(reason.getCode())
+                .putUInt32(recipient)
+                .putUInt32(reason.getCode())
                 .putString(message));
     }
 

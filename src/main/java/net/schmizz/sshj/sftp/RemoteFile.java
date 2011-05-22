@@ -55,10 +55,10 @@ public class RemoteFile
 
     public int read(long fileOffset, byte[] to, int offset, int len)
             throws IOException {
-        Response res = requester.doRequest(newRequest(PacketType.READ).putUINT64(fileOffset).putInt(len));
+        Response res = requester.doRequest(newRequest(PacketType.READ).putUInt64(fileOffset).putUInt32(len));
         switch (res.getType()) {
             case DATA:
-                int recvLen = res.readInt();
+                int recvLen = res.readUInt32AsInt();
                 System.arraycopy(res.array(), res.rpos(), to, offset, recvLen);
                 return recvLen;
 
@@ -74,8 +74,8 @@ public class RemoteFile
     public void write(long fileOffset, byte[] data, int off, int len)
             throws IOException {
         requester.doRequest(newRequest(PacketType.WRITE)
-                .putUINT64(fileOffset)
-                .putInt(len - off)
+                .putUInt64(fileOffset)
+                .putUInt32(len - off)
                 .putRawBytes(data, off, len)
         ).ensureStatusPacketIsOK();
     }

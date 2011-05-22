@@ -35,17 +35,17 @@ public class SFTPPacket<T extends SFTPPacket<T>>
 
     public FileAttributes readFileAttributes() {
         final FileAttributes.Builder builder = new FileAttributes.Builder();
-        final int mask = readInt();
+        final int mask = readUInt32AsInt();
         if (FileAttributes.Flag.SIZE.isSet(mask))
-            builder.withSize(readUINT64());
+            builder.withSize(readUInt64());
         if (FileAttributes.Flag.UIDGID.isSet(mask))
-            builder.withUIDGID(readInt(), readInt());
+            builder.withUIDGID(readUInt32AsInt(), readUInt32AsInt());
         if (FileAttributes.Flag.MODE.isSet(mask))
-            builder.withPermissions(readInt());
+            builder.withPermissions(readUInt32AsInt());
         if (FileAttributes.Flag.ACMODTIME.isSet(mask))
-            builder.withAtimeMtime(readInt(), readInt());
+            builder.withAtimeMtime(readUInt32AsInt(), readUInt32AsInt());
         if (FileAttributes.Flag.EXTENDED.isSet(mask)) {
-            final int extCount = readInt();
+            final int extCount = readUInt32AsInt();
             for (int i = 0; i < extCount; i++)
                 builder.withExtended(readString(), readString());
         }

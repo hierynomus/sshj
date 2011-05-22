@@ -37,7 +37,7 @@ public class RemoteDirectory
             switch (res.getType()) {
 
                 case NAME:
-                    final int count = res.readInt();
+                    final int count = res.readUInt32AsInt();
                     for (int i = 0; i < count; i++) {
                         final String name = res.readString();
                         res.readString(); // long name - IGNORED - shdve never been in the protocol

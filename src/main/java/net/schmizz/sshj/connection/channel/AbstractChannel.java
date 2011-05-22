@@ -183,11 +183,11 @@ public abstract class AbstractChannel
                 break;
 
             case CHANNEL_EXTENDED_DATA:
-                gotExtendedData(buf.readInt(), buf);
+                gotExtendedData(buf.readUInt32AsInt(), buf);
                 break;
 
             case CHANNEL_WINDOW_ADJUST:
-                gotWindowAdjustment(buf.readInt());
+                gotWindowAdjustment(buf.readUInt32AsInt());
                 break;
 
             case CHANNEL_REQUEST:
@@ -333,12 +333,12 @@ public abstract class AbstractChannel
     }
 
     protected SSHPacket newBuffer(Message cmd) {
-        return new SSHPacket(cmd).putInt(recipient);
+        return new SSHPacket(cmd).putUInt32(recipient);
     }
 
     protected void receiveInto(ChannelInputStream stream, SSHPacket buf)
             throws ConnectionException, TransportException {
-        final int len = buf.readInt();
+        final int len = buf.readUInt32AsInt();
         if (len < 0 || len > getLocalMaxPacketSize() || len > buf.available())
             throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Bad item length: " + len);
         if (log.isTraceEnabled())

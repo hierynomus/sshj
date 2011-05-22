@@ -116,7 +116,7 @@ final class Encoder
 
             // Put packet header
             buffer.wpos(startOfPacket);
-            buffer.putInt(packetLen);
+            buffer.putUInt32(packetLen);
             buffer.putByte((byte) padLen);
 
             // Now wpos will mark end of padding

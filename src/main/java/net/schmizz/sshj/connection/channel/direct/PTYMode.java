@@ -140,7 +140,7 @@ public enum PTYMode {
         Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
         for (Entry<PTYMode, Integer> entry : modes.entrySet()) {
             buf.putByte(entry.getKey().getOpcode());
-            buf.putInt(entry.getValue());
+            buf.putUInt32(entry.getValue());
         }
         buf.putByte((byte) 0);
         return buf.getCompactData();

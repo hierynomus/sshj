@@ -59,9 +59,9 @@ public class LocalPortForwarder {
         protected SSHPacket buildOpenReq() {
             return super.buildOpenReq()
                         .putString(host)
-                        .putInt(port)
+                        .putUInt32(port)
                         .putString(ss.getInetAddress().getHostAddress())
-                        .putInt(ss.getLocalPort());
+                        .putUInt32(ss.getLocalPort());
         }
 
     }

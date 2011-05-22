@@ -65,7 +65,7 @@ public class AuthKeyboardInteractive
         } else {
             provider.init(makeAccountResource(), buf.readString(), buf.readString());
             buf.readString(); // lang-tag
-            final int numPrompts = buf.readInt();
+            final int numPrompts = buf.readUInt32AsInt();
             final CharArrWrap[] userReplies = new CharArrWrap[numPrompts];
             for (int i = 0; i < numPrompts; i++) {
                 final String prompt = buf.readString();
@@ -79,7 +79,7 @@ public class AuthKeyboardInteractive
 
     private void respond(CharArrWrap[] userReplies)
             throws TransportException {
-        final SSHPacket pkt = new SSHPacket(Message.USERAUTH_INFO_RESPONSE).putInt(userReplies.length);
+        final SSHPacket pkt = new SSHPacket(Message.USERAUTH_INFO_RESPONSE).putUInt32(userReplies.length);
         for (final CharArrWrap response : userReplies)
             pkt.putSensitiveString(response.arr);
         params.getTransport().write(pkt);

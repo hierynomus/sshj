@@ -86,10 +86,10 @@ public class SessionChannel
                 true,
                 new Buffer.PlainBuffer()
                         .putString(term)
-                        .putInt(cols)
-                        .putInt(rows)
-                        .putInt(width)
-                        .putInt(height)
+                        .putUInt32(cols)
+                        .putUInt32(rows)
+                        .putUInt32(width)
+                        .putUInt32(height)
                         .putBytes(PTYMode.encode(modes))
         ).await(conn.getTimeout(), TimeUnit.SECONDS);
     }
@@ -106,10 +106,10 @@ public class SessionChannel
                 "pty-req",
                 false,
                 new Buffer.PlainBuffer()
-                        .putInt(cols)
-                        .putInt(rows)
-                        .putInt(width)
-                        .putInt(height)
+                        .putUInt32(cols)
+                        .putUInt32(rows)
+                        .putUInt32(width)
+                        .putUInt32(height)
         );
     }
 
@@ -150,7 +150,7 @@ public class SessionChannel
         if ("xon-xoff".equals(req))
             canDoFlowControl = buf.readBoolean();
         else if ("exit-status".equals(req))
-            exitStatus = buf.readInt();
+            exitStatus = buf.readUInt32AsInt();
         else if ("exit-signal".equals(req)) {
             exitSignal = Signal.fromString(buf.readString());
             wasCoreDumped = buf.readBoolean(); // core dumped
@@ -170,7 +170,7 @@ public class SessionChannel
                         .putBoolean(false)
                         .putString(authProto)
                         .putString(authCookie)
-                        .putInt(screen)
+                        .putUInt32(screen)
         ).await(conn.getTimeout(), TimeUnit.SECONDS);
     }
 

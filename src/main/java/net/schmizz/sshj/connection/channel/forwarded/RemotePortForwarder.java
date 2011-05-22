@@ -168,7 +168,7 @@ public class RemotePortForwarder
             throws ConnectionException, TransportException {
         SSHPacket reply = req(PF_REQ, forward);
         if (forward.port == 0)
-            forward.port = reply.readInt();
+            forward.port = reply.readUInt32AsInt();
         log.info("Remote end listening on {}", forward);
         listeners.put(forward, listener);
         return forward;
@@ -193,7 +193,7 @@ public class RemotePortForwarder
 
     protected SSHPacket req(String reqName, Forward forward)
             throws ConnectionException, TransportException {
-        final byte[] specifics = new Buffer.PlainBuffer().putString(forward.address).putInt(forward.port)
+        final byte[] specifics = new Buffer.PlainBuffer().putString(forward.address).putUInt32(forward.port)
                 .getCompactData();
         return conn.sendGlobalRequest(reqName, true, specifics)
                 .retrieve(conn.getTimeout(), TimeUnit.SECONDS);
@@ -211,9 +211,9 @@ public class RemotePortForwarder
     @Override
     public void handleOpen(SSHPacket buf)
             throws ConnectionException, TransportException {
-        final ForwardedTCPIPChannel chan = new ForwardedTCPIPChannel(conn, buf.readInt(), buf.readInt(), buf.readInt(),
-                                                                     new Forward(buf.readString(), buf.readInt()),
-                                                                     buf.readString(), buf.readInt());
+        final ForwardedTCPIPChannel chan = new ForwardedTCPIPChannel(conn, buf.readUInt32AsInt(), buf.readUInt32AsInt(), buf.readUInt32AsInt(),
+                                                                     new Forward(buf.readString(), buf.readUInt32AsInt()),
+                                                                     buf.readString(), buf.readUInt32AsInt());
         if (listeners.containsKey(chan.getParentForward()))
             callListener(listeners.get(chan.getParentForward()), chan);
         else

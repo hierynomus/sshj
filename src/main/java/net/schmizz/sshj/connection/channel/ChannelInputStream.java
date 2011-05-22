@@ -163,7 +163,7 @@ public final class ChannelInputStream
             if (adjustment > 0) {
                 log.info("Sending SSH_MSG_CHANNEL_WINDOW_ADJUST to #{} for {} bytes", chan.getRecipient(), adjustment);
                 trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST)
-                        .putInt(chan.getRecipient()).putInt(adjustment));
+                        .putUInt32(chan.getRecipient()).putUInt32(adjustment));
                 win.expand(adjustment);
             }
         }

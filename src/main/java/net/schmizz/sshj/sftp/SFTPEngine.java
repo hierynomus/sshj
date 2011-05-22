@@ -65,7 +65,7 @@ public class SFTPEngine
 
     public SFTPEngine init()
             throws IOException {
-        transmit(new SFTPPacket<Request>(PacketType.INIT).putInt(MAX_SUPPORTED_VERSION));
+        transmit(new SFTPPacket<Request>(PacketType.INIT).putUInt32(MAX_SUPPORTED_VERSION));
 
         final SFTPPacket<Response> response = reader.readPacket();
 
@@ -73,7 +73,7 @@ public class SFTPEngine
         if (type != PacketType.VERSION)
             throw new SFTPException("Expected INIT packet, received: " + type);
 
-        operativeVersion = response.readInt();
+        operativeVersion = response.readUInt32AsInt();
         log.info("Server version {}", operativeVersion);
         if (MAX_SUPPORTED_VERSION < operativeVersion)
             throw new SFTPException("Server reported incompatible protocol version: " + operativeVersion);
@@ -120,7 +120,7 @@ public class SFTPEngine
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)
             throws IOException {
         final String handle = doRequest(
-                newRequest(PacketType.OPEN).putString(path).putInt(OpenMode.toMask(modes)).putFileAttributes(fa)
+                newRequest(PacketType.OPEN).putString(path).putUInt32(OpenMode.toMask(modes)).putFileAttributes(fa)
         ).ensurePacketTypeIs(PacketType.HANDLE).readString();
         return new RemoteFile(this, path, handle);
     }
@@ -244,7 +244,7 @@ public class SFTPEngine
     protected static String readSingleName(Response res)
             throws IOException {
         res.ensurePacketTypeIs(PacketType.NAME);
-        if (res.readInt() == 1)
+        if (res.readUInt32AsInt() == 1)
             return res.readString();
         else
             throw new SFTPException("Unexpected data in " + res.getType() + " packet");

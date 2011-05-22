@@ -55,7 +55,7 @@ public class Response
         super(pk);
         this.protocolVersion = protocolVersion;
         this.type = readType();
-        this.reqID = readLong();
+        this.reqID = readUInt32();
     }
 
     public int getProtocolVersion() {
@@ -71,7 +71,7 @@ public class Response
     }
 
     public StatusCode readStatusCode() {
-        return StatusCode.fromInt(readInt());
+        return StatusCode.fromInt(readUInt32AsInt());
     }
 
     public Response ensurePacketTypeIs(PacketType pt)

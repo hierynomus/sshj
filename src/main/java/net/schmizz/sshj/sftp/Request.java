@@ -29,7 +29,7 @@ public class Request
         this.type = type;
         this.reqID = reqID;
         responsePromise = new Promise<Response, SFTPException>("sftp / " + reqID, SFTPException.chainer);
-        putInt(reqID);
+        putUInt32(reqID);
     }
 
     public long getRequestID() {

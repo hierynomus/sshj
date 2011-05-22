@@ -82,7 +82,7 @@ class Proposal {
         packet.putString("");
 
         packet.putBoolean(false); // Optimistic next packet does not follow
-        packet.putInt(0); // "Reserved" for future by spec
+        packet.putUInt32(0); // "Reserved" for future by spec
     }
 
     public Proposal(SSHPacket packet) {

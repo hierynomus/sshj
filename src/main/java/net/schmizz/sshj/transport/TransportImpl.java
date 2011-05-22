@@ -345,7 +345,7 @@ public final class TransportImpl
             throws TransportException {
         final long seq = decoder.getSequenceNumber();
         log.info("Sending SSH_MSG_UNIMPLEMENTED for packet #{}", seq);
-        return write(new SSHPacket(Message.UNIMPLEMENTED).putInt(seq));
+        return write(new SSHPacket(Message.UNIMPLEMENTED).putUInt32(seq));
     }
 
     @Override
@@ -438,7 +438,7 @@ public final class TransportImpl
         log.debug("Sending SSH_MSG_DISCONNECT: reason=[{}], msg=[{}]", reason, message);
         try {
             write(new SSHPacket(Message.DISCONNECT)
-                    .putInt(reason.toInt())
+                    .putUInt32(reason.toInt())
                     .putString(message)
                     .putString(""));
         } catch (IOException worthless) {
@@ -509,7 +509,7 @@ public final class TransportImpl
 
     private void gotDisconnect(SSHPacket buf)
             throws TransportException {
-        DisconnectReason code = DisconnectReason.fromInt(buf.readInt());
+        DisconnectReason code = DisconnectReason.fromInt(buf.readUInt32AsInt());
         String message = buf.readString();
         log.info("Received SSH_MSG_DISCONNECT (reason={}, msg={})", code, message);
         throw new TransportException(code, "Disconnected; server said: " + message);
@@ -537,7 +537,7 @@ public final class TransportImpl
      */
     private void gotUnimplemented(SSHPacket buf)
             throws SSHException {
-        long seqNum = buf.readLong();
+        long seqNum = buf.readUInt32();
         log.info("Received SSH_MSG_UNIMPLEMENTED #{}", seqNum);
         if (kexer.isKexOngoing())
             throw new TransportException("Received SSH_MSG_UNIMPLEMENTED while exchanging keys");

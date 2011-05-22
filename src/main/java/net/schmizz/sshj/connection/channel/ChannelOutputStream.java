@@ -74,8 +74,8 @@ public final class ChannelOutputStream
         buffer.rpos(5);
         buffer.wpos(5);
         buffer.putMessageID(Message.CHANNEL_DATA);
-        buffer.putInt(0); // meant to be recipient
-        buffer.putInt(0); // meant to be data length
+        buffer.putUInt32(0); // meant to be recipient
+        buffer.putUInt32(0); // meant to be data length
     }
 
     @Override
@@ -153,8 +153,8 @@ public final class ChannelOutputStream
     private void putRecipientAndLength() {
         final int origPos = buffer.wpos();
         buffer.wpos(6);
-        buffer.putInt(chan.getRecipient());
-        buffer.putInt(bufferLength);
+        buffer.putUInt32(chan.getRecipient());
+        buffer.putUInt32(bufferLength);
         buffer.wpos(origPos);
     }
 

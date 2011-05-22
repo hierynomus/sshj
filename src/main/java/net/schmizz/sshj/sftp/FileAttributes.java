@@ -119,26 +119,26 @@ public final class FileAttributes {
 
     public byte[] toBytes() {
         Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
-        buf.putInt(mask);
+        buf.putUInt32(mask);
 
         if (has(Flag.SIZE))
-            buf.putUINT64(size);
+            buf.putUInt64(size);
 
         if (has(Flag.UIDGID)) {
-            buf.putInt(uid);
-            buf.putInt(gid);
+            buf.putUInt32(uid);
+            buf.putUInt32(gid);
         }
 
         if (has(Flag.MODE))
-            buf.putInt(mode.getMask());
+            buf.putUInt32(mode.getMask());
 
         if (has(Flag.ACMODTIME)) {
-            buf.putInt(atime);
-            buf.putInt(mtime);
+            buf.putUInt32(atime);
+            buf.putUInt32(mtime);
         }
 
         if (has(Flag.EXTENDED)) {
-            buf.putInt(ext.size());
+            buf.putUInt32(ext.size());
             for (Entry<String, String> entry : ext.entrySet()) {
                 buf.putString(entry.getKey());
                 buf.putString(entry.getValue());
