@@ -501,18 +501,26 @@ public final class TransportImpl
             }
     }
 
-    private void gotDebug(SSHPacket buf) {
-        boolean display = buf.readBoolean();
-        String message = buf.readString();
-        log.info("Received SSH_MSG_DEBUG (display={}) '{}'", display, message);
+    private void gotDebug(SSHPacket buf) throws TransportException {
+        try {
+            final boolean display = buf.readBoolean();
+            final String message = buf.readString();
+            log.info("Received SSH_MSG_DEBUG (display={}) '{}'", display, message);
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
     }
 
     private void gotDisconnect(SSHPacket buf)
             throws TransportException {
-        DisconnectReason code = DisconnectReason.fromInt(buf.readUInt32AsInt());
-        String message = buf.readString();
-        log.info("Received SSH_MSG_DISCONNECT (reason={}, msg={})", code, message);
-        throw new TransportException(code, "Disconnected; server said: " + message);
+        try {
+            final DisconnectReason code = DisconnectReason.fromInt(buf.readUInt32AsInt());
+            final String message = buf.readString();
+            log.info("Received SSH_MSG_DISCONNECT (reason={}, msg={})", code, message);
+            throw new TransportException(code, "Disconnected; server said: " + message);
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
     }
 
     private void gotServiceAccept()

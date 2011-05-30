@@ -35,6 +35,7 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.Connection;
@@ -67,13 +68,23 @@ public abstract class AbstractDirectChannel
         open.await(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
-    private void gotOpenConfirmation(SSHPacket buf) {
-        init(buf.readUInt32AsInt(), buf.readUInt32AsInt(), buf.readUInt32AsInt());
+    private void gotOpenConfirmation(SSHPacket buf)
+            throws ConnectionException {
+        try {
+            init(buf.readUInt32AsInt(), buf.readUInt32AsInt(), buf.readUInt32AsInt());
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
         open.set();
     }
 
-    private void gotOpenFailure(SSHPacket buf) {
-        open.deliverError(new OpenFailException(getType(), buf.readUInt32AsInt(), buf.readString()));
+    private void gotOpenFailure(SSHPacket buf)
+            throws ConnectionException {
+        try {
+            open.deliverError(new OpenFailException(getType(), buf.readUInt32AsInt(), buf.readString()));
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
         finishOff();
     }
 

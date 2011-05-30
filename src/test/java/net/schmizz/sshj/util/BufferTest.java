@@ -41,7 +41,8 @@ public class BufferTest {
     }
 
     @Test
-    public void testDataTypes() {
+    public void testDataTypes()
+            throws Buffer.BufferException {
         // bool
         assertEquals(handyBuf.putBoolean(true).readBoolean(), true);
 
@@ -63,7 +64,8 @@ public class BufferTest {
     }
 
     @Test
-    public void testPassword() {
+    public void testPassword()
+            throws Buffer.BufferException {
         char[] pass = "lolcatz".toCharArray();
         // test if put correctly as a string
         assertEquals(new Buffer.PlainBuffer().putSensitiveString(pass).readString(), "lolcatz");
@@ -73,7 +75,7 @@ public class BufferTest {
 
     @Test
     public void testPosition()
-            throws UnsupportedEncodingException {
+            throws UnsupportedEncodingException, Buffer.BufferException {
         assertEquals(5, posBuf.wpos());
         assertEquals(0, posBuf.rpos());
         assertEquals(5, posBuf.available());
@@ -95,7 +97,8 @@ public class BufferTest {
     }
 
     @Test(expected = Buffer.BufferException.class)
-    public void testUnderflow() {
+    public void testUnderflow()
+            throws Buffer.BufferException {
         // exhaust the buffer
         for (int i = 0; i < 5; ++i)
             posBuf.readByte();

@@ -121,13 +121,20 @@ public abstract class AbstractDHG
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "Unexpected packet: " + msg);
 
         log.info("Received SSH_MSG_KEXDH_REPLY");
-        final byte[] K_S = packet.readBytes();
-        final byte[] f = packet.readMPIntAsBytes();
-        final byte[] sig = packet.readBytes(); // signature sent by server
+        final byte[] K_S;
+        final byte[] f;
+        final byte[] sig; // signature sent by server
+        try {
+            K_S = packet.readBytes();
+            f = packet.readMPIntAsBytes();
+            sig = packet.readBytes();
+            hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
+
         dh.setF(new BigInteger(f));
         K = dh.getK();
-
-        hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
 
         final Buffer.PlainBuffer buf = new Buffer.PlainBuffer()
                 .putString(V_C)

@@ -15,16 +15,16 @@
  */
 package net.schmizz.sshj.connection;
 
-import net.schmizz.concurrent.Promise;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
+import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.AbstractService;
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.ErrorNotifiable;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.channel.Channel;
-import net.schmizz.sshj.connection.channel.OpenFailException;
 import net.schmizz.sshj.connection.channel.OpenFailException.Reason;
 import net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener;
 import net.schmizz.sshj.transport.Transport;
@@ -103,14 +103,18 @@ public class ConnectionImpl
 
     private Channel getChannel(SSHPacket buffer)
             throws ConnectionException {
-        int recipient = buffer.readUInt32AsInt();
-        Channel channel = get(recipient);
-        if (channel != null)
-            return channel;
-        else {
-            buffer.rpos(buffer.rpos() - 5);
-            throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Received " + buffer.readMessageID()
-                                                                           + " on unknown channel #" + recipient);
+        try {
+            final int recipient = buffer.readUInt32AsInt();
+            final Channel channel = get(recipient);
+            if (channel != null)
+                return channel;
+            else {
+                buffer.rpos(buffer.rpos() - 5);
+                throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
+                                              "Received " + buffer.readMessageID() + " on unknown channel #" + recipient);
+            }
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
         }
     }
 
@@ -180,12 +184,13 @@ public class ConnectionImpl
 
     @Override
     public Promise<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
-                                                                    byte[] specifics)
+                                                                     byte[] specifics)
             throws TransportException {
         synchronized (globalReqPromises) {
             log.info("Making global request for `{}`", name);
             trans.write(new SSHPacket(Message.GLOBAL_REQUEST).putString(name)
-                    .putBoolean(wantReply).putRawBytes(specifics));
+                                                             .putBoolean(wantReply)
+                                                             .putRawBytes(specifics));
 
             Promise<SSHPacket, ConnectionException> promise = null;
             if (wantReply) {
@@ -212,13 +217,17 @@ public class ConnectionImpl
 
     private void gotChannelOpen(SSHPacket buf)
             throws ConnectionException, TransportException {
-        final String type = buf.readString();
-        log.debug("Received CHANNEL_OPEN for `{}` channel", type);
-        if (openers.containsKey(type))
-            openers.get(type).handleOpen(buf);
-        else {
-            log.warn("No opener found for `{}` CHANNEL_OPEN request -- rejecting", type);
-            sendOpenFailure(buf.readUInt32AsInt(), OpenFailException.Reason.UNKNOWN_CHANNEL_TYPE, "");
+        try {
+            final String type = buf.readString();
+            log.debug("Received CHANNEL_OPEN for `{}` channel", type);
+            if (openers.containsKey(type))
+                openers.get(type).handleOpen(buf);
+            else {
+                log.warn("No opener found for `{}` CHANNEL_OPEN request -- rejecting", type);
+                sendOpenFailure(buf.readUInt32AsInt(), Reason.UNKNOWN_CHANNEL_TYPE, "");
+            }
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
         }
     }
 
@@ -226,9 +235,9 @@ public class ConnectionImpl
     public void sendOpenFailure(int recipient, Reason reason, String message)
             throws TransportException {
         trans.write(new SSHPacket(Message.CHANNEL_OPEN_FAILURE)
-                .putUInt32(recipient)
-                .putUInt32(reason.getCode())
-                .putString(message));
+                            .putUInt32(recipient)
+                            .putUInt32(reason.getCode())
+                            .putString(message));
     }
 
     @Override

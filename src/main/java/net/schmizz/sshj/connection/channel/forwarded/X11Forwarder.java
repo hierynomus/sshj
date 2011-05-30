@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.connection.channel.forwarded;
 
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -55,10 +56,14 @@ public class X11Forwarder
     @Override
     public void handleOpen(SSHPacket buf)
             throws ConnectionException, TransportException {
-        callListener(listener, new X11Channel(conn,
-                                              buf.readUInt32AsInt(),
-                                              buf.readUInt32AsInt(), buf.readUInt32AsInt(),
-                                              buf.readString(), buf.readUInt32AsInt()));
+        try {
+            callListener(listener, new X11Channel(conn,
+                                                  buf.readUInt32AsInt(),
+                                                  buf.readUInt32AsInt(), buf.readUInt32AsInt(),
+                                                  buf.readString(), buf.readUInt32AsInt()));
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
     }
 
     /** Stop handling {@code x11} channel open requests. De-registers itself with connection layer. */

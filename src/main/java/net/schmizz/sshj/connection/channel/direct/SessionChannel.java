@@ -36,6 +36,7 @@
 package net.schmizz.sshj.connection.channel.direct;
 
 import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacket;
@@ -147,17 +148,21 @@ public class SessionChannel
     @Override
     public void handleRequest(String req, SSHPacket buf)
             throws ConnectionException, TransportException {
-        if ("xon-xoff".equals(req))
-            canDoFlowControl = buf.readBoolean();
-        else if ("exit-status".equals(req))
-            exitStatus = buf.readUInt32AsInt();
-        else if ("exit-signal".equals(req)) {
-            exitSignal = Signal.fromString(buf.readString());
-            wasCoreDumped = buf.readBoolean(); // core dumped
-            exitErrMsg = buf.readString();
-            sendClose();
-        } else
-            super.handleRequest(req, buf);
+        try {
+            if ("xon-xoff".equals(req))
+                canDoFlowControl = buf.readBoolean();
+            else if ("exit-status".equals(req))
+                exitStatus = buf.readUInt32AsInt();
+            else if ("exit-signal".equals(req)) {
+                exitSignal = Signal.fromString(buf.readString());
+                wasCoreDumped = buf.readBoolean(); // core dumped
+                exitErrMsg = buf.readString();
+                sendClose();
+            } else
+                super.handleRequest(req, buf);
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
     }
 
     @Override
@@ -225,12 +230,18 @@ public class SessionChannel
     }
 
     @Override
-    protected void gotExtendedData(int dataTypeCode, SSHPacket buf)
+    protected void gotExtendedData(SSHPacket buf)
             throws ConnectionException, TransportException {
-        if (dataTypeCode == 1)
-            receiveInto(err, buf);
-        else
-            super.gotExtendedData(dataTypeCode, buf);
+        try {
+            final int dataTypeCode = buf.readUInt32AsInt();
+            if (dataTypeCode == 1)
+                receiveInto(err, buf);
+            else
+                throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
+                                              "Bad extended data type = " + dataTypeCode);
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
     }
 
     @Override
@@ -246,13 +257,15 @@ public class SessionChannel
 
     @Override
     @Deprecated
-    public String getOutputAsString() throws IOException {
+    public String getOutputAsString()
+            throws IOException {
         return IOUtils.readFully(getInputStream()).toString();
     }
 
     @Override
     @Deprecated
-    public String getErrorAsString() throws IOException {
+    public String getErrorAsString()
+            throws IOException {
         return IOUtils.readFully(getErrorStream()).toString();
     }
 

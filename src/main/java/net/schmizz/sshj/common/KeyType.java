@@ -36,8 +36,13 @@ public enum KeyType {
         @Override
         public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
                 throws GeneralSecurityException {
-            final BigInteger e = buf.readMPInt();
-            final BigInteger n = buf.readMPInt();
+            final BigInteger e, n;
+            try {
+                e = buf.readMPInt();
+                n = buf.readMPInt();
+            } catch (Buffer.BufferException be) {
+                throw new GeneralSecurityException(be);
+            }
             final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
             return keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
         }
@@ -63,10 +68,15 @@ public enum KeyType {
         @Override
         public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
                 throws GeneralSecurityException {
-            final BigInteger p = buf.readMPInt();
-            final BigInteger q = buf.readMPInt();
-            final BigInteger g = buf.readMPInt();
-            final BigInteger y = buf.readMPInt();
+            BigInteger p, q, g, y;
+            try {
+                p = buf.readMPInt();
+                q = buf.readMPInt();
+                g = buf.readMPInt();
+                y = buf.readMPInt();
+            } catch (Buffer.BufferException be) {
+                throw new GeneralSecurityException(be);
+            }
             final KeyFactory keyFactory = SecurityUtils.getKeyFactory("DSA");
             return keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
         }

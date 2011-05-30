@@ -35,6 +35,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.SSHException;
@@ -157,7 +158,12 @@ final class Decoder
             throws TransportException {
         cipher.update(inputBuffer.array(), 0, cipherSize);
 
-        final int len = inputBuffer.readUInt32AsInt(); // Read packet length
+        final int len; // Read packet length
+        try {
+            len = inputBuffer.readUInt32AsInt();
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
 
         if (isInvalidPacketLength(len)) { // Check packet length validity
             log.info("Error decoding packet (invalid length) {}", inputBuffer.printHex());

@@ -75,7 +75,8 @@ public class SSHPacket
      *
      * @return the message identifier
      */
-    public Message readMessageID() {
+    public Message readMessageID()
+            throws BufferException {
         return Message.fromByte(readByte());
     }
 

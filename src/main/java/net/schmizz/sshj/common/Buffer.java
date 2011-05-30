@@ -44,7 +44,8 @@ import java.util.Arrays;
 public class Buffer<T extends Buffer<T>> {
 
     public static class BufferException
-            extends SSHRuntimeException {
+            extends SSHException {
+
         public BufferException(String message) {
             super(message);
         }
@@ -139,7 +140,8 @@ public class Buffer<T extends Buffer<T>> {
         this.wpos = wpos;
     }
 
-    protected void ensureAvailable(int a) {
+    protected void ensureAvailable(int a)
+            throws BufferException {
         if (available() < a)
             throw new BufferException("Underflow");
     }
@@ -177,7 +179,8 @@ public class Buffer<T extends Buffer<T>> {
      *
      * @return the {@code true} or {@code false} value read
      */
-    public boolean readBoolean() {
+    public boolean readBoolean()
+            throws BufferException {
         return readByte() != 0;
     }
 
@@ -197,7 +200,8 @@ public class Buffer<T extends Buffer<T>> {
      *
      * @return the byte read
      */
-    public byte readByte() {
+    public byte readByte()
+            throws BufferException {
         ensureAvailable(1);
         return data[rpos++];
     }
@@ -221,7 +225,8 @@ public class Buffer<T extends Buffer<T>> {
      *
      * @return the byte-array read
      */
-    public byte[] readBytes() {
+    public byte[] readBytes()
+            throws BufferException {
         int len = readUInt32AsInt();
         if (len < 0 || len > 32768)
             throw new BufferException("Bad item length: " + len);
@@ -254,11 +259,13 @@ public class Buffer<T extends Buffer<T>> {
         return putUInt32(len - off).putRawBytes(b, off, len);
     }
 
-    public void readRawBytes(byte[] buf) {
+    public void readRawBytes(byte[] buf)
+            throws BufferException {
         readRawBytes(buf, 0, buf.length);
     }
 
-    public void readRawBytes(byte[] buf, int off, int len) {
+    public void readRawBytes(byte[] buf, int off, int len)
+            throws BufferException {
         ensureAvailable(len);
         System.arraycopy(data, rpos, buf, off, len);
         rpos += len;
@@ -294,16 +301,18 @@ public class Buffer<T extends Buffer<T>> {
         return (T) this;
     }
 
-    public int readUInt32AsInt() {
+    public int readUInt32AsInt()
+            throws BufferException {
         return (int) readUInt32();
     }
 
-    public long readUInt32() {
+    public long readUInt32()
+            throws BufferException {
         ensureAvailable(4);
         return data[rpos++] << 24 & 0xff000000L |
-               data[rpos++] << 16 & 0x00ff0000L |
-               data[rpos++] << 8 & 0x0000ff00L |
-               data[rpos++] & 0x000000ffL;
+                data[rpos++] << 16 & 0x00ff0000L |
+                data[rpos++] << 8 & 0x0000ff00L |
+                data[rpos++] & 0x000000ffL;
     }
 
     /**
@@ -317,7 +326,7 @@ public class Buffer<T extends Buffer<T>> {
     public T putUInt32(long uint32) {
         ensureCapacity(4);
         if (uint32 < 0 || uint32 > 0xffffffffL)
-            throw new BufferException("Invalid value: " + uint32);
+            throw new RuntimeException("Invalid value: " + uint32);
         data[wpos++] = (byte) (uint32 >> 24);
         data[wpos++] = (byte) (uint32 >> 16);
         data[wpos++] = (byte) (uint32 >> 8);
@@ -330,7 +339,8 @@ public class Buffer<T extends Buffer<T>> {
      *
      * @return the MP integer as a {@code BigInteger}
      */
-    public BigInteger readMPInt() {
+    public BigInteger readMPInt()
+            throws BufferException {
         return new BigInteger(readMPIntAsBytes());
     }
 
@@ -363,11 +373,13 @@ public class Buffer<T extends Buffer<T>> {
         return putRawBytes(foo);
     }
 
-    public byte[] readMPIntAsBytes() {
+    public byte[] readMPIntAsBytes()
+            throws BufferException {
         return readBytes();
     }
 
-    public long readUInt64() {
+    public long readUInt64()
+            throws BufferException {
         long uint64 = (readUInt32() << 32) + (readUInt32() & 0xffffffffL);
         if (uint64 < 0)
             throw new BufferException("Cannot handle values > Long.MAX_VALUE");
@@ -377,7 +389,7 @@ public class Buffer<T extends Buffer<T>> {
     @SuppressWarnings("unchecked")
     public T putUInt64(long uint64) {
         if (uint64 < 0)
-            throw new BufferException("Invalid value: " + uint64);
+            throw new RuntimeException("Invalid value: " + uint64);
         data[wpos++] = (byte) (uint64 >> 56);
         data[wpos++] = (byte) (uint64 >> 48);
         data[wpos++] = (byte) (uint64 >> 40);
@@ -394,7 +406,8 @@ public class Buffer<T extends Buffer<T>> {
      *
      * @return the string as a Java {@code String}
      */
-    public String readString() {
+    public String readString()
+            throws BufferException {
         int len = readUInt32AsInt();
         if (len < 0 || len > 32768)
             throw new BufferException("Bad item length: " + len);
@@ -414,7 +427,8 @@ public class Buffer<T extends Buffer<T>> {
      *
      * @return the string as a byte-array
      */
-    public byte[] readStringAsBytes() {
+    public byte[] readStringAsBytes()
+            throws BufferException {
         return readBytes();
     }
 
@@ -452,7 +466,8 @@ public class Buffer<T extends Buffer<T>> {
         return (T) this;
     }
 
-    public PublicKey readPublicKey() {
+    public PublicKey readPublicKey()
+            throws BufferException {
         try {
             final String type = readString();
             return KeyType.fromString(type).readPubKeyFromBuffer(type, this);

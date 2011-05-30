@@ -36,6 +36,7 @@
 package net.schmizz.sshj.transport;
 
 import net.schmizz.sshj.Config;
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
@@ -85,18 +86,22 @@ class Proposal {
         packet.putUInt32(0); // "Reserved" for future by spec
     }
 
-    public Proposal(SSHPacket packet) {
+    public Proposal(SSHPacket packet) throws TransportException {
         this.packet = packet;
         final int savedPos = packet.rpos();
         packet.rpos(packet.rpos() + 17); // Skip message ID & cookie
-        kex = fromCommaString(packet.readString());
-        sig = fromCommaString(packet.readString());
-        c2sCipher = fromCommaString(packet.readString());
-        s2cCipher = fromCommaString(packet.readString());
-        c2sMAC = fromCommaString(packet.readString());
-        s2cMAC = fromCommaString(packet.readString());
-        c2sComp = fromCommaString(packet.readString());
-        s2cComp = fromCommaString(packet.readString());
+        try {
+            kex = fromCommaString(packet.readString());
+            sig = fromCommaString(packet.readString());
+            c2sCipher = fromCommaString(packet.readString());
+            s2cCipher = fromCommaString(packet.readString());
+            c2sMAC = fromCommaString(packet.readString());
+            s2cMAC = fromCommaString(packet.readString());
+            c2sComp = fromCommaString(packet.readString());
+            s2cComp = fromCommaString(packet.readString());
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
         packet.rpos(savedPos);
     }
 

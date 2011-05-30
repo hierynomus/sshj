@@ -183,11 +183,11 @@ public abstract class AbstractChannel
                 break;
 
             case CHANNEL_EXTENDED_DATA:
-                gotExtendedData(buf.readUInt32AsInt(), buf);
+                gotExtendedData(buf);
                 break;
 
             case CHANNEL_WINDOW_ADJUST:
-                gotWindowAdjustment(buf.readUInt32AsInt());
+                gotWindowAdjustment(buf);
                 break;
 
             case CHANNEL_REQUEST:
@@ -301,13 +301,24 @@ public abstract class AbstractChannel
 
     private void gotChannelRequest(SSHPacket buf)
             throws ConnectionException, TransportException {
-        final String reqType = buf.readString();
-        buf.readBoolean(); // We don't care about the 'want-reply' value
+        final String reqType;
+        try {
+            reqType = buf.readString();
+            buf.readBoolean(); // We don't care about the 'want-reply' value
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
         log.info("Got chan request for `{}`", reqType);
         handleRequest(reqType, buf);
     }
 
-    private void gotWindowAdjustment(int howMuch) {
+    private void gotWindowAdjustment(SSHPacket buf) throws ConnectionException {
+        final int howMuch;
+        try {
+            howMuch = buf.readUInt32AsInt();
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
         log.info("Received window adjustment for {} bytes", howMuch);
         rwin.expand(howMuch);
     }
@@ -317,10 +328,10 @@ public abstract class AbstractChannel
         close.set();
     }
 
-    protected void gotExtendedData(int dataTypeCode, SSHPacket buf)
+    protected void gotExtendedData(SSHPacket buf)
             throws ConnectionException, TransportException {
-        throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Extended data not supported on " + type
-                                                                       + " channel");
+        throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
+                                      "Extended data not supported on " + type + " channel");
     }
 
     protected void gotUnknown(Message msg, SSHPacket buf)
@@ -338,7 +349,12 @@ public abstract class AbstractChannel
 
     protected void receiveInto(ChannelInputStream stream, SSHPacket buf)
             throws ConnectionException, TransportException {
-        final int len = buf.readUInt32AsInt();
+        final int len;
+        try {
+            len = buf.readUInt32AsInt();
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
         if (len < 0 || len > getLocalMaxPacketSize() || len > buf.available())
             throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Bad item length: " + len);
         if (log.isTraceEnabled())

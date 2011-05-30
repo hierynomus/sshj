@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.method;
 
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
@@ -63,15 +64,20 @@ public class AuthKeyboardInteractive
         if (cmd != Message.USERAUTH_60) {
             super.handle(cmd, buf);
         } else {
-            provider.init(makeAccountResource(), buf.readString(), buf.readString());
-            buf.readString(); // lang-tag
-            final int numPrompts = buf.readUInt32AsInt();
-            final CharArrWrap[] userReplies = new CharArrWrap[numPrompts];
-            for (int i = 0; i < numPrompts; i++) {
-                final String prompt = buf.readString();
-                final boolean echo = buf.readBoolean();
-                log.info("Requesting response for challenge `{}`; echo={}", prompt, echo);
-                userReplies[i] = new CharArrWrap(provider.getResponse(prompt, echo));
+            final CharArrWrap[] userReplies;
+            try {
+                provider.init(makeAccountResource(), buf.readString(), buf.readString());
+                buf.readString(); // lang-tag
+                final int numPrompts = buf.readUInt32AsInt();
+                userReplies = new CharArrWrap[numPrompts];
+                for (int i = 0; i < numPrompts; i++) {
+                    final String prompt = buf.readString();
+                    final boolean echo = buf.readBoolean();
+                    log.info("Requesting response for challenge `{}`; echo={}", prompt, echo);
+                    userReplies[i] = new CharArrWrap(provider.getResponse(prompt, echo));
+                }
+            } catch (Buffer.BufferException be) {
+                throw new UserAuthException(be);
             }
             respond(userReplies);
         }
