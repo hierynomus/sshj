@@ -99,8 +99,8 @@ import java.util.List;
  *     client.authPassword(&quot;username&quot;, &quot;password&quot;);
  *     final Session session = client.startSession();
  *     try {
- *          session.exec(&quot;true&quot;);
- *          client.getConnection().join();
+ *          final Command cmd = session.exec(&quot;true&quot;);
+ *          cmd.join(1, TimeUnit.SECONDS);
  *     } finally {
  *          session.close();
  *    } finally {
