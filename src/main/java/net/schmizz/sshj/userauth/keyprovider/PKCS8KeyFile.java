@@ -20,6 +20,9 @@ import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
+import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
+import net.schmizz.sshj.userauth.password.Resource;
+
 import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMReader;
 import org.slf4j.Logger;
@@ -29,6 +32,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -52,7 +57,8 @@ public class PKCS8KeyFile
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected PasswordFinder pwdf;
-    protected PrivateKeyFileResource resource;
+    @SuppressWarnings("unchecked")
+    protected Resource resource;
     protected KeyPair kp;
 
     protected KeyType type;
@@ -89,6 +95,19 @@ public class PKCS8KeyFile
         this.pwdf = pwdf;
     }
 
+    @Override
+    public void init(String privateKey, String publicKey) {
+        assert privateKey != null;
+        assert publicKey == null;
+        resource = new PrivateKeyStringResource(privateKey);
+    }
+
+    @Override
+    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
+        init(privateKey, publicKey);
+        this.pwdf = pwdf;
+    }
+
     protected org.bouncycastle.openssl.PasswordFinder makeBouncyPasswordFinder() {
         if (pwdf == null)
             return null;
@@ -111,7 +130,7 @@ public class PKCS8KeyFile
             for (; ;) {
                 // while the PasswordFinder tells us we should retry
                 try {
-                    r = new PEMReader(new InputStreamReader(new FileInputStream(resource.getDetail())), pFinder);
+                    r = new PEMReader(resource.getReader(), pFinder);
                     o = r.readObject();
                 } catch (EncryptionException e) {
                     if (pwdf.shouldRetry(resource))
