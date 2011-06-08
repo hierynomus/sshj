@@ -16,6 +16,10 @@
 package net.schmizz.sshj.userauth.password;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 
 public class PrivateKeyFileResource
         extends Resource<File> {
@@ -24,4 +28,9 @@ public class PrivateKeyFileResource
         super(privateKeyFile);
     }
 
+    @Override
+    public Reader getReader()
+            throws IOException {
+        return new InputStreamReader(new FileInputStream(getDetail()));
+    }
 }

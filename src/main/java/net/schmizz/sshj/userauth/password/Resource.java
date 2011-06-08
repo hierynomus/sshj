@@ -15,6 +15,9 @@
  */
 package net.schmizz.sshj.userauth.password;
 
+import java.io.IOException;
+import java.io.Reader;
+
 /** A password-protected resource */
 public abstract class Resource<H> {
 
@@ -27,6 +30,9 @@ public abstract class Resource<H> {
     public H getDetail() {
         return detail;
     }
+
+    public abstract Reader getReader()
+            throws IOException;
 
     @Override
     public boolean equals(Object o) {

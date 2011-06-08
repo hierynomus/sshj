@@ -50,6 +50,7 @@ import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.method.AuthPassword;
@@ -64,6 +65,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.SocketAddress;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -499,6 +502,33 @@ public class SSHClient
     public KeyProvider loadKeys(String location, String passphrase)
             throws IOException {
         return loadKeys(location, passphrase.toCharArray());
+    }
+
+    /**
+     * Creates a {@link KeyProvider} instance from passed strings. Currently only PKCS8 format
+     * private key files are supported (OpenSSH uses this format).
+     * <p/>
+     *
+     * @param privateKey     the private key as a string
+     * @param publicKey      the public key as a string if it's not included with the private key
+     * @param passwordFinder the {@link PasswordFinder} that can supply the passphrase for decryption (may be {@code
+     *                       null} in case keyfile is not encrypted)
+     *
+     * @return the key provider ready for use in authentication
+     *
+     * @throws SSHException if there was no suitable key provider available for the file format; typically because
+     *                      BouncyCastle is not in the classpath
+     * @throws IOException  if the key file format is not known, etc.
+     */
+    public KeyProvider loadKeys(String privateKey, String publicKey, PasswordFinder passwordFinder)
+            throws IOException {
+        final FileKeyProvider.Format format = KeyProviderUtil.detectKeyFileFormat(privateKey, publicKey != null);
+        final FileKeyProvider fkp = Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format
+                .toString());
+        if (fkp == null)
+            throw new SSHException("No provider available for " + format + " key file");
+        fkp.init(privateKey, publicKey, passwordFinder);
+        return fkp;
     }
 
     /**

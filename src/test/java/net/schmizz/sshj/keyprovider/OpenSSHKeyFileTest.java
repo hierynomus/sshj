@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
+import java.util.Scanner;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -113,6 +114,19 @@ public class OpenSSHKeyFileTest {
         assertEquals(KeyUtil.newDSAPrivateKey(x, p, q, g), dsa.getPrivate());
     }
 
+    @Test
+    public void fromString()
+        throws IOException, GeneralSecurityException {
+        FileKeyProvider dsa = new OpenSSHKeyFile();
+        String privateKey = readFile("src/test/resources/id_dsa");
+        String publicKey = readFile("src/test/resources/id_dsa.pub");
+        dsa.init(privateKey, publicKey,
+                 PasswordUtils.createOneOff(correctPassphrase));
+        assertEquals(dsa.getType(), KeyType.DSA);
+        assertEquals(KeyUtil.newDSAPublicKey(y, p, q, g), dsa.getPublic());
+        assertEquals(KeyUtil.newDSAPrivateKey(x, p, q, g), dsa.getPrivate());
+    }
+
     @Before
     public void setup()
             throws UnsupportedEncodingException, GeneralSecurityException {
@@ -120,4 +134,19 @@ public class OpenSSHKeyFileTest {
             throw new AssertionError("bouncy castle needed");
     }
 
+    private String readFile(String pathname)
+            throws IOException {
+        
+        StringBuilder fileContents = new StringBuilder();
+        Scanner scanner = new Scanner(new File(pathname));
+        String lineSeparator = System.getProperty("line.separator");
+        try {
+            while(scanner.hasNextLine()) {        
+                fileContents.append(scanner.nextLine() + lineSeparator);
+            }
+            return fileContents.toString();
+        } finally {
+            scanner.close();
+        }
+    }
 }
