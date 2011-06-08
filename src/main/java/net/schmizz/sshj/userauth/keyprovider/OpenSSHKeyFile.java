@@ -23,7 +23,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.security.PublicKey;
+
 
 /**
  * Represents an OpenSSH identity that consists of a PKCS8-encoded private key file and an unencrypted public key file
@@ -62,18 +65,7 @@ public class OpenSSHKeyFile
         final File f = new File(location + ".pub");
         if (f.exists())
             try {
-                final BufferedReader br = new BufferedReader(new FileReader(f));
-                try {
-                    final String keydata = br.readLine();
-                    if (keydata != null) {
-                        String[] parts = keydata.split(" ");
-                        assert parts.length >= 2;
-                        type = KeyType.fromString(parts[0]);
-                        pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
-                    }
-                } finally {
-                    br.close();
-                }
+                initPubKey(new FileReader(f));
             } catch (IOException e) {
                 // let super provide both public & private key
                 log.warn("Error reading public key file: {}", e.toString());
@@ -81,4 +73,36 @@ public class OpenSSHKeyFile
         super.init(location);
     }
 
+    @Override
+    public void init(String privateKey, String publicKey) {
+        if (publicKey != null) {
+            initPubKey(new StringReader(publicKey));
+        }
+        super.init(privateKey, null);
+    }
+
+    /**
+     * Read and store the separate public key provided alongside the private key
+     * 
+     * @param publicKey Public key accessible through a {@code Reader}
+     */
+    private void initPubKey(Reader publicKey) {
+        try {
+            final BufferedReader br = new BufferedReader(publicKey);
+            try {
+                final String keydata = br.readLine();
+                if (keydata != null) {
+                    String[] parts = keydata.split(" ");
+                    assert parts.length >= 2;
+                    type = KeyType.fromString(parts[0]);
+                    pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
+                }
+            } finally {
+                br.close();
+            }
+        } catch (IOException e) {
+            // let super provide both public & private key
+            log.warn("Error reading public key: {}", e.toString());
+        }
+    }
 }

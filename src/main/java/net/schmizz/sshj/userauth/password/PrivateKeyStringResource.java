@@ -19,11 +19,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-public class AccountResource
-        extends Resource<String> {
+public class PrivateKeyStringResource extends Resource<String> {
 
-    public AccountResource(String user, String host) {
-        super(user + "@" + host);
+    public PrivateKeyStringResource(String string) {
+        super(string);
     }
 
     @Override

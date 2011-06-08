@@ -33,4 +33,7 @@ public interface FileKeyProvider
 
     void init(File location, PasswordFinder pwdf);
 
+    void init(String privateKey, String publicKey);
+
+    void init(String privateKey, String publicKey, PasswordFinder pwdf);
 }
