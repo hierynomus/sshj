@@ -41,7 +41,6 @@ import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.ErrorNotifiable;
 import net.schmizz.sshj.common.Factory;
-import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHException;
@@ -57,6 +56,7 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -234,6 +234,7 @@ final class KeyExchanger
 
     private void gotKexInit(SSHPacket buf)
             throws TransportException {
+        buf.rpos(buf.rpos() - 1);
         final Proposal serverProposal = new Proposal(buf);
         negotiatedAlgs = clientProposal.negotiate(serverProposal);
         log.debug("Negotiated algorithms: {}", negotiatedAlgs);
@@ -241,10 +242,8 @@ final class KeyExchanger
                                         negotiatedAlgs.getKeyExchangeAlgorithm());
         try {
             kex.init(transport,
-                     transport.getServerID().getBytes(IOUtils.UTF8),
-                     transport.getClientID().getBytes(IOUtils.UTF8),
-                     buf.getCompactData(),
-                     clientProposal.getPacket().getCompactData());
+                     transport.getServerID(), transport.getClientID(),
+                     serverProposal.getPacket().getCompactData(), clientProposal.getPacket().getCompactData());
         } catch (GeneralSecurityException e) {
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, e);
         }
@@ -262,7 +261,7 @@ final class KeyExchanger
      *
      * @return the resized key
      */
-    private static byte[] resizedKey(byte[] E, int blockSize, Digest hash, byte[] K, byte[] H) {
+    private static byte[] resizedKey(byte[] E, int blockSize, Digest hash, BigInteger K, byte[] H) {
         while (blockSize > E.length) {
             Buffer.PlainBuffer buffer = new Buffer.PlainBuffer().putMPInt(K).putRawBytes(H).putRawBytes(E);
             hash.update(buffer.array(), 0, buffer.available());
@@ -280,13 +279,15 @@ final class KeyExchanger
     private void gotNewKeys() {
         final Digest hash = kex.getHash();
 
+        final byte[] H = kex.getH();
+
         if (sessionID == null)
             // session id is 'H' from the first key exchange and does not change thereafter
-            sessionID = Arrays.copyOf(kex.getH(), kex.getH().length);
+            sessionID = H;
 
         final Buffer.PlainBuffer hashInput = new Buffer.PlainBuffer()
                 .putMPInt(kex.getK())
-                .putRawBytes(kex.getH())
+                .putRawBytes(H)
                 .putByte((byte) 0) // <placeholder>
                 .putRawBytes(sessionID);
         final int pos = hashInput.available() - sessionID.length - 1; // Position of <placeholder>
@@ -360,7 +361,6 @@ final class KeyExchanger
                 * having sent the packet ourselves (would cause gotKexInit() to fail)
                 */
                 kexInitSent.await(transport.getTimeout(), TimeUnit.SECONDS);
-                buf.rpos(buf.rpos() - 1);
                 gotKexInit(buf);
                 expected = Expected.FOLLOWUP;
                 break;

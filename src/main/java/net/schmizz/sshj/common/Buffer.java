@@ -341,41 +341,13 @@ public class Buffer<T extends Buffer<T>> {
      */
     public BigInteger readMPInt()
             throws BufferException {
-        return new BigInteger(readMPIntAsBytes());
+        return new BigInteger(readBytes());
     }
 
-    /**
-     * Writes an SSH multiple-precision integer from a {@code BigInteger}
-     *
-     * @param bi {@code BigInteger} to write
-     *
-     * @return this
-     */
     public T putMPInt(BigInteger bi) {
-        return putMPInt(bi.toByteArray());
-    }
-
-    /**
-     * Writes an SSH multiple-precision integer from a Java byte-array
-     *
-     * @param foo byte-array
-     *
-     * @return this
-     */
-    public T putMPInt(byte[] foo) {
-        int i = foo.length;
-        if ((foo[0] & 0x80) != 0) {
-            i++;
-            putUInt32(i);
-            putByte((byte) 0);
-        } else
-            putUInt32(i);
-        return putRawBytes(foo);
-    }
-
-    public byte[] readMPIntAsBytes()
-            throws BufferException {
-        return readBytes();
+        final byte[] asBytes = bi.toByteArray();
+        putUInt32(asBytes.length);
+        return putRawBytes(asBytes);
     }
 
     public long readUInt64()

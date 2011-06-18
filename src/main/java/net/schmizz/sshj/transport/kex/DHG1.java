@@ -35,6 +35,8 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import java.security.GeneralSecurityException;
+
 /**
  * Diffie-Hellman key exchange with SHA-1 and Oakley Group 2 [RFC2409] (1024-bit MODP Group).
  *
@@ -60,9 +62,9 @@ public class DHG1
     }
 
     @Override
-    protected void initDH(DH dh) {
-        dh.setG(DHGroupData.G);
-        dh.setP(DHGroupData.P1);
+    protected void initDH(DH dh)
+            throws GeneralSecurityException {
+        dh.init(DHGroupData.P1, DHGroupData.G);
     }
 
 }

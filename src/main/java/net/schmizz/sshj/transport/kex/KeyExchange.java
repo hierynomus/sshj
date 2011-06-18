@@ -41,6 +41,7 @@ import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.digest.Digest;
 
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
@@ -59,14 +60,14 @@ public interface KeyExchange {
      * @throws GeneralSecurityException
      * @throws TransportException       if there is an error sending a packet
      */
-    void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
+    void init(Transport trans, String V_S, String V_C, byte[] I_S, byte[] I_C)
             throws GeneralSecurityException, TransportException;
 
     /** @return the computed H parameter */
     byte[] getH();
 
     /** @return the computed K parameter */
-    byte[] getK();
+    BigInteger getK();
 
     /**
      * The message digest used by this key exchange algorithm.

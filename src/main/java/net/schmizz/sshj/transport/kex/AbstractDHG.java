@@ -65,16 +65,14 @@ public abstract class AbstractDHG
 
     private Transport trans;
 
-    private final Digest sha = new SHA1();
+    private final Digest sha1 = new SHA1();
     private final DH dh = new DH();
 
-    private byte[] V_S;
-    private byte[] V_C;
+    private String V_S;
+    private String V_C;
     private byte[] I_S;
     private byte[] I_C;
 
-    private byte[] e;
-    private byte[] K;
     private byte[] H;
     private PublicKey hostKey;
 
@@ -84,13 +82,13 @@ public abstract class AbstractDHG
     }
 
     @Override
-    public byte[] getK() {
-        return Arrays.copyOf(K, K.length);
+    public BigInteger getK() {
+        return dh.getK();
     }
 
     @Override
     public Digest getHash() {
-        return sha;
+        return sha1;
     }
 
     @Override
@@ -99,19 +97,18 @@ public abstract class AbstractDHG
     }
 
     @Override
-    public void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
+    public void init(Transport trans, String V_S, String V_C, byte[] I_S, byte[] I_C)
             throws GeneralSecurityException, TransportException {
         this.trans = trans;
-        this.V_S = Arrays.copyOf(V_S, V_S.length);
-        this.V_C = Arrays.copyOf(V_C, V_C.length);
+        this.V_S = V_S;
+        this.V_C = V_C;
         this.I_S = Arrays.copyOf(I_S, I_S.length);
         this.I_C = Arrays.copyOf(I_C, I_C.length);
-        sha.init();
+        sha1.init();
         initDH(dh);
-        e = dh.getE();
 
         log.info("Sending SSH_MSG_KEXDH_INIT");
-        trans.write(new SSHPacket(Message.KEXDH_INIT).putMPInt(e));
+        trans.write(new SSHPacket(Message.KEXDH_INIT).putMPInt(dh.getE()));
     }
 
     @Override
@@ -122,19 +119,18 @@ public abstract class AbstractDHG
 
         log.info("Received SSH_MSG_KEXDH_REPLY");
         final byte[] K_S;
-        final byte[] f;
+        final BigInteger f;
         final byte[] sig; // signature sent by server
         try {
             K_S = packet.readBytes();
-            f = packet.readMPIntAsBytes();
+            f = packet.readMPInt();
             sig = packet.readBytes();
             hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
         } catch (Buffer.BufferException be) {
             throw new TransportException(be);
         }
 
-        dh.setF(new BigInteger(f));
-        K = dh.getK();
+        dh.computeK(f);
 
         final Buffer.PlainBuffer buf = new Buffer.PlainBuffer()
                 .putString(V_C)
@@ -142,11 +138,11 @@ public abstract class AbstractDHG
                 .putString(I_C)
                 .putString(I_S)
                 .putString(K_S)
-                .putMPInt(e)
+                .putMPInt(dh.getE())
                 .putMPInt(f)
-                .putMPInt(K);
-        sha.update(buf.array(), 0, buf.available());
-        H = sha.digest();
+                .putMPInt(dh.getK());
+        sha1.update(buf.array(), buf.rpos(), buf.available());
+        H = sha1.digest();
 
         Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(),
                                                         KeyType.fromKey(hostKey).toString());
@@ -158,6 +154,7 @@ public abstract class AbstractDHG
         return true;
     }
 
-    protected abstract void initDH(DH dh);
+    protected abstract void initDH(DH dh)
+            throws GeneralSecurityException;
 
 }

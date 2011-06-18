@@ -35,6 +35,8 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import java.security.GeneralSecurityException;
+
 /**
  * Diffie-Hellman key exchange with SHA-1 and Oakley Group 14 [RFC3526] (2048-bit MODP Group).
  * <p/>
@@ -61,9 +63,8 @@ public class DHG14
     }
 
     @Override
-    protected void initDH(DH dh) {
-        dh.setG(DHGroupData.G);
-        dh.setP(DHGroupData.P14);
+    protected void initDH(DH dh) throws GeneralSecurityException {
+        dh.init(DHGroupData.P14, DHGroupData.G);
     }
 
 }

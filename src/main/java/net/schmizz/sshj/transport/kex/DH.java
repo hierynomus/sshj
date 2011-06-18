@@ -54,7 +54,6 @@ public class DH {
     private BigInteger p;
     private BigInteger g;
     private BigInteger e; // my public key
-    private BigInteger f; // your public key
     private BigInteger K; // shared secret key
     private final KeyPairGenerator generator;
     private final KeyAgreement agreement;
@@ -68,39 +67,32 @@ public class DH {
         }
     }
 
-    public void setF(BigInteger f) {
-        this.f = f;
-    }
-
-    public void setG(BigInteger g) {
-        this.g = g;
-    }
-
-    public void setP(BigInteger p) {
+    public void init(BigInteger p, BigInteger g)
+            throws GeneralSecurityException {
         this.p = p;
+        this.g = g;
+        generator.initialize(new DHParameterSpec(p, g));
+        final KeyPair kp = generator.generateKeyPair();
+        agreement.init(kp.getPrivate());
+        e = ((javax.crypto.interfaces.DHPublicKey) kp.getPublic()).getY();
+
     }
 
-    public byte[] getE()
+    public void computeK(BigInteger f)
             throws GeneralSecurityException {
-        if (e == null) {
-            generator.initialize(new DHParameterSpec(p, g));
-            final KeyPair kp = generator.generateKeyPair();
-            agreement.init(kp.getPrivate());
-            e = ((javax.crypto.interfaces.DHPublicKey) kp.getPublic()).getY();
-        }
-        return e.toByteArray();
+        final KeyFactory keyFactory = SecurityUtils.getKeyFactory("DH");
+        final PublicKey yourPubKey = keyFactory.generatePublic(new DHPublicKeySpec(f, p, g));
+        agreement.doPhase(yourPubKey, true);
+        K = new BigInteger(agreement.generateSecret());
+
     }
 
-    public byte[] getK()
-            throws GeneralSecurityException {
-        if (K == null) {
-            final KeyFactory keyFactory = SecurityUtils.getKeyFactory("DH");
-            final DHPublicKeySpec keySpec = new DHPublicKeySpec(f, p, g);
-            final PublicKey yourPubKey = keyFactory.generatePublic(keySpec);
-            agreement.doPhase(yourPubKey, true);
-            K = new BigInteger(agreement.generateSecret());
-        }
-        return K.toByteArray();
+    public BigInteger getE() {
+        return e;
+    }
+
+    public BigInteger getK() {
+        return K;
     }
 
 }

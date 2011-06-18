@@ -63,7 +63,7 @@ final class Encoder
     private SSHPacket checkHeaderSpace(SSHPacket buffer) {
         if (buffer.rpos() < 5) {
             log.warn("Performance cost: when sending a packet, ensure that "
-                     + "5 bytes are available in front of the buffer");
+                             + "5 bytes are available in front of the buffer");
             SSHPacket nb = new SSHPacket(buffer.available() + 5);
             nb.rpos(5);
             nb.wpos(5);
@@ -96,8 +96,6 @@ final class Encoder
     long encode(SSHPacket buffer) {
         encodeLock.lock();
         try {
-            buffer = checkHeaderSpace(buffer);
-
             if (log.isTraceEnabled())
                 log.trace("Encoding packet #{}: {}", seq, buffer.printHex());
 
