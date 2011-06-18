@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-/* Kinda basic right now */
 public class LoadsOfConnects {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
