@@ -90,9 +90,9 @@ public abstract class AbstractSignature
                     | sig[i++] & 0x000000ff;
             i += j;
             j = sig[i++] << 24 & 0xff000000
-                | sig[i++] << 16 & 0x00ff0000
-                | sig[i++] << 8 & 0x0000ff00
-                | sig[i++] & 0x000000ff;
+                    | sig[i++] << 16 & 0x00ff0000
+                    | sig[i++] << 8 & 0x0000ff00
+                    | sig[i++] & 0x000000ff;
             byte[] newSig = new byte[j];
             System.arraycopy(sig, i, newSig, 0, j);
             sig = newSig;

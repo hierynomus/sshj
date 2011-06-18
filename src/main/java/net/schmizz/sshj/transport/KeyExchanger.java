@@ -35,8 +35,8 @@
  */
 package net.schmizz.sshj.transport;
 
-import net.schmizz.concurrent.Event;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
+import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.ErrorNotifiable;
@@ -234,11 +234,11 @@ final class KeyExchanger
 
     private void gotKexInit(SSHPacket buf)
             throws TransportException {
-        Proposal serverProposal = new Proposal(buf);
+        final Proposal serverProposal = new Proposal(buf);
         negotiatedAlgs = clientProposal.negotiate(serverProposal);
         log.debug("Negotiated algorithms: {}", negotiatedAlgs);
-        kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(), negotiatedAlgs
-                .getKeyExchangeAlgorithm());
+        kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(),
+                                        negotiatedAlgs.getKeyExchangeAlgorithm());
         try {
             kex.init(transport,
                      transport.getServerID().getBytes(IOUtils.UTF8),
