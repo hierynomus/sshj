@@ -86,7 +86,8 @@ class Proposal {
         packet.putUInt32(0); // "Reserved" for future by spec
     }
 
-    public Proposal(SSHPacket packet) throws TransportException {
+    public Proposal(SSHPacket packet)
+            throws TransportException {
         this.packet = packet;
         final int savedPos = packet.rpos();
         packet.rpos(packet.rpos() + 17); // Skip message ID & cookie
@@ -144,14 +145,14 @@ class Proposal {
     public NegotiatedAlgorithms negotiate(Proposal other)
             throws TransportException {
         return new NegotiatedAlgorithms(
-                firstMatch(this.getKeyExchangeAlgorithms(), other.getKeyExchangeAlgorithms()), //
-                firstMatch(this.getSignatureAlgorithms(), other.getSignatureAlgorithms()), //
-                firstMatch(this.getClient2ServerCipherAlgorithms(), other.getClient2ServerCipherAlgorithms()), //
-                firstMatch(this.getServer2ClientCipherAlgorithms(), other.getServer2ClientCipherAlgorithms()), //
-                firstMatch(this.getClient2ServerMACAlgorithms(), other.getClient2ServerMACAlgorithms()), //
-                firstMatch(this.getServer2ClientMACAlgorithms(), other.getServer2ClientMACAlgorithms()), //
-                firstMatch(this.getClient2ServerCompressionAlgorithms(), other.getClient2ServerCompressionAlgorithms()), //
-                firstMatch(this.getServer2ClientCompressionAlgorithms(), other.getServer2ClientCompressionAlgorithms()) //
+                firstMatch(this.getKeyExchangeAlgorithms(), other.getKeyExchangeAlgorithms()),
+                firstMatch(this.getSignatureAlgorithms(), other.getSignatureAlgorithms()),
+                firstMatch(this.getClient2ServerCipherAlgorithms(), other.getClient2ServerCipherAlgorithms()),
+                firstMatch(this.getServer2ClientCipherAlgorithms(), other.getServer2ClientCipherAlgorithms()),
+                firstMatch(this.getClient2ServerMACAlgorithms(), other.getClient2ServerMACAlgorithms()),
+                firstMatch(this.getServer2ClientMACAlgorithms(), other.getServer2ClientMACAlgorithms()),
+                firstMatch(this.getClient2ServerCompressionAlgorithms(), other.getClient2ServerCompressionAlgorithms()),
+                firstMatch(this.getServer2ClientCompressionAlgorithms(), other.getServer2ClientCompressionAlgorithms())
         );
     }
 
