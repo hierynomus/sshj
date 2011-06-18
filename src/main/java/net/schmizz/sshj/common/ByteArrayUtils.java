@@ -139,8 +139,4 @@ public class ByteArrayUtils {
         return sb.toString();
     }
 
-    public static byte[] copyOf(byte[] array) {
-        return Arrays.copyOf(array, array.length);
-    }
-
 }

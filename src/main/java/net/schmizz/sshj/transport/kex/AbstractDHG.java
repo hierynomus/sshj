@@ -36,7 +36,6 @@
 package net.schmizz.sshj.transport.kex;
 
 import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.KeyType;
@@ -53,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
+import java.util.Arrays;
 
 /**
  * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the
@@ -80,12 +80,12 @@ public abstract class AbstractDHG
 
     @Override
     public byte[] getH() {
-        return ByteArrayUtils.copyOf(H);
+        return Arrays.copyOf(H, H.length);
     }
 
     @Override
     public byte[] getK() {
-        return ByteArrayUtils.copyOf(K);
+        return Arrays.copyOf(K, K.length);
     }
 
     @Override
@@ -102,10 +102,10 @@ public abstract class AbstractDHG
     public void init(Transport trans, byte[] V_S, byte[] V_C, byte[] I_S, byte[] I_C)
             throws GeneralSecurityException, TransportException {
         this.trans = trans;
-        this.V_S = ByteArrayUtils.copyOf(V_S);
-        this.V_C = ByteArrayUtils.copyOf(V_C);
-        this.I_S = ByteArrayUtils.copyOf(I_S);
-        this.I_C = ByteArrayUtils.copyOf(I_C);
+        this.V_S = Arrays.copyOf(V_S, V_S.length);
+        this.V_C = Arrays.copyOf(V_C, V_C.length);
+        this.I_S = Arrays.copyOf(I_S, I_S.length);
+        this.I_C = Arrays.copyOf(I_C, I_C.length);
         sha.init();
         initDH(dh);
         e = dh.getE();
