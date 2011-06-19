@@ -75,7 +75,6 @@ public class DH {
         final KeyPair kp = generator.generateKeyPair();
         agreement.init(kp.getPrivate());
         e = ((javax.crypto.interfaces.DHPublicKey) kp.getPublic()).getY();
-
     }
 
     public void computeK(BigInteger f)
@@ -83,8 +82,7 @@ public class DH {
         final KeyFactory keyFactory = SecurityUtils.getKeyFactory("DH");
         final PublicKey yourPubKey = keyFactory.generatePublic(new DHPublicKeySpec(f, p, g));
         agreement.doPhase(yourPubKey, true);
-        K = new BigInteger(agreement.generateSecret());
-
+        K = new BigInteger(1, agreement.generateSecret());
     }
 
     public BigInteger getE() {
