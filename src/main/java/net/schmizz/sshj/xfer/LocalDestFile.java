@@ -45,7 +45,6 @@ public interface LocalDestFile {
     /**
      * Set the permissions for the underlying file.
      *
-     * @param f     the file
      * @param perms permissions e.g. 0644
      *
      * @throws IOException
@@ -66,7 +65,6 @@ public interface LocalDestFile {
     /**
      * Set the last modified time for the underlying file.
      *
-     * @param f the file
      * @param t time in seconds since Unix epoch
      *
      * @throws IOException

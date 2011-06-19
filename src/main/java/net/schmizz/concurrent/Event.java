@@ -73,8 +73,8 @@ public class Event<T extends Throwable> {
     }
 
     /**
-     * @return whether this event is in a 'set' state. An event is set by a call to {@link set()} or {@link
-     *         deliverError}
+     * @return whether this event is in a 'set' state. An event is set by a call to {@link #set} or {@link
+     *         #deliverError}
      */
     public boolean isSet() {
         return promise.isDelivered();
