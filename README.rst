@@ -42,7 +42,7 @@ Java 6+. slf4j_ is required. bouncycastle_ is highly recommended and required fo
 Bugs, questions
 ----------------
 
-[Issue tracker](https://github.com/shikhar/sshj/issues)
+`Issue tracker <https://github.com/shikhar/sshj/issues>`_
 
 
 Contributing
