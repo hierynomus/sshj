@@ -39,6 +39,11 @@ Dependencies
 
 Java 6+. slf4j_ is required. bouncycastle_ is highly recommended and required for using some of the crypto algorithms. jzlib_ is required for using zlib compression.
 
+Bugs, questions
+----------------
+
+[Issue tracker](https://github.com/shikhar/sshj/issues)
+
 
 Contributing
 ------------
