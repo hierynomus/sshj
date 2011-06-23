@@ -29,4 +29,11 @@ public class PrivateKeyStringResource extends Resource<String> {
     public Reader getReader() throws IOException {
         return new StringReader(getDetail());
     }
+
+    @Override
+    public String toString() {
+        // If not overridden, the superclass's will return the private key as
+        // part of the string.
+        return "[" + getClass().getSimpleName() + "]";
+    }
 }
