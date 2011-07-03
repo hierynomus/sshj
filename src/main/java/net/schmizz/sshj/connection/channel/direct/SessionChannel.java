@@ -104,7 +104,7 @@ public class SessionChannel
     public void changeWindowDimensions(int cols, int rows, int width, int height)
             throws TransportException {
         sendChannelRequest(
-                "pty-req",
+                "window-change",
                 false,
                 new Buffer.PlainBuffer()
                         .putUInt32(cols)
