@@ -240,7 +240,8 @@ public abstract class AbstractChannel
         ErrorDeliveryUtil.alertEvents(error, chanReqResponseEvents);
 
         in.notifyError(error);
-        out.notifyError(error);
+        if (out != null)
+            out.notifyError(error);
 
         finishOff();
     }
