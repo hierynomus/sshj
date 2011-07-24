@@ -61,6 +61,7 @@ import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -112,7 +113,7 @@ import java.util.List;
  */
 public class SSHClient
         extends SocketClient
-        implements SessionFactory {
+        implements Closeable, SessionFactory {
 
     /** Default port for SSH */
     public static final int DEFAULT_PORT = 22;
@@ -685,6 +686,17 @@ public class SSHClient
         final long start = System.currentTimeMillis();
         trans.doKex();
         log.info("Key exchange took {} seconds", (System.currentTimeMillis() - start) / 1000.0);
+    }
+
+    /**
+     * Same as {@link #disconnect()}.
+     *
+     * @throws IOException
+     */
+    @Override
+    public void close()
+            throws IOException {
+        disconnect();
     }
 
 }
