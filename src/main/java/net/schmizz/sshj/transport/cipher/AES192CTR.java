@@ -42,6 +42,7 @@ public class AES192CTR
     /** Named factory for AES192CTR Cipher */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+
         @Override
         public Cipher create() {
             return new AES192CTR();

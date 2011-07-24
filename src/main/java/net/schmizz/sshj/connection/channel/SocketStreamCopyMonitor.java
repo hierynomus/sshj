@@ -43,8 +43,8 @@ public class SocketStreamCopyMonitor
     }
 
     public static void monitor(final int frequency, final TimeUnit unit,
-            final Event<IOException> x, final Event<IOException> y,
-            final Channel channel, final Socket socket) {
+                               final Event<IOException> x, final Event<IOException> y,
+                               final Channel channel, final Socket socket) {
         new SocketStreamCopyMonitor(new Runnable() {
             public void run() {
                 try {

@@ -49,6 +49,7 @@ public class ZlibCompression
     /** Named factory for the ZLib Compression. */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Compression> {
+
         @Override
         public Compression create() {
             return new ZlibCompression();
@@ -125,7 +126,7 @@ public class ZlibCompression
                     return;
                 default:
                     throw new TransportException(DisconnectReason.COMPRESSION_ERROR, "uncompress: inflate returned "
-                                                                                     + status);
+                            + status);
             }
         }
     }

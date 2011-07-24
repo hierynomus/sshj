@@ -116,7 +116,7 @@ public final class ChannelInputStream
     public int read(byte[] b, int off, int len)
             throws IOException {
         synchronized (buf) {
-            for (; ;) {
+            for (; ; ) {
                 if (buf.available() > 0)
                     break;
                 if (eof)
@@ -163,7 +163,7 @@ public final class ChannelInputStream
             if (adjustment > 0) {
                 log.info("Sending SSH_MSG_CHANNEL_WINDOW_ADJUST to #{} for {} bytes", chan.getRecipient(), adjustment);
                 trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST)
-                        .putUInt32(chan.getRecipient()).putUInt32(adjustment));
+                                    .putUInt32(chan.getRecipient()).putUInt32(adjustment));
                 win.expand(adjustment);
             }
         }

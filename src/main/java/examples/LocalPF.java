@@ -42,7 +42,7 @@ public class LocalPF {
             * google.com:80
             */
             ssh.newLocalPortForwarder(new InetSocketAddress("localhost", 8080), "google.com", 80)
-                    .listen();
+               .listen();
 
         } finally {
             ssh.disconnect();

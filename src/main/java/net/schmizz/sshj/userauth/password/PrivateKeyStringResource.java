@@ -19,14 +19,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-public class PrivateKeyStringResource extends Resource<String> {
+public class PrivateKeyStringResource
+        extends Resource<String> {
 
     public PrivateKeyStringResource(String string) {
         super(string);
     }
 
     @Override
-    public Reader getReader() throws IOException {
+    public Reader getReader()
+            throws IOException {
         return new StringReader(getDetail());
     }
 

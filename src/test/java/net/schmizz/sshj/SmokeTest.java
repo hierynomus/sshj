@@ -50,7 +50,8 @@ public class SmokeTest {
     }
 
     @Test
-    public void authenticated() throws UserAuthException, TransportException {
+    public void authenticated()
+            throws UserAuthException, TransportException {
         fixture.dummyAuth();
         assertTrue(fixture.getClient().isAuthenticated());
     }

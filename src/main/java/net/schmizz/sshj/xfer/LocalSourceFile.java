@@ -34,7 +34,8 @@ public interface LocalSourceFile {
      *
      * @throws IOException
      */
-    int getPermissions() throws IOException;
+    int getPermissions()
+            throws IOException;
 
     boolean isFile();
 

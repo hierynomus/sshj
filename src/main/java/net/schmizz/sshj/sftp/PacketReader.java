@@ -57,9 +57,9 @@ public class PacketReader
         readIntoBuffer(lenBuf, 0, lenBuf.length);
 
         return (int) (lenBuf[0] << 24 & 0xff000000L
-                      | lenBuf[1] << 16 & 0x00ff0000L
-                      | lenBuf[2] << 8 & 0x0000ff00L
-                      | lenBuf[3] & 0x000000ffL);
+                | lenBuf[1] << 16 & 0x00ff0000L
+                | lenBuf[2] << 8 & 0x0000ff00L
+                | lenBuf[3] & 0x000000ffL);
     }
 
     public SFTPPacket<Response> readPacket()
@@ -97,7 +97,7 @@ public class PacketReader
         log.debug("Received {} packet", resp.getType());
         if (promise == null)
             throw new SFTPException("Received [" + resp.readType() + "] response for request-id " + resp.getRequestID()
-                                    + ", no such request was made");
+                                            + ", no such request was made");
         else
             promise.deliver(resp);
     }

@@ -42,6 +42,7 @@ public abstract class NoneCompression
     /** Named factory for the no-op <code>Compression</code> */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Compression> {
+
         @Override
         public Compression create() {
             return null;

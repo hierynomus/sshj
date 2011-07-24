@@ -35,8 +35,8 @@
  */
 package net.schmizz.sshj.connection.channel;
 
-import net.schmizz.concurrent.Event;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
+import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.DisconnectReason;
@@ -313,7 +313,8 @@ public abstract class AbstractChannel
         handleRequest(reqType, buf);
     }
 
-    private void gotWindowAdjustment(SSHPacket buf) throws ConnectionException {
+    private void gotWindowAdjustment(SSHPacket buf)
+            throws ConnectionException {
         final int howMuch;
         try {
             howMuch = buf.readUInt32AsInt();
@@ -429,7 +430,7 @@ public abstract class AbstractChannel
     @Override
     public String toString() {
         return "< " + type + " channel: id=" + id + ", recipient=" + recipient + ", localWin=" + lwin + ", remoteWin="
-               + rwin + " >";
+                + rwin + " >";
     }
 
 

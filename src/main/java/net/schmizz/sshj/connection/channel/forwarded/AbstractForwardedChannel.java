@@ -69,9 +69,9 @@ public abstract class AbstractForwardedChannel
         // Must ensure channel is attached before confirming, data could start coming in immediately!
         conn.attach(this);
         trans.write(newBuffer(Message.CHANNEL_OPEN_CONFIRMATION)
-                .putUInt32(getID())
-                .putUInt32(getLocalWinSize())
-                .putUInt32(getLocalMaxPacketSize()));
+                            .putUInt32(getID())
+                            .putUInt32(getLocalWinSize())
+                            .putUInt32(getLocalMaxPacketSize()));
         open.set();
     }
 

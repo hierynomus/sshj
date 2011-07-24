@@ -32,7 +32,6 @@ public enum KeyType {
 
     /** SSH identifier for RSA keys */
     RSA("ssh-rsa") {
-
         @Override
         public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
                 throws GeneralSecurityException {
@@ -64,7 +63,6 @@ public enum KeyType {
 
     /** SSH identifier for DSA keys */
     DSA("ssh-dss") {
-
         @Override
         public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
                 throws GeneralSecurityException {
@@ -100,7 +98,6 @@ public enum KeyType {
 
     /** Unrecognized */
     UNKNOWN("unknown") {
-
         @Override
         public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
                 throws GeneralSecurityException {

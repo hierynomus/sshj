@@ -116,7 +116,7 @@ public class OpenSSHKeyFileTest {
 
     @Test
     public void fromString()
-        throws IOException, GeneralSecurityException {
+            throws IOException, GeneralSecurityException {
         FileKeyProvider dsa = new OpenSSHKeyFile();
         String privateKey = readFile("src/test/resources/id_dsa");
         String publicKey = readFile("src/test/resources/id_dsa.pub");
@@ -136,12 +136,11 @@ public class OpenSSHKeyFileTest {
 
     private String readFile(String pathname)
             throws IOException {
-        
         StringBuilder fileContents = new StringBuilder();
         Scanner scanner = new Scanner(new File(pathname));
         String lineSeparator = System.getProperty("line.separator");
         try {
-            while(scanner.hasNextLine()) {        
+            while (scanner.hasNextLine()) {
                 fileContents.append(scanner.nextLine() + lineSeparator);
             }
             return fileContents.toString();

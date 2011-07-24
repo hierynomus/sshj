@@ -139,11 +139,13 @@ public class UserAuthImpl
 
             case USERAUTH_BANNER: {
                 banner = buf.readString();
-            } break;
+            }
+            break;
 
             case USERAUTH_SUCCESS: {
                 authenticated.set();
-            } break;
+            }
+            break;
 
             case USERAUTH_FAILURE: {
                 allowedMethods.clear();
@@ -154,7 +156,8 @@ public class UserAuthImpl
                 } else {
                     authenticated.deliverError(new UserAuthException(currentMethod.getName() + " auth failed"));
                 }
-            } break;
+            }
+            break;
 
             default: {
                 log.debug("Asking `{}` method to handle {} packet", currentMethod.getName(), msg);

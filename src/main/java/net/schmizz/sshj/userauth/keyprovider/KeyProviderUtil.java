@@ -75,7 +75,7 @@ public class KeyProviderUtil {
      */
     private static FileKeyProvider.Format detectKeyFileFormat(Reader privateKey,
                                                               boolean separatePubKey)
-            throws IOException {        
+            throws IOException {
         BufferedReader br = new BufferedReader(privateKey);
         String firstLine = br.readLine();
         IOUtils.closeQuietly(br);

@@ -58,6 +58,7 @@ import java.security.Signature;
 public class SecurityUtils {
 
     private static class BouncyCastleRegistration {
+
         public void run()
                 throws Exception {
             if (java.security.Security.getProvider(BOUNCY_CASTLE) == null) {

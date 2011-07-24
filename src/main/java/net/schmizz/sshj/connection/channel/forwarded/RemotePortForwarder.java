@@ -39,18 +39,18 @@ public class RemotePortForwarder
      *    address (or domain name) and port on which connections for forwarding
      *    are to be accepted.  Some strings used for 'address to bind' have
      *    special-case semantics.
-     * <p/>
+     *
      *    o  &quot;&quot; means that connections are to be accepted on all protocol
      *       families supported by the SSH implementation.
-     * <p/>
+     *
      *    o  &quot;0.0.0.0&quot; means to listen on all IPv4 addresses.
-     * <p/>
+     *
      *    o  &quot;::&quot; means to listen on all IPv6 addresses.
-     * <p/>
+     *
      *    o  &quot;localhost&quot; means to listen on all protocol families supported by
      *       the SSH implementation on loopback addresses only ([RFC3330] and
      *       [RFC3513]).
-     * <p/>
+     *
      *    o  &quot;127.0.0.1&quot; and &quot;::1&quot; indicate listening on the loopback
      *       interfaces for IPv4 and IPv6, respectively.
      * </pre>
@@ -198,9 +198,9 @@ public class RemotePortForwarder
     protected SSHPacket req(String reqName, Forward forward)
             throws ConnectionException, TransportException {
         final byte[] specifics = new Buffer.PlainBuffer().putString(forward.address).putUInt32(forward.port)
-                .getCompactData();
+                                                         .getCompactData();
         return conn.sendGlobalRequest(reqName, true, specifics)
-                .retrieve(conn.getTimeout(), TimeUnit.SECONDS);
+                   .retrieve(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
     /** @return the active forwards. */
@@ -227,7 +227,7 @@ public class RemotePortForwarder
             callListener(listeners.get(chan.getParentForward()), chan);
         else
             chan.reject(OpenFailException.Reason.ADMINISTRATIVELY_PROHIBITED, "Forwarding was not requested on `"
-                                                                              + chan.getParentForward() + "`");
+                    + chan.getParentForward() + "`");
     }
 
 }

@@ -22,6 +22,7 @@ public interface ErrorNotifiable {
 
     /** Utility functions. */
     class Util {
+
         /** Notify all {@code notifiables} of given {@code error}. */
         public static void alertAll(SSHException error, ErrorNotifiable... notifiables) {
             for (ErrorNotifiable notifiable : notifiables)

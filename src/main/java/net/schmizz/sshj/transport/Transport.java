@@ -178,12 +178,14 @@ public interface Transport
      */
     void join()
             throws TransportException;
+
     /**
      * Joins the thread calling this method to the transport's death.
      *
      * @throws TransportException if the transport dies of an exception
      */
-    void join(int timeout, TimeUnit unit) throws TransportException;
+    void join(int timeout, TimeUnit unit)
+            throws TransportException;
 
     /** Send a disconnection packet with reason as {@link DisconnectReason#BY_APPLICATION}, and closes this transport. */
     void disconnect();
@@ -226,9 +228,7 @@ public interface Transport
      */
     void setDisconnectListener(DisconnectListener listener);
 
-    /**
-     * @return the current disconnect listener.
-     */
+    /** @return the current disconnect listener. */
     DisconnectListener getDisconnectListener();
 
 }

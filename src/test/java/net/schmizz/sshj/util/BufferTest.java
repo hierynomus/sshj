@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 /** Tests {@link Buffer} functionality */
 public class BufferTest {
+
     private Buffer.PlainBuffer posBuf;
     private Buffer.PlainBuffer handyBuf;
 

@@ -88,7 +88,7 @@ final class Decoder
         int need;
 
         /* Decoding loop */
-        for (; ;)
+        for (; ; )
 
             if (packetLength == -1) // Waiting for beginning of packet
             {
@@ -124,7 +124,7 @@ final class Decoder
                     if (log.isTraceEnabled())
                         log.trace("Received packet #{}: {}", seq, plain.printHex());
 
-                    packetHandler.handle(plain.readMessageID(), plain); // Process the decoded packet //
+                    packetHandler.handle(plain.readMessageID(), plain); // Process the decoded packet
 
                     inputBuffer.clear();
                     packetLength = -1;

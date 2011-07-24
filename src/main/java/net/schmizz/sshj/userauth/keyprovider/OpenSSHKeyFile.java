@@ -83,7 +83,7 @@ public class OpenSSHKeyFile
 
     /**
      * Read and store the separate public key provided alongside the private key
-     * 
+     *
      * @param publicKey Public key accessible through a {@code Reader}
      */
     private void initPubKey(Reader publicKey) {

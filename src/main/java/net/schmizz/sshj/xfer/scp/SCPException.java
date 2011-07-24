@@ -19,6 +19,7 @@ import net.schmizz.sshj.common.SSHException;
 
 public class SCPException
         extends SSHException {
+
     public SCPException(String message) {
         super(message);
     }

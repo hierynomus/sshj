@@ -26,7 +26,7 @@ public interface FileTransfer {
             throws IOException;
 
     void upload(LocalSourceFile localFile, String remotePath)
-			throws IOException;
+            throws IOException;
 
     void download(String remotePath, LocalDestFile localFile)
             throws IOException;

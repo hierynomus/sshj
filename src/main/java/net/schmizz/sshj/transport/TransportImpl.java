@@ -35,8 +35,8 @@
  */
 package net.schmizz.sshj.transport;
 
-import net.schmizz.concurrent.Event;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
+import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.Service;
@@ -62,12 +62,14 @@ public final class TransportImpl
 
     private static final class NullService
             extends AbstractService {
+
         NullService(Transport trans) {
             super("null-service", trans);
         }
     }
 
     static final class ConnInfo {
+
         final String host;
         final int port;
         final InputStream in;
@@ -185,11 +187,11 @@ public final class TransportImpl
         String ident;
 
         byte[] data = new byte[256];
-        for (; ;) {
+        for (; ; ) {
             int savedBufPos = buffer.rpos();
             int pos = 0;
             boolean needLF = false;
-            for (; ;) {
+            for (; ; ) {
                 if (buffer.available() == 0) {
                     // Need more data, so undo reading and return null
                     buffer.rpos(savedBufPos);
@@ -217,7 +219,7 @@ public final class TransportImpl
 
         if (!ident.startsWith("SSH-2.0-") && !ident.startsWith("SSH-1.99-"))
             throw new TransportException(DisconnectReason.PROTOCOL_VERSION_NOT_SUPPORTED,
-                    "Server does not support SSHv2, identified as: " + ident);
+                                         "Server does not support SSHv2, identified as: " + ident);
 
         return ident;
     }
@@ -438,9 +440,9 @@ public final class TransportImpl
         log.debug("Sending SSH_MSG_DISCONNECT: reason=[{}], msg=[{}]", reason, message);
         try {
             write(new SSHPacket(Message.DISCONNECT)
-                    .putUInt32(reason.toInt())
-                    .putString(message)
-                    .putString(""));
+                          .putUInt32(reason.toInt())
+                          .putString(message)
+                          .putString(""));
         } catch (IOException worthless) {
             log.debug("Error writing packet: {}", worthless.toString());
         }
@@ -501,7 +503,8 @@ public final class TransportImpl
             }
     }
 
-    private void gotDebug(SSHPacket buf) throws TransportException {
+    private void gotDebug(SSHPacket buf)
+            throws TransportException {
         try {
             final boolean display = buf.readBoolean();
             final String message = buf.readString();
@@ -529,7 +532,7 @@ public final class TransportImpl
         try {
             if (!serviceAccept.hasWaiters())
                 throw new TransportException(DisconnectReason.PROTOCOL_ERROR,
-                        "Got a service accept notification when none was awaited");
+                                             "Got a service accept notification when none was awaited");
             serviceAccept.set();
         } finally {
             serviceAccept.unlock();

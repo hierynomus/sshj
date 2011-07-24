@@ -40,6 +40,7 @@ import net.schmizz.sshj.common.Factory;
 /** A random factory wrapper that uses a single random instance. The underlying random instance has to be thread safe. */
 public class SingletonRandomFactory
         implements Random, Factory<Random> {
+
     private final Random random;
 
     public SingletonRandomFactory(Factory<Random> factory) {

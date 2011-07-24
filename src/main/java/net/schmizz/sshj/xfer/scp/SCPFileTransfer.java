@@ -15,14 +15,14 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
-import java.io.IOException;
-
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.AbstractFileTransfer;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.FileTransfer;
 import net.schmizz.sshj.xfer.LocalDestFile;
 import net.schmizz.sshj.xfer.LocalSourceFile;
+
+import java.io.IOException;
 
 public class SCPFileTransfer
         extends AbstractFileTransfer
@@ -43,7 +43,7 @@ public class SCPFileTransfer
     }
 
     private SCPEngine newSCPEngine() {
-    	return new SCPEngine(sessionFactory, getTransferListener());
+        return new SCPEngine(sessionFactory, getTransferListener());
     }
 
     @Override
@@ -65,9 +65,9 @@ public class SCPFileTransfer
     }
 
     @Override
-	public void upload(LocalSourceFile localFile, String remotePath)
-			throws IOException {
-		newSCPUploadClient().copy(localFile, remotePath);
-	}
+    public void upload(LocalSourceFile localFile, String remotePath)
+            throws IOException {
+        newSCPUploadClient().copy(localFile, remotePath);
+    }
 
 }

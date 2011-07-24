@@ -63,7 +63,8 @@ public class DHG14
     }
 
     @Override
-    protected void initDH(DH dh) throws GeneralSecurityException {
+    protected void initDH(DH dh)
+            throws GeneralSecurityException {
         dh.init(DHGroupData.P14, DHGroupData.G);
     }
 

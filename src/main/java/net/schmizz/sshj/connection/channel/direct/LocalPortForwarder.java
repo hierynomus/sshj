@@ -53,7 +53,7 @@ public class LocalPortForwarder {
                     .bufSize(getLocalMaxPacketSize())
                     .spawnDaemon("chan2soc");
             SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, soc2chan, chan2soc, this, sock);
-       }
+        }
 
         @Override
         protected SSHPacket buildOpenReq() {

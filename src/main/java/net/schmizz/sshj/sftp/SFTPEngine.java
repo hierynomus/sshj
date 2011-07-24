@@ -56,7 +56,8 @@ public class SFTPEngine
         this(ssh, PathHelper.DEFAULT_PATH_SEPARATOR);
     }
 
-    public SFTPEngine(SessionFactory ssh, String pathSep) throws SSHException {
+    public SFTPEngine(SessionFactory ssh, String pathSep)
+            throws SSHException {
         sub = ssh.startSession().startSubsystem("sftp");
         out = sub.getOutputStream();
         reader = new PacketReader(this);

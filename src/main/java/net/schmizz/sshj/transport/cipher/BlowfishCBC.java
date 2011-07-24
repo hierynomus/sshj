@@ -42,6 +42,7 @@ public class BlowfishCBC
     /** Named factory for BlowfishCBC Cipher */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+
         @Override
         public Cipher create() {
             return new BlowfishCBC();

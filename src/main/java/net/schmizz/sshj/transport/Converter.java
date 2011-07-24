@@ -47,7 +47,7 @@ import net.schmizz.sshj.transport.mac.MAC;
  * <p/>
  * <pre>
  *    Each packet is in the following format:
- * <p/>
+ *
  *       uint32    packet_length
  *       byte      padding_length
  *       byte[n1]  payload; n1 = packet_length - padding_length - 1

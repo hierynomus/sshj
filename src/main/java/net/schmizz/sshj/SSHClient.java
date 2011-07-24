@@ -16,7 +16,6 @@
 
 package net.schmizz.sshj;
 
-import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -50,7 +49,6 @@ import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
-import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.method.AuthPassword;
@@ -65,8 +63,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.net.SocketAddress;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -444,7 +440,7 @@ public class SSHClient
     /**
      * Utility function for createing a {@link KeyProvider} instance from given location on the file system. Creates a
      * one-off {@link PasswordFinder} using {@link PasswordUtils#createOneOff(char[])}, and calls {@link
-     * #loadKeys(String,PasswordFinder)}.
+     * #loadKeys(String, PasswordFinder)}.
      *
      * @param location   location of the key file
      * @param passphrase passphrase as a char-array
@@ -505,8 +501,8 @@ public class SSHClient
     }
 
     /**
-     * Creates a {@link KeyProvider} instance from passed strings. Currently only PKCS8 format
-     * private key files are supported (OpenSSH uses this format).
+     * Creates a {@link KeyProvider} instance from passed strings. Currently only PKCS8 format private key files are
+     * supported (OpenSSH uses this format).
      * <p/>
      *
      * @param privateKey     the private key as a string

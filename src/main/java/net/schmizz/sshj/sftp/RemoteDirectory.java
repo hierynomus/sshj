@@ -32,7 +32,7 @@ public class RemoteDirectory
             throws IOException {
         List<RemoteResourceInfo> rri = new LinkedList<RemoteResourceInfo>();
         loop:
-        for (; ;) {
+        for (; ; ) {
             Response res = requester.doRequest(newRequest(PacketType.READDIR));
             switch (res.getType()) {
 

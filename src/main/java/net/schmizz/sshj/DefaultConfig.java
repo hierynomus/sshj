@@ -137,7 +137,7 @@ public class DefaultConfig
         boolean warn = false;
         // Ref. https://issues.apache.org/jira/browse/SSHD-24
         // "AES256 and AES192 requires unlimited cryptography extension"
-        for (Iterator<Factory.Named<Cipher>> i = avail.iterator(); i.hasNext();) {
+        for (Iterator<Factory.Named<Cipher>> i = avail.iterator(); i.hasNext(); ) {
             final Factory.Named<Cipher> f = i.next();
             try {
                 final Cipher c = f.create();

@@ -51,6 +51,7 @@ public class AuthKeyboardInteractive
     }
 
     private static class CharArrWrap {
+
         private final char[] arr;
 
         private CharArrWrap(char[] arr) {

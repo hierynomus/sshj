@@ -31,6 +31,7 @@ import java.util.List;
  * {@link Compression}, {@link MAC}, {@link Signature}, {@link Random}, and {@link FileKeyProvider}.
  */
 public interface Config {
+
     /**
      * Retrieve the list of named factories for {@code Cipher}.
      *

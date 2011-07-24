@@ -48,7 +48,7 @@ public abstract class KeyedAuthMethod
 
         // public key as 2 strings: [ key type | key blob ]
         reqBuf.putString(KeyType.fromKey(key).toString())
-                .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
+              .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
         return reqBuf;
     }
 
@@ -67,9 +67,10 @@ public abstract class KeyedAuthMethod
             throw new UserAuthException("Could not create signature instance for " + kt + " key");
 
         sigger.init(null, key);
-        sigger.update(new Buffer.PlainBuffer().putString(params.getTransport().getSessionID()) //
-                .putBuffer(reqBuf) // & rest of the data for sig
-                .getCompactData());
+        sigger.update(new Buffer.PlainBuffer()
+                              .putString(params.getTransport().getSessionID())
+                              .putBuffer(reqBuf) // & rest of the data for sig
+                              .getCompactData());
         reqBuf.putSignature(kt, sigger.sign());
         return reqBuf;
     }

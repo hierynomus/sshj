@@ -27,7 +27,8 @@ public class AccountResource
     }
 
     @Override
-    public Reader getReader() throws IOException {
+    public Reader getReader()
+            throws IOException {
         return new StringReader(getDetail());
     }
 }

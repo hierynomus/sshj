@@ -42,6 +42,7 @@ public class AES128CBC
     /** Named factory for AES128CBC Cipher */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
+
         @Override
         public Cipher create() {
             return new AES128CBC();

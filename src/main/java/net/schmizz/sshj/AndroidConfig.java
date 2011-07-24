@@ -18,7 +18,8 @@ package net.schmizz.sshj;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 
-public class AndroidConfig extends DefaultConfig {
+public class AndroidConfig
+        extends DefaultConfig {
 
     @Override
     protected void initRandomFactory(boolean ignored) {

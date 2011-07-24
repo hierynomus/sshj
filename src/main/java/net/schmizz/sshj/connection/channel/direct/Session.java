@@ -82,10 +82,12 @@ public interface Session
                 throws TransportException;
 
         @Deprecated
-        String getOutputAsString() throws IOException;
+        String getOutputAsString()
+                throws IOException;
 
         @Deprecated
-        String getErrorAsString() throws IOException;
+        String getErrorAsString()
+                throws IOException;
 
     }
 
@@ -132,6 +134,7 @@ public interface Session
     /** Subsystem API. */
     interface Subsystem
             extends Channel {
+
         Integer getExitStatus();
     }
 

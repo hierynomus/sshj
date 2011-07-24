@@ -41,7 +41,7 @@ public class ConsoleKnownHostsVerifier
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
         console.printf("The authenticity of host '%s' can't be established.\n" +
-                       "%s key fingerprint is %s.\n", hostname, type, SecurityUtils.getFingerprint(key));
+                               "%s key fingerprint is %s.\n", hostname, type, SecurityUtils.getFingerprint(key));
         String response = console.readLine("Are you sure you want to continue connecting (yes/no)? ");
         while (!(response.equalsIgnoreCase(YES) || response.equalsIgnoreCase(NO))) {
             response = console.readLine("Please explicitly enter yes/no: ");
@@ -66,15 +66,15 @@ public class ConsoleKnownHostsVerifier
         final String path = getFile().getAbsolutePath();
         console.printf(
                 "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" +
-                "@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @\n" +
-                "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" +
-                "IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!\n" +
-                "Someone could be eavesdropping on you right now (man-in-the-middle attack)!\n" +
-                "It is also possible that the host key has just been changed.\n" +
-                "The fingerprint for the %s key sent by the remote host is\n" +
-                "%s.\n" +
-                "Please contact your system administrator or" +
-                "add correct host key in %s to get rid of this message.\n",
+                        "@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @\n" +
+                        "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n" +
+                        "IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!\n" +
+                        "Someone could be eavesdropping on you right now (man-in-the-middle attack)!\n" +
+                        "It is also possible that the host key has just been changed.\n" +
+                        "The fingerprint for the %s key sent by the remote host is\n" +
+                        "%s.\n" +
+                        "Please contact your system administrator or" +
+                        "add correct host key in %s to get rid of this message.\n",
                 type, fp, path);
         return false;
     }

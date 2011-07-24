@@ -22,18 +22,13 @@ import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
 import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
 import net.schmizz.sshj.userauth.password.Resource;
-
 import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -44,6 +39,7 @@ public class PKCS8KeyFile
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
+
         @Override
         public FileKeyProvider create() {
             return new PKCS8KeyFile();
@@ -127,7 +123,7 @@ public class PKCS8KeyFile
         PEMReader r = null;
         Object o = null;
         try {
-            for (; ;) {
+            for (; ; ) {
                 // while the PasswordFinder tells us we should retry
                 try {
                     r = new PEMReader(resource.getReader(), pFinder);

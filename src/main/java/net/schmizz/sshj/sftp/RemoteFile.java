@@ -39,8 +39,8 @@ public class RemoteFile
     public FileAttributes fetchAttributes()
             throws IOException {
         return requester.doRequest(newRequest(PacketType.FSTAT))
-                .ensurePacketTypeIs(PacketType.ATTRS)
-                .readFileAttributes();
+                        .ensurePacketTypeIs(PacketType.ATTRS)
+                        .readFileAttributes();
     }
 
     public long length()
@@ -74,9 +74,9 @@ public class RemoteFile
     public void write(long fileOffset, byte[] data, int off, int len)
             throws IOException {
         requester.doRequest(newRequest(PacketType.WRITE)
-                .putUInt64(fileOffset)
-                .putUInt32(len - off)
-                .putRawBytes(data, off, len)
+                                    .putUInt64(fileOffset)
+                                    .putUInt32(len - off)
+                                    .putRawBytes(data, off, len)
         ).ensureStatusPacketIsOK();
     }
 
@@ -87,12 +87,12 @@ public class RemoteFile
 
     public int getOutgoingPacketOverhead() {
         return 1 + // packet type
-               4 + // request id
-               4 + // next length
-               handle.length() + // next
-               8 + // file offset
-               4 + // data length
-               4; // packet length
+                4 + // request id
+                4 + // next length
+                handle.length() + // next
+                8 + // file offset
+                4 + // data length
+                4; // packet length
     }
 
     public class RemoteFileOutputStream

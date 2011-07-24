@@ -32,6 +32,7 @@ public interface Channel
     /** Direct channels are those that are initiated by us. */
     interface Direct
             extends Channel {
+
         /**
          * Request opening this channel from remote end.
          *

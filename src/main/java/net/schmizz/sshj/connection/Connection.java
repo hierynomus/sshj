@@ -89,13 +89,13 @@ public interface Connection {
      * @param wantReply whether a reply is requested
      * @param specifics {@link SSHPacket} containing fields specific to the request
      *
-     * @return a {@link net.schmizz.concurrent.Promise} for the reply data (in case {@code wantReply} is true) which allows waiting on the
-     *         reply, or {@code null} if a reply is not requested.
+     * @return a {@link net.schmizz.concurrent.Promise} for the reply data (in case {@code wantReply} is true) which
+     *         allows waiting on the reply, or {@code null} if a reply is not requested.
      *
      * @throws TransportException if there is an error sending the request
      */
     public Promise<SSHPacket, ConnectionException> sendGlobalRequest(String name, boolean wantReply,
-                                                                    byte[] specifics)
+                                                                     byte[] specifics)
             throws TransportException;
 
     /**

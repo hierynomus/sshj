@@ -35,8 +35,6 @@
  */
 package net.schmizz.sshj.common;
 
-import java.util.Arrays;
-
 /** Utility functions for byte arrays. */
 public class ByteArrayUtils {
 

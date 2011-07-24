@@ -92,15 +92,15 @@ public final class NegotiatedAlgorithms {
 
     @Override
     public String toString() {
-        return ("[ " + //
-                "kex=" + kex + "; " + //
-                "sig=" + sig + "; " + //
-                "c2sCipher=" + c2sCipher + "; " + //
-                "s2cCipher=" + s2cCipher + "; " + //
-                "c2sMAC=" + c2sMAC + "; " + //
-                "s2cMAC=" + s2cMAC + "; " + //
-                "c2sComp=" + c2sComp + "; " + //
-                "s2cComp=" + s2cComp + //
+        return ("[ " +
+                "kex=" + kex + "; " +
+                "sig=" + sig + "; " +
+                "c2sCipher=" + c2sCipher + "; " +
+                "s2cCipher=" + s2cCipher + "; " +
+                "c2sMAC=" + c2sMAC + "; " +
+                "s2cMAC=" + s2cMAC + "; " +
+                "c2sComp=" + c2sComp + "; " +
+                "s2cComp=" + s2cComp +
                 " ]");
     }
 
