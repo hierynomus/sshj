@@ -5,7 +5,7 @@
 
     <groupId>net.schmizz</groupId>
     <artifactId>sshj</artifactId>
-    <packaging>jar</packaging>
+    <packaging>bundle</packaging>
     <version>0.4.2-SNAPSHOT</version>
 
     <name>sshj</name>
@@ -159,6 +159,24 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            !net.schmizz.*,
+                            javax.crypto*,
+                            com.jcraft.jzlib*;version="[1.0,2)",
+                            org.slf4j*;version="[1.6,2)",
+                            org.bouncycastle*;version="[1.4,2)",
+                            *
+                        </Import-Package>
+                        <Export-Package>net.schmizz.*</Export-Package>
+                    </instructions>
+                </configuration>
             </plugin>
         </plugins>
     </build>
