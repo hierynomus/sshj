@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import net.schmizz.sshj.xfer.LocalDestFile;
+import net.schmizz.sshj.xfer.LocalSourceFile;
+
 public class StatefulSFTPClient
         extends SFTPClient {
 
@@ -171,11 +174,35 @@ public class StatefulSFTPClient
             throws IOException {
         return super.canonicalize(cwdify(path));
     }
+    
+    @Override
+    public void chown(String path, int uid)
+    		throws IOException {
+    	super.chown(cwdify(path), uid);
+    }
+    
+    @Override
+    public void chmod(String path, int perms)
+    		throws IOException {
+    	super.chmod(cwdify(path), perms);
+    }
+    
+    @Override
+    public void chgrp(String path, int gid)
+    		throws IOException {
+    	super.chgrp(cwdify(path), gid);
+    }
 
     @Override
     public void get(String source, String dest)
             throws IOException {
         super.get(cwdify(source), dest);
+    }
+    
+    @Override
+    public void get(String source, LocalDestFile dest)
+    		throws IOException {
+    	super.get(cwdify(source), dest);
     }
 
     @Override
@@ -183,5 +210,11 @@ public class StatefulSFTPClient
             throws IOException {
         super.put(source, cwdify(dest));
     }
-
+    
+    @Override
+    public void put(LocalSourceFile source, String dest)
+    		throws IOException {
+    	super.put(source, cwdify(dest));
+    }
+    
 }
