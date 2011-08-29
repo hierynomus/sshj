@@ -377,7 +377,8 @@ public abstract class AbstractChannel
 
         Event<ConnectionException> responseEvent = null;
         if (wantReply) {
-            responseEvent = new Event<ConnectionException>("chan#" + id + " / " + "chanreq for " + reqType, ConnectionException.chainer, lock);
+            responseEvent = new Event<ConnectionException>("chan#" + id + " / " + "chanreq for " + reqType,
+                                                           ConnectionException.chainer);
             chanReqResponseEvents.add(responseEvent);
         }
         return responseEvent;
