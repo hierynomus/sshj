@@ -58,10 +58,9 @@ public class BouncyCastleRandom
 
     }
 
-    private final RandomGenerator random;
+    private final RandomGenerator random = new VMPCRandomGenerator();
 
     public BouncyCastleRandom() {
-        random = new VMPCRandomGenerator();
         byte[] seed = new SecureRandom().generateSeed(8);
         random.addSeedMaterial(seed);
     }

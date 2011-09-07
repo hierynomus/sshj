@@ -58,11 +58,7 @@ public class JCERandom
     }
 
     private byte[] tmp = new byte[16];
-    private SecureRandom random = null;
-
-    public JCERandom() {
-        random = new SecureRandom();
-    }
+    private final SecureRandom random = new SecureRandom();
 
     /**
      * Fill the given byte-array with random bytes from this PRNG.
