@@ -51,12 +51,13 @@ public abstract class Window {
         return size;
     }
 
-    public void consume(int dec) {
+    public void consume(int dec)
+            throws ConnectionException {
         synchronized (lock) {
             log.debug("Consuming by " + dec + " down to " + size);
             size -= dec;
             if (size < 0)
-                throw new SSHRuntimeException("Window consumed to below 0");
+                throw new ConnectionException("Window consumed to below 0");
         }
     }
 
@@ -85,6 +86,14 @@ public abstract class Window {
                     }
                 }
                 consume(howMuch);
+            }
+        }
+
+        public void consume(int howMuch) {
+            try {
+                super.consume(howMuch);
+            } catch (ConnectionException e) {
+                throw new SSHRuntimeException(e);
             }
         }
 
