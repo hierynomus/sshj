@@ -74,7 +74,7 @@ public class FileMode {
     }
 
     public int getTypeMask() {
-        return mask & 0770000;
+        return mask & 0170000;
     }
 
     public int getPermissionsMask() {
