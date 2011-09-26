@@ -16,6 +16,7 @@
 package net.schmizz.sshj.xfer.scp;
 
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.xfer.LocalFileFilter;
 import net.schmizz.sshj.xfer.LocalSourceFile;
 import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
@@ -28,8 +29,9 @@ import java.util.List;
 public final class SCPUploadClient {
 
     private final SCPEngine engine;
+	private LocalFileFilter uploadFilter;
 
-    SCPUploadClient(SCPEngine engine) {
+	SCPUploadClient(SCPEngine engine) {
         this.engine = engine;
     }
 
@@ -45,7 +47,11 @@ public final class SCPUploadClient {
         return engine.getExitStatus();
     }
 
-    private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
+	public void setUploadFilter(LocalFileFilter uploadFilter) {
+		this.uploadFilter = uploadFilter;
+	}
+
+	private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
             throws IOException {
         List<Arg> args = new LinkedList<Arg>();
         args.add(Arg.SINK);
@@ -75,7 +81,7 @@ public final class SCPUploadClient {
             throws IOException {
         preserveTimeIfPossible(f);
         engine.sendMessage("D0" + getPermString(f) + " 0 " + f.getName());
-        for (LocalSourceFile child : f.getChildren(null))
+        for (LocalSourceFile child : f.getChildren(uploadFilter))
             process(child);
         engine.sendMessage("E");
     }
