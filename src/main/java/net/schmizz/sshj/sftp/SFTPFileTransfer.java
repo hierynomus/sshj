@@ -43,10 +43,23 @@ public class SFTPFileTransfer
         this.engine = engine;
     }
 
+    /**
+     * Equivalent to calling upload(source, dest, true).
+     */
     @Override
     public void upload(String source, String dest)
             throws IOException {
-        new Uploader().upload(new FileSystemFile(source), dest);
+        upload(source, dest, true);
+    }
+
+    /**
+     * Uploads the file at the given path to dest. If setRemoteFileAttributes
+     * is true, this will send an additional request to set the remote file's
+     * attributes to those of the file at the given path.
+     */
+    public void upload(String source, String dest, boolean setRemoteFileAttributes)
+            throws IOException {
+        new Uploader().upload(new FileSystemFile(source), dest, setRemoteFileAttributes);
     }
 
     @Override
@@ -55,10 +68,23 @@ public class SFTPFileTransfer
         download(source, new FileSystemFile(dest));
     }
 
+    /**
+     * Equivalent to calling upload(localFile, remotePath, true).
+     */
     @Override
     public void upload(LocalSourceFile localFile, String remotePath)
             throws IOException {
-        new Uploader().upload(localFile, remotePath);
+        upload(localFile, remotePath, true);
+    }
+
+    /**
+     * Uploads the file the given file to dest. If setRemoteFileAttributes is 
+     * true, this will send an additional request to set the remote file's
+     * attributes to those of the given file.
+     */
+    public void upload(LocalSourceFile localFile, String remotePath, boolean setRemoteFileAttributes)
+        throws IOException {
+        new Uploader().upload(localFile, remotePath, setRemoteFileAttributes);        
     }
 
     @Override
@@ -163,12 +189,12 @@ public class SFTPFileTransfer
 
         private final TransferListener listener = getTransferListener();
 
-        private void upload(LocalSourceFile local, String remote)
+        private void upload(LocalSourceFile local, String remote, boolean setRemoteFileAttributes)
                 throws IOException {
             final String adjustedPath;
             if (local.isDirectory()) {
                 listener.startedDir(local.getName());
-                adjustedPath = uploadDir(local, remote);
+                adjustedPath = uploadDir(local, remote, setRemoteFileAttributes);
                 listener.finishedDir();
             } else if (local.isFile()) {
                 listener.startedFile(local.getName(), local.getLength());
@@ -176,14 +202,17 @@ public class SFTPFileTransfer
                 listener.finishedFile();
             } else
                 throw new IOException(local + " is not a file or directory");
-            engine.setAttributes(adjustedPath, getAttributes(local));
+
+            if (setRemoteFileAttributes) {
+                engine.setAttributes(adjustedPath, getAttributes(local));
+            }
         }
 
-        private String uploadDir(LocalSourceFile local, String remote)
+        private String uploadDir(LocalSourceFile local, String remote, boolean setRemoteFileAttributes)
                 throws IOException {
             final String adjusted = prepareDir(local, remote);
             for (LocalSourceFile f : local.getChildren(getUploadFilter()))
-                upload(f, adjusted);
+                upload(f, adjusted, setRemoteFileAttributes);
             return adjusted;
         }
 
