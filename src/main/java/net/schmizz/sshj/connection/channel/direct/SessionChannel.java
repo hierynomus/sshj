@@ -46,7 +46,6 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.ChannelInputStream;
 import net.schmizz.sshj.transport.TransportException;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
@@ -253,20 +252,6 @@ public class SessionChannel
     private void checkReuse() {
         if (usedUp)
             throw new SSHRuntimeException("This session channel is all used up");
-    }
-
-    @Override
-    @Deprecated
-    public String getOutputAsString()
-            throws IOException {
-        return IOUtils.readFully(getInputStream()).toString();
-    }
-
-    @Override
-    @Deprecated
-    public String getErrorAsString()
-            throws IOException {
-        return IOUtils.readFully(getErrorStream()).toString();
     }
 
 }

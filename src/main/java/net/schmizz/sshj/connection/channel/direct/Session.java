@@ -19,7 +19,6 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.transport.TransportException;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -80,14 +79,6 @@ public interface Session
          */
         void signal(Signal signal)
                 throws TransportException;
-
-        @Deprecated
-        String getOutputAsString()
-                throws IOException;
-
-        @Deprecated
-        String getErrorAsString()
-                throws IOException;
 
     }
 
