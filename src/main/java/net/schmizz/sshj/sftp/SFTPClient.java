@@ -47,7 +47,12 @@ public class SFTPClient
         return engine;
     }
 
+    @Deprecated
     public SFTPFileTransfer getFileTansfer() {
+        return getFileTransfer();
+    }
+
+    public SFTPFileTransfer getFileTransfer() {
         return xfer;
     }
 
