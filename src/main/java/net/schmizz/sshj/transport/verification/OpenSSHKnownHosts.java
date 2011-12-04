@@ -15,11 +15,7 @@
  */
 package net.schmizz.sshj.transport.verification;
 
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SSHException;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.mac.HMACSHA1;
 import net.schmizz.sshj.transport.mac.MAC;
 import org.slf4j.Logger;
@@ -31,7 +27,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyFactory;
 import java.security.PublicKey;
+import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,266 +41,348 @@ import java.util.List;
  * @see <a href="http://nms.lcs.mit.edu/projects/ssh/README.hashed-hosts">Hashed hostnames spec</a>
  */
 public class OpenSSHKnownHosts
-        implements HostKeyVerifier {
+		implements HostKeyVerifier {
 
-    public static abstract class Entry {
+	protected final Logger log = LoggerFactory.getLogger(getClass());
 
-        private KeyType type;
-        private PublicKey key;
-        private String sKey;
+	protected final File khFile;
+	protected final List<HostEntry> entries = new ArrayList<HostEntry>();
 
-        protected void init(PublicKey key)
-                throws SSHException {
-            this.key = key;
-            this.type = KeyType.fromKey(key);
-            if (type == KeyType.UNKNOWN)
-                throw new SSHException("Unknown key type for key: " + key);
-        }
+	public OpenSSHKnownHosts(File khFile) throws IOException {
+		this.khFile = khFile;
+		if (khFile.exists()) {
+			final BufferedReader br = new BufferedReader(new FileReader(khFile));
+			try {
+				// Read in the file, storing each line as an entry
+				String line;
+				while ((line = br.readLine()) != null)
+					try {
+						HostEntry entry = EntryFactory.parseEntry(line);
+						if (entry != null) {
+							entries.add(entry);
+						}
+					} catch (SSHException ignore) {
+						log.debug("Bad line ({}): {} ", ignore.toString(), line);
+					}
+			} finally {
+				IOUtils.closeQuietly(br);
+			}
+		}
+	}
 
-        protected void init(String typeString, String keyString)
-                throws SSHException {
-            this.sKey = keyString;
-            this.type = KeyType.fromString(typeString);
-            if (type == KeyType.UNKNOWN)
-                throw new SSHException("Unknown key type: " + typeString);
-        }
+	public File getFile() {
+		return khFile;
+	}
 
-        public KeyType getType() {
-            return type;
-        }
+	@Override
+	public boolean verify(final String hostname, final int port, final PublicKey key) {
+		final KeyType type = KeyType.fromKey(key);
+		if (type == KeyType.UNKNOWN)
+			return false;
 
-        public PublicKey getKey()
-                throws IOException {
-            if (key == null) {
-                key = new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
-            }
-            return key;
-        }
+		final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
 
-        protected String getKeyString() {
-            if (sKey == null) {
-                final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(key);
-                sKey = Base64.encodeBytes(buf.array(), buf.rpos(), buf.available());
-            }
-            return sKey;
-        }
+		for (HostEntry e : entries)
+			try {
+				if (e.appliesTo(type, adjustedHostname))
+					return e.verify(key) || hostKeyChangedAction(e, adjustedHostname, key);
+			} catch (IOException ioe) {
+				log.error("Error with {}: {}", e, ioe);
+				return false;
+			}
+		return hostKeyUnverifiableAction(adjustedHostname, key);
+	}
 
-        public String getLine() {
-            final StringBuilder line = new StringBuilder();
-            line.append(getHostPart());
-            line.append(" ").append(type.toString());
-            line.append(" ").append(getKeyString());
-            return line.toString();
-        }
+	protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
+		return false;
+	}
 
-        @Override
-        public String toString() {
-            return "KnownHostsEntry{host=" + getHostPart() + "; type=" + type + "}";
-        }
+	protected boolean hostKeyChangedAction(HostEntry entry, String hostname, PublicKey key) {
+		log.warn("Host key for `{}` has changed!", hostname);
+		return false;
+	}
 
-        protected abstract String getHostPart();
+	public List<HostEntry> entries() {
+		return entries;
+	}
 
-        public abstract boolean appliesTo(String host)
-                throws IOException;
+	private static final String LS = System.getProperty("line.separator");
 
-    }
+	public void write()
+			throws IOException {
+		final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile));
+		try {
+			for (HostEntry entry : entries)
+				bos.write((entry.getLine() + LS).getBytes(IOUtils.UTF8));
+		} finally {
+			bos.close();
+		}
+	}
 
-    public static class SimpleEntry
-            extends Entry {
+	public static File detectSSHDir() {
+		final File sshDir = new File(System.getProperty("user.home"), ".ssh");
+		return sshDir.exists() ? sshDir : null;
+	}
 
-        private final List<String> hosts;
 
-        public SimpleEntry(String host, PublicKey key)
-                throws SSHException {
-            this(Arrays.asList(host), key);
-        }
+	/**
+	 * Each line in these files contains the following fields: markers
+	 * (optional), hostnames, bits, exponent, modulus, comment.  The fields are
+	 * separated by spaces.
+	 * <p/>
+	 * The marker is optional, but if it is present then it must be one of
+	 * ``@cert-authority'', to indicate that the line contains a certification
+	 * authority (CA) key, or ``@revoked'', to indicate that the key contained
+	 * on the line is revoked and must not ever be accepted.  Only one marker
+	 * should be used on a key line.
+	 * <p/>
+	 * Hostnames is a comma-separated list of patterns (`*' and `?' act as
+	 * wildcards); each pattern in turn is matched against the canonical host
+	 * name (when authenticating a client) or against the user-supplied name
+	 * (when authenticating a server).  A pattern may also be preceded by `!' to
+	 * indicate negation: if the host name matches a negated pattern, it is not
+	 * accepted (by that line) even if it matched another pattern on the line.
+	 * A hostname or address may optionally be enclosed within `[' and `]'
+	 * brackets then followed by `:' and a non-standard port number.
+	 * <p/>
+	 * Alternately, hostnames may be stored in a hashed form which hides host
+	 * names and addresses should the file's contents be disclosed.  Hashed
+	 * hostnames start with a `|' character.  Only one hashed hostname may
+	 * appear on a single line and none of the above negation or wildcard
+	 * operators may be applied.
+	 * <p/>
+	 * Bits, exponent, and modulus are taken directly from the RSA host key;
+	 * they can be obtained, for example, from /etc/ssh/ssh_host_key.pub.  The
+	 * optional comment field continues to the end of the line, and is not used.
+	 * <p/>
+	 * Lines starting with `#' and empty lines are ignored as comments.
+	 */
+	public static class EntryFactory {
 
-        public SimpleEntry(List<String> hosts, PublicKey key)
-                throws SSHException {
-            this.hosts = hosts;
-            init(key);
-        }
+		public static HostEntry parseEntry(String line) throws IOException {
+			if (isComment(line)) {
+				return new CommentEntry(line);
+			}
 
-        public SimpleEntry(String line)
-                throws SSHException {
-            final String[] parts = line.split(" ");
-            if (parts.length != 3)
-                throw new SSHException("Line parts not 3: " + line);
-            hosts = Arrays.asList(parts[0].split(","));
-            init(parts[1], parts[2]);
-        }
+			String[] split = line.split(" ");
+			int i = 0;
+			Marker marker = getMarker(split[i]);
+			if (marker != null) {
+				i++;
+			}
 
-        @Override
-        public boolean appliesTo(String host) {
-            for (String h : hosts)
-                if (host.equals(h))
-                    return true;
-            return false;
-        }
+			String hostnames = split[i++];
+			String sType = split[i++];
+			KeyType type = KeyType.fromString(sType);
+			PublicKey key;
 
-        @Override
-        protected String getHostPart() {
-            final StringBuilder sb = new StringBuilder();
-            for (String host : hosts) {
-                if (sb.length() > 0) // a host already in there
-                    sb.append(",");
-                sb.append(host);
-            }
-            return sb.toString();
-        }
+			if (isType(type)) {
+				String sKey = split[i++];
+				key = getKey(sKey);
+			} else if (isBits(sType)) {
+				type = KeyType.RSA;
+				int bits = Integer.valueOf(sType);
+				BigInteger e = new BigInteger(split[i++]);
+				BigInteger n = new BigInteger(split[i++]);
+				try {
+					final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
+					key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
+				} catch (Exception ex) {
+					logger.error("Error reading entry {}, could not create key", line, ex);
+					return null;
+				}
+			} else {
+				logger.error("Error reading entry {}, could not determine type", line);
+				return null;
+			}
 
-    }
+			if (isHashed(hostnames)) {
+				return new HashedEntry(marker, hostnames, type, key);
+			} else {
+				return new SimpleEntry(marker, hostnames, type, key);
+			}
+		}
 
-    public static class HashedEntry
-            extends Entry {
+		private static PublicKey getKey(String sKey) throws IOException {
+			return new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
+		}
 
-        private final MAC sha1 = new HMACSHA1();
+		private static boolean isBits(String type) {
+			try {
+				Integer.parseInt(type);
+				return true;
+			} catch (NumberFormatException e) {
+				return false;
+			}
+		}
 
-        private String salt;
-        private byte[] saltyBytes;
+		private static boolean isType(KeyType type) {
+			return type != KeyType.UNKNOWN;
+		}
 
-        private final String hashedHost;
+		private static boolean isComment(String line) {
+			return line.isEmpty() || line.startsWith("#");
+		}
 
-        public HashedEntry(String host, PublicKey key)
-                throws IOException {
-            {
-                saltyBytes = new byte[sha1.getBlockSize()];
-                new java.util.Random().nextBytes(saltyBytes);
-            }
-            this.hashedHost = hashHost(host);
-            init(key);
-        }
+		public static Marker getMarker(String line) {
+			if (line.equals("@cert-authority")) return Marker.CA_CERT;
+			if (line.equals("@revoked")) return Marker.REVOKED;
+			return null;
+		}
 
-        public HashedEntry(String line)
-                throws IOException {
-            final String[] parts = line.split(" ");
-            if (parts.length != 3)
-                throw new SSHException("Line parts not 3: " + line);
-            hashedHost = parts[0];
-            {
-                final String[] hostParts = hashedHost.split("\\|");
-                if (hostParts.length != 4)
-                    throw new SSHException("Unrecognized format for hashed hostname");
-                salt = hostParts[2];
-            }
-            init(parts[1], parts[2]);
-        }
+		public static boolean isHashed(String line) {
+			return line.startsWith("|1|");
+		}
 
-        @Override
-        public boolean appliesTo(String host)
-                throws IOException {
-            return hashedHost.equals(hashHost(host));
-        }
+	}
 
-        private String hashHost(String host)
-                throws IOException {
-            sha1.init(getSaltyBytes());
-            return "|1|" + getSalt() + "|" + Base64.encodeBytes(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
-        }
+	public interface HostEntry {
+		boolean appliesTo(KeyType type, String host) throws IOException;
+		boolean verify(PublicKey key) throws IOException;
+		String getLine();
+	}
 
-        private byte[] getSaltyBytes()
-                throws IOException {
-            if (saltyBytes == null) {
-                saltyBytes = Base64.decode(salt);
-            }
-            return saltyBytes;
-        }
+	public static class CommentEntry implements HostEntry {
+		private final String comment;
 
-        private String getSalt() {
-            if (salt == null) {
-                salt = Base64.encodeBytes(saltyBytes);
-            }
-            return salt;
-        }
+		public CommentEntry(String comment) {
+			this.comment = comment;
+		}
 
-        @Override
-        protected String getHostPart() {
-            return hashedHost;
-        }
+		@Override
+		public boolean appliesTo(KeyType type, String host) {
+			return false;
+		}
 
-    }
+		@Override
+		public boolean verify(PublicKey key) {
+			return false;
+		}
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+		@Override
+		public String getLine() {
+			return comment;
+		}
+	}
 
-    protected final File khFile;
-    protected final List<Entry> entries = new ArrayList<Entry>();
+	public static abstract class AbstractEntry implements HostEntry {
 
-    public OpenSSHKnownHosts(File khFile)
-            throws IOException {
-        this.khFile = khFile;
-        if (khFile.exists()) {
-            final BufferedReader br = new BufferedReader(new FileReader(khFile));
-            try {
-                // Read in the file, storing each line as an entry
-                String line;
-                while ((line = br.readLine()) != null)
-                    try {
-                        entries.add(isHashed(line) ? new HashedEntry(line) : new SimpleEntry(line));
-                    } catch (SSHException ignore) {
-                        log.debug("Bad line ({}): {} ", ignore.toString(), line);
-                    }
-            } finally {
-                IOUtils.closeQuietly(br);
-            }
-        }
-    }
+		protected final OpenSSHKnownHosts.Marker marker;
+		protected final KeyType type;
+		protected PublicKey key;
 
-    public File getFile() {
-        return khFile;
-    }
+		public AbstractEntry(Marker marker, KeyType type, PublicKey key) {
+			this.marker = marker;
+			this.type = type;
+			this.key = key;
+		}
 
-    @Override
-    public boolean verify(final String hostname, final int port, final PublicKey key) {
-        final KeyType type = KeyType.fromKey(key);
-        if (type == KeyType.UNKNOWN)
-            return false;
+		@Override
+		public boolean verify(PublicKey key) throws IOException {
+			return key.equals(this.key) && marker != Marker.REVOKED;
+		}
 
-        final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
+		public String getLine() {
+			final StringBuilder line = new StringBuilder();
 
-        for (Entry e : entries)
-            try {
-                if (e.getType() == type && e.appliesTo(adjustedHostname))
-                    return key.equals(e.getKey()) || hostKeyChangedAction(e, adjustedHostname, key);
-            } catch (IOException ioe) {
-                log.error("Error with {}: {}", e, ioe);
-                return false;
-            }
-        return hostKeyUnverifiableAction(adjustedHostname, key);
-    }
+			if (marker != null) line.append(marker.getMarkerString()).append(" ");
 
-    protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
-        return false;
-    }
+			line.append(getHostPart());
+			line.append(" ").append(type.toString());
+			line.append(" ").append(getKeyString());
+			return line.toString();
+		}
 
-    protected boolean hostKeyChangedAction(Entry entry, String hostname, PublicKey key) {
-        log.warn("Host key for `{}` has changed!", hostname);
-        return false;
-    }
+		private String getKeyString() {
+			final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(key);
+			return Base64.encodeBytes(buf.array(), buf.rpos(), buf.available());
+		}
 
-    public List<Entry> entries() {
-        return entries;
-    }
+		protected abstract String getHostPart();
+	}
 
-    private static final String LS = System.getProperty("line.separator");
+	public static class SimpleEntry extends AbstractEntry {
+		private List<String> hosts;
+		private String hostnames;
 
-    public void write()
-            throws IOException {
-        final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile));
-        try {
-            for (Entry entry : entries)
-                bos.write((entry.getLine() + LS).getBytes(IOUtils.UTF8));
-        } finally {
-            bos.close();
-        }
-    }
+		public SimpleEntry(Marker marker, String hostnames, KeyType type, PublicKey key) {
+			super(marker, type, key);
+			this.hostnames = hostnames;
+			hosts = Arrays.asList(hostnames.split(","));
+		}
 
-    public static File detectSSHDir() {
-        final File sshDir = new File(System.getProperty("user.home"), ".ssh");
-        return sshDir.exists() ? sshDir : null;
-    }
+		@Override
+		protected String getHostPart() {
+			return hostnames;
+		}
 
-    public static boolean isHashed(String line) {
-        return line.startsWith("|1|");
-    }
+		@Override
+		public boolean appliesTo(KeyType type, String host) throws IOException {
+			return type == this.type && hostnames.contains(host);
+		}
+	}
 
+	public static class HashedEntry extends AbstractEntry {
+		private final MAC sha1 = new HMACSHA1();
+
+		private String salt;
+		private byte[] saltyBytes;
+
+		private final String hashedHost;
+
+		public HashedEntry(Marker marker, String hash, KeyType type, PublicKey key) throws SSHException {
+			super(marker, type, key);
+			this.hashedHost = hash;
+			{
+				final String[] hostParts = hashedHost.split("\\|");
+				if (hostParts.length != 4)
+					throw new SSHException("Unrecognized format for hashed hostname");
+				salt = hostParts[2];
+			}
+		}
+
+		@Override
+		public boolean appliesTo(KeyType type, String host) throws IOException {
+			return this.type == type && hashedHost.equals(hashHost(host));
+		}
+
+		private String hashHost(String host) throws IOException {
+			sha1.init(getSaltyBytes());
+			return "|1|" + salt + "|" + Base64.encodeBytes(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
+		}
+
+		private byte[] getSaltyBytes() throws IOException {
+			if (saltyBytes == null) {
+				saltyBytes = Base64.decode(salt);
+			}
+			return saltyBytes;
+		}
+
+
+		@Override
+		public String getLine() {
+			return null;
+		}
+
+		@Override
+		protected String getHostPart() {
+			return hashedHost;
+		}
+	}
+
+	public enum Marker {
+		CA_CERT("@cert-authority"), REVOKED("@revoked");
+
+		private final String sMarker;
+
+		Marker(String sMarker) {
+			this.sMarker = sMarker;
+		}
+
+		public String getMarkerString() {
+			return sMarker;
+		}
+	}
+
+	private static final Logger logger = LoggerFactory.getLogger(OpenSSHKnownHosts.class);
 }
