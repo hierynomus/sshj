@@ -48,6 +48,7 @@ import java.util.List;
 public class OpenSSHKnownHosts
         implements HostKeyVerifier {
 
+    private static final Logger LOG = LoggerFactory.getLogger(OpenSSHKnownHosts.class);
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final File khFile;
@@ -83,12 +84,13 @@ public class OpenSSHKnownHosts
     @Override
     public boolean verify(final String hostname, final int port, final PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
+
         if (type == KeyType.UNKNOWN)
             return false;
 
         final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
 
-        for (HostEntry e : entries)
+        for (HostEntry e : entries) {
             try {
                 if (e.appliesTo(type, adjustedHostname))
                     return e.verify(key) || hostKeyChangedAction(e, adjustedHostname, key);
@@ -96,6 +98,8 @@ public class OpenSSHKnownHosts
                 log.error("Error with {}: {}", e, ioe);
                 return false;
             }
+        }
+
         return hostKeyUnverifiableAction(adjustedHostname, key);
     }
 
@@ -171,35 +175,37 @@ public class OpenSSHKnownHosts
                 return new CommentEntry(line);
             }
 
-            String[] split = line.split(" ");
+            final String[] split = line.split(" ");
+
             int i = 0;
-            Marker marker = getMarker(split[i]);
+            final Marker marker = Marker.fromString(split[i]);
             if (marker != null) {
                 i++;
             }
 
-            String hostnames = split[i++];
-            String sType = split[i++];
+            final String hostnames = split[i++];
+            final String sType = split[i++];
+
             KeyType type = KeyType.fromString(sType);
             PublicKey key;
 
-            if (isType(type)) {
-                String sKey = split[i++];
+            if (type != KeyType.UNKNOWN) {
+                final String sKey = split[i++];
                 key = getKey(sKey);
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
-                int bits = Integer.valueOf(sType);
-                BigInteger e = new BigInteger(split[i++]);
-                BigInteger n = new BigInteger(split[i++]);
+                // int bits = Integer.valueOf(sType);
+                final BigInteger e = new BigInteger(split[i++]);
+                final BigInteger n = new BigInteger(split[i++]);
                 try {
                     final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
                     key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
                 } catch (Exception ex) {
-                    logger.error("Error reading entry {}, could not create key", line, ex);
+                    LOG.error("Error reading entry `{}`, could not create key", line, ex);
                     return null;
                 }
             } else {
-                logger.error("Error reading entry {}, could not determine type", line);
+                LOG.error("Error reading entry `{}`, could not determine type", line);
                 return null;
             }
 
@@ -224,18 +230,8 @@ public class OpenSSHKnownHosts
             }
         }
 
-        private static boolean isType(KeyType type) {
-            return type != KeyType.UNKNOWN;
-        }
-
         private static boolean isComment(String line) {
             return line.isEmpty() || line.startsWith("#");
-        }
-
-        public static Marker getMarker(String line) {
-            if (line.equals("@cert-authority")) return Marker.CA_CERT;
-            if (line.equals("@revoked")) return Marker.REVOKED;
-            return null;
         }
 
         public static boolean isHashed(String line) {
@@ -254,7 +250,8 @@ public class OpenSSHKnownHosts
         String getLine();
     }
 
-    public static class CommentEntry implements HostEntry {
+    public static class CommentEntry
+            implements HostEntry {
         private final String comment;
 
         public CommentEntry(String comment) {
@@ -277,11 +274,12 @@ public class OpenSSHKnownHosts
         }
     }
 
-    public static abstract class AbstractEntry implements HostEntry {
+    public static abstract class AbstractEntry
+            implements HostEntry {
 
         protected final OpenSSHKnownHosts.Marker marker;
         protected final KeyType type;
-        protected PublicKey key;
+        protected final PublicKey key;
 
         public AbstractEntry(Marker marker, KeyType type, PublicKey key) {
             this.marker = marker;
@@ -314,9 +312,10 @@ public class OpenSSHKnownHosts
         protected abstract String getHostPart();
     }
 
-    public static class SimpleEntry extends AbstractEntry {
-        private List<String> hosts;
-        private String hostnames;
+    public static class SimpleEntry
+            extends AbstractEntry {
+        private final List<String> hosts;
+        private final String hostnames;
 
         public SimpleEntry(Marker marker, String hostnames, KeyType type, PublicKey key) {
             super(marker, type, key);
@@ -336,13 +335,14 @@ public class OpenSSHKnownHosts
         }
     }
 
-    public static class HashedEntry extends AbstractEntry {
+    public static class HashedEntry
+            extends AbstractEntry {
         private final MAC sha1 = new HMACSHA1();
 
-        private String salt;
-        private byte[] saltyBytes;
-
         private final String hashedHost;
+        private final String salt;
+
+        private byte[] saltyBytes;
 
         public HashedEntry(Marker marker, String hash, KeyType type, PublicKey key)
                 throws SSHException {
@@ -376,7 +376,6 @@ public class OpenSSHKnownHosts
             return saltyBytes;
         }
 
-
         @Override
         public String getLine() {
             return null;
@@ -389,7 +388,8 @@ public class OpenSSHKnownHosts
     }
 
     public enum Marker {
-        CA_CERT("@cert-authority"), REVOKED("@revoked");
+        CA_CERT("@cert-authority"),
+        REVOKED("@revoked");
 
         private final String sMarker;
 
@@ -400,7 +400,14 @@ public class OpenSSHKnownHosts
         public String getMarkerString() {
             return sMarker;
         }
+        
+        public static Marker fromString(String str) {
+            for (Marker m: values())
+                if (m.sMarker.equals(str))
+                    return m;
+            return null;
+        }
+        
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenSSHKnownHosts.class);
 }
