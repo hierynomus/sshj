@@ -476,8 +476,8 @@ public class SSHClient
             throws IOException {
         final File loc = new File(location);
         final FileKeyProvider.Format format = KeyProviderUtil.detectKeyFileFormat(loc);
-        final FileKeyProvider fkp = Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format
-                .toString());
+        final FileKeyProvider fkp =
+                Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format.toString());
         if (fkp == null)
             throw new SSHException("No provider available for " + format + " key file");
         fkp.init(loc, passwordFinder);
@@ -520,8 +520,8 @@ public class SSHClient
     public KeyProvider loadKeys(String privateKey, String publicKey, PasswordFinder passwordFinder)
             throws IOException {
         final FileKeyProvider.Format format = KeyProviderUtil.detectKeyFileFormat(privateKey, publicKey != null);
-        final FileKeyProvider fkp = Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format
-                .toString());
+        final FileKeyProvider fkp =
+                Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format.toString());
         if (fkp == null)
             throw new SSHException("No provider available for " + format + " key file");
         fkp.init(privateKey, publicKey, passwordFinder);
