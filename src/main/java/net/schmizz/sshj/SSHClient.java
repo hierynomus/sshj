@@ -92,8 +92,8 @@ import java.util.List;
  * <em>A simple example:</em>
  * <p/>
  * <pre>
- * client = new SSHClient();
- * client.initUserKnownHosts();
+ * final SSHClient client = new SSHClient();
+ * client.loadKnownHosts();
  * client.connect(&quot;hostname&quot;);
  * try {
  *     client.authPassword(&quot;username&quot;, &quot;password&quot;);
