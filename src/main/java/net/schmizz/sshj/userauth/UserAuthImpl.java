@@ -25,6 +25,7 @@ import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.method.AuthMethod;
+import net.schmizz.sshj.userauth.method.AuthNone;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -75,6 +76,23 @@ public class UserAuthImpl
 
             final AuthParams authParams = makeAuthParams(username, nextService);
 
+            // Calling AuthNone makes sure we get a Banner on OpenSSH <=4.3 - e.g. in RHEL5 and CentOS5
+            // see: https://github.com/shikhar/sshj/issues/45
+            currentMethod = new AuthNone();
+            try {
+
+                currentMethod.init(authParams);
+                currentMethod.request();
+                authenticated.await(timeout, TimeUnit.SECONDS);
+
+            } catch (UserAuthException e) {
+
+                log.info("`none` auth failed");
+                // Give other methods a shot
+                saveException(e);
+            }
+            
+            
             for (AuthMethod meth : methods) {
 
                 if (!allowedMethods.contains(meth.getName())) {
