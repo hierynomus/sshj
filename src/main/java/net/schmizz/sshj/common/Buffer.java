@@ -51,7 +51,7 @@ public class Buffer<T extends Buffer<T>> {
         }
     }
 
-    public static class PlainBuffer
+    public static final class PlainBuffer
             extends Buffer<PlainBuffer> {
 
         public PlainBuffer() {

@@ -17,7 +17,7 @@ package net.schmizz.sshj.sftp;
 
 import net.schmizz.sshj.common.Buffer;
 
-public class Response
+public final class Response
         extends SFTPPacket<Response> {
 
     public static enum StatusCode {

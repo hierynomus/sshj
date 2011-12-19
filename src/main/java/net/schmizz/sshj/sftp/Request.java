@@ -17,7 +17,7 @@ package net.schmizz.sshj.sftp;
 
 import net.schmizz.concurrent.Promise;
 
-public class Request
+public final class Request
         extends SFTPPacket<Request> {
 
     private final PacketType type;
