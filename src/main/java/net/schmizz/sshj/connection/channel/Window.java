@@ -37,8 +37,8 @@ public abstract class Window {
 
     public void expand(int inc) {
         synchronized (lock) {
-            log.debug("Increasing by {} up to {}", inc, size);
             size += inc;
+            log.debug("Increasing by {} up to {}", inc, size);
             lock.notifyAll();
         }
     }
@@ -54,8 +54,8 @@ public abstract class Window {
     public void consume(int dec)
             throws ConnectionException {
         synchronized (lock) {
-            log.debug("Consuming by " + dec + " down to " + size);
             size -= dec;
+            log.debug("Consuming by " + dec + " down to " + size);
             if (size < 0)
                 throw new ConnectionException("Window consumed to below 0");
         }
@@ -92,7 +92,7 @@ public abstract class Window {
         public void consume(int howMuch) {
             try {
                 super.consume(howMuch);
-            } catch (ConnectionException e) {
+            } catch (ConnectionException e) { // It's a bug if we consume more than remote allowed
                 throw new SSHRuntimeException(e);
             }
         }
