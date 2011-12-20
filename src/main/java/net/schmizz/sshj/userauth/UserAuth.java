@@ -49,7 +49,7 @@ public interface UserAuth {
      * Returns the authentication banner (if any). In some cases this is available even before the first authentication
      * request has been made.
      *
-     * @return the banner, or {@code null} if none was received
+     * @return the banner, or an empty string if none was received
      */
     String getBanner();
 
