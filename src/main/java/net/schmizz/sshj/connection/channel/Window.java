@@ -48,7 +48,9 @@ public abstract class Window {
     }
 
     public int getSize() {
-        return size;
+        synchronized (lock) {
+            return size;
+        }
     }
 
     public void consume(int dec)
@@ -74,18 +76,18 @@ public abstract class Window {
             super(initialWinSize, maxPacketSize);
         }
 
-        public void waitAndConsume(int howMuch)
+        public int awaitExpansion(int was)
                 throws ConnectionException {
             synchronized (lock) {
-                while (size < howMuch) {
-                    log.debug("Waiting, need window space for {} bytes", howMuch);
+                while (size <= was) {
+                    log.debug("Waiting, need size to grow from {} bytes", was);
                     try {
                         lock.wait();
                     } catch (InterruptedException ie) {
                         throw new ConnectionException(ie);
                     }
                 }
-                consume(howMuch);
+                return size;
             }
         }
 
