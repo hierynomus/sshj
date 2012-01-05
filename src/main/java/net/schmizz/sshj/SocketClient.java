@@ -35,16 +35,13 @@
  */
 package net.schmizz.sshj;
 
+import javax.net.SocketFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-
 
 public abstract class SocketClient {
 
@@ -55,7 +52,6 @@ public abstract class SocketClient {
     private OutputStream output;
 
     private SocketFactory socketFactory = SocketFactory.getDefault();
-    private ServerSocketFactory serverSocketFactory = ServerSocketFactory.getDefault();
 
     private static final int DEFAULT_CONNECT_TIMEOUT = 0;
     private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
@@ -157,17 +153,6 @@ public abstract class SocketClient {
 
     public SocketFactory getSocketFactory() {
         return socketFactory;
-    }
-
-    public void setServerSocketFactory(ServerSocketFactory factory) {
-        if (factory == null)
-            serverSocketFactory = ServerSocketFactory.getDefault();
-        else
-            serverSocketFactory = factory;
-    }
-
-    public ServerSocketFactory getServerSocketFactory() {
-        return serverSocketFactory;
     }
 
     public int getConnectTimeout() {

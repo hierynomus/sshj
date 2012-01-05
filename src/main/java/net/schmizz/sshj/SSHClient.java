@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.net.SocketAddress;
+import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -568,23 +568,21 @@ public class SSHClient
     }
 
     /**
-     * Create a {@link LocalPortForwarder} that will listen on {@code address} and forward incoming connections to the
-     * server; which will further forward them to {@code host:port}.
+     * Create a {@link LocalPortForwarder} that will listen based on {@code parameters} using the bound
+     * {@code serverSocket} and forward incoming connections to the server; which will further forward them to
+     * {@code host:port}.
      * <p/>
      * The returned forwarder's {@link LocalPortForwarder#listen() listen()} method should be called to actually start
      * listening, this method just creates an instance.
      *
-     * @param address defines where the {@link LocalPortForwarder} listens
-     * @param host    hostname to which the server will forward
-     * @param port    the port at {@code hostname} to which the server wil forward
+     * @param parameters   parameters for the forwarding setup
+     * @param serverSocket bound server socket
      *
      * @return a {@link LocalPortForwarder}
-     *
-     * @throws IOException if there is an error opening a local server socket
      */
-    public LocalPortForwarder newLocalPortForwarder(SocketAddress address, String host, int port)
-            throws IOException {
-        return new LocalPortForwarder(getServerSocketFactory(), conn, address, host, port);
+    public LocalPortForwarder newLocalPortForwarder(LocalPortForwarder.Parameters parameters,
+                                                    ServerSocket serverSocket) {
+        return new LocalPortForwarder(conn, parameters, serverSocket);
     }
 
     /**
