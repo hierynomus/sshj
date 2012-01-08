@@ -73,15 +73,20 @@ import java.util.List;
  * A {@link Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
  * BouncyCastle is in the classpath.
  * <p/>
- * <ul> <li>{@link ConfigImpl#setKeyExchangeFactories Key exchange}: {@link DHG14}*, {@link DHG1}</li> <li>{@link
- * ConfigImpl#setCipherFactories Ciphers} [1]: {@link AES128CTR}, {@link AES192CTR}, {@link AES256CTR}, {@link
+ * <ul>
+ * <li>{@link ConfigImpl#setKeyExchangeFactories Key exchange}: {@link DHG14}*, {@link DHG1}</li>
+ * <li>{@link ConfigImpl#setCipherFactories Ciphers} [1]: {@link AES128CTR}, {@link AES192CTR}, {@link AES256CTR},
+ * {@link
  * AES128CBC}, {@link AES192CBC}, {@link AES256CBC}, {@link AES192CBC}, {@link TripleDESCBC}, {@link BlowfishCBC}</li>
  * <li>{@link ConfigImpl#setMACFactories MAC}: {@link HMACSHA1}, {@link HMACSHA196}, {@link HMACMD5}, {@link
- * HMACMD596}</li> <li>{@link ConfigImpl#setCompressionFactories Compression}: {@link NoneCompression}</li> <li>{@link
- * ConfigImpl#setSignatureFactories Signature}: {@link SignatureRSA}, {@link SignatureDSA}</li> <li>{@link
- * ConfigImpl#setRandomFactory PRNG}: {@link BouncyCastleRandom}* or {@link JCERandom}</li> <li>{@link
- * ConfigImpl#setFileKeyProviderFactories Key file support}: {@link PKCS8KeyFile}*, {@link OpenSSHKeyFile}*</li>
- * <li>{@link ConfigImpl#setVersion Client version}: {@code "NET_3_0"}</li> </ul>
+ * HMACMD596}</li>
+ * <li>{@link ConfigImpl#setCompressionFactories Compression}: {@link NoneCompression}</li>
+ * <li>{@link ConfigImpl#setSignatureFactories Signature}: {@link SignatureRSA}, {@link SignatureDSA}</li>
+ * <li>{@link ConfigImpl#setRandomFactory PRNG}: {@link BouncyCastleRandom}* or {@link JCERandom}</li>
+ * <li>{@link ConfigImpl#setFileKeyProviderFactories Key file support}: {@link PKCS8KeyFile}*, {@link
+ * OpenSSHKeyFile}*</li>
+ * <li>{@link ConfigImpl#setVersion Client version}: {@code "NET_3_0"}</li>
+ * </ul>
  * <p/>
  * [1] It is worth noting that Sun's JRE does not have the unlimited cryptography extension enabled by default. This
  * prevents using ciphers with strength greater than 128.
@@ -113,7 +118,8 @@ public class DefaultConfig
     }
 
     protected void initRandomFactory(boolean bouncyCastleRegistered) {
-        setRandomFactory(new SingletonRandomFactory(bouncyCastleRegistered ? new BouncyCastleRandom.Factory() : new JCERandom.Factory()));
+        setRandomFactory(new SingletonRandomFactory(bouncyCastleRegistered
+                ? new BouncyCastleRandom.Factory() : new JCERandom.Factory()));
     }
 
     protected void initFileKeyProviderFactories(boolean bouncyCastleRegistered) {
@@ -161,7 +167,7 @@ public class DefaultConfig
 
     protected void initMACFactories() {
         setMACFactories(new HMACSHA1.Factory(), new HMACSHA196.Factory(), new HMACMD5.Factory(),
-                        new HMACMD596.Factory());
+                new HMACMD596.Factory());
     }
 
     protected void initCompressionFactories() {
