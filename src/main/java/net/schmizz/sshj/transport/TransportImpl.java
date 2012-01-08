@@ -381,9 +381,9 @@ public final class TransportImpl
     public void disconnect(DisconnectReason reason, String message) {
         close.lock();
         try {
-            disconnectListener.notifyDisconnect(reason);
-            getService().notifyError(new TransportException(reason, "Disconnected"));
             if (!close.isSet()) {
+                disconnectListener.notifyDisconnect(reason);
+                getService().notifyError(new TransportException(reason, "Disconnected"));
                 sendDisconnect(reason, message);
                 finishOff();
                 close.set();

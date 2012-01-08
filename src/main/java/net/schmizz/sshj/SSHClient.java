@@ -362,7 +362,6 @@ public class SSHClient
     @Override
     public void disconnect()
             throws IOException {
-        assert isConnected();
         trans.disconnect();
         super.disconnect();
         assert !isConnected();
