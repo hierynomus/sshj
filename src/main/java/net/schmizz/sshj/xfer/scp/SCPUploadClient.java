@@ -16,8 +16,10 @@
 package net.schmizz.sshj.xfer.scp;
 
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.xfer.LocalFileFilter;
 import net.schmizz.sshj.xfer.LocalSourceFile;
+import net.schmizz.sshj.xfer.TransferListener;
 import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 import java.io.IOException;
@@ -60,39 +62,35 @@ public final class SCPUploadClient {
             args.add(Arg.PRESERVE_TIMES);
         engine.execSCPWith(args, targetPath);
         engine.check("Start status OK");
-        process(sourceFile);
+        process(engine.getTransferListener(), sourceFile);
     }
 
-    private void process(LocalSourceFile f)
+    private void process(TransferListener listener, LocalSourceFile f)
             throws IOException {
         if (f.isDirectory()) {
-            engine.startedDir(f.getName());
-            sendDirectory(f);
-            engine.finishedDir();
+            sendDirectory(listener.directory(f.getName()), f);
         } else if (f.isFile()) {
-            engine.startedFile(f.getName(), f.getLength());
-            sendFile(f);
-            engine.finishedFile();
+            sendFile(listener.file(f.getName(), f.getLength()), f);
         } else
             throw new IOException(f + " is not a regular file or directory");
     }
 
-    private void sendDirectory(LocalSourceFile f)
+    private void sendDirectory(TransferListener listener, LocalSourceFile f)
             throws IOException {
         preserveTimeIfPossible(f);
         engine.sendMessage("D0" + getPermString(f) + " 0 " + f.getName());
         for (LocalSourceFile child : f.getChildren(uploadFilter))
-            process(child);
+            process(listener, child);
         engine.sendMessage("E");
     }
 
-    private void sendFile(LocalSourceFile f)
+    private void sendFile(StreamCopier.Listener listener, LocalSourceFile f)
             throws IOException {
         preserveTimeIfPossible(f);
         final InputStream src = f.getInputStream();
         try {
             engine.sendMessage("C0" + getPermString(f) + " " + f.getLength() + " " + f.getName());
-            engine.transferToRemote(src, f.getLength());
+            engine.transferToRemote(listener, src, f.getLength());
             engine.signal("Transfer done");
             engine.check("Remote agrees transfer done");
         } finally {

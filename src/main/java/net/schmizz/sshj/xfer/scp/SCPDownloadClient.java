@@ -17,6 +17,7 @@ package net.schmizz.sshj.xfer.scp;
 
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.xfer.LocalDestFile;
+import net.schmizz.sshj.xfer.TransferListener;
 import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 import java.io.IOException;
@@ -71,7 +72,7 @@ public final class SCPDownloadClient {
 
         String msg = engine.readMessage();
         do
-            process(null, msg, targetFile);
+            process(engine.getTransferListener(), null, msg, targetFile);
         while (!(msg = engine.readMessage()).isEmpty());
     }
 
@@ -93,7 +94,7 @@ public final class SCPDownloadClient {
         return Integer.parseInt(cmd.substring(1), 8);
     }
 
-    private boolean process(String bufferedTMsg, String msg, LocalDestFile f)
+    private boolean process(TransferListener listener, String bufferedTMsg, String msg, LocalDestFile f)
             throws IOException {
         if (msg.length() < 1)
             throw new SCPException("Could not parse message `" + msg + "`");
@@ -102,15 +103,15 @@ public final class SCPDownloadClient {
 
             case 'T':
                 engine.signal("ACK: T");
-                process(msg, engine.readMessage(), f);
+                process(listener, msg, engine.readMessage(), f);
                 break;
 
             case 'C':
-                processFile(msg, bufferedTMsg, f);
+                processFile(listener, msg, bufferedTMsg, f);
                 break;
 
             case 'D':
-                processDirectory(msg, bufferedTMsg, f);
+                processDirectory(listener, msg, bufferedTMsg, f);
                 break;
 
             case 'E':
@@ -129,37 +130,36 @@ public final class SCPDownloadClient {
         return false;
     }
 
-    private void processDirectory(String dMsg, String tMsg, LocalDestFile f)
+    private void processDirectory(TransferListener listener, String dMsg, String tMsg, LocalDestFile f)
             throws IOException {
         final List<String> dMsgParts = tokenize(dMsg, 3, true); // D<perms> 0 <dirname>
         final long length = parseLong(dMsgParts.get(1), "dir length");
         final String dirname = dMsgParts.get(2);
         if (length != 0)
             throw new IOException("Remote SCP command sent strange directory length: " + length);
-        engine.startedDir(dirname);
+        
+        final TransferListener dirListener = listener.directory(dirname);
         {
             f = f.getTargetDirectory(dirname);
             engine.signal("ACK: D");
             do {
-            } while (!process(null, engine.readMessage(), f));
+            } while (!process(dirListener, null, engine.readMessage(), f));
             setAttributes(f, parsePermissions(dMsgParts.get(0)), tMsg);
             engine.signal("ACK: E");
         }
-        engine.finishedDir();
     }
 
-    private void processFile(String cMsg, String tMsg, LocalDestFile f)
+    private void processFile(TransferListener listener, String cMsg, String tMsg, LocalDestFile f)
             throws IOException {
         final List<String> cMsgParts = tokenize(cMsg, 3, true); // C<perms> <size> <filename>
         final long length = parseLong(cMsgParts.get(1), "length");
         final String filename = cMsgParts.get(2);
-        engine.startedFile(filename, length);
         {
             f = f.getTargetFile(filename);
             engine.signal("Remote can start transfer");
             final OutputStream dest = f.getOutputStream();
             try {
-                engine.transferFromRemote(dest, length);
+                engine.transferFromRemote(listener.file(filename, length), dest, length);
             } finally {
                 IOUtils.closeQuietly(dest);
             }
@@ -167,7 +167,6 @@ public final class SCPDownloadClient {
             setAttributes(f, parsePermissions(cMsgParts.get(0)), tMsg);
             engine.signal("Transfer done");
         }
-        engine.finishedFile();
     }
 
     private void setAttributes(LocalDestFile f, int perms, String tMsg)

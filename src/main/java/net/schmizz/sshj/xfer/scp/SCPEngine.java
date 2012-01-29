@@ -161,39 +161,26 @@ class SCPEngine {
         scp.getOutputStream().flush();
     }
 
-    long transferToRemote(InputStream src, long length)
+    long transferToRemote(StreamCopier.Listener listener, InputStream src, long length)
             throws IOException {
-        return transfer(src, scp.getOutputStream(), scp.getRemoteMaxPacketSize(), length);
-    }
-
-    long transferFromRemote(OutputStream dest, long length)
-            throws IOException {
-        return transfer(scp.getInputStream(), dest, scp.getLocalMaxPacketSize(), length);
-    }
-
-    private long transfer(InputStream in, OutputStream out, int bufSize, long len)
-            throws IOException {
-        return new StreamCopier(in, out)
-                .bufSize(bufSize).length(len)
+        return new StreamCopier(src, scp.getOutputStream())
+                .bufSize(scp.getRemoteMaxPacketSize()).length(length)
                 .keepFlushing(false)
                 .listener(listener)
                 .copy();
     }
 
-    void startedDir(String dirname) {
-        listener.startedDir(dirname);
+    long transferFromRemote(StreamCopier.Listener listener, OutputStream dest, long length)
+            throws IOException {
+        return new StreamCopier(scp.getInputStream(), dest)
+                .bufSize(scp.getLocalMaxPacketSize()).length(length)
+                .keepFlushing(false)
+                .listener(listener)
+                .copy();
     }
 
-    void finishedDir() {
-        listener.finishedDir();
-    }
-
-    void startedFile(String filename, long length) {
-        listener.startedFile(filename, length);
-    }
-
-    void finishedFile() {
-        listener.finishedFile();
+    TransferListener getTransferListener() {
+        return listener;
     }
 
 }

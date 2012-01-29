@@ -2,15 +2,10 @@ package net.schmizz.sshj.xfer;
 
 import net.schmizz.sshj.common.StreamCopier;
 
-public interface TransferListener
-        extends StreamCopier.Listener {
+public interface TransferListener {
 
-    void startedDir(String name);
+    TransferListener directory(String name);
 
-    void startedFile(String name, long size);
-
-    void finishedFile();
-
-    void finishedDir();
+    StreamCopier.Listener file(String name, long size);
 
 }
