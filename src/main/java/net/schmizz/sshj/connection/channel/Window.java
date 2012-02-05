@@ -116,7 +116,7 @@ public abstract class Window {
 
         public int neededAdjustment() {
             synchronized (lock) {
-                return (size - threshold <= 0) ? (initialSize - size) : 0;
+                return (size <= threshold) ? (initialSize - size) : 0;
             }
         }
 
