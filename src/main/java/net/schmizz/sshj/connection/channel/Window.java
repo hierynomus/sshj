@@ -28,14 +28,14 @@ public abstract class Window {
 
     protected final int maxPacketSize;
 
-    protected int size;
+    protected long size;
 
-    public Window(int initialWinSize, int maxPacketSize) {
+    public Window(long initialWinSize, int maxPacketSize) {
         size = initialWinSize;
         this.maxPacketSize = maxPacketSize;
     }
 
-    public void expand(int inc) {
+    public void expand(long inc) {
         synchronized (lock) {
             size += inc;
             log.debug("Increasing by {} up to {}", inc, size);
@@ -47,13 +47,13 @@ public abstract class Window {
         return maxPacketSize;
     }
 
-    public int getSize() {
+    public long getSize() {
         synchronized (lock) {
             return size;
         }
     }
 
-    public void consume(int dec)
+    public void consume(long dec)
             throws ConnectionException {
         synchronized (lock) {
             size -= dec;
@@ -72,11 +72,11 @@ public abstract class Window {
     public static final class Remote
             extends Window {
 
-        public Remote(int initialWinSize, int maxPacketSize) {
+        public Remote(long initialWinSize, int maxPacketSize) {
             super(initialWinSize, maxPacketSize);
         }
 
-        public int awaitExpansion(int was)
+        public long awaitExpansion(long was)
                 throws ConnectionException {
             synchronized (lock) {
                 while (size <= was) {
@@ -91,7 +91,7 @@ public abstract class Window {
             }
         }
 
-        public void consume(int howMuch) {
+        public void consume(long howMuch) {
             try {
                 super.consume(howMuch);
             } catch (ConnectionException e) { // It's a bug if we consume more than remote allowed
@@ -105,16 +105,16 @@ public abstract class Window {
     public static final class Local
             extends Window {
 
-        private final int initialSize;
-        private final int threshold;
+        private final long initialSize;
+        private final long threshold;
 
-        public Local(int initialWinSize, int maxPacketSize) {
+        public Local(long initialWinSize, int maxPacketSize) {
             super(initialWinSize, maxPacketSize);
             this.initialSize = initialWinSize;
             threshold = Math.min(maxPacketSize * 20, initialSize / 4);
         }
 
-        public int neededAdjustment() {
+        public long neededAdjustment() {
             synchronized (lock) {
                 return (size <= threshold) ? (initialSize - size) : 0;
             }

@@ -71,7 +71,7 @@ public abstract class AbstractDirectChannel
     private void gotOpenConfirmation(SSHPacket buf)
             throws ConnectionException {
         try {
-            init(buf.readUInt32AsInt(), buf.readUInt32AsInt(), buf.readUInt32AsInt());
+            init(buf.readUInt32AsInt(), buf.readUInt32(), buf.readUInt32());
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }

@@ -99,7 +99,7 @@ public interface Channel
     int getLocalMaxPacketSize();
 
     /** @return the current local window size. */
-    int getLocalWinSize();
+    long getLocalWinSize();
 
     /** @return an {@code OutputStream} for this channel. */
     OutputStream getOutputStream();
@@ -111,7 +111,7 @@ public interface Channel
     int getRemoteMaxPacketSize();
 
     /** @return the current remote window size. */
-    int getRemoteWinSize();
+    long getRemoteWinSize();
 
     /** @return the channel type identifier. */
     String getType();

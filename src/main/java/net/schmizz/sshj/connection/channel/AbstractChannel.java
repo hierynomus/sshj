@@ -116,9 +116,9 @@ public abstract class AbstractChannel
         close = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, lock);
     }
 
-    protected void init(int recipient, int remoteWinSize, int remoteMaxPacketSize) {
+    protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
         this.recipient = recipient;
-        rwin = new Window.Remote(remoteWinSize, remoteMaxPacketSize);
+        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, Integer.MAX_VALUE));
         out = new ChannelOutputStream(this, trans, rwin);
         log.info("Initialized - {}", this);
     }
@@ -144,7 +144,7 @@ public abstract class AbstractChannel
     }
 
     @Override
-    public int getLocalWinSize() {
+    public long getLocalWinSize() {
         return lwin.getSize();
     }
 
@@ -164,7 +164,7 @@ public abstract class AbstractChannel
     }
 
     @Override
-    public int getRemoteWinSize() {
+    public long getRemoteWinSize() {
         return rwin.getSize();
     }
 
@@ -315,9 +315,9 @@ public abstract class AbstractChannel
 
     private void gotWindowAdjustment(SSHPacket buf)
             throws ConnectionException {
-        final int howMuch;
+        final long howMuch;
         try {
-            howMuch = buf.readUInt32AsInt();
+            howMuch = buf.readUInt32();
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }

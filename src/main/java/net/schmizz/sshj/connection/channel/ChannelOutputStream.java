@@ -97,12 +97,12 @@ public final class ChannelOutputStream
                 throws TransportException, ConnectionException {
             flush(packet.wpos() - dataOffset);
         }
-
+        
         void flush(int bufferSize)
                 throws TransportException, ConnectionException {
             while (bufferSize > 0) {
 
-                int remoteWindowSize = win.getSize();
+                long remoteWindowSize = win.getSize();
                 if (remoteWindowSize == 0)
                     remoteWindowSize = win.awaitExpansion(remoteWindowSize);
 
@@ -110,7 +110,7 @@ public final class ChannelOutputStream
                 // a) how much data we have
                 // b) the max packet size
                 // c) what the current window size will allow
-                final int writeNow = Math.min(bufferSize, Math.min(win.getMaxPacketSize(), remoteWindowSize));
+                final int writeNow = Math.min(bufferSize, (int) Math.min(win.getMaxPacketSize(), remoteWindowSize));
 
                 packet.wpos(headerOffset);
                 packet.putMessageID(Message.CHANNEL_DATA);

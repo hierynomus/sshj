@@ -127,7 +127,8 @@ public class RemotePortForwarder
 
         private final Forward fwd;
 
-        public ForwardedTCPIPChannel(Connection conn, int recipient, int remoteWinSize, int remoteMaxPacketSize,
+        public ForwardedTCPIPChannel(Connection conn,
+                                     int recipient, long remoteWinSize, long remoteMaxPacketSize,
                                      Forward fwd, String origIP, int origPort) {
             super(conn, TYPE, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
             this.fwd = fwd;
@@ -217,7 +218,7 @@ public class RemotePortForwarder
             throws ConnectionException, TransportException {
         final ForwardedTCPIPChannel chan;
         try {
-            chan = new ForwardedTCPIPChannel(conn, buf.readUInt32AsInt(), buf.readUInt32AsInt(), buf.readUInt32AsInt(),
+            chan = new ForwardedTCPIPChannel(conn, buf.readUInt32AsInt(), buf.readUInt32(), buf.readUInt32(),
                                              new Forward(buf.readString(), buf.readUInt32AsInt()),
                                              buf.readString(), buf.readUInt32AsInt());
         } catch (Buffer.BufferException be) {

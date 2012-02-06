@@ -34,8 +34,9 @@ public class X11Forwarder
 
         public static final String TYPE = "x11";
 
-        public X11Channel(Connection conn, int recipient, int remoteWinSize, int remoteMaxPacketSize, String origIP,
-                          int origPort) {
+        public X11Channel(Connection conn,
+                          int recipient, long remoteWinSize, long remoteMaxPacketSize,
+                          String origIP, int origPort) {
             super(conn, TYPE, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
         }
 
@@ -58,8 +59,7 @@ public class X11Forwarder
             throws ConnectionException, TransportException {
         try {
             callListener(listener, new X11Channel(conn,
-                                                  buf.readUInt32AsInt(),
-                                                  buf.readUInt32AsInt(), buf.readUInt32AsInt(),
+                                                  buf.readUInt32AsInt(), buf.readUInt32(), buf.readUInt32(),
                                                   buf.readString(), buf.readUInt32AsInt()));
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);

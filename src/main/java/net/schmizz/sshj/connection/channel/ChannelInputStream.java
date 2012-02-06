@@ -159,7 +159,7 @@ public final class ChannelInputStream
     private void checkWindow()
             throws TransportException {
         synchronized (win) {
-            final int adjustment = win.neededAdjustment();
+            final long adjustment = win.neededAdjustment();
             if (adjustment > 0) {
                 log.info("Sending SSH_MSG_CHANNEL_WINDOW_ADJUST to #{} for {} bytes", chan.getRecipient(), adjustment);
                 trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST)
