@@ -51,7 +51,7 @@ public class ConnectionImpl
 
     private final Queue<Promise<SSHPacket, ConnectionException>> globalReqPromises = new LinkedList<Promise<SSHPacket, ConnectionException>>();
 
-    private int windowSize = 2048 * 1024;
+    private long windowSize = 2048 * 1024;
     private int maxPacketSize = 32 * 1024;
 
     /**
@@ -159,12 +159,12 @@ public class ConnectionImpl
     }
 
     @Override
-    public int getWindowSize() {
+    public long getWindowSize() {
         return windowSize;
     }
 
     @Override
-    public void setWindowSize(int windowSize) {
+    public void setWindowSize(long windowSize) {
         this.windowSize = windowSize;
     }
 

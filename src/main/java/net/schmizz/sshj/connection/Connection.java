@@ -125,14 +125,14 @@ public interface Connection {
     void setMaxPacketSize(int maxPacketSize);
 
     /** @return the size for the local window this connection recommends to any {@link Channel}'s that ask for it. */
-    int getWindowSize();
+    long getWindowSize();
 
     /**
      * Set the size for the local window this connection recommends to any {@link Channel}'s that ask for it.
      *
      * @param windowSize window size in bytes
      */
-    void setWindowSize(int windowSize);
+    void setWindowSize(long windowSize);
 
     /** @return the associated {@link Transport}. */
     Transport getTransport();
