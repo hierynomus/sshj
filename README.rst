@@ -47,7 +47,7 @@ Reporting bugs
 Discussion
 ------------
 
-`Google Group <http://groups.google.com/group/sshj-users`_
+`Google Group <http://groups.google.com/group/sshj-users>`_
 
 Contributing
 ------------
