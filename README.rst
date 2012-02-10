@@ -1,7 +1,9 @@
 sshj - SSHv2 library for Java
 ==============================
 
-To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
+To get started, have a look at one of the examples, and ensure that you have
+an SSH server running locally. Hopefully you will find the API pleasant to
+work with :)
 
 Features of the library include:
 
