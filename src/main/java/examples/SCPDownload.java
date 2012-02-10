@@ -20,7 +20,8 @@ import net.schmizz.sshj.xfer.FileSystemFile;
 
 import java.io.IOException;
 
-/** This example demonstrates downloading of a file over SCP from the SSH server. */
+/** This example demonstrates downloading of a file over SCP from the SSH server.
+ * NB: ensure that you have an SSH server running locally before running this example. */
 public class SCPDownload {
 
     public static void main(String[] args)
