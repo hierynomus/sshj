@@ -44,7 +44,7 @@ public class SocketForwardingConnectListener
     @Override
     public void gotConnect(Channel.Forwarded chan)
             throws IOException {
-        log.info("New connection from " + chan.getOriginatorIP() + ":" + chan.getOriginatorPort());
+        log.info("New connection from {}:{}", chan.getOriginatorIP(), chan.getOriginatorPort());
 
         final Socket sock = new Socket();
         sock.setSendBufferSize(chan.getLocalMaxPacketSize());
