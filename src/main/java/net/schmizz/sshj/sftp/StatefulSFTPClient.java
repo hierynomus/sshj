@@ -31,7 +31,7 @@ public class StatefulSFTPClient
             throws IOException {
         super(engine);
         this.cwd = getSFTPEngine().canonicalize(".");
-        log.info("Start dir = " + cwd);
+        log.info("Start dir = {}", cwd);
     }
 
     private synchronized String cwdify(String path) {
@@ -44,7 +44,7 @@ public class StatefulSFTPClient
         if (statExistence(cwd) == null) {
             throw new SFTPException(cwd + ": does not exist");
         }
-        log.info("CWD = " + cwd);
+        log.info("CWD = {}", cwd);
     }
 
     public synchronized List<RemoteResourceInfo> ls()
