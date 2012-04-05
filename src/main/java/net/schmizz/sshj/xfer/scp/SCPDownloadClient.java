@@ -137,7 +137,7 @@ public final class SCPDownloadClient {
         final String dirname = dMsgParts.get(2);
         if (length != 0)
             throw new IOException("Remote SCP command sent strange directory length: " + length);
-        
+
         final TransferListener dirListener = listener.directory(dirname);
         {
             f = f.getTargetDirectory(dirname);

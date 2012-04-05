@@ -31,9 +31,9 @@ import java.util.List;
 public final class SCPUploadClient {
 
     private final SCPEngine engine;
-	private LocalFileFilter uploadFilter;
+    private LocalFileFilter uploadFilter;
 
-	SCPUploadClient(SCPEngine engine) {
+    SCPUploadClient(SCPEngine engine) {
         this.engine = engine;
     }
 
@@ -49,11 +49,11 @@ public final class SCPUploadClient {
         return engine.getExitStatus();
     }
 
-	public void setUploadFilter(LocalFileFilter uploadFilter) {
-		this.uploadFilter = uploadFilter;
-	}
+    public void setUploadFilter(LocalFileFilter uploadFilter) {
+        this.uploadFilter = uploadFilter;
+    }
 
-	private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
+    private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
             throws IOException {
         List<Arg> args = new LinkedList<Arg>();
         args.add(Arg.SINK);
