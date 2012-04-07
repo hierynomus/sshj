@@ -61,6 +61,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public abstract class AbstractChannel
         implements Channel {
 
+    private static final int REMOTE_MAX_PACKET_SIZE_CEILING = 1024 * 1024;
+
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -118,7 +120,7 @@ public abstract class AbstractChannel
 
     protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
         this.recipient = recipient;
-        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, Integer.MAX_VALUE));
+        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING));
         out = new ChannelOutputStream(this, trans, rwin);
         log.info("Initialized - {}", this);
     }
