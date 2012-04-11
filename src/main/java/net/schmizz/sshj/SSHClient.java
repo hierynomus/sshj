@@ -103,8 +103,9 @@ import java.util.List;
  *          cmd.join(1, TimeUnit.SECONDS);
  *     } finally {
  *          session.close();
- *    } finally {
- *     client.disconnect();
+ *     }
+ * } finally {
+ *      client.disconnect();
  * }
  * </pre>
  * <p/>
