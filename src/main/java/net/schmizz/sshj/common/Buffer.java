@@ -74,10 +74,15 @@ public class Buffer<T extends Buffer<T>> {
     /** The default size for a {@code Buffer} (256 bytes) */
     public static final int DEFAULT_SIZE = 256;
 
+    /** The maximum valid size of buffer (i.e. biggest power of two that can be represented as an int - 2^30) */
+    public static final int MAX_SIZE = (1 << 30); 
+
     protected static int getNextPowerOf2(int i) {
         int j = 1;
-        while (j < i)
+        while (j < i) {
             j <<= 1;
+            if (j <= 0) throw new IllegalArgumentException("Cannot get next power of 2; "+i+" is too large"); 
+        }
         return j;
     }
 

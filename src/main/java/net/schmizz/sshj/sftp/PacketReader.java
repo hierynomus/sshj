@@ -15,14 +15,15 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.concurrent.Promise;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import net.schmizz.concurrent.Promise;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PacketReader
         extends Thread {
@@ -65,7 +66,10 @@ public class PacketReader
     public SFTPPacket<Response> readPacket()
             throws IOException {
         int len = getPacketLength();
-
+        if (len > SFTPPacket.MAX_SIZE) {
+        	throw new IllegalStateException("Invalid packet: indicated length "+len+" too large");
+        }
+        
         packet.rpos(0);
         packet.wpos(0);
 
