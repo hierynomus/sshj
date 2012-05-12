@@ -19,15 +19,53 @@ import java.io.IOException;
 
 public interface FileTransfer {
 
+    /**
+     * This is meant to delegate to {@link #upload(LocalSourceFile, String)} with the {@code localPath} wrapped as e.g.
+     * a {@link FileSystemFile}.
+     *
+     * @param localPath
+     * @param remotePath
+     *
+     * @throws IOException
+     */
     void upload(String localPath, String remotePath)
             throws IOException;
 
+    /**
+     * This is meant to delegate to {@link #download(String, LocalDestFile)} with the {@code localPath} wrapped as e.g.
+     * a {@link FileSystemFile}.
+     *
+     * @param localPath
+     * @param remotePath
+     *
+     * @throws IOException
+     */
     void download(String remotePath, String localPath)
             throws IOException;
 
+    /**
+     * Upload {@code localFile} to {@code remotePath}.
+     * <p/>
+     * Attributes will be set on {@code remotePath} based on the {@code localFile}.
+     *
+     * @param localFile
+     * @param remotePath
+     *
+     * @throws IOException
+     */
     void upload(LocalSourceFile localFile, String remotePath)
             throws IOException;
 
+    /**
+     * Download {@code remotePath} to {@code localFile}.
+     * <p/>
+     * Attributes will be set on {@code localFile} based on the {@code remotePath}'s attributes.
+     *
+     * @param localFile
+     * @param remotePath
+     *
+     * @throws IOException
+     */
     void download(String remotePath, LocalDestFile localFile)
             throws IOException;
 
