@@ -19,6 +19,13 @@ import java.io.IOException;
 
 public class PathHelper {
 
+    public interface Canonicalizer {
+
+        String canonicalize(String path)
+                throws IOException;
+
+    }
+
     public static final String DEFAULT_PATH_SEPARATOR = "/";
 
     private final Canonicalizer canonicalizer;
@@ -26,9 +33,9 @@ public class PathHelper {
 
     private String dotDir;
 
-    public interface Canonicalizer {
-        String canonicalize(String path)
-                throws IOException;
+    private synchronized String getDotDir() // cached
+            throws IOException {
+        return (dotDir != null) ? dotDir : (dotDir = canonicalizer.canonicalize("."));
     }
 
     public PathHelper(Canonicalizer canonicalizer, String pathSep) {
@@ -52,32 +59,33 @@ public class PathHelper {
         return new PathComponents(parent, name, pathSep);
     }
 
-    public PathComponents getComponents(String path)
+    /**
+     * Divide the path into {@code PathComponents(parent, name)} while making sure {@code name != "." && name != ".."}
+     *
+     * @param path to convert
+     *
+     * @return PathComponents
+     *
+     * @throws IOException
+     */
+    public PathComponents getComponents(final String path)
             throws IOException {
-        if (path.isEmpty() || path.equals("."))
+        if (path.equals(pathSep))
+            return getComponents("", "");
+
+        if (path.isEmpty() || path.equals(".") || path.equals("." + pathSep))
             return getComponents(getDotDir());
 
-        final int lastSlash = path.lastIndexOf(pathSep);
+        final String withoutTrailSep = trimTrailingSeparator(path);
+        final int lastSep = withoutTrailSep.lastIndexOf(pathSep);
+        final String parent = (lastSep == -1) ? "" : withoutTrailSep.substring(0, lastSep);
+        final String name = (lastSep == -1) ? withoutTrailSep : withoutTrailSep.substring(lastSep + pathSep.length());
 
-        if (lastSlash == -1) // Relative path
-            if (path.equals(".."))
-                return getComponents(canonicalizer.canonicalize(path));
-            else
-                return getComponents(getDotDir(), path);
-
-        final String name = path.substring(lastSlash + pathSep.length());
-
-        if (name.equals(".") || name.equals(".."))
+        if (name.equals(".") || name.equals("..")) {
             return getComponents(canonicalizer.canonicalize(path));
-        else {
-            final String parent = path.substring(0, lastSlash);
+        } else {
             return getComponents(parent, name);
         }
-    }
-
-    private synchronized String getDotDir()
-            throws IOException {
-        return (dotDir != null) ? dotDir : (dotDir = canonicalizer.canonicalize("."));
     }
 
 }
