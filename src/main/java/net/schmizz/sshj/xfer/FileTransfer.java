@@ -45,8 +45,6 @@ public interface FileTransfer {
 
     /**
      * Upload {@code localFile} to {@code remotePath}.
-     * <p/>
-     * Attributes will be set on {@code remotePath} based on the {@code localFile}.
      *
      * @param localFile
      * @param remotePath
@@ -58,8 +56,6 @@ public interface FileTransfer {
 
     /**
      * Download {@code remotePath} to {@code localFile}.
-     * <p/>
-     * Attributes will be set on {@code localFile} based on the {@code remotePath}'s attributes.
      *
      * @param localFile
      * @param remotePath
