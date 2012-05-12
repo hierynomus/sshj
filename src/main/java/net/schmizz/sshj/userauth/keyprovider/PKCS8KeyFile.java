@@ -53,8 +53,7 @@ public class PKCS8KeyFile
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
     protected PasswordFinder pwdf;
-    @SuppressWarnings("unchecked")
-    protected Resource resource;
+    protected Resource<?> resource;
     protected KeyPair kp;
 
     protected KeyType type;
