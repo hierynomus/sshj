@@ -38,9 +38,18 @@ public class SFTPFileTransfer
 
     private volatile LocalFileFilter uploadFilter;
     private volatile RemoteResourceFilter downloadFilter;
+    private volatile boolean preserveAttributes = true;
 
     public SFTPFileTransfer(SFTPEngine engine) {
         this.engine = engine;
+    }
+
+    public boolean getPreserveAttributes() {
+        return preserveAttributes;
+    }
+
+    public void setPreserveAttributes(boolean preserveAttributes) {
+        this.preserveAttributes = preserveAttributes;
     }
 
     @Override
@@ -106,8 +115,8 @@ public class SFTPFileTransfer
                 default:
                     throw new IOException(remote + " is not a regular file or directory");
             }
-            copyAttributes(remote, adjustedFile);
-
+            if (getPreserveAttributes())
+                copyAttributes(remote, adjustedFile);
         }
 
         private LocalDestFile downloadDir(final TransferListener listener,
@@ -173,7 +182,8 @@ public class SFTPFileTransfer
                 adjustedPath = uploadFile(listener.file(local.getName(), local.getLength()), local, remote);
             } else
                 throw new IOException(local + " is not a file or directory");
-            engine.setAttributes(adjustedPath, getAttributes(local));
+            if (getPreserveAttributes())
+                engine.setAttributes(adjustedPath, getAttributes(local));
         }
 
         private String uploadDir(final TransferListener listener,
