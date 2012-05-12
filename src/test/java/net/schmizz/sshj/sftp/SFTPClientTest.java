@@ -17,13 +17,20 @@ public class SFTPClientTest {
 
     @Before
     public void setPathHelper() throws Exception {
-        PathHelper helper = new PathHelper(sftpEngine, DEFAULT_PATH_SEPARATOR);
+        PathHelper helper = new PathHelper(new PathHelper.Canonicalizer() {
+            @Override
+            public String canonicalize(String path)
+                    throws IOException {
+                if (path.equals("."))
+                    return "/workingdirectory";
+                return path;
+            }
+        }, DEFAULT_PATH_SEPARATOR);
         when(sftpEngine.getPathHelper()).thenReturn(helper);
     }
 
     @Before
     public void setRemoteWorkingDirectory() throws IOException {
-        when(sftpEngine.canonicalize(".")).thenReturn("/workingdirectory");
         FileAttributes isADirectory = new FileAttributes.Builder().withType(FileMode.Type.DIRECTORY).build();
         when(sftpEngine.stat("/workingdirectory")).thenReturn(isADirectory);
     }

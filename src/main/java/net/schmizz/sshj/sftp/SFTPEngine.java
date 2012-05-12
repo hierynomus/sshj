@@ -61,7 +61,13 @@ public class SFTPEngine
         sub = ssh.startSession().startSubsystem("sftp");
         out = sub.getOutputStream();
         reader = new PacketReader(this);
-        pathHelper = new PathHelper(this, pathSep);
+        pathHelper = new PathHelper(new PathHelper.Canonicalizer() {
+            @Override
+            public String canonicalize(String path)
+                    throws IOException {
+                return SFTPEngine.this.canonicalize(path);
+            }
+        }, pathSep);
     }
 
     public SFTPEngine init()

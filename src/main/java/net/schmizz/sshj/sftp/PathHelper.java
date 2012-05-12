@@ -21,13 +21,18 @@ public class PathHelper {
 
     public static final String DEFAULT_PATH_SEPARATOR = "/";
 
-    private final SFTPEngine engine;
+    private final Canonicalizer canonicalizer;
     private final String pathSep;
 
     private String dotDir;
 
-    public PathHelper(SFTPEngine engine, String pathSep) {
-        this.engine = engine;
+    public interface Canonicalizer {
+        String canonicalize(String path)
+                throws IOException;
+    }
+
+    public PathHelper(Canonicalizer canonicalizer, String pathSep) {
+        this.canonicalizer = canonicalizer;
         this.pathSep = pathSep;
     }
 
@@ -56,14 +61,14 @@ public class PathHelper {
 
         if (lastSlash == -1) // Relative path
             if (path.equals(".."))
-                return getComponents(canon(path));
+                return getComponents(canonicalizer.canonicalize(path));
             else
                 return getComponents(getDotDir(), path);
 
         final String name = path.substring(lastSlash + pathSep.length());
 
         if (name.equals(".") || name.equals(".."))
-            return getComponents(canon(path));
+            return getComponents(canonicalizer.canonicalize(path));
         else {
             final String parent = path.substring(0, lastSlash);
             return getComponents(parent, name);
@@ -72,12 +77,7 @@ public class PathHelper {
 
     private synchronized String getDotDir()
             throws IOException {
-        return (dotDir != null) ? dotDir : (dotDir = canon("."));
-    }
-
-    private String canon(String path)
-            throws IOException {
-        return engine.canonicalize(path);
+        return (dotDir != null) ? dotDir : (dotDir = canonicalizer.canonicalize("."));
     }
 
 }
