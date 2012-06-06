@@ -73,7 +73,7 @@ public abstract class AbstractForwardedChannel
                             .putUInt32(getID())
                             .putUInt32(getLocalWinSize())
                             .putUInt32(getLocalMaxPacketSize()));
-        open.set();
+        openEvent.set();
     }
 
     @Override

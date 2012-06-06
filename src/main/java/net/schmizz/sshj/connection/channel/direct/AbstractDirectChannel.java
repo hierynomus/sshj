@@ -65,7 +65,7 @@ public abstract class AbstractDirectChannel
     public void open()
             throws ConnectionException, TransportException {
         trans.write(buildOpenReq());
-        open.await(conn.getTimeout(), TimeUnit.SECONDS);
+        openEvent.await(conn.getTimeout(), TimeUnit.SECONDS);
     }
 
     private void gotOpenConfirmation(SSHPacket buf)
@@ -75,13 +75,13 @@ public abstract class AbstractDirectChannel
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }
-        open.set();
+        openEvent.set();
     }
 
     private void gotOpenFailure(SSHPacket buf)
             throws ConnectionException {
         try {
-            open.deliverError(new OpenFailException(getType(), buf.readUInt32AsInt(), buf.readString()));
+            openEvent.deliverError(new OpenFailException(getType(), buf.readUInt32AsInt(), buf.readString()));
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }

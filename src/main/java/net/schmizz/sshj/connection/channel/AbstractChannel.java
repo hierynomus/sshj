@@ -81,11 +81,11 @@ public abstract class AbstractChannel
     private final Queue<Event<ConnectionException>> chanReqResponseEvents = new LinkedList<Event<ConnectionException>>();
 
     /* The lock used by to create the open & close events */
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock openCloseLock = new ReentrantLock();
     /** Channel open event */
-    protected final Event<ConnectionException> open;
+    protected final Event<ConnectionException> openEvent;
     /** Channel close event */
-    protected final Event<ConnectionException> close;
+    protected final Event<ConnectionException> closeEvent;
 
     /* Access to these fields should be synchronized using this object */
     private boolean eofSent;
@@ -114,8 +114,8 @@ public abstract class AbstractChannel
         lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize());
         in = new ChannelInputStream(this, trans, lwin);
 
-        open = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, lock);
-        close = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, lock);
+        openEvent = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, openCloseLock);
+        closeEvent = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, openCloseLock);
     }
 
     protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
@@ -238,7 +238,7 @@ public abstract class AbstractChannel
     public void notifyError(SSHException error) {
         log.debug("Channel #{} got notified of {}", getID(), error.toString());
 
-        ErrorDeliveryUtil.alertEvents(error, open, close);
+        ErrorDeliveryUtil.alertEvents(error, openEvent, closeEvent);
         ErrorDeliveryUtil.alertEvents(error, chanReqResponseEvents);
 
         in.notifyError(error);
@@ -256,28 +256,28 @@ public abstract class AbstractChannel
     @Override
     public void close()
             throws ConnectionException, TransportException {
-        lock.lock();
+        openCloseLock.lock();
         try {
             try {
                 sendClose();
             } catch (TransportException e) {
-                if (!close.inError())
+                if (!closeEvent.inError())
                     throw e;
             }
-            close.await(conn.getTimeout(), TimeUnit.SECONDS);
+            closeEvent.await(conn.getTimeout(), TimeUnit.SECONDS);
         } finally {
-            lock.unlock();
+            openCloseLock.unlock();
         }
     }
 
     public void join()
             throws ConnectionException {
-        close.await();
+        closeEvent.await();
     }
 
     public void join(int timeout, TimeUnit unit)
             throws ConnectionException {
-        close.await(timeout, unit);
+        closeEvent.await(timeout, unit);
     }
 
     protected synchronized void sendClose()
@@ -294,11 +294,11 @@ public abstract class AbstractChannel
 
     @Override
     public synchronized boolean isOpen() {
-        lock.lock();
+        openCloseLock.lock();
         try {
-            return open.isSet() && !close.isSet() && !closeRequested;
+            return openEvent.isSet() && !closeEvent.isSet() && !closeRequested;
         } finally {
-            lock.unlock();
+            openCloseLock.unlock();
         }
     }
 
@@ -329,7 +329,7 @@ public abstract class AbstractChannel
 
     protected void finishOff() {
         conn.forget(this);
-        close.set();
+        closeEvent.set();
     }
 
     protected void gotExtendedData(SSHPacket buf)
@@ -381,7 +381,7 @@ public abstract class AbstractChannel
             Event<ConnectionException> responseEvent = null;
             if (wantReply) {
                 responseEvent = new Event<ConnectionException>("chan#" + id + " / " + "chanreq for " + reqType,
-                        ConnectionException.chainer);
+                                                               ConnectionException.chainer);
                 chanReqResponseEvents.add(responseEvent);
             }
             return responseEvent;
@@ -399,7 +399,7 @@ public abstract class AbstractChannel
                     responseEvent.deliverError(new ConnectionException("Request failed"));
             } else
                 throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
-                        "Received response to channel request when none was requested");
+                                              "Received response to channel request when none was requested");
         }
     }
 
