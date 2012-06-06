@@ -20,33 +20,31 @@ import net.schmizz.sshj.userauth.password.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class PasswordResponseProvider
         implements ChallengeResponseProvider {
+
+    public static final Pattern DEFAULT_PROMPT_PATTERN = Pattern.compile(".*[pP]assword:\\s?\\z");
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private static final char[] EMPTY_RESPONSE = new char[0];
 
-    private static final Collection<String> DEFAULT_ACCEPTABLE_PROMPTS =
-            Collections.unmodifiableCollection(Arrays.asList("Password:", "Password: "));
-
-    private final Collection<String> acceptablePrompts;
+    private final Pattern promptPattern;
     private final PasswordFinder pwdf;
+
     private Resource resource;
-    private boolean gaveAlready;
 
     public PasswordResponseProvider(PasswordFinder pwdf) {
-        this(pwdf, DEFAULT_ACCEPTABLE_PROMPTS);
+        this(pwdf, DEFAULT_PROMPT_PATTERN);
     }
 
-    public PasswordResponseProvider(PasswordFinder pwdf, Collection<String> acceptablePrompts) {
+    public PasswordResponseProvider(PasswordFinder pwdf, Pattern promptPattern) {
         this.pwdf = pwdf;
-        this.acceptablePrompts = acceptablePrompts;
+        this.promptPattern = promptPattern;
     }
 
     @Override
@@ -62,8 +60,7 @@ public class PasswordResponseProvider
 
     @Override
     public char[] getResponse(String prompt, boolean echo) {
-        if (!gaveAlready && !echo && acceptablePrompts.contains(prompt)) {
-            gaveAlready = true;
+        if (!echo && promptPattern.matcher(prompt).matches()) {
             return pwdf.reqPassword(resource);
         }
         return EMPTY_RESPONSE;
