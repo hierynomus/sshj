@@ -258,13 +258,15 @@ public abstract class AbstractChannel
             throws ConnectionException, TransportException {
         openCloseLock.lock();
         try {
-            try {
-                sendClose();
-            } catch (TransportException e) {
-                if (!closeEvent.inError())
-                    throw e;
+            if (isOpen()) {
+                try {
+                    sendClose();
+                } catch (TransportException e) {
+                    if (!closeEvent.inError())
+                        throw e;
+                }
+                closeEvent.await(conn.getTimeout(), TimeUnit.SECONDS);
             }
-            closeEvent.await(conn.getTimeout(), TimeUnit.SECONDS);
         } finally {
             openCloseLock.unlock();
         }
