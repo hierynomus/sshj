@@ -62,11 +62,11 @@ public class SecurityUtils {
         public void run()
                 throws Exception {
             if (java.security.Security.getProvider(BOUNCY_CASTLE) == null) {
-                LOG.info("Trying to register BouncyCastle as a JCE provider");
+                LOG.debug("Trying to register BouncyCastle as a JCE provider");
                 java.security.Security.addProvider(new BouncyCastleProvider());
                 MessageDigest.getInstance("MD5", BOUNCY_CASTLE);
                 KeyAgreement.getInstance("DH", BOUNCY_CASTLE);
-                LOG.info("Registration succeeded");
+                LOG.info("BouncyCastle registration succeeded");
             } else
                 LOG.info("BouncyCastle already registered as a JCE provider");
             securityProvider = BOUNCY_CASTLE;

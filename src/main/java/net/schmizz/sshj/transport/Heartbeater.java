@@ -80,7 +80,7 @@ final class Heartbeater
             while (!isInterrupted()) {
                 final int hi = getPositiveInterval();
                 if (trans.isRunning()) {
-                    log.info("Sending heartbeat since {} seconds elapsed", hi);
+                    log.debug("Sending heartbeat since {} seconds elapsed", hi);
                     trans.write(new SSHPacket(Message.IGNORE));
                 }
                 Thread.sleep(hi * 1000);

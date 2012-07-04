@@ -82,7 +82,7 @@ public class UserAuthImpl
                     continue;
                 }
 
-                log.info("Trying `{}` auth...", meth.getName());
+                log.debug("Trying `{}` auth...", meth.getName());
                 authenticated.clear();
                 currentMethod = meth;
 
@@ -93,13 +93,13 @@ public class UserAuthImpl
                     authenticated.await(timeout, TimeUnit.SECONDS);
 
                 } catch (UserAuthException e) {
-                    log.info("`{}` auth failed", meth.getName());
+                    log.debug("`{}` auth failed", meth.getName());
                     // Give other methods a shot
                     saveException(e);
                     continue;
                 }
 
-                log.info("`{}` auth successful", meth.getName());
+                log.debug("`{}` auth successful", meth.getName());
                 trans.setAuthenticated(); // So it can put delayed compression into force if applicable
                 trans.setService(nextService); // We aren't in charge anymore, next service is
                 return;

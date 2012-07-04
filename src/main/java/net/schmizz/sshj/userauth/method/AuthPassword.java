@@ -37,7 +37,7 @@ public class AuthPassword
     public SSHPacket buildReq()
             throws UserAuthException {
         final AccountResource accountResource = makeAccountResource();
-        log.info("Requesting password for {}", accountResource);
+        log.debug("Requesting password for {}", accountResource);
         return super.buildReq() // the generic stuff
                 .putBoolean(false) // no, we are not responding to a CHANGEREQ
                 .putSensitiveString(pwdf.reqPassword(accountResource));

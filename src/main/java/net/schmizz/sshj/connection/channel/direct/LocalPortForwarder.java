@@ -129,10 +129,10 @@ public class LocalPortForwarder {
         log.info("Listening on {}", serverSocket.getLocalSocketAddress());
         while (!Thread.currentThread().isInterrupted()) {
             final Socket socket = serverSocket.accept();
-            log.info("Got connection from {}", socket.getRemoteSocketAddress());
+            log.debug("Got connection from {}", socket.getRemoteSocketAddress());
             openChannel(socket).start();
         }
-        log.info("Interrupted!");
+        log.debug("Interrupted!");
     }
 
 }

@@ -683,7 +683,7 @@ public class SSHClient
 
         final long start = System.currentTimeMillis();
         trans.doKex();
-        log.info("Key exchange took {} seconds", (System.currentTimeMillis() - start) / 1000.0);
+        log.debug("Key exchange took {} seconds", (System.currentTimeMillis() - start) / 1000.0);
     }
 
     /**

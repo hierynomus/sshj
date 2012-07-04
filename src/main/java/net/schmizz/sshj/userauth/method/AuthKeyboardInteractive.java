@@ -74,7 +74,7 @@ public class AuthKeyboardInteractive
                 for (int i = 0; i < numPrompts; i++) {
                     final String prompt = buf.readString();
                     final boolean echo = buf.readBoolean();
-                    log.info("Requesting response for challenge `{}`; echo={}", prompt, echo);
+                    log.debug("Requesting response for challenge `{}`; echo={}", prompt, echo);
                     userReplies[i] = new CharArrWrap(provider.getResponse(prompt, echo));
                 }
             } catch (Buffer.BufferException be) {

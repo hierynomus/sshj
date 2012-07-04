@@ -122,7 +122,7 @@ public abstract class AbstractChannel
         this.recipient = recipient;
         rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING));
         out = new ChannelOutputStream(this, trans, rwin);
-        log.info("Initialized - {}", this);
+        log.debug("Initialized - {}", this);
     }
 
     @Override
@@ -220,7 +220,7 @@ public abstract class AbstractChannel
 
     private void gotClose()
             throws TransportException {
-        log.info("Got close");
+        log.debug("Got close");
         try {
             closeAllStreams();
             sendClose();
@@ -286,7 +286,7 @@ public abstract class AbstractChannel
             throws TransportException {
         try {
             if (!closeRequested) {
-                log.info("Sending close");
+                log.debug("Sending close");
                 trans.write(newBuffer(Message.CHANNEL_CLOSE));
             }
         } finally {
@@ -313,7 +313,7 @@ public abstract class AbstractChannel
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }
-        log.info("Got chan request for `{}`", reqType);
+        log.debug("Got chan request for `{}`", reqType);
         handleRequest(reqType, buf);
     }
 
@@ -325,7 +325,7 @@ public abstract class AbstractChannel
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }
-        log.info("Received window adjustment for {} bytes", howMuch);
+        log.debug("Received window adjustment for {} bytes", howMuch);
         rwin.expand(howMuch);
     }
 
@@ -371,7 +371,7 @@ public abstract class AbstractChannel
     protected Event<ConnectionException> sendChannelRequest(String reqType, boolean wantReply,
                                                             Buffer.PlainBuffer reqSpecific)
             throws TransportException {
-        log.info("Sending channel request for `{}`", reqType);
+        log.debug("Sending channel request for `{}`", reqType);
         synchronized (chanReqResponseEvents) {
             trans.write(
                     newBuffer(Message.CHANNEL_REQUEST)
@@ -407,7 +407,7 @@ public abstract class AbstractChannel
 
     private synchronized void gotEOF()
             throws TransportException {
-        log.info("Got EOF");
+        log.debug("Got EOF");
         eofGot = true;
         eofInputStreams();
         if (eofSent)
@@ -424,7 +424,7 @@ public abstract class AbstractChannel
             throws TransportException {
         try {
             if (!closeRequested && !eofSent) {
-                log.info("Sending EOF");
+                log.debug("Sending EOF");
                 trans.write(newBuffer(Message.CHANNEL_EOF));
                 if (eofGot)
                     sendClose();

@@ -107,7 +107,7 @@ public abstract class AbstractDHG
         sha1.init();
         initDH(dh);
 
-        log.info("Sending SSH_MSG_KEXDH_INIT");
+        log.debug("Sending SSH_MSG_KEXDH_INIT");
         trans.write(new SSHPacket(Message.KEXDH_INIT).putMPInt(dh.getE()));
     }
 
@@ -117,7 +117,7 @@ public abstract class AbstractDHG
         if (msg != Message.KEXDH_31)
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, "Unexpected packet: " + msg);
 
-        log.info("Received SSH_MSG_KEXDH_REPLY");
+        log.debug("Received SSH_MSG_KEXDH_REPLY");
         final byte[] K_S;
         final BigInteger f;
         final byte[] sig; // signature sent by server

@@ -23,20 +23,20 @@ public class LoggingTransferListener
 
     @Override
     public TransferListener directory(String name) {
-        log.info("started transferring directory `{}`", name);
+        log.debug("started transferring directory `{}`", name);
         return new LoggingTransferListener(relPath + name + "/");
     }
 
     @Override
     public StreamCopier.Listener file(final String name, final long size) {
         final String path = relPath + name;
-        log.info("started transferring file `{}` ({} bytes)", path, size);
+        log.debug("started transferring file `{}` ({} bytes)", path, size);
         return new StreamCopier.Listener() {
             @Override
             public void reportProgress(long transferred)
                     throws IOException {
-                if (log.isDebugEnabled()) {
-                    log.debug("transferred {}% of `{}`", ((transferred * 100) / size), path);
+                if (log.isTraceEnabled()) {
+                    log.trace("transferred {}% of `{}`", ((transferred * 100) / size), path);
                 }
             }
         };

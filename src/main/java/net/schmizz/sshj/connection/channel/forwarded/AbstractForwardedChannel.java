@@ -66,7 +66,7 @@ public abstract class AbstractForwardedChannel
     @Override
     public void confirm()
             throws TransportException {
-        log.info("Confirming `{}` channel #{}", getType(), getID());
+        log.debug("Confirming `{}` channel #{}", getType(), getID());
         // Must ensure channel is attached before confirming, data could start coming in immediately!
         conn.attach(this);
         trans.write(newBuffer(Message.CHANNEL_OPEN_CONFIRMATION)
@@ -79,7 +79,7 @@ public abstract class AbstractForwardedChannel
     @Override
     public void reject(Reason reason, String message)
             throws TransportException {
-        log.info("Rejecting `{}` channel: {}", getType(), message);
+        log.debug("Rejecting `{}` channel: {}", getType(), message);
         conn.sendOpenFailure(getRecipient(), reason, message);
     }
 

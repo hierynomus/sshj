@@ -166,7 +166,7 @@ final class Decoder
         }
 
         if (isInvalidPacketLength(len)) { // Check packet length validity
-            log.info("Error decoding packet (invalid length) {}", inputBuffer.printHex());
+            log.error("Error decoding packet (invalid length) {}", inputBuffer.printHex());
             throw new TransportException(DisconnectReason.PROTOCOL_ERROR, "invalid packet length: " + len);
         }
 

@@ -65,7 +65,7 @@ public class ConnectionImpl
 
     @Override
     public void attach(Channel chan) {
-        log.info("Attaching `{}` channel (#{})", chan.getType(), chan.getID());
+        log.debug("Attaching `{}` channel (#{})", chan.getType(), chan.getID());
         channels.put(chan.getID(), chan);
     }
 
@@ -81,7 +81,7 @@ public class ConnectionImpl
 
     @Override
     public void forget(Channel chan) {
-        log.info("Forgetting `{}` channel (#{})", chan.getType(), chan.getID());
+        log.debug("Forgetting `{}` channel (#{})", chan.getType(), chan.getID());
         channels.remove(chan.getID());
         synchronized (internalSynchronizer) {
             if (channels.isEmpty())
@@ -91,13 +91,13 @@ public class ConnectionImpl
 
     @Override
     public void forget(ForwardedChannelOpener opener) {
-        log.info("Forgetting opener for `{}` channels: {}", opener.getChannelType(), opener);
+        log.debug("Forgetting opener for `{}` channels: {}", opener.getChannelType(), opener);
         openers.remove(opener.getChannelType());
     }
 
     @Override
     public void attach(ForwardedChannelOpener opener) {
-        log.info("Attaching opener for `{}` channels: {}", opener.getChannelType(), opener);
+        log.debug("Attaching opener for `{}` channels: {}", opener.getChannelType(), opener);
         openers.put(opener.getChannelType(), opener);
     }
 
@@ -187,7 +187,7 @@ public class ConnectionImpl
                                                                      byte[] specifics)
             throws TransportException {
         synchronized (globalReqPromises) {
-            log.info("Making global request for `{}`", name);
+            log.debug("Making global request for `{}`", name);
             trans.write(new SSHPacket(Message.GLOBAL_REQUEST).putString(name)
                                                              .putBoolean(wantReply)
                                                              .putRawBytes(specifics));

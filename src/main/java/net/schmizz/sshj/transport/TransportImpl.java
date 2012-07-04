@@ -90,7 +90,7 @@ public final class TransportImpl
     private final DisconnectListener nullDisconnectListener = new DisconnectListener() {
         @Override
         public void notifyDisconnect(DisconnectReason reason) {
-            log.debug("Default disconnect listener - {}", reason);
+            log.info("Disconnected - {}", reason);
         }
     };
 
@@ -299,7 +299,7 @@ public final class TransportImpl
         if (service == null)
             service = nullService;
 
-        log.info("Setting active service to {}", service.getName());
+        log.debug("Setting active service to {}", service.getName());
         this.service = service;
     }
 
@@ -346,7 +346,7 @@ public final class TransportImpl
     public long sendUnimplemented()
             throws TransportException {
         final long seq = decoder.getSequenceNumber();
-        log.info("Sending SSH_MSG_UNIMPLEMENTED for packet #{}", seq);
+        log.debug("Sending SSH_MSG_UNIMPLEMENTED for packet #{}", seq);
         return write(new SSHPacket(Message.UNIMPLEMENTED).putUInt32(seq));
     }
 
@@ -483,7 +483,7 @@ public final class TransportImpl
                     break;
                 }
                 case IGNORE: {
-                    log.info("Received SSH_MSG_IGNORE");
+                    log.debug("Received SSH_MSG_IGNORE");
                     break;
                 }
                 case UNIMPLEMENTED: {
@@ -508,7 +508,7 @@ public final class TransportImpl
         try {
             final boolean display = buf.readBoolean();
             final String message = buf.readString();
-            log.info("Received SSH_MSG_DEBUG (display={}) '{}'", display, message);
+            log.debug("Received SSH_MSG_DEBUG (display={}) '{}'", display, message);
         } catch (Buffer.BufferException be) {
             throw new TransportException(be);
         }
@@ -549,7 +549,7 @@ public final class TransportImpl
     private void gotUnimplemented(SSHPacket buf)
             throws SSHException {
         long seqNum = buf.readUInt32();
-        log.info("Received SSH_MSG_UNIMPLEMENTED #{}", seqNum);
+        log.debug("Received SSH_MSG_UNIMPLEMENTED #{}", seqNum);
         if (kexer.isKexOngoing())
             throw new TransportException("Received SSH_MSG_UNIMPLEMENTED while exchanging keys");
         getService().notifyUnimplemented(seqNum);

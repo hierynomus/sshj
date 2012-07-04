@@ -48,7 +48,7 @@ public abstract class RemoteResource
     @Override
     public void close()
             throws IOException {
-        log.info("Closing `{}`", this);
+        log.debug("Closing `{}`", this);
         requester.doRequest(newRequest(PacketType.CLOSE)).ensureStatusPacketIsOK();
     }
 

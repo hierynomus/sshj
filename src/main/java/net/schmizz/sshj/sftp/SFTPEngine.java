@@ -81,7 +81,7 @@ public class SFTPEngine
             throw new SFTPException("Expected INIT packet, received: " + type);
 
         operativeVersion = response.readUInt32AsInt();
-        log.info("Server version {}", operativeVersion);
+        log.debug("Server version {}", operativeVersion);
         if (MAX_SUPPORTED_VERSION < operativeVersion)
             throw new SFTPException("Server reported incompatible protocol version: " + operativeVersion);
 

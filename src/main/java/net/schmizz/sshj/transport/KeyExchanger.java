@@ -192,7 +192,7 @@ final class KeyExchanger
      */
     private void sendKexInit()
             throws TransportException {
-        log.info("Sending SSH_MSG_KEXINIT");
+        log.debug("Sending SSH_MSG_KEXINIT");
         clientProposal = new Proposal(transport.getConfig());
         transport.write(clientProposal.getPacket());
         kexInitSent.set();
@@ -200,7 +200,7 @@ final class KeyExchanger
 
     private void sendNewKeys()
             throws TransportException {
-        log.info("Sending SSH_MSG_NEWKEYS");
+        log.debug("Sending SSH_MSG_NEWKEYS");
         transport.write(new SSHPacket(Message.NEWKEYS));
     }
 
@@ -354,7 +354,7 @@ final class KeyExchanger
 
             case KEXINIT:
                 ensureReceivedMatchesExpected(msg, Message.KEXINIT);
-                log.info("Received SSH_MSG_KEXINIT");
+                log.debug("Received SSH_MSG_KEXINIT");
                 startKex(false); // Will start key exchange if not already on
                 /*
                 * We block on this event to prevent a race condition where we may have received a SSH_MSG_KEXINIT before
@@ -367,7 +367,7 @@ final class KeyExchanger
 
             case FOLLOWUP:
                 ensureKexOngoing();
-                log.info("Received kex followup data");
+                log.debug("Received kex followup data");
                 try {
                     if (kex.next(msg, buf)) {
                         verifyHost(kex.getHostKey());
@@ -382,7 +382,7 @@ final class KeyExchanger
             case NEWKEYS:
                 ensureReceivedMatchesExpected(msg, Message.NEWKEYS);
                 ensureKexOngoing();
-                log.info("Received SSH_MSG_NEWKEYS");
+                log.debug("Received SSH_MSG_NEWKEYS");
                 gotNewKeys();
                 setKexDone();
                 expected = Expected.KEXINIT;
