@@ -222,6 +222,21 @@ public class SSHClient
 
     /**
      * Authenticate {@code username} using the {@code "password"} authentication method and as a fallback basic
+     * challenge-response authentication.
+     *
+     * @param username user to authenticate
+     * @param password the password to use for authentication
+     *
+     * @throws UserAuthException  in case of authentication failure
+     * @throws TransportException if there was a transport-layer error
+     */
+    public void authPassword(String username, byte[] password)
+      throws UserAuthException, TransportException {
+      authPassword(username, new String(password));
+    }
+
+    /**
+     * Authenticate {@code username} using the {@code "password"} authentication method and as a fallback basic
      * challenge-response authentication.. The {@code password} array is blanked out after use.
      *
      * @param username user to authenticate
