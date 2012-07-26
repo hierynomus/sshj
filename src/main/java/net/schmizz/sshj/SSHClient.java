@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -231,8 +232,8 @@ public class SSHClient
      * @throws TransportException if there was a transport-layer error
      */
     public void authPassword(String username, byte[] password)
-      throws UserAuthException, TransportException {
-      authPassword(username, new String(password));
+        throws UserAuthException, TransportException, UnsupportedEncodingException {
+      authPassword(username, new String(password, "UTF-8"));
     }
 
     /**
