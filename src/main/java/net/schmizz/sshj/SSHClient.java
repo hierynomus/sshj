@@ -343,13 +343,14 @@ public class SSHClient
     public void authPublickey(String username, String... locations)
             throws UserAuthException, TransportException {
         final List<KeyProvider> keyProviders = new LinkedList<KeyProvider>();
-        for (String loc : locations)
+        for (String loc : locations) {
             try {
                 log.debug("Attempting to load key from: {}", loc);
                 keyProviders.add(loadKeys(loc));
             } catch (IOException logged) {
-                log.warn("Could not load keys due to: {}", logged);
+                log.info("Could not load keys from {} due to: {}", loc, logged.getMessage());
             }
+        }
         authPublickey(username, keyProviders);
     }
 
