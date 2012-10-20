@@ -162,11 +162,14 @@ public class Promise<V, T extends Throwable> {
             if (val != null)
                 return val;
             log.debug("Awaiting <<{}>>", name);
-            while (val == null && pendingEx == null)
-                if (timeout == 0)
+            if (timeout == 0) {
+                while (val == null && pendingEx == null) {
                     cond.await();
-                else if (!cond.await(timeout, unit))
+                }
+            } else {
+                if (!cond.await(timeout, unit))
                     return null;
+            }
             if (pendingEx != null) {
                 log.error("<<{}>> woke to: {}", name, pendingEx.toString());
                 throw pendingEx;
