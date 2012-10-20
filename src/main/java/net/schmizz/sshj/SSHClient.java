@@ -186,7 +186,7 @@ public class SSHClient
      */
     public void auth(String username, AuthMethod... methods)
             throws UserAuthException, TransportException {
-        assert isConnected();
+        checkConnected();
         auth(username, Arrays.<AuthMethod>asList(methods));
     }
 
@@ -201,7 +201,7 @@ public class SSHClient
      */
     public void auth(String username, Iterable<AuthMethod> methods)
             throws UserAuthException, TransportException {
-        assert isConnected();
+        checkConnected();
         auth.authenticate(username, (Service) conn, methods);
     }
 
@@ -365,7 +365,6 @@ public class SSHClient
             throws IOException {
         trans.disconnect();
         super.disconnect();
-        assert !isConnected();
     }
 
     /** @return the associated {@link Connection} instance. */
@@ -607,7 +606,8 @@ public class SSHClient
 
     /** @return Instantiated {@link SCPFileTransfer} implementation. */
     public SCPFileTransfer newSCPFileTransfer() {
-        assert isConnected() && isAuthenticated();
+        checkConnected();
+        checkAuthenticated();
         return new SCPFileTransfer(this);
     }
 
@@ -619,7 +619,8 @@ public class SSHClient
      */
     public SFTPClient newSFTPClient()
             throws IOException {
-        assert isConnected() && isAuthenticated();
+        checkConnected();
+        checkAuthenticated();
         return new SFTPClient(new SFTPEngine(this).init());
     }
 
@@ -636,10 +637,10 @@ public class SSHClient
     @Override
     public Session startSession()
             throws ConnectionException, TransportException {
-        assert isConnected() && isAuthenticated();
+        checkConnected();
+        checkAuthenticated();
         final SessionChannel sess = new SessionChannel(conn);
         sess.open();
-        assert sess.isOpen();
         return sess;
     }
 
@@ -679,8 +680,7 @@ public class SSHClient
      */
     protected void doKex()
             throws TransportException {
-        assert trans.isRunning();
-
+        checkConnected();
         final long start = System.currentTimeMillis();
         trans.doKex();
         log.debug("Key exchange took {} seconds", (System.currentTimeMillis() - start) / 1000.0);
@@ -695,6 +695,18 @@ public class SSHClient
     public void close()
             throws IOException {
         disconnect();
+    }
+
+    private void checkConnected() {
+        if (!isConnected()) {
+            throw new IllegalStateException("Not connected");
+        }
+    }
+
+    private void checkAuthenticated() {
+        if (!isAuthenticated()) {
+            throw new IllegalStateException("Not authenticated");
+        }
     }
 
 }
