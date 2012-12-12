@@ -258,7 +258,7 @@ public class SFTPEngine
             throw new SFTPException("Unexpected data in " + res.getType() + " packet");
     }
 
-    private synchronized void transmit(SFTPPacket<Request> payload)
+    protected synchronized void transmit(SFTPPacket<Request> payload)
             throws IOException {
         final int len = payload.available();
         out.write((len >>> 24) & 0xff);
