@@ -41,10 +41,14 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk16</artifactId>
-            <version>1.46</version>
-            <scope>provided</scope>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.47</version>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.47</version>
+        </dependency> 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
