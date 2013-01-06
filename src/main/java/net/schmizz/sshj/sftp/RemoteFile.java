@@ -15,14 +15,23 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.sftp.Response.StatusCode;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class RemoteFile
         extends RemoteResource {
+
+    public static final int DEFAULT_CONCURRENT_REQUESTS = 10;
+
+    protected volatile int concurrentRequests = DEFAULT_CONCURRENT_REQUESTS;
+
+    private Queue<Promise<Response, SFTPException>> writeRequestsQueue = new LinkedBlockingQueue<Promise<Response, SFTPException>>();
 
     public RemoteFile(Requester requester, String path, String handle) {
         super(requester, path, handle);
@@ -73,11 +82,14 @@ public class RemoteFile
 
     public void write(long fileOffset, byte[] data, int off, int len)
             throws IOException {
-        requester.doRequest(newRequest(PacketType.WRITE)
+        Request request = newRequest(PacketType.WRITE)
                                     .putUInt64(fileOffset)
                                     .putUInt32(len - off)
-                                    .putRawBytes(data, off, len)
-        ).ensureStatusPacketIsOK();
+                                    .putRawBytes(data, off, len);
+        writeRequestsQueue.add(requester.request(request));
+        while (writeRequestsQueue.size() >= getConcurrentRequests()) {
+            requester.retrieve(writeRequestsQueue.remove());
+        }
     }
 
     public void setAttributes(FileAttributes attrs)
@@ -185,5 +197,24 @@ public class RemoteFile
             return read;
         }
 
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            while(!writeRequestsQueue.isEmpty()) {
+                requester.retrieve(writeRequestsQueue.remove());
+            }
+        } finally {
+            super.close();
+        }
+    }
+
+    public void setConcurrentRequests(int concurrentRequests) {
+        this.concurrentRequests = concurrentRequests;
+    }
+
+    public int getConcurrentRequests() {
+        return concurrentRequests;
     }
 }
