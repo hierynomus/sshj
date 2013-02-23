@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
@@ -116,12 +117,17 @@ public class SFTPEngine
     }
 
     @Override
-    public Response doRequest(Request req)
+    public Promise<Response, SFTPException> request(Request req)
             throws IOException {
-        reader.expectResponseTo(req);
+        final Promise<Response, SFTPException> promise = reader.expectResponseTo(req.getRequestID());
         log.debug("Sending {}", req);
         transmit(req);
-        return req.getResponsePromise().retrieve(timeout, TimeUnit.SECONDS);
+        return promise;
+    }
+
+    private Response doRequest(Request req)
+            throws IOException {
+        return request(req).retrieve(getTimeout(), TimeUnit.SECONDS);
     }
 
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)

@@ -15,20 +15,16 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.concurrent.Promise;
-
 public final class Request
         extends SFTPPacket<Request> {
 
     private final PacketType type;
     private final long reqID;
-    private final Promise<Response, SFTPException> responsePromise;
 
     public Request(PacketType type, long reqID) {
         super(type);
         this.type = type;
         this.reqID = reqID;
-        responsePromise = new Promise<Response, SFTPException>("sftp / " + reqID, SFTPException.chainer);
         putUInt32(reqID);
     }
 
@@ -38,10 +34,6 @@ public final class Request
 
     public PacketType getType() {
         return type;
-    }
-
-    public Promise<Response, SFTPException> getResponsePromise() {
-        return responsePromise;
     }
 
     @Override

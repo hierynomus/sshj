@@ -20,6 +20,7 @@ import net.schmizz.sshj.sftp.Response.StatusCode;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class RemoteDirectory
         extends RemoteResource {
@@ -33,7 +34,8 @@ public class RemoteDirectory
         List<RemoteResourceInfo> rri = new LinkedList<RemoteResourceInfo>();
         loop:
         for (; ; ) {
-            Response res = requester.doRequest(newRequest(PacketType.READDIR));
+            final Response res = requester.request(newRequest(PacketType.READDIR))
+                    .retrieve(requester.getTimeout(), TimeUnit.SECONDS);
             switch (res.getType()) {
 
                 case NAME:

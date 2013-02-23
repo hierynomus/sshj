@@ -103,8 +103,11 @@ public class PacketReader
             promise.deliver(resp);
     }
 
-    public void expectResponseTo(Request req) {
-        promises.put(req.getRequestID(), req.getResponsePromise());
+    public Promise<Response, SFTPException> expectResponseTo(long requestId) {
+        final Promise<Response, SFTPException> promise
+                = new Promise<Response, SFTPException>("sftp / " + requestId, SFTPException.chainer);
+        promises.put(requestId, promise);
+        return promise;
     }
 
 }

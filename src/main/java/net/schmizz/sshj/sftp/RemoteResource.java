@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public abstract class RemoteResource
         implements Closeable {
@@ -49,7 +50,9 @@ public abstract class RemoteResource
     public void close()
             throws IOException {
         log.debug("Closing `{}`", this);
-        requester.doRequest(newRequest(PacketType.CLOSE)).ensureStatusPacketIsOK();
+        requester.request(newRequest(PacketType.CLOSE))
+                .retrieve(requester.getTimeout(), TimeUnit.SECONDS)
+                .ensureStatusPacketIsOK();
     }
 
     @Override

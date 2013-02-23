@@ -20,6 +20,7 @@ import net.schmizz.sshj.sftp.Response.StatusCode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 public class RemoteFile
         extends RemoteResource {
@@ -38,9 +39,10 @@ public class RemoteFile
 
     public FileAttributes fetchAttributes()
             throws IOException {
-        return requester.doRequest(newRequest(PacketType.FSTAT))
-                        .ensurePacketTypeIs(PacketType.ATTRS)
-                        .readFileAttributes();
+        return requester.request(newRequest(PacketType.FSTAT))
+                .retrieve(requester.getTimeout(), TimeUnit.SECONDS)
+                .ensurePacketTypeIs(PacketType.ATTRS)
+                .readFileAttributes();
     }
 
     public long length()
@@ -55,7 +57,9 @@ public class RemoteFile
 
     public int read(long fileOffset, byte[] to, int offset, int len)
             throws IOException {
-        Response res = requester.doRequest(newRequest(PacketType.READ).putUInt64(fileOffset).putUInt32(len));
+        final Response res = requester.request(
+                newRequest(PacketType.READ).putUInt64(fileOffset).putUInt32(len)
+        ).retrieve(requester.getTimeout(), TimeUnit.SECONDS);
         switch (res.getType()) {
             case DATA:
                 int recvLen = res.readUInt32AsInt();
@@ -73,16 +77,17 @@ public class RemoteFile
 
     public void write(long fileOffset, byte[] data, int off, int len)
             throws IOException {
-        requester.doRequest(newRequest(PacketType.WRITE)
+        requester.request(newRequest(PacketType.WRITE)
                                     .putUInt64(fileOffset)
                                     .putUInt32(len - off)
                                     .putRawBytes(data, off, len)
-        ).ensureStatusPacketIsOK();
+        ).retrieve(requester.getTimeout(), TimeUnit.SECONDS).ensureStatusPacketIsOK();
     }
 
     public void setAttributes(FileAttributes attrs)
             throws IOException {
-        requester.doRequest(newRequest(PacketType.FSETSTAT).putFileAttributes(attrs)).ensureStatusPacketIsOK();
+        requester.request(newRequest(PacketType.FSETSTAT).putFileAttributes(attrs))
+                .retrieve(requester.getTimeout(), TimeUnit.SECONDS).ensureStatusPacketIsOK();
     }
 
     public int getOutgoingPacketOverhead() {
