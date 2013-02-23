@@ -15,11 +15,14 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.sftp.Response.StatusCode;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
 public class RemoteFile
@@ -27,14 +30,6 @@ public class RemoteFile
 
     public RemoteFile(Requester requester, String path, String handle) {
         super(requester, path, handle);
-    }
-
-    public RemoteFileInputStream getInputStream() {
-        return new RemoteFileInputStream();
-    }
-
-    public RemoteFileOutputStream getOutputStream() {
-        return new RemoteFileOutputStream();
     }
 
     public FileAttributes fetchAttributes()
@@ -77,11 +72,21 @@ public class RemoteFile
 
     public void write(long fileOffset, byte[] data, int off, int len)
             throws IOException {
-        requester.request(newRequest(PacketType.WRITE)
-                                    .putUInt64(fileOffset)
-                                    .putUInt32(len - off)
-                                    .putRawBytes(data, off, len)
-        ).retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS).ensureStatusPacketIsOK();
+        checkResponse(asyncWrite(fileOffset, data, off, len));
+    }
+
+    protected Promise<Response, SFTPException> asyncWrite(long fileOffset, byte[] data, int off, int len)
+            throws IOException {
+        return requester.request(newRequest(PacketType.WRITE)
+                                         .putUInt64(fileOffset)
+                                         .putUInt32(len - off)
+                                         .putRawBytes(data, off, len)
+        );
+    }
+
+    private void checkResponse(Promise<Response, SFTPException> responsePromise)
+            throws SFTPException {
+        responsePromise.retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS).ensureStatusPacketIsOK();
     }
 
     public void setAttributes(FileAttributes attrs)
@@ -103,8 +108,10 @@ public class RemoteFile
     public class RemoteFileOutputStream
             extends OutputStream {
 
-
         private final byte[] b = new byte[1];
+
+        private final int maxUnconfirmedWrites;
+        private final Queue<Promise<Response, SFTPException>> unconfirmedWrites;
 
         private long fileOffset;
 
@@ -112,8 +119,14 @@ public class RemoteFile
             this(0);
         }
 
-        public RemoteFileOutputStream(long fileOffset) {
-            this.fileOffset = fileOffset;
+        public RemoteFileOutputStream(long startingOffset) {
+            this(startingOffset, 0);
+        }
+
+        public RemoteFileOutputStream(long startingOffset, int maxUnconfirmedWrites) {
+            this.fileOffset = startingOffset;
+            this.maxUnconfirmedWrites = maxUnconfirmedWrites;
+            this.unconfirmedWrites = new LinkedList<Promise<Response, SFTPException>>();
         }
 
         @Override
@@ -126,8 +139,25 @@ public class RemoteFile
         @Override
         public void write(byte[] buf, int off, int len)
                 throws IOException {
-            RemoteFile.this.write(fileOffset, buf, off, len);
+            if (unconfirmedWrites.size() > maxUnconfirmedWrites) {
+                checkResponse(unconfirmedWrites.remove());
+            }
+            unconfirmedWrites.add(RemoteFile.this.asyncWrite(fileOffset, buf, off, len));
             fileOffset += len;
+        }
+
+        @Override
+        public void flush()
+                throws IOException {
+            while (!unconfirmedWrites.isEmpty()) {
+                checkResponse(unconfirmedWrites.remove());
+            }
+        }
+
+        @Override
+        public void close()
+                throws IOException {
+            flush();
         }
 
     }

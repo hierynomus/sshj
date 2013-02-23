@@ -141,14 +141,16 @@ public class SFTPFileTransfer
             final LocalDestFile adjusted = local.getTargetFile(remote.getName());
             final RemoteFile rf = engine.open(remote.getPath());
             try {
+                final RemoteFile.RemoteFileInputStream rfis = rf.new RemoteFileInputStream();
                 final OutputStream os = adjusted.getOutputStream();
                 try {
-                    new StreamCopier(rf.getInputStream(), os)
+                    new StreamCopier(rfis, os)
                             .bufSize(engine.getSubsystem().getLocalMaxPacketSize())
                             .keepFlushing(false)
                             .listener(listener)
                             .copy();
                 } finally {
+                    rfis.close();
                     os.close();
                 }
             } finally {
@@ -206,14 +208,16 @@ public class SFTPFileTransfer
                                                                    OpenMode.TRUNC));
             try {
                 final InputStream fis = local.getInputStream();
+                final RemoteFile.RemoteFileOutputStream rfos = rf.new RemoteFileOutputStream(0, 16);
                 try {
-                    new StreamCopier(fis, rf.getOutputStream())
+                    new StreamCopier(fis, rfos)
                             .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
                             .keepFlushing(false)
                             .listener(listener)
                             .copy();
                 } finally {
                     fis.close();
+                    rfos.close();
                 }
             } finally {
                 rf.close();
