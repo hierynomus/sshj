@@ -40,7 +40,7 @@ public class RemoteFile
     public FileAttributes fetchAttributes()
             throws IOException {
         return requester.request(newRequest(PacketType.FSTAT))
-                .retrieve(requester.getTimeout(), TimeUnit.SECONDS)
+                .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS)
                 .ensurePacketTypeIs(PacketType.ATTRS)
                 .readFileAttributes();
     }
@@ -59,7 +59,7 @@ public class RemoteFile
             throws IOException {
         final Response res = requester.request(
                 newRequest(PacketType.READ).putUInt64(fileOffset).putUInt32(len)
-        ).retrieve(requester.getTimeout(), TimeUnit.SECONDS);
+        ).retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
         switch (res.getType()) {
             case DATA:
                 int recvLen = res.readUInt32AsInt();
@@ -81,13 +81,13 @@ public class RemoteFile
                                     .putUInt64(fileOffset)
                                     .putUInt32(len - off)
                                     .putRawBytes(data, off, len)
-        ).retrieve(requester.getTimeout(), TimeUnit.SECONDS).ensureStatusPacketIsOK();
+        ).retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS).ensureStatusPacketIsOK();
     }
 
     public void setAttributes(FileAttributes attrs)
             throws IOException {
         requester.request(newRequest(PacketType.FSETSTAT).putFileAttributes(attrs))
-                .retrieve(requester.getTimeout(), TimeUnit.SECONDS).ensureStatusPacketIsOK();
+                .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS).ensureStatusPacketIsOK();
     }
 
     public int getOutgoingPacketOverhead() {

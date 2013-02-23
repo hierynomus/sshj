@@ -35,7 +35,7 @@ public class RemoteDirectory
         loop:
         for (; ; ) {
             final Response res = requester.request(newRequest(PacketType.READDIR))
-                    .retrieve(requester.getTimeout(), TimeUnit.SECONDS);
+                    .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             switch (res.getType()) {
 
                 case NAME:

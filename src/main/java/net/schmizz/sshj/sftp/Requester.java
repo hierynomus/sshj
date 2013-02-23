@@ -28,6 +28,6 @@ public interface Requester {
     Promise<Response, SFTPException> request(Request req)
             throws IOException;
 
-    int getTimeout();
+    int getTimeoutMs();
 
 }

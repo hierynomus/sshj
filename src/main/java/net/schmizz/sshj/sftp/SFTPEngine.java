@@ -35,12 +35,12 @@ public class SFTPEngine
         implements Requester, Closeable {
 
     public static final int MAX_SUPPORTED_VERSION = 3;
-    public static final int DEFAULT_TIMEOUT = 30;
+    public static final int DEFAULT_TIMEOUT_MS = 30 * 1000; // way too long, but it was the original default
 
     /** Logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected volatile int timeout = DEFAULT_TIMEOUT;
+    protected volatile int timeoutMs = DEFAULT_TIMEOUT_MS;
 
     protected final PathHelper pathHelper;
 
@@ -127,7 +127,7 @@ public class SFTPEngine
 
     private Response doRequest(Request req)
             throws IOException {
-        return request(req).retrieve(getTimeout(), TimeUnit.SECONDS);
+        return request(req).retrieve(getTimeoutMs(), TimeUnit.MILLISECONDS);
     }
 
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)
@@ -233,12 +233,12 @@ public class SFTPEngine
                 ));
     }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public void setTimeoutMs(int timeoutMs) {
+        this.timeoutMs = timeoutMs;
     }
 
-    public int getTimeout() {
-        return timeout;
+    public int getTimeoutMs() {
+        return timeoutMs;
     }
 
     @Override

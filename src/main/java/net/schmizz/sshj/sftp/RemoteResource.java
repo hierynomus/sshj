@@ -51,7 +51,7 @@ public abstract class RemoteResource
             throws IOException {
         log.debug("Closing `{}`", this);
         requester.request(newRequest(PacketType.CLOSE))
-                .retrieve(requester.getTimeout(), TimeUnit.SECONDS)
+                .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS)
                 .ensureStatusPacketIsOK();
     }
 
