@@ -87,7 +87,7 @@ public final class ChannelOutputStream
                 flush(bufferSize);
                 return 0;
             } else {
-                final int n = Math.min(len - off, win.getMaxPacketSize() - bufferSize);
+                final int n = Math.min(len, win.getMaxPacketSize() - bufferSize);
                 packet.putRawBytes(data, off, n);
                 return n;
             }
