@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
@@ -269,17 +268,4 @@ public class SFTPEngine
         out.flush();
     }
 
-    @Override
-    public Promise<Response, SFTPException> request(Request req) throws IOException {
-        reader.expectResponseTo(req);
-        log.debug("Sending {}", req);
-        transmit(req);
-        return req.getResponsePromise();
-    }
-
-    @Override
-    public void retrieve(Promise<Response, SFTPException> request)
-            throws IOException {
-        request.retrieve(timeout, TimeUnit.SECONDS).ensureStatusPacketIsOK();
-    }
 }

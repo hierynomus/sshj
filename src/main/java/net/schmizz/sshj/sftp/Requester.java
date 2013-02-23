@@ -15,8 +15,6 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.concurrent.Promise;
-
 import java.io.IOException;
 
 public interface Requester {
@@ -26,12 +24,6 @@ public interface Requester {
     Request newRequest(PacketType type);
 
     Response doRequest(Request req)
-            throws IOException;
-
-    Promise<Response, SFTPException> request(Request request)
-            throws IOException;
-
-    void retrieve(Promise<Response, SFTPException> response)
             throws IOException;
 
 }
