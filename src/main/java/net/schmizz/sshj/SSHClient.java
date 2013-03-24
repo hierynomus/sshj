@@ -297,8 +297,7 @@ public class SSHClient
      * @throws TransportException if there was a transport-layer error
      */
     public void authPublickey(String username, Iterable<KeyProvider> keyProviders)
-            throws UserAuthException,
-                   TransportException {
+            throws UserAuthException, TransportException {
         final List<AuthMethod> am = new LinkedList<AuthMethod>();
         for (KeyProvider kp : keyProviders)
             am.add(new AuthPublickey(kp));
