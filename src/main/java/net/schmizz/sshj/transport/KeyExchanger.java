@@ -155,7 +155,7 @@ final class KeyExchanger
      * @param waitForDone whether should block till key exchange completed
      *
      * @throws TransportException if there is an error during key exchange
-     * @see {@link Transport#setTimeout} for setting timeout for kex
+     * @see {@link Transport#setTimeoutMs} for setting timeout for kex
      */
     void startKex(boolean waitForDone)
             throws TransportException {
@@ -169,7 +169,7 @@ final class KeyExchanger
 
     void waitForDone()
             throws TransportException {
-        done.await(transport.getTimeout(), TimeUnit.SECONDS);
+        done.await(transport.getTimeoutMs(), TimeUnit.MILLISECONDS);
     }
 
     private synchronized void ensureKexOngoing()
@@ -360,7 +360,7 @@ final class KeyExchanger
                 * We block on this event to prevent a race condition where we may have received a SSH_MSG_KEXINIT before
                 * having sent the packet ourselves (would cause gotKexInit() to fail)
                 */
-                kexInitSent.await(transport.getTimeout(), TimeUnit.SECONDS);
+                kexInitSent.await(transport.getTimeoutMs(), TimeUnit.MILLISECONDS);
                 gotKexInit(buf);
                 expected = Expected.FOLLOWUP;
                 break;

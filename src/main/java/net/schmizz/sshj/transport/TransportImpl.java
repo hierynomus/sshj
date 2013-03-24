@@ -113,7 +113,7 @@ public final class TransportImpl
     /** Client version identification string */
     private final String clientID;
 
-    private volatile int timeout = 30;
+    private volatile int timeoutMs = 30 * 1000; // Crazy long, but it was the original default
 
     private volatile boolean authed = false;
 
@@ -241,13 +241,13 @@ public final class TransportImpl
     }
 
     @Override
-    public int getTimeout() {
-        return timeout;
+    public int getTimeoutMs() {
+        return timeoutMs;
     }
 
     @Override
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
+    public void setTimeoutMs(int timeoutMs) {
+        this.timeoutMs = timeoutMs;
     }
 
     @Override
@@ -311,7 +311,7 @@ public final class TransportImpl
         try {
             serviceAccept.clear();
             sendServiceRequest(service.getName());
-            serviceAccept.await(timeout, TimeUnit.SECONDS);
+            serviceAccept.await(timeoutMs, TimeUnit.MILLISECONDS);
             setService(service);
         } finally {
             serviceAccept.unlock();

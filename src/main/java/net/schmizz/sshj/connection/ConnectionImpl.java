@@ -63,7 +63,7 @@ public class ConnectionImpl
      */
     public ConnectionImpl(Transport trans) {
         super("ssh-connection", trans);
-        timeoutMs = trans.getTimeout() * 1000;
+        timeoutMs = trans.getTimeoutMs();
     }
 
     @Override

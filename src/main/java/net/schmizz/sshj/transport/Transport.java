@@ -86,14 +86,14 @@ public interface Transport
     Config getConfig();
 
     /** @return the timeout that is currently set for blocking operations. */
-    int getTimeout();
+    int getTimeoutMs();
 
     /**
      * Set a timeout for methods that may block.
      *
-     * @param timeout the timeout in seconds
+     * @param timeout the timeout in milliseconds
      */
-    void setTimeout(int timeout);
+    void setTimeoutMs(int timeout);
 
     /** @return the interval in seconds at which a heartbeat message is sent to the server */
     int getHeartbeatInterval();
