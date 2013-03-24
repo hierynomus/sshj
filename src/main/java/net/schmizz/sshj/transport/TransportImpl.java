@@ -151,6 +151,7 @@ public final class TransportImpl
 
             log.info("Client identity string: {}", clientID);
             connInfo.out.write((clientID + "\r\n").getBytes(IOUtils.UTF8));
+            connInfo.out.flush();
 
             // Read server's ID
             final Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
