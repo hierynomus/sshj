@@ -65,7 +65,7 @@ public abstract class AbstractDirectChannel
     public void open()
             throws ConnectionException, TransportException {
         trans.write(buildOpenReq());
-        openEvent.await(conn.getTimeout(), TimeUnit.SECONDS);
+        openEvent.await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
     }
 
     private void gotOpenConfirmation(SSHPacket buf)

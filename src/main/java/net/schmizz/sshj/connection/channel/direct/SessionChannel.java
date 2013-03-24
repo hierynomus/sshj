@@ -91,7 +91,7 @@ public class SessionChannel
                         .putUInt32(width)
                         .putUInt32(height)
                         .putBytes(PTYMode.encode(modes))
-        ).await(conn.getTimeout(), TimeUnit.SECONDS);
+        ).await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class SessionChannel
         checkReuse();
         log.info("Will request to exec `{}`", command);
         sendChannelRequest("exec", true, new Buffer.PlainBuffer().putString(command))
-                .await(conn.getTimeout(), TimeUnit.SECONDS);
+                .await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
         usedUp = true;
         return this;
     }
@@ -175,14 +175,14 @@ public class SessionChannel
                         .putString(authProto)
                         .putString(authCookie)
                         .putUInt32(screen)
-        ).await(conn.getTimeout(), TimeUnit.SECONDS);
+        ).await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void setEnvVar(String name, String value)
             throws ConnectionException, TransportException {
         sendChannelRequest("env", true, new Buffer.PlainBuffer().putString(name).putString(value))
-                .await(conn.getTimeout(), TimeUnit.SECONDS);
+                .await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -195,7 +195,7 @@ public class SessionChannel
     public Shell startShell()
             throws ConnectionException, TransportException {
         checkReuse();
-        sendChannelRequest("shell", true, null).await(conn.getTimeout(), TimeUnit.SECONDS);
+        sendChannelRequest("shell", true, null).await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
         usedUp = true;
         return this;
     }
@@ -206,7 +206,7 @@ public class SessionChannel
         checkReuse();
         log.info("Will request `{}` subsystem", name);
         sendChannelRequest("subsystem", true, new Buffer.PlainBuffer().putString(name))
-                .await(conn.getTimeout(), TimeUnit.SECONDS);
+                .await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
         usedUp = true;
         return this;
     }

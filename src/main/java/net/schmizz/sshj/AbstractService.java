@@ -35,13 +35,10 @@ public abstract class AbstractService
     protected final String name;
     /** Transport layer */
     protected final Transport trans;
-    /** Timeout for blocking operations */
-    protected int timeout;
 
     public AbstractService(String name, Transport trans) {
         this.name = name;
         this.trans = trans;
-        timeout = trans.getTimeout();
     }
 
     @Override
@@ -77,12 +74,6 @@ public abstract class AbstractService
                 trans.reqService(this);
     }
 
-    public int getTimeout() {
-        return this.timeout;
-    }
 
-    public void setTimeout(int timeout) {
-        this.timeout = timeout;
-    }
 
 }

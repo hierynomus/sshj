@@ -265,7 +265,7 @@ public abstract class AbstractChannel
                     if (!closeEvent.inError())
                         throw e;
                 }
-                closeEvent.await(conn.getTimeout(), TimeUnit.SECONDS);
+                closeEvent.await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
             }
         } finally {
             openCloseLock.unlock();

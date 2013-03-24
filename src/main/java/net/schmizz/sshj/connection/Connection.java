@@ -138,16 +138,16 @@ public interface Connection {
     Transport getTransport();
 
     /**
-     * @return the {@code timeout} in seconds that this connection uses for blocking operations and recommends to any
-     *         {@link Channel other} {@link ForwardedChannelOpener classes} that ask for it.
+     * @return the {@code timeout} in milliseconds that this connection uses for blocking operations and recommends to
+     *         any {@link Channel other} {@link ForwardedChannelOpener classes} that ask for it.
      */
-    int getTimeout();
+    int getTimeoutMs();
 
     /**
      * Set the {@code timeout} this connection uses for blocking operations and recommends to any {@link Channel other}
      * {@link ForwardedChannelOpener classes} that ask for it.
      *
-     * @param timeout timeout in seconds
+     * @param timeout timeout in milliseconds
      */
-    void setTimeout(int timeout);
+    void setTimeoutMs(int timeout);
 }

@@ -54,6 +54,8 @@ public class ConnectionImpl
     private long windowSize = 2048 * 1024;
     private int maxPacketSize = 32 * 1024;
 
+    private volatile int timeoutMs;
+
     /**
      * Create with an associated {@link Transport}.
      *
@@ -61,6 +63,7 @@ public class ConnectionImpl
      */
     public ConnectionImpl(Transport trans) {
         super("ssh-connection", trans);
+        timeoutMs = trans.getTimeout() * 1000;
     }
 
     @Override
@@ -249,6 +252,16 @@ public class ConnectionImpl
         }
         ErrorNotifiable.Util.alertAll(error, channels.values());
         channels.clear();
+    }
+
+    @Override
+    public void setTimeoutMs(int timeoutMs) {
+        this.timeoutMs = timeoutMs;
+    }
+
+    @Override
+    public int getTimeoutMs() {
+        return timeoutMs;
     }
 
 }
