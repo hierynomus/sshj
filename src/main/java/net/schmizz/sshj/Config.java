@@ -54,16 +54,16 @@ public interface Config {
     List<Factory.Named<FileKeyProvider>> getFileKeyProviderFactories();
 
     /**
-     * Retrieve the list of named factories for <code>KeyExchange</code>.
+     * Retrieve the list of named factories for {@code KeyExchange}.
      *
-     * @return a list of named <code>KeyExchange</code> factories
+     * @return a list of named {@code KeyExchange} factories
      */
     List<Factory.Named<KeyExchange>> getKeyExchangeFactories();
 
     /**
-     * Retrieve the list of named factories for <code>MAC</code>.
+     * Retrieve the list of named factories for {@code MAC}.
      *
-     * @return a list of named <code>MAC</code> factories
+     * @return a list of named {@code MAC} factories
      */
     List<Factory.Named<MAC>> getMACFactories();
 
