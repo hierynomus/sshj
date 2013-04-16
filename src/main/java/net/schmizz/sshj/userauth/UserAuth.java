@@ -19,8 +19,6 @@ import net.schmizz.sshj.Service;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 
-import java.util.Deque;
-
 /** User authentication API. See RFC 4252. */
 public interface UserAuth {
 
@@ -29,9 +27,7 @@ public interface UserAuth {
      * {@link Service} that will be enabled on successful authentication.
      * <p/>
      * Authentication fails if there are no method available, i.e. if all the method failed or there were method
-     * available but could not be attempted because the server did not allow them. In this case, a {@code
-     * UserAuthException} is thrown with its cause as the last authentication failure. Other {@code UserAuthException}'s
-     * which may have been ignored may be accessed via {@link #getSavedExceptions()}.
+     * available but could not be attempted because the server did not allow them.
      * <p/>
      * Further attempts may also be made by catching {@code UserAuthException} and retrying with this method.
      *
@@ -39,10 +35,12 @@ public interface UserAuth {
      * @param nextService the service to set on successful authentication
      * @param methods     the {@link AuthMethod}'s to try
      *
+     * @return whether authentication was successful
+     *
      * @throws UserAuthException  in case of authentication failure
      * @throws TransportException if there was a transport-layer error
      */
-    void authenticate(String username, Service nextService, Iterable<AuthMethod> methods)
+    boolean authenticate(String username, Service nextService, AuthMethod methods, int timeoutMs)
             throws UserAuthException, TransportException;
 
     /**
@@ -53,23 +51,13 @@ public interface UserAuth {
      */
     String getBanner();
 
-    /** @return saved exceptions that might have been ignored because there were more authentication method available. */
-    Deque<UserAuthException> getSavedExceptions();
-
-    /** @return the {@code timeout} for a method to successfully authenticate before it is abandoned. */
-    int getTimeout();
-
     /**
      * @return whether authentication was partially successful. Some server's may be configured to require multiple
      *         authentications; and this value will be {@code true} if at least one of the method supplied succeeded.
      */
     boolean hadPartialSuccess();
 
-    /**
-     * Set the {@code timeout} for any method to successfully authenticate before it is abandoned.
-     *
-     * @param timeout the timeout in seconds
-     */
-    void setTimeout(int timeout);
+    /** The available authentication methods. This is only defined once an unsuccessful authentication has taken place. */
+    Iterable<String> getAllowedMethods();
 
 }

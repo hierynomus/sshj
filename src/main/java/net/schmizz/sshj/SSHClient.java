@@ -68,6 +68,7 @@ import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -175,6 +176,8 @@ public class SSHClient
         });
     }
 
+    // FIXME: there are way too many auth... overrides. Better API needed.
+
     /**
      * Authenticate {@code username} using the supplied {@code methods}.
      *
@@ -202,7 +205,16 @@ public class SSHClient
     public void auth(String username, Iterable<AuthMethod> methods)
             throws UserAuthException, TransportException {
         checkConnected();
-        auth.authenticate(username, (Service) conn, methods);
+        final Deque<UserAuthException> savedEx = new LinkedList<UserAuthException>();
+        for (AuthMethod method: methods) {
+            try {
+                if (auth.authenticate(username, (Service) conn, method, trans.getTimeoutMs()))
+                    return;
+            } catch (UserAuthException e) {
+                savedEx.push(e);
+            }
+        }
+        throw new UserAuthException("Exhausted available authentication methods", savedEx.peek());
     }
 
     /**
@@ -390,8 +402,7 @@ public class SSHClient
     /**
      * @return the associated {@link UserAuth} instance. This allows access to information like the {@link
      *         UserAuth#getBanner() authentication banner}, whether authentication was at least {@link
-     *         UserAuth#hadPartialSuccess() partially successful}, and any {@link UserAuth#getSavedExceptions() saved
-     *         exceptions} that were ignored because there were more authentication method that could be tried.
+     *         UserAuth#hadPartialSuccess() partially successful}.
      */
     public UserAuth getUserAuth() {
         return auth;
