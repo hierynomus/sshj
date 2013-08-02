@@ -68,6 +68,8 @@ public class SessionChannel
 
     private boolean usedUp;
 
+    private boolean combineStdErr;
+
     public SessionChannel(Connection conn) {
         super(conn, "session");
     }
@@ -216,6 +218,10 @@ public class SessionChannel
         return wasCoreDumped;
     }
 
+    public void setCombineStdErr(boolean combineStdErr) {
+        this.combineStdErr = combineStdErr;
+    }
+
     @Override
     protected void closeAllStreams() {
         IOUtils.closeQuietly(err);
@@ -234,7 +240,10 @@ public class SessionChannel
         try {
             final int dataTypeCode = buf.readUInt32AsInt();
             if (dataTypeCode == 1)
-                receiveInto(err, buf);
+                if (combineStdErr)
+                    receiveInto(in, buf);
+                else
+                    receiveInto(err, buf);
             else
                 throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
                                               "Bad extended data type = " + dataTypeCode);

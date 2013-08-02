@@ -95,7 +95,7 @@ public abstract class AbstractChannel
     /** Local window */
     protected final Window.Local lwin;
     /** stdout stream */
-    private final ChannelInputStream in;
+    protected final ChannelInputStream in;
 
     /** Remote window */
     protected Window.Remote rwin;
