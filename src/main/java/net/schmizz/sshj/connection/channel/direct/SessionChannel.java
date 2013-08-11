@@ -58,13 +58,13 @@ public class SessionChannel
 
     private final ChannelInputStream err = new ChannelInputStream(this, trans, lwin);
 
-    private Integer exitStatus;
+    private volatile Integer exitStatus;
 
-    private Signal exitSignal;
-    private Boolean wasCoreDumped;
-    private String exitErrMsg;
+    private volatile Signal exitSignal;
+    private volatile Boolean wasCoreDumped;
+    private volatile String exitErrMsg;
 
-    private Boolean canDoFlowControl;
+    private volatile Boolean canDoFlowControl;
 
     private boolean usedUp;
 
