@@ -179,7 +179,7 @@ public final class TransportImpl
      *
      * @param buffer
      *
-     * @return
+     * @return empty string if full ident string has not yet been received
      *
      * @throws IOException
      */
