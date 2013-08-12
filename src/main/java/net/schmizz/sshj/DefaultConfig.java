@@ -96,7 +96,7 @@ public class DefaultConfig
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final String VERSION = "SSHJ_0_9_0_SNAPSHOT";
+    private static final String VERSION = "SSHJ_0_9_0";
 
     public DefaultConfig() {
         setVersion(VERSION);
