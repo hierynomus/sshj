@@ -6,7 +6,7 @@
     <groupId>net.schmizz</groupId>
     <artifactId>sshj</artifactId>
     <packaging>bundle</packaging>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
 
     <name>sshj</name>
     <description>SSHv2 library for Java</description>
@@ -23,7 +23,7 @@
         <connection>scm:git:git://github.com/shikhar/sshj.git</connection>
         <developerConnection>scm:git:git@github.com:shikhar/sshj.git</developerConnection>
         <url>http://github.com/shikhar/sshj</url>
-      <tag>v0.9.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <licenses>
