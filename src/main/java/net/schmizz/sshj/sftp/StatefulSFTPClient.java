@@ -41,8 +41,8 @@ public class StatefulSFTPClient
     public synchronized void cd(String dirname)
             throws IOException {
         final String targetCwd = cwdify(dirname);
-        if (statExistence(cwd) == null) {
-            throw new SFTPException(cwd + ": does not exist");
+        if (statExistence(targetCwd) == null) {
+            throw new SFTPException(targetCwd + ": does not exist");
         }
         cwd = targetCwd;
         log.debug("CWD = {}", cwd);
