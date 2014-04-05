@@ -15,6 +15,12 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import java.io.File;
+import java.io.IOException;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
@@ -22,16 +28,16 @@ import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
 import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
 import net.schmizz.sshj.userauth.password.Resource;
+
 import org.bouncycastle.openssl.EncryptionException;
-import org.bouncycastle.openssl.PEMReader;
+import org.bouncycastle.openssl.PEMDecryptorProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 
 /** Represents a PKCS8-encoded key file. This is the format used by OpenSSH and OpenSSL. */
 public class PKCS8KeyFile
@@ -119,14 +125,26 @@ public class PKCS8KeyFile
             throws IOException {
         KeyPair kp = null;
         org.bouncycastle.openssl.PasswordFinder pFinder = makeBouncyPasswordFinder();
-        PEMReader r = null;
+        PEMParser r = null;
         Object o = null;
         try {
             for (; ; ) {
                 // while the PasswordFinder tells us we should retry
                 try {
-                    r = new PEMReader(resource.getReader(), pFinder);
+                    r = new PEMParser(resource.getReader());
                     o = r.readObject();
+
+                    JcaPEMKeyConverter pemConverter = new JcaPEMKeyConverter();
+                    pemConverter.setProvider("BC");
+                    if (pFinder != null && o instanceof PEMEncryptedKeyPair) {
+                        JcePEMDecryptorProviderBuilder decryptorBuilder = new JcePEMDecryptorProviderBuilder();
+                        PEMDecryptorProvider pemDecryptor = decryptorBuilder.build(pFinder.getPassword());
+                        o = pemConverter.getKeyPair(((PEMEncryptedKeyPair) o).decryptKeyPair(pemDecryptor));
+                    }
+                    if (o instanceof PEMKeyPair) {
+                        o = pemConverter.getKeyPair((PEMKeyPair) o);
+                    }
+
                 } catch (EncryptionException e) {
                     if (pwdf.shouldRetry(resource))
                         continue;
