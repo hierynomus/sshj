@@ -175,7 +175,7 @@ public class RemoteFile
             this(0);
         }
 
-        public RemoteFileInputStream(int fileOffset) {
+        public RemoteFileInputStream(long fileOffset) {
             this.fileOffset = fileOffset;
         }
 
