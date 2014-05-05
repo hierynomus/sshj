@@ -56,6 +56,8 @@ import net.schmizz.sshj.transport.mac.HMACMD5;
 import net.schmizz.sshj.transport.mac.HMACMD596;
 import net.schmizz.sshj.transport.mac.HMACSHA1;
 import net.schmizz.sshj.transport.mac.HMACSHA196;
+import net.schmizz.sshj.transport.mac.HMACSHA2256;
+import net.schmizz.sshj.transport.mac.HMACSHA2512;
 import net.schmizz.sshj.transport.random.BouncyCastleRandom;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
@@ -167,7 +169,7 @@ public class DefaultConfig
 
     protected void initMACFactories() {
         setMACFactories(new HMACSHA1.Factory(), new HMACSHA196.Factory(), new HMACMD5.Factory(),
-                new HMACMD596.Factory());
+                new HMACMD596.Factory(), new HMACSHA2256.Factory(), new HMACSHA2512.Factory());
     }
 
     protected void initCompressionFactories() {
