@@ -499,6 +499,10 @@ public final class TransportImpl
                     gotServiceAccept();
                     break;
                 }
+                case USERAUTH_BANNER: {
+                    log.debug("Received USERAUTH_BANNER");
+                    break;
+                }
                 default:
                     sendUnimplemented();
             }
