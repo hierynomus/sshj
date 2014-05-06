@@ -23,12 +23,6 @@ import java.io.File;
 public interface FileKeyProvider
         extends KeyProvider {
 
-    enum Format {
-        PKCS8,
-        OpenSSH,
-        Unknown
-    }
-
     void init(File location);
 
     void init(File location, PasswordFinder pwdf);
