@@ -39,6 +39,7 @@ package net.schmizz.sshj;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
+import net.schmizz.sshj.signature.SignatureECDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 import net.schmizz.sshj.transport.cipher.AES128CBC;
 import net.schmizz.sshj.transport.cipher.AES128CTR;
@@ -70,22 +71,22 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * A {@link Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
+ * A {@link net.schmizz.sshj.Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
  * BouncyCastle is in the classpath.
  * <p/>
  * <ul>
- * <li>{@link ConfigImpl#setKeyExchangeFactories Key exchange}: {@link DHG14}*, {@link DHG1}</li>
- * <li>{@link ConfigImpl#setCipherFactories Ciphers} [1]: {@link AES128CTR}, {@link AES192CTR}, {@link AES256CTR},
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setKeyExchangeFactories Key exchange}: {@link net.schmizz.sshj.transport.kex.DHG14}*, {@link net.schmizz.sshj.transport.kex.DHG1}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setCipherFactories Ciphers} [1]: {@link net.schmizz.sshj.transport.cipher.AES128CTR}, {@link net.schmizz.sshj.transport.cipher.AES192CTR}, {@link net.schmizz.sshj.transport.cipher.AES256CTR},
  * {@link
- * AES128CBC}, {@link AES192CBC}, {@link AES256CBC}, {@link AES192CBC}, {@link TripleDESCBC}, {@link BlowfishCBC}</li>
- * <li>{@link ConfigImpl#setMACFactories MAC}: {@link HMACSHA1}, {@link HMACSHA196}, {@link HMACMD5}, {@link
- * HMACMD596}</li>
- * <li>{@link ConfigImpl#setCompressionFactories Compression}: {@link NoneCompression}</li>
- * <li>{@link ConfigImpl#setSignatureFactories Signature}: {@link SignatureRSA}, {@link SignatureDSA}</li>
- * <li>{@link ConfigImpl#setRandomFactory PRNG}: {@link BouncyCastleRandom}* or {@link JCERandom}</li>
- * <li>{@link ConfigImpl#setFileKeyProviderFactories Key file support}: {@link PKCS8KeyFile}*, {@link
- * OpenSSHKeyFile}*</li>
- * <li>{@link ConfigImpl#setVersion Client version}: {@code "NET_3_0"}</li>
+ * net.schmizz.sshj.transport.cipher.AES128CBC}, {@link net.schmizz.sshj.transport.cipher.AES192CBC}, {@link net.schmizz.sshj.transport.cipher.AES256CBC}, {@link net.schmizz.sshj.transport.cipher.AES192CBC}, {@link net.schmizz.sshj.transport.cipher.TripleDESCBC}, {@link net.schmizz.sshj.transport.cipher.BlowfishCBC}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setMACFactories MAC}: {@link net.schmizz.sshj.transport.mac.HMACSHA1}, {@link net.schmizz.sshj.transport.mac.HMACSHA196}, {@link net.schmizz.sshj.transport.mac.HMACMD5}, {@link
+ * net.schmizz.sshj.transport.mac.HMACMD596}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setCompressionFactories Compression}: {@link net.schmizz.sshj.transport.compression.NoneCompression}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setSignatureFactories Signature}: {@link net.schmizz.sshj.signature.SignatureRSA}, {@link net.schmizz.sshj.signature.SignatureDSA}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setRandomFactory PRNG}: {@link net.schmizz.sshj.transport.random.BouncyCastleRandom}* or {@link net.schmizz.sshj.transport.random.JCERandom}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setFileKeyProviderFactories Key file support}: {@link net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile}*, {@link
+ * net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile}*</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setVersion Client version}: {@code "NET_3_0"}</li>
  * </ul>
  * <p/>
  * [1] It is worth noting that Sun's JRE does not have the unlimited cryptography extension enabled by default. This
@@ -96,7 +97,7 @@ public class DefaultConfig
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final String VERSION = "SSHJ_0_9_1";
+    private static final String VERSION = "SSHJ_0_9_0";
 
     public DefaultConfig() {
         setVersion(VERSION);
@@ -162,7 +163,7 @@ public class DefaultConfig
     }
 
     protected void initSignatureFactories() {
-        setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory());
+        setSignatureFactories(new SignatureECDSA.Factory(), new SignatureRSA.Factory(), new SignatureDSA.Factory());
     }
 
     protected void initMACFactories() {
