@@ -17,6 +17,7 @@ package net.schmizz.sshj.userauth.keyprovider;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -26,6 +27,7 @@ import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
+import net.schmizz.sshj.userauth.password.PrivateKeyReaderResource;
 import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
 import net.schmizz.sshj.userauth.password.Resource;
 
@@ -41,13 +43,13 @@ import org.slf4j.LoggerFactory;
 
 /** Represents a PKCS8-encoded key file. This is the format used by OpenSSH and OpenSSL. */
 public class PKCS8KeyFile
-        implements FileKeyProvider {
+        implements FileKeyProvider, ReaderKeyProvider {
 
     public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
+            implements net.schmizz.sshj.common.Factory.Named<KeyProvider> {
 
         @Override
-        public FileKeyProvider create() {
+        public KeyProvider create() {
             return new PKCS8KeyFile();
         }
 
@@ -82,6 +84,18 @@ public class PKCS8KeyFile
     public KeyType getType()
             throws IOException {
         return type != null ? type : (type = KeyType.fromKey(getPublic()));
+    }
+
+    @Override
+    public void init(Reader location) {
+        assert location != null;
+        resource = new PrivateKeyReaderResource(location);
+    }
+
+    @Override
+    public void init(Reader location, PasswordFinder pwdf) {
+        init(location);
+        this.pwdf = pwdf;
     }
 
     @Override
