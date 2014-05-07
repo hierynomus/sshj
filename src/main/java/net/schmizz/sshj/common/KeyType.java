@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.common;
 
-import bidstreet.core.thunder.common.StringHelper;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECParameterSpec;
@@ -120,8 +119,8 @@ public enum KeyType {
                         curveName,
                         keyLen,
                         x04,
-                        StringHelper.printBytes(x),
-                        StringHelper.printBytes(y))
+                        x,
+                        y)
                 );
 
                 if (!NISTP_CURVE.equals(curveName)) {
