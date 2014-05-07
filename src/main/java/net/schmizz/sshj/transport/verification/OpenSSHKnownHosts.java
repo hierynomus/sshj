@@ -28,9 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -126,6 +128,22 @@ public class OpenSSHKnownHosts
                 bos.write((entry.getLine() + LS).getBytes(IOUtils.UTF8));
         } finally {
             bos.close();
+        }
+    }
+
+    /**
+     * Append a single entry
+     */
+    public void write(HostEntry entry)
+            throws IOException {
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(khFile, true));
+        try {
+            writer.write(entry.getLine());
+            writer.newLine();
+            writer.flush();
+        }
+        finally {
+            IOUtils.closeQuietly(writer);
         }
     }
 
