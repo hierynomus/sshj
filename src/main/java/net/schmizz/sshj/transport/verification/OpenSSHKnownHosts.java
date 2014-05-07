@@ -377,11 +377,6 @@ public class OpenSSHKnownHosts
         }
 
         @Override
-        public String getLine() {
-            return null;
-        }
-
-        @Override
         protected String getHostPart() {
             return hashedHost;
         }
