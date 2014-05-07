@@ -43,13 +43,13 @@ import org.slf4j.LoggerFactory;
 
 /** Represents a PKCS8-encoded key file. This is the format used by OpenSSH and OpenSSL. */
 public class PKCS8KeyFile
-        implements FileKeyProvider, ReaderKeyProvider {
+        implements FileKeyProvider {
 
     public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<KeyProvider> {
+            implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
         @Override
-        public KeyProvider create() {
+        public FileKeyProvider create() {
             return new PKCS8KeyFile();
         }
 

@@ -39,10 +39,10 @@ public class OpenSSHKeyFile
         extends PKCS8KeyFile {
 
     public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<KeyProvider> {
+            implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
         @Override
-        public KeyProvider create() {
+        public FileKeyProvider create() {
             return new OpenSSHKeyFile();
         }
 

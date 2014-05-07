@@ -18,6 +18,7 @@ package net.schmizz.sshj.userauth.keyprovider;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 
 import java.io.File;
+import java.io.Reader;
 
 /** A file key provider is initialized with a location of */
 public interface FileKeyProvider
@@ -26,6 +27,10 @@ public interface FileKeyProvider
     void init(File location);
 
     void init(File location, PasswordFinder pwdf);
+
+    void init(Reader location);
+
+    void init(Reader location, PasswordFinder pwdf);
 
     void init(String privateKey, String publicKey);
 
