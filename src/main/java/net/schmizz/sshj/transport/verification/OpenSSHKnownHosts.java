@@ -200,7 +200,10 @@ public class OpenSSHKnownHosts
             if (marker != null) {
                 i++;
             }
-
+            if(split.length < 3) {
+                LOG.error("Error reading entry `{}`", line);
+                return null;
+            }
             final String hostnames = split[i++];
             final String sType = split[i++];
 
