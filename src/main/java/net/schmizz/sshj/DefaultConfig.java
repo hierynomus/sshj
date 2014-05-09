@@ -63,6 +63,8 @@ import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
+import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +128,7 @@ public class DefaultConfig
 
     protected void initFileKeyProviderFactories(boolean bouncyCastleRegistered) {
         if (bouncyCastleRegistered) {
-            setFileKeyProviderFactories(new PKCS8KeyFile.Factory(), new OpenSSHKeyFile.Factory());
+            setFileKeyProviderFactories(new PKCS8KeyFile.Factory(), new OpenSSHKeyFile.Factory(), new PuTTYKeyFile.Factory());
         }
     }
 
