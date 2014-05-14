@@ -35,10 +35,10 @@
  */
 package net.schmizz.sshj.signature;
 
+import java.security.SignatureException;
+
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
-
-import java.security.SignatureException;
 
 /** RSA {@link Signature} */
 public class SignatureRSA
@@ -65,12 +65,8 @@ public class SignatureRSA
     }
 
     @Override
-    public byte[] sign() {
-        try {
-            return signature.sign();
-        } catch (SignatureException e) {
-            throw new SSHRuntimeException(e);
-        }
+    public byte[] encode(byte[] signature) {
+        return signature;
     }
 
     @Override

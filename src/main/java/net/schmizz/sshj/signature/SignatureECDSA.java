@@ -35,11 +35,12 @@
  */
 package net.schmizz.sshj.signature;
 
+import java.math.BigInteger;
+import java.security.SignatureException;
+
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
-
-import java.security.SignatureException;
 
 /** ECDSA {@link Signature} */
 public class SignatureECDSA
@@ -66,17 +67,31 @@ public class SignatureECDSA
     }
 
     @Override
-    public byte[] sign() {
-        throw new UnsupportedOperationException("No implementation for sign!");
+    public byte[] encode(byte[] sig) {
+        int rIndex = 3;
+        int rLen = sig[rIndex++] & 0xff;
+        byte[] r = new byte[rLen];
+        System.arraycopy(sig, rIndex, r, 0, r.length);
+
+        int sIndex = rIndex + rLen + 1;
+        int sLen = sig[sIndex++] & 0xff;
+        byte[] s = new byte[sLen];
+        System.arraycopy(sig, sIndex, s, 0, s.length);
+
+        System.arraycopy(sig, 4, r, 0, rLen);
+        System.arraycopy(sig, 6 + rLen, s, 0, sLen);
+
+        Buffer buf = new Buffer.PlainBuffer();
+        buf.putMPInt(new BigInteger(r));
+        buf.putMPInt(new BigInteger(s));
+
+        return buf.getCompactData();
     }
 
     @Override
     public boolean verify(byte[] sig) {
-
-        byte[] r = null;
-        byte[] s = null;
-
-
+        byte[] r;
+        byte[] s;
         try {
             Buffer sigbuf = new Buffer.PlainBuffer(sig);
             final String algo = new String(sigbuf.readBytes());
@@ -139,5 +154,4 @@ public class SignatureECDSA
             throw new SSHRuntimeException(e);
         }
     }
-
 }

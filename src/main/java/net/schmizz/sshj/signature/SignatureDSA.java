@@ -35,10 +35,10 @@
  */
 package net.schmizz.sshj.signature;
 
+import java.security.SignatureException;
+
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
-
-import java.security.SignatureException;
 
 /** DSA {@link Signature} */
 public class SignatureDSA
@@ -65,14 +65,7 @@ public class SignatureDSA
     }
 
     @Override
-    public byte[] sign() {
-        byte[] sig;
-        try {
-            sig = signature.sign();
-        } catch (SignatureException e) {
-            throw new SSHRuntimeException(e);
-        }
-
+    public byte[] encode(byte[] sig) {
         // sig is in ASN.1
         // SEQUENCE::={ r INTEGER, s INTEGER }
 
@@ -90,17 +83,11 @@ public class SignatureDSA
 
         // result must be 40 bytes, but length of r and s may not be 20 bytes
 
-        System.arraycopy(r,
-                         r.length > 20 ? 1 : 0,
-                         result,
-                         r.length > 20 ? 0 : 20 - r.length,
-                         r.length > 20 ? 20 : r.length);
+        int r_copylen = (r.length < 20) ? r.length : 20;
+        int s_copylen = (s.length < 20) ? s.length : 20;
 
-        System.arraycopy(s,
-                         s.length > 20 ? 1 : 0,
-                         result,
-                         s.length > 20 ? 20 : 40 - s.length,
-                         s.length > 20 ? 20 : s.length);
+        System.arraycopy(r, r.length - r_copylen, result, 20 - r_copylen, r_copylen);
+        System.arraycopy(s, s.length - s_copylen, result, 40 - s_copylen, s_copylen);
 
         return result;
     }

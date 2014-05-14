@@ -75,6 +75,13 @@ public interface Signature {
     byte[] sign();
 
     /**
+     * Encode the signature as blog
+     * @param signature the signature to encode
+     * @return Encoded signature
+     */
+    byte[] encode(byte[] signature);
+
+    /**
      * Verify against the given signature.
      *
      * @param sig the signature to verify against
