@@ -166,6 +166,8 @@ public class RemoteFile
         public void close()
                 throws IOException {
             flush();
+            // Close handle
+            RemoteFile.this.close();
         }
 
     }
@@ -269,6 +271,8 @@ public class RemoteFile
                         throw new SFTPException("Unexpected packet: " + res.getType());
                 }
             }
+            // Close handle
+            RemoteFile.this.close();
         }
     }
 }
