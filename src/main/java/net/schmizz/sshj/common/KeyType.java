@@ -28,6 +28,7 @@ import java.security.*;
 import java.security.interfaces.*;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 
 /** Type of key e.g. rsa, dsa */
 public enum KeyType {
@@ -101,7 +102,8 @@ public enum KeyType {
 
     /** SSH identifier for ECDSA keys */
     ECDSA("ecdsa-sha2-nistp256") {
-        private final Logger LOG = LoggerFactory.getLogger(getClass());
+        private final Logger log = LoggerFactory.getLogger(getClass());
+
         @Override
         public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
                 throws GeneralSecurityException {
@@ -114,17 +116,19 @@ public enum KeyType {
                 final byte[] y = new byte[(keyLen - 1) / 2];
                 buf.readRawBytes(x);
                 buf.readRawBytes(y);
-                LOG.debug(String.format("Key algo: %s, Key curve: %s, Key Len: %s, 0x04: %s\nx: %s\ny: %s",
-                        type,
-                        curveName,
-                        keyLen,
-                        x04,
-                        x,
-                        y)
-                );
+                if(log.isDebugEnabled()) {
+                    log.debug(String.format("Key algo: %s, Key curve: %s, Key Len: %s, 0x04: %s\nx: %s\ny: %s",
+                            type,
+                            curveName,
+                            keyLen,
+                            x04,
+                            Arrays.toString(x),
+                            Arrays.toString(y))
+                    );
+                }
 
                 if (!NISTP_CURVE.equals(curveName)) {
-                    throw new GeneralSecurityException("Unknown curve name");
+                    throw new GeneralSecurityException(String.format("Unknown curve %s", curveName));
                 }
 
                 BigInteger bigX = new BigInteger(1, x);
@@ -137,9 +141,7 @@ public enum KeyType {
                 ECPublicKeySpec publicSpec = new ECPublicKeySpec(pPublicPoint, spec);
 
                 KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
-
-                PublicKey pubKey = keyFactory.generatePublic(publicSpec);
-                return pubKey;
+                return keyFactory.generatePublic(publicSpec);
             } catch (Exception ex) {
                 throw new GeneralSecurityException(ex);
             }
@@ -159,7 +161,6 @@ public enum KeyType {
                 .putRawBytes(new byte[] { (byte) 0x04 })
                 .putRawBytes(x)
                 .putRawBytes(y)
-                .compact()
             ;
         }
 
@@ -180,7 +181,6 @@ public enum KeyType {
             System.arraycopy(in, i, out, 0, out.length);
             return out;
         }
-
     },
 
     /** Unrecognized */
@@ -200,7 +200,6 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return false;
         }
-
     };
 
 
