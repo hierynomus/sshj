@@ -525,7 +525,7 @@ public final class TransportImpl
             final DisconnectReason code = DisconnectReason.fromInt(buf.readUInt32AsInt());
             final String message = buf.readString();
             log.info("Received SSH_MSG_DISCONNECT (reason={}, msg={})", code, message);
-            throw new TransportException(code, "Disconnected; server said: " + message);
+            throw new TransportException(code, message);
         } catch (Buffer.BufferException be) {
             throw new TransportException(be);
         }
