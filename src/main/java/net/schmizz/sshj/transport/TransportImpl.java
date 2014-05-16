@@ -89,7 +89,7 @@ public final class TransportImpl
 
     private final DisconnectListener nullDisconnectListener = new DisconnectListener() {
         @Override
-        public void notifyDisconnect(DisconnectReason reason) {
+        public void notifyDisconnect(DisconnectReason reason, String message) {
             log.info("Disconnected - {}", reason);
         }
     };
@@ -383,7 +383,7 @@ public final class TransportImpl
         close.lock();
         try {
             if (isRunning()) {
-                disconnectListener.notifyDisconnect(reason);
+                disconnectListener.notifyDisconnect(reason, message);
                 getService().notifyError(new TransportException(reason, "Disconnected"));
                 sendDisconnect(reason, message);
                 finishOff();
@@ -576,7 +576,7 @@ public final class TransportImpl
 
                 final SSHException causeOfDeath = SSHException.chainer.chain(ex);
 
-                disconnectListener.notifyDisconnect(causeOfDeath.getDisconnectReason());
+                disconnectListener.notifyDisconnect(causeOfDeath.getDisconnectReason(), causeOfDeath.getMessage());
 
                 ErrorDeliveryUtil.alertEvents(causeOfDeath, close, serviceAccept);
                 kexer.notifyError(causeOfDeath);
