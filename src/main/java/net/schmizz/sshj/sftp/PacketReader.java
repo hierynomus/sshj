@@ -16,6 +16,8 @@
 package net.schmizz.sshj.sftp;
 
 import net.schmizz.concurrent.Promise;
+import net.schmizz.sshj.common.SSHException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +64,7 @@ public class PacketReader
                 | lenBuf[3] & 0x000000ffL);
 
         if (len > SFTPPacket.MAX_SIZE) {
-        	throw new IllegalStateException("Invalid packet: indicated length "+len+" too large");
+        	throw new SSHException(String.format("Indicated packet length %d too large", len));
         }
 
         return (int) len;
