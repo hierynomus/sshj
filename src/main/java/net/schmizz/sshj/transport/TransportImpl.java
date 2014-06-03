@@ -139,7 +139,7 @@ public final class TransportImpl
         this.encoder = new Encoder(config.getRandomFactory().create(), writeLock);
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
-        clientID = "SSH-2.0-" + config.getVersion();
+        this.clientID = String.format("SSH-2.0-%s", config.getVersion());
     }
 
     @Override
