@@ -9,6 +9,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Arrays;
 
+import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
 
 import org.junit.Before;
@@ -57,7 +58,7 @@ public class PacketReaderTest {
         try {
             reader.readPacket();
             fail("Should have failed to read packet of size " + Integer.MAX_VALUE);
-        } catch (IllegalStateException e) {
+        } catch (SSHException e) {
             e.printStackTrace();
             // success; indicated packet size was too large
         }
