@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -10,21 +11,20 @@
 
     <name>sshj</name>
     <description>SSHv2 library for Java</description>
-    <url>http://github.com/shikhar/sshj</url>
+    <url>http://github.com/dkocher/sshj</url>
 
     <inceptionYear>2009</inceptionYear>
 
     <issueManagement>
         <system>github</system>
-        <url>http://github.com/shikhar/sshj/issues</url>
+        <url>http://github.com/dkocher/sshj/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git://github.com/shikhar/sshj.git</connection>
-        <developerConnection>scm:git:git@github.com:shikhar/sshj.git</developerConnection>
-        <url>http://github.com/shikhar/sshj</url>
-      <tag>HEAD</tag>
-  </scm>
+        <connection>scm:git:git://github.com/dkocher/sshj.git</connection>
+        <developerConnection>scm:git:git@github.com:dkocher/sshj.git</developerConnection>
+        <url>http://github.com/dkocher/sshj</url>
+    </scm>
 
     <licenses>
         <license>
@@ -128,6 +128,13 @@
             <email>shikhar@schmizz.net</email>
             <url>http://schmizz.net</url>
         </developer>
+        <developer>
+            <id>iterate</id>
+            <name>David Kocher</name>
+            <email>dkocher@iterate.ch</email>
+            <organization>iterate GmbH</organization>
+            <organizationUrl>https://iterate.ch</organizationUrl>
+        </developer>
     </developers>
 
     <properties>
@@ -204,6 +211,11 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>clirr-maven-plugin</artifactId>
+                <version>2.6.1</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -273,4 +285,13 @@
             </build>
         </profile>
     </profiles>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>clirr-maven-plugin</artifactId>
+                <version>2.6.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
