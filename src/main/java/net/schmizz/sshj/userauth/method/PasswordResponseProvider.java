@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 public class PasswordResponseProvider
         implements ChallengeResponseProvider {
 
-    public static final Pattern DEFAULT_PROMPT_PATTERN = Pattern.compile(".*[pP]assword:\\s?\\z");
+    public static final Pattern DEFAULT_PROMPT_PATTERN = Pattern.compile(".*[pP]assword:\\s?\\z", Pattern.DOTALL);
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
