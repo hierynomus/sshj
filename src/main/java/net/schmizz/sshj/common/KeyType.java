@@ -15,20 +15,24 @@
  */
 package net.schmizz.sshj.common;
 
+import org.bouncycastle.asn1.nist.NISTNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.interfaces.DSAPrivateKey;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.*;
+import java.security.interfaces.*;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import java.util.Arrays;
 
 /** Type of key e.g. rsa, dsa */
 public enum KeyType {
+
 
     /** SSH identifier for RSA keys */
     RSA("ssh-rsa") {
@@ -96,6 +100,89 @@ public enum KeyType {
 
     },
 
+    /** SSH identifier for ECDSA keys */
+    ECDSA("ecdsa-sha2-nistp256") {
+        private final Logger log = LoggerFactory.getLogger(getClass());
+
+        @Override
+        public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
+                throws GeneralSecurityException {
+            try {
+                // final String algo = buf.readString();  it has been already read
+                final String curveName = buf.readString();
+                final int keyLen = buf.readUInt32AsInt();
+                final byte x04 = buf.readByte();  // it must be 0x04, but don't think we need that check
+                final byte[] x = new byte[(keyLen - 1) / 2];
+                final byte[] y = new byte[(keyLen - 1) / 2];
+                buf.readRawBytes(x);
+                buf.readRawBytes(y);
+                if(log.isDebugEnabled()) {
+                    log.debug(String.format("Key algo: %s, Key curve: %s, Key Len: %s, 0x04: %s\nx: %s\ny: %s",
+                            type,
+                            curveName,
+                            keyLen,
+                            x04,
+                            Arrays.toString(x),
+                            Arrays.toString(y))
+                    );
+                }
+
+                if (!NISTP_CURVE.equals(curveName)) {
+                    throw new GeneralSecurityException(String.format("Unknown curve %s", curveName));
+                }
+
+                BigInteger bigX = new BigInteger(1, x);
+                BigInteger bigY = new BigInteger(1, y);
+
+                X9ECParameters ecParams = NISTNamedCurves.getByName("p-256");
+                ECPoint pPublicPoint = ecParams.getCurve().createPoint(bigX, bigY, false);
+                ECParameterSpec spec = new ECParameterSpec(ecParams.getCurve(),
+                        ecParams.getG(), ecParams.getN());
+                ECPublicKeySpec publicSpec = new ECPublicKeySpec(pPublicPoint, spec);
+
+                KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
+                return keyFactory.generatePublic(publicSpec);
+            } catch (Exception ex) {
+                throw new GeneralSecurityException(ex);
+            }
+        }
+
+
+        @Override
+        public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            final ECPublicKey ecdsa = (ECPublicKey) pk;
+            final java.security.spec.ECPoint point = ecdsa.getW();
+            final byte[] x = trimStartingZeros(point.getAffineX().toByteArray());
+            final byte[] y = trimStartingZeros(point.getAffineY().toByteArray());
+
+            buf.putString(sType)
+                .putString(NISTP_CURVE)
+                .putUInt32(1 + x.length + y.length)
+                .putRawBytes(new byte[] { (byte) 0x04 })
+                .putRawBytes(x)
+                .putRawBytes(y)
+            ;
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return ("ECDSA".equals(key.getAlgorithm()));
+        }
+
+        private byte[] trimStartingZeros(byte[] in) {
+
+            int i = 0;
+            for (; i < in.length; i++) {
+                if (in[i] != 0) {
+                    break;
+                }
+            }
+            final byte[] out = new byte[in.length - i];
+            System.arraycopy(in, i, out, 0, out.length);
+            return out;
+        }
+    },
+
     /** Unrecognized */
     UNKNOWN("unknown") {
         @Override
@@ -113,9 +200,10 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return false;
         }
-
     };
 
+
+    private static final String NISTP_CURVE = "nistp256";
 
     protected final String sType;
 

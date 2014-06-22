@@ -81,6 +81,15 @@ public abstract class AbstractSignature
         }
     }
 
+    @Override
+    public byte[] sign() {
+        try {
+            return signature.sign();
+        } catch (SignatureException e) {
+            throw new SSHRuntimeException(e);
+        }
+    }
+
     protected byte[] extractSig(byte[] sig) {
         if (sig[0] == 0 && sig[1] == 0 && sig[2] == 0) {
             int i = 0;

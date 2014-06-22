@@ -89,7 +89,7 @@ public final class TransportImpl
 
     private final DisconnectListener nullDisconnectListener = new DisconnectListener() {
         @Override
-        public void notifyDisconnect(DisconnectReason reason) {
+        public void notifyDisconnect(DisconnectReason reason, String message) {
             log.info("Disconnected - {}", reason);
         }
     };
@@ -139,7 +139,7 @@ public final class TransportImpl
         this.encoder = new Encoder(config.getRandomFactory().create(), writeLock);
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
-        clientID = "SSH-2.0-" + config.getVersion();
+        this.clientID = String.format("SSH-2.0-%s", config.getVersion());
     }
 
     @Override
@@ -383,7 +383,7 @@ public final class TransportImpl
         close.lock();
         try {
             if (isRunning()) {
-                disconnectListener.notifyDisconnect(reason);
+                disconnectListener.notifyDisconnect(reason, message);
                 getService().notifyError(new TransportException(reason, "Disconnected"));
                 sendDisconnect(reason, message);
                 finishOff();
@@ -499,6 +499,10 @@ public final class TransportImpl
                     gotServiceAccept();
                     break;
                 }
+                case USERAUTH_BANNER: {
+                    log.debug("Received USERAUTH_BANNER");
+                    break;
+                }
                 default:
                     sendUnimplemented();
             }
@@ -521,7 +525,7 @@ public final class TransportImpl
             final DisconnectReason code = DisconnectReason.fromInt(buf.readUInt32AsInt());
             final String message = buf.readString();
             log.info("Received SSH_MSG_DISCONNECT (reason={}, msg={})", code, message);
-            throw new TransportException(code, "Disconnected; server said: " + message);
+            throw new TransportException(code, message);
         } catch (Buffer.BufferException be) {
             throw new TransportException(be);
         }
@@ -572,7 +576,7 @@ public final class TransportImpl
 
                 final SSHException causeOfDeath = SSHException.chainer.chain(ex);
 
-                disconnectListener.notifyDisconnect(causeOfDeath.getDisconnectReason());
+                disconnectListener.notifyDisconnect(causeOfDeath.getDisconnectReason(), causeOfDeath.getMessage());
 
                 ErrorDeliveryUtil.alertEvents(causeOfDeath, close, serviceAccept);
                 kexer.notifyError(causeOfDeath);

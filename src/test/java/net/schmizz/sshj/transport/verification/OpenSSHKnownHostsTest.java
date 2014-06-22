@@ -80,4 +80,9 @@ public class OpenSSHKnownHostsTest {
         assertTrue(kh.verify("69.163.155.180", 22, key));
     }
 
+    @Test
+    public void testVerifyIndexError() throws Exception {
+        final OpenSSHKnownHosts v = new OpenSSHKnownHosts(new File("src/test/resources/known_hosts.invalid"));
+        assertTrue(v.entries().isEmpty());
+    }
 }

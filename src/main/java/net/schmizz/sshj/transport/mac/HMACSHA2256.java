@@ -33,50 +33,28 @@
  *      specific language governing permissions and limitations
  *      under the License.
  */
-package net.schmizz.sshj.signature;
+package net.schmizz.sshj.transport.mac;
 
-import java.security.SignatureException;
+/** HMAC-SHA1 <code>MAC</code> */
+public class HMACSHA2256
+        extends BaseMAC {
 
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SSHRuntimeException;
-
-/** RSA {@link Signature} */
-public class SignatureRSA
-        extends AbstractSignature {
-
-    /** A named factory for RSA {@link Signature} */
+    /** Named factory for the HMAC-SHA1 <code>MAC</code> */
     public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+            implements net.schmizz.sshj.common.Factory.Named<MAC> {
 
         @Override
-        public Signature create() {
-            return new SignatureRSA();
+        public MAC create() {
+            return new HMACSHA2256();
         }
 
         @Override
         public String getName() {
-            return KeyType.RSA.toString();
-        }
-
-    }
-
-    public SignatureRSA() {
-        super("SHA1withRSA");
-    }
-
-    @Override
-    public byte[] encode(byte[] signature) {
-        return signature;
-    }
-
-    @Override
-    public boolean verify(byte[] sig) {
-        sig = extractSig(sig);
-        try {
-            return signature.verify(sig);
-        } catch (SignatureException e) {
-            throw new SSHRuntimeException(e);
+            return "hmac-sha2-256";
         }
     }
 
+    public HMACSHA2256() {
+        super("HmacSHA256", 20, 20);
+    }
 }

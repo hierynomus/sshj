@@ -28,9 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -129,6 +131,22 @@ public class OpenSSHKnownHosts
         }
     }
 
+    /**
+     * Append a single entry
+     */
+    public void write(HostEntry entry)
+            throws IOException {
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(khFile, true));
+        try {
+            writer.write(entry.getLine());
+            writer.newLine();
+            writer.flush();
+        }
+        finally {
+            IOUtils.closeQuietly(writer);
+        }
+    }
+
     public static File detectSSHDir() {
         final File sshDir = new File(System.getProperty("user.home"), ".ssh");
         return sshDir.exists() ? sshDir : null;
@@ -182,7 +200,10 @@ public class OpenSSHKnownHosts
             if (marker != null) {
                 i++;
             }
-
+            if(split.length < 3) {
+                LOG.error("Error reading entry `{}`", line);
+                return null;
+            }
             final String hostnames = split[i++];
             final String sType = split[i++];
 
@@ -374,11 +395,6 @@ public class OpenSSHKnownHosts
                 saltyBytes = Base64.decode(salt);
             }
             return saltyBytes;
-        }
-
-        @Override
-        public String getLine() {
-            return null;
         }
 
         @Override

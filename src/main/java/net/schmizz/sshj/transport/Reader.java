@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.net.SocketTimeoutException;
 
 public final class Reader
         extends Thread {
@@ -65,13 +66,21 @@ public final class Reader
             int needed = 1;
 
             while (!isInterrupted()) {
-                int read = inp.read(recvbuf, 0, needed);
+                int read;
+                try {
+                    read = inp.read(recvbuf, 0, needed);
+                }
+                catch(SocketTimeoutException e) {
+                    if (isInterrupted()) {
+                        throw e;
+                    }
+                    continue;
+                }
                 if (read == -1)
                     throw new TransportException("Broken transport; encountered EOF");
                 else
                     needed = decoder.received(recvbuf, read);
             }
-
         } catch (Exception e) {
             if (isInterrupted()) {
                 // We are meant to shut up and draw to a close if interrupted

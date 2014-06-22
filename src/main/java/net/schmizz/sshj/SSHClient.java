@@ -46,6 +46,7 @@ import net.schmizz.sshj.userauth.UserAuth;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.UserAuthImpl;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
+import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
 import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
@@ -485,7 +486,7 @@ public class SSHClient
     public KeyProvider loadKeys(String location, PasswordFinder passwordFinder)
             throws IOException {
         final File loc = new File(location);
-        final FileKeyProvider.Format format = KeyProviderUtil.detectKeyFileFormat(loc);
+        final KeyFormat format = KeyProviderUtil.detectKeyFileFormat(loc);
         final FileKeyProvider fkp =
                 Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format.toString());
         if (fkp == null)
@@ -529,7 +530,7 @@ public class SSHClient
      */
     public KeyProvider loadKeys(String privateKey, String publicKey, PasswordFinder passwordFinder)
             throws IOException {
-        final FileKeyProvider.Format format = KeyProviderUtil.detectKeyFileFormat(privateKey, publicKey != null);
+        final KeyFormat format = KeyProviderUtil.detectKeyFileFormat(privateKey, publicKey != null);
         final FileKeyProvider fkp =
                 Factory.Named.Util.create(trans.getConfig().getFileKeyProviderFactories(), format.toString());
         if (fkp == null)

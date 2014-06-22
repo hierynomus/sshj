@@ -19,6 +19,6 @@ import net.schmizz.sshj.common.DisconnectReason;
 
 public interface DisconnectListener {
 
-    void notifyDisconnect(DisconnectReason reason);
+    void notifyDisconnect(DisconnectReason reason, String message);
 
 }

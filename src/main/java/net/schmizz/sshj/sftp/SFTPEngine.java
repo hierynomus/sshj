@@ -245,6 +245,7 @@ public class SFTPEngine
     public void close()
             throws IOException {
         sub.close();
+        reader.interrupt();
     }
 
     protected FileAttributes stat(PacketType pt, String path)

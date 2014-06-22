@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -10,21 +11,20 @@
 
     <name>sshj</name>
     <description>SSHv2 library for Java</description>
-    <url>http://github.com/shikhar/sshj</url>
+    <url>http://github.com/dkocher/sshj</url>
 
     <inceptionYear>2009</inceptionYear>
 
     <issueManagement>
         <system>github</system>
-        <url>http://github.com/shikhar/sshj/issues</url>
+        <url>http://github.com/dkocher/sshj/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git://github.com/shikhar/sshj.git</connection>
-        <developerConnection>scm:git:git@github.com:shikhar/sshj.git</developerConnection>
-        <url>http://github.com/shikhar/sshj</url>
-      <tag>HEAD</tag>
-  </scm>
+        <connection>scm:git:git://github.com/dkocher/sshj.git</connection>
+        <developerConnection>scm:git:git@github.com:dkocher/sshj.git</developerConnection>
+        <url>http://github.com/dkocher/sshj</url>
+    </scm>
 
     <licenses>
         <license>
@@ -40,39 +40,65 @@
         <version>7</version>
     </parent>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>1.50</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>1.50</version>
+            </dependency>
+            <dependency>
+                <groupId>com.jcraft</groupId>
+                <artifactId>jzlib</artifactId>
+                <version>1.1.3</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>1.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.1.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.5</version>
+            <version>1.7.7</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.49</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.49</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.jcraft</groupId>
             <artifactId>jzlib</artifactId>
-            <version>1.1.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-core</artifactId>
-            <version>0.8.0</version>
+            <version>0.11.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
-            <version>1.0.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -84,7 +110,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -102,6 +127,13 @@
             <name>Shikhar Bhushan</name>
             <email>shikhar@schmizz.net</email>
             <url>http://schmizz.net</url>
+        </developer>
+        <developer>
+            <id>iterate</id>
+            <name>David Kocher</name>
+            <email>dkocher@iterate.ch</email>
+            <organization>iterate GmbH</organization>
+            <organizationUrl>https://iterate.ch</organizationUrl>
         </developer>
     </developers>
 
@@ -126,7 +158,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.4.1</version>
+                <version>2.5</version>
                 <configuration>
                     <mavenExecutorId>forked-path</mavenExecutorId>
                 </configuration>
@@ -134,7 +166,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
+                <version>2.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -179,6 +211,11 @@
                     </instructions>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>clirr-maven-plugin</artifactId>
+                <version>2.6.1</version>
+            </plugin>
         </plugins>
     </build>
 
@@ -202,22 +239,18 @@
                 <dependency>
                     <groupId>org.bouncycastle</groupId>
                     <artifactId>bcprov-jdk15on</artifactId>
-                    <version>1.49</version>
                 </dependency>
                 <dependency>
                     <groupId>com.jcraft</groupId>
                     <artifactId>jzlib</artifactId>
-                    <version>1.0.7</version>
                 </dependency>
                 <dependency>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-core</artifactId>
-                    <version>1.0.13</version>
                 </dependency>
                 <dependency>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
-                    <version>1.0.13</version>
                 </dependency>
             </dependencies>
         </profile>
@@ -251,7 +284,14 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
-
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>clirr-maven-plugin</artifactId>
+                <version>2.6.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

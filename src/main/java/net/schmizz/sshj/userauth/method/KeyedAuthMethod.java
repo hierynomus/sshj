@@ -62,16 +62,16 @@ public abstract class KeyedAuthMethod
         }
 
         final String kt = KeyType.fromKey(key).toString();
-        Signature sigger = Factory.Named.Util.create(params.getTransport().getConfig().getSignatureFactories(), kt);
-        if (sigger == null)
+        Signature signature = Factory.Named.Util.create(params.getTransport().getConfig().getSignatureFactories(), kt);
+        if (signature == null)
             throw new UserAuthException("Could not create signature instance for " + kt + " key");
 
-        sigger.init(null, key);
-        sigger.update(new Buffer.PlainBuffer()
-                              .putString(params.getTransport().getSessionID())
-                              .putBuffer(reqBuf) // & rest of the data for sig
-                              .getCompactData());
-        reqBuf.putSignature(kt, sigger.sign());
+        signature.init(null, key);
+        signature.update(new Buffer.PlainBuffer()
+                .putString(params.getTransport().getSessionID())
+                .putBuffer(reqBuf) // & rest of the data for sig
+                .getCompactData());
+        reqBuf.putSignature(kt, signature.encode(signature.sign()));
         return reqBuf;
     }
 

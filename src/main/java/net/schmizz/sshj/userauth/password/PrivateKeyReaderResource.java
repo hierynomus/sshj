@@ -13,26 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.userauth.keyprovider;
+package net.schmizz.sshj.userauth.password;
 
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-
-import java.io.File;
+import java.io.IOException;
 import java.io.Reader;
 
-/** A file key provider is initialized with a location of */
-public interface FileKeyProvider
-        extends KeyProvider {
+public class PrivateKeyReaderResource
+        extends Resource<Reader> {
 
-    void init(File location);
+    public PrivateKeyReaderResource(Reader privateKeyFile) {
+        super(privateKeyFile);
+    }
 
-    void init(File location, PasswordFinder pwdf);
-
-    void init(Reader location);
-
-    void init(Reader location, PasswordFinder pwdf);
-
-    void init(String privateKey, String publicKey);
-
-    void init(String privateKey, String publicKey, PasswordFinder pwdf);
+    @Override
+    public Reader getReader()
+            throws IOException {
+        return getDetail();
+    }
 }

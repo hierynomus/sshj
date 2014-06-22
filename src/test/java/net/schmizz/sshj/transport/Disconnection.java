@@ -42,7 +42,7 @@ public class Disconnection {
 
         fixture.getClient().getTransport().setDisconnectListener(new DisconnectListener() {
             @Override
-            public void notifyDisconnect(DisconnectReason reason) {
+            public void notifyDisconnect(DisconnectReason reason, String message) {
                 notified = true;
             }
         });
