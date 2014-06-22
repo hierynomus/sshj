@@ -1,11 +1,1 @@
-Shikhar Bhushan <shikhar@schmizz.net>
-Cyril Ledru <cledru@keynectis.net>
-Incendium <incendium@gmail.com>
-Philip Langdale <philipl@cloudera.com>
-Adar Dembo <adar@cloudera.com>
-Ioannis Canellos <iocanel@gmail.com>
-Neil Prosser <neil.prosser@gmail.com>
-hierynomus <jeroen@hierynomus.com>
-Ryan Tenney <ryan@10e.us>
-Aled Sage <aled.sage@gmail.com>
-Urs Reupke <ur@idos.de>
+git log --format='%aN <%aE>' | awk '{arr[$0]++} END{for (i in arr){print arr[i], i;}}' | sort -rn | cut -d\  -f2-
