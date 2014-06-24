@@ -15,16 +15,16 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.concurrent.Promise;
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.sftp.Response.StatusCode;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
-
-import net.schmizz.concurrent.Promise;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.sftp.Response.StatusCode;
 
 public class RemoteFile
         extends RemoteResource {
@@ -62,8 +62,9 @@ public class RemoteFile
         return requester.request(newRequest(PacketType.READ).putUInt64(fileOffset).putUInt32(len));
     }
 
-    protected int checkReadResponse(Response res, byte[] to, int offset) throws Buffer.BufferException, SFTPException {
-        switch(res.getType()) {
+    protected int checkReadResponse(Response res, byte[] to, int offset)
+            throws Buffer.BufferException, SFTPException {
+        switch (res.getType()) {
             case DATA:
                 int recvLen = res.readUInt32AsInt();
                 System.arraycopy(res.array(), res.rpos(), to, offset, recvLen);
@@ -86,9 +87,9 @@ public class RemoteFile
     protected Promise<Response, SFTPException> asyncWrite(long fileOffset, byte[] data, int off, int len)
             throws IOException {
         return requester.request(newRequest(PacketType.WRITE)
-                .putUInt64(fileOffset)
-                .putUInt32(len - off)
-                .putRawBytes(data, off, len)
+                                         .putUInt64(fileOffset)
+                                         .putUInt32(len - off)
+                                         .putRawBytes(data, off, len)
         );
     }
 
@@ -147,7 +148,7 @@ public class RemoteFile
         @Override
         public void write(byte[] buf, int off, int len)
                 throws IOException {
-            if(unconfirmedWrites.size() > maxUnconfirmedWrites) {
+            if (unconfirmedWrites.size() > maxUnconfirmedWrites) {
                 checkWriteResponse(unconfirmedWrites.remove());
             }
             unconfirmedWrites.add(RemoteFile.this.asyncWrite(fileOffset, buf, off, len));
@@ -157,7 +158,7 @@ public class RemoteFile
         @Override
         public void flush()
                 throws IOException {
-            while(!unconfirmedWrites.isEmpty()) {
+            while (!unconfirmedWrites.isEmpty()) {
                 checkWriteResponse(unconfirmedWrites.remove());
             }
         }
@@ -166,8 +167,6 @@ public class RemoteFile
         public void close()
                 throws IOException {
             flush();
-            // Close handle
-            RemoteFile.this.close();
         }
 
     }
@@ -232,12 +231,12 @@ public class RemoteFile
         @Override
         public int read(byte[] into, int off, int len)
                 throws IOException {
-            while(!eof && unconfirmedReads.size() <= maxUnconfirmedReads) {
+            while (!eof && unconfirmedReads.size() <= maxUnconfirmedReads) {
                 // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
                 unconfirmedReads.add(asyncRead(fileOffset, len));
                 fileOffset += len;
             }
-            if(unconfirmedReads.isEmpty()) {
+            if (unconfirmedReads.isEmpty()) {
                 // Attempted to read while status was already received
                 return -1;
             }
@@ -245,22 +244,23 @@ public class RemoteFile
             final Response res = unconfirmedReads.remove().retrieve(
                     requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             final int recvLen = checkReadResponse(res, into, off);
-            if(markPos != 0 && recvLen > readLimit) // Invalidate mark position
+            if (markPos != 0 && recvLen > readLimit) // Invalidate mark position
             {
                 markPos = 0;
             }
-            if(-1 == recvLen) {
+            if (-1 == recvLen) {
                 eof = true;
             }
             return recvLen;
         }
 
         @Override
-        public void close() throws IOException {
-            while(!unconfirmedReads.isEmpty()) {
+        public void close()
+                throws IOException {
+            while (!unconfirmedReads.isEmpty()) {
                 final Response res = unconfirmedReads.remove().retrieve(
                         requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
-                switch(res.getType()) {
+                switch (res.getType()) {
                     case STATUS:
                         res.ensureStatusIs(StatusCode.EOF);
                         break;
@@ -271,8 +271,6 @@ public class RemoteFile
                         throw new SFTPException("Unexpected packet: " + res.getType());
                 }
             }
-            // Close handle
-            RemoteFile.this.close();
         }
     }
 }
