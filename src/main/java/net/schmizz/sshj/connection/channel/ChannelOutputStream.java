@@ -84,7 +84,7 @@ public final class ChannelOutputStream
                 throws TransportException, ConnectionException {
             final int bufferSize = packet.wpos() - dataOffset;
             if (bufferSize >= win.getMaxPacketSize()) {
-                flush(bufferSize);
+                flush(bufferSize, true);
                 return 0;
             } else {
                 final int n = Math.min(len, win.getMaxPacketSize() - bufferSize);
@@ -93,18 +93,23 @@ public final class ChannelOutputStream
             }
         }
 
-        void flush()
+        boolean flush(boolean canAwaitExpansion)
                 throws TransportException, ConnectionException {
-            flush(packet.wpos() - dataOffset);
+            return flush(packet.wpos() - dataOffset, canAwaitExpansion);
         }
-        
-        void flush(int bufferSize)
+
+        boolean flush(int bufferSize, boolean canAwaitExpansion)
                 throws TransportException, ConnectionException {
             while (bufferSize > 0) {
 
                 long remoteWindowSize = win.getSize();
-                if (remoteWindowSize == 0)
-                    remoteWindowSize = win.awaitExpansion(remoteWindowSize);
+                if (remoteWindowSize == 0) {
+                    if (canAwaitExpansion) {
+                        remoteWindowSize = win.awaitExpansion(remoteWindowSize);
+                    } else {
+                        return false;
+                    }
+                }
 
                 // We can only write the min. of
                 // a) how much data we have
@@ -136,6 +141,8 @@ public final class ChannelOutputStream
 
                 bufferSize = leftOverBytes;
             }
+
+            return true;
         }
 
     }
@@ -184,16 +191,12 @@ public final class ChannelOutputStream
             throws IOException {
         if (!closed) {
             try {
-                buffer.flush();
-                chan.sendEOF();
+                buffer.flush(false);
+                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
             } finally {
-                setClosed();
+                closed = true;
             }
         }
-    }
-
-    public synchronized void setClosed() {
-        closed = true;
     }
 
     /**
@@ -206,7 +209,7 @@ public final class ChannelOutputStream
     public synchronized void flush()
             throws IOException {
         checkClose();
-        buffer.flush();
+        buffer.flush(true);
     }
 
     @Override

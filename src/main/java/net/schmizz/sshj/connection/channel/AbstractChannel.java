@@ -86,10 +86,7 @@ public abstract class AbstractChannel
     protected final Event<ConnectionException> openEvent;
     /** Channel close event */
     protected final Event<ConnectionException> closeEvent;
-
-    /* Access to these fields should be synchronized using this object */
-    private boolean eofSent;
-    private boolean eofGot;
+    /** Whether we have already sent a CHANNEL_CLOSE request to the server */
     private boolean closeRequested;
 
     /** Local window */
@@ -282,8 +279,9 @@ public abstract class AbstractChannel
         closeEvent.await(timeout, unit);
     }
 
-    protected synchronized void sendClose()
+    protected void sendClose()
             throws TransportException {
+        openCloseLock.lock();
         try {
             if (!closeRequested) {
                 log.debug("Sending close");
@@ -291,11 +289,12 @@ public abstract class AbstractChannel
             }
         } finally {
             closeRequested = true;
+            openCloseLock.unlock();
         }
     }
 
     @Override
-    public synchronized boolean isOpen() {
+    public boolean isOpen() {
         openCloseLock.lock();
         try {
             return openEvent.isSet() && !closeEvent.isSet() && !closeRequested;
@@ -405,34 +404,15 @@ public abstract class AbstractChannel
         }
     }
 
-    private synchronized void gotEOF()
+    private void gotEOF()
             throws TransportException {
         log.debug("Got EOF");
-        eofGot = true;
         eofInputStreams();
-        if (eofSent)
-            sendClose();
     }
 
     /** Called when EOF has been received. Subclasses can override but must call super. */
     protected void eofInputStreams() {
         in.eof();
-    }
-
-    @Override
-    public synchronized void sendEOF()
-            throws TransportException {
-        try {
-            if (!closeRequested && !eofSent) {
-                log.debug("Sending EOF");
-                trans.write(newBuffer(Message.CHANNEL_EOF));
-                if (eofGot)
-                    sendClose();
-            }
-        } finally {
-            eofSent = true;
-            out.setClosed();
-        }
     }
 
     @Override

@@ -120,15 +120,6 @@ public interface Channel
     boolean isOpen();
 
     /**
-     * Sends an EOF message to the server for this channel; indicating that no more data will be sent by us. The {@code
-     * OutputStream} for this channel will be closed and no longer usable.
-     *
-     * @throws TransportException if there is an error sending the EOF message
-     */
-    void sendEOF()
-            throws TransportException;
-
-    /**
      * Set whether local window should automatically expand when data is received, irrespective of whether data has been
      * read from that stream. This is useful e.g. when a remote command produces a lot of output that would fill the
      * local window but you are not interested in reading from its {@code InputStream}.
