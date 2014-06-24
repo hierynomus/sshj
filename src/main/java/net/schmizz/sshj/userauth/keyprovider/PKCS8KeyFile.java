@@ -15,13 +15,6 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
@@ -30,9 +23,7 @@ import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
 import net.schmizz.sshj.userauth.password.PrivateKeyReaderResource;
 import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
 import net.schmizz.sshj.userauth.password.Resource;
-
 import org.bouncycastle.openssl.EncryptionException;
-import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -40,6 +31,13 @@ import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 
 /** Represents a PKCS8-encoded key file. This is the format used by OpenSSH and OpenSSL. */
 public class PKCS8KeyFile
@@ -123,62 +121,48 @@ public class PKCS8KeyFile
         this.pwdf = pwdf;
     }
 
-    protected org.bouncycastle.openssl.PasswordFinder makeBouncyPasswordFinder() {
-        if (pwdf == null)
-            return null;
-        else
-            return new org.bouncycastle.openssl.PasswordFinder() {
-                @Override
-                public char[] getPassword() {
-                    return passphrase = pwdf.reqPassword(resource);
-                }
-            };
-    }
-
     protected KeyPair readKeyPair()
             throws IOException {
         KeyPair kp = null;
-        org.bouncycastle.openssl.PasswordFinder pFinder = makeBouncyPasswordFinder();
-        PEMParser r = null;
-        Object o = null;
-        try {
-            for (; ; ) {
-                // while the PasswordFinder tells us we should retry
-                try {
-                    r = new PEMParser(resource.getReader());
-                    o = r.readObject();
 
-                    JcaPEMKeyConverter pemConverter = new JcaPEMKeyConverter();
-                    pemConverter.setProvider("BC");
-                    if (pFinder != null && o instanceof PEMEncryptedKeyPair) {
-                        JcePEMDecryptorProviderBuilder decryptorBuilder = new JcePEMDecryptorProviderBuilder();
-                        PEMDecryptorProvider pemDecryptor = decryptorBuilder.build(pFinder.getPassword());
-                        o = pemConverter.getKeyPair(((PEMEncryptedKeyPair) o).decryptKeyPair(pemDecryptor));
-                    }
-                    if (o instanceof PEMKeyPair) {
-                        o = pemConverter.getKeyPair((PEMKeyPair) o);
-                    }
+        for (PEMParser r = null; ; ) {
+            // while the PasswordFinder tells us we should retry
+            try {
+                r = new PEMParser(resource.getReader());
+                final Object o = r.readObject();
 
-                } catch (EncryptionException e) {
-                    if (pwdf.shouldRetry(resource))
-                        continue;
-                    else
-                        throw e;
-                } finally {
-                    IOUtils.closeQuietly(r);
+                final JcaPEMKeyConverter pemConverter = new JcaPEMKeyConverter();
+                pemConverter.setProvider("BC");
+
+                if (o instanceof PEMEncryptedKeyPair) {
+                    final PEMEncryptedKeyPair encryptedKeyPair = (PEMEncryptedKeyPair) o;
+                    JcePEMDecryptorProviderBuilder decryptorBuilder = new JcePEMDecryptorProviderBuilder();
+                    decryptorBuilder.setProvider("BC");
+                    try {
+                        passphrase = pwdf == null ? null : pwdf.reqPassword(resource);
+                        kp = pemConverter.getKeyPair(encryptedKeyPair.decryptKeyPair(decryptorBuilder.build(passphrase)));
+                    } finally {
+                        PasswordUtils.blankOut(passphrase);
+                    }
+                } else if (o instanceof PEMKeyPair) {
+                    kp = pemConverter.getKeyPair((PEMKeyPair) o);
+                } else {
+                    log.debug("Expected PEMEncryptedKeyPair or PEMKeyPair, got: {}", o);
                 }
-                break;
+
+            } catch (EncryptionException e) {
+                if (pwdf != null && pwdf.shouldRetry(resource))
+                    continue;
+                else
+                    throw e;
+            } finally {
+                IOUtils.closeQuietly(r);
             }
-        } finally {
-            PasswordUtils.blankOut(passphrase);
+            break;
         }
 
-        if (o == null)
+        if (kp == null)
             throw new IOException("Could not read key pair from: " + resource);
-        if (o instanceof KeyPair)
-            kp = (KeyPair) o;
-        else
-            log.debug("Expected KeyPair, got {}", o);
         return kp;
     }
 
