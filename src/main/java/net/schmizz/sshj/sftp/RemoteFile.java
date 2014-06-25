@@ -53,8 +53,8 @@ public class RemoteFile
 
     public int read(long fileOffset, byte[] to, int offset, int len)
             throws IOException {
-        final Response res = this.asyncRead(fileOffset, len).retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
-        return this.checkReadResponse(res, to, offset);
+        final Response res = asyncRead(fileOffset, len).retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
+        return checkReadResponse(res, to, offset);
     }
 
     protected Promise<Response, SFTPException> asyncRead(long fileOffset, int len)
@@ -176,11 +176,6 @@ public class RemoteFile
 
         private final byte[] b = new byte[1];
 
-        private final int maxUnconfirmedReads;
-        private final Queue<Promise<Response, SFTPException>> unconfirmedReads;
-
-        private boolean eof;
-
         private long fileOffset;
         private long markPos;
         private long readLimit;
@@ -190,13 +185,7 @@ public class RemoteFile
         }
 
         public RemoteFileInputStream(long fileOffset) {
-            this(fileOffset, 0);
-        }
-
-        public RemoteFileInputStream(long fileOffset, int maxUnconfirmedReads) {
             this.fileOffset = fileOffset;
-            this.maxUnconfirmedReads = maxUnconfirmedReads;
-            this.unconfirmedReads = new LinkedList<Promise<Response, SFTPException>>();
         }
 
         @Override
@@ -207,7 +196,7 @@ public class RemoteFile
         @Override
         public void mark(int readLimit) {
             this.readLimit = readLimit;
-            this.markPos = fileOffset;
+            markPos = fileOffset;
         }
 
         @Override
@@ -231,46 +220,67 @@ public class RemoteFile
         @Override
         public int read(byte[] into, int off, int len)
                 throws IOException {
+            int read = RemoteFile.this.read(fileOffset, into, off, len);
+            if (read != -1) {
+                fileOffset += read;
+                if (markPos != 0 && read > readLimit) // Invalidate mark position
+                    markPos = 0;
+            }
+            return read;
+        }
+
+    }
+
+    public class ReadAheadRemoteFileInputStream
+            extends InputStream {
+
+        private final byte[] b = new byte[1];
+
+        private final int maxUnconfirmedReads;
+        private final Queue<Promise<Response, SFTPException>> unconfirmedReads;
+
+        private long fileOffset;
+        private boolean eof;
+
+        public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads) {
+            this.maxUnconfirmedReads = maxUnconfirmedReads;
+            this.unconfirmedReads = new LinkedList<Promise<Response, SFTPException>>();
+            this.fileOffset = 0;
+        }
+
+        @Override
+        public long skip(long n)
+                throws IOException {
+            throw new IOException("skip is not supported by ReadAheadFileInputStream, use RemoteFileInputStream instead");
+        }
+
+        @Override
+        public int read()
+                throws IOException {
+            return read(b, 0, 1) == -1 ? -1 : b[0] & 0xff;
+        }
+
+        @Override
+        public int read(byte[] into, int off, int len)
+                throws IOException {
             while (!eof && unconfirmedReads.size() <= maxUnconfirmedReads) {
                 // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
                 unconfirmedReads.add(asyncRead(fileOffset, len));
                 fileOffset += len;
             }
             if (unconfirmedReads.isEmpty()) {
-                // Attempted to read while status was already received
+                assert eof;
                 return -1;
             }
             // Retrieve first in
-            final Response res = unconfirmedReads.remove().retrieve(
-                    requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
+            final Response res = unconfirmedReads.remove().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             final int recvLen = checkReadResponse(res, into, off);
-            if (markPos != 0 && recvLen > readLimit) // Invalidate mark position
-            {
-                markPos = 0;
-            }
-            if (-1 == recvLen) {
+            if (recvLen == -1) {
                 eof = true;
             }
             return recvLen;
         }
 
-        @Override
-        public void close()
-                throws IOException {
-            while (!unconfirmedReads.isEmpty()) {
-                final Response res = unconfirmedReads.remove().retrieve(
-                        requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
-                switch (res.getType()) {
-                    case STATUS:
-                        res.ensureStatusIs(StatusCode.EOF);
-                        break;
-                    case DATA:
-                        log.warn("Pending data packet from read response discarded");
-                        continue;
-                    default:
-                        throw new SFTPException("Unexpected packet: " + res.getType());
-                }
-            }
-        }
     }
+
 }

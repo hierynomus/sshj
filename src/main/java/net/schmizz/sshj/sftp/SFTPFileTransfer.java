@@ -141,7 +141,7 @@ public class SFTPFileTransfer
             final LocalDestFile adjusted = local.getTargetFile(remote.getName());
             final RemoteFile rf = engine.open(remote.getPath());
             try {
-                final RemoteFile.RemoteFileInputStream rfis = rf.new RemoteFileInputStream();
+                final RemoteFile.ReadAheadRemoteFileInputStream rfis = rf.new ReadAheadRemoteFileInputStream(16);
                 final OutputStream os = adjusted.getOutputStream();
                 try {
                     new StreamCopier(rfis, os)
