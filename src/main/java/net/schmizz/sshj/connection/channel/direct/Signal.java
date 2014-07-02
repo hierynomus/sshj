@@ -1,5 +1,5 @@
-/*
- * Copyright 2010-2012 sshj contributors
+/**
+ * Copyright 2009 sshj contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.schmizz.sshj.connection.channel.direct;
 
 /** Various signals that may be sent or received. The signals are from POSIX and simply miss the {@code "SIG_"} prefix. */
