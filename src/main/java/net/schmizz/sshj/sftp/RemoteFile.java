@@ -248,6 +248,12 @@ public class RemoteFile
             this.fileOffset = 0;
         }
 
+        public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads, long fileOffset) {
+            this.maxUnconfirmedReads = maxUnconfirmedReads;
+            this.unconfirmedReads = new LinkedList<Promise<Response, SFTPException>>();
+            this.fileOffset = fileOffset;
+        }
+
         @Override
         public long skip(long n)
                 throws IOException {
