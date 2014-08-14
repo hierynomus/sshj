@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
 
 public abstract class SocketClient {
@@ -51,10 +52,23 @@ public abstract class SocketClient {
         onConnect();
     }
 
+    public void connect(InetAddress host, int port, Proxy proxy)
+            throws IOException {
+        socket = new Socket(proxy);
+        socket.connect(new InetSocketAddress(host, port), connectTimeout);
+        onConnect();
+    }
+
     public void connect(String hostname, int port)
             throws IOException {
         this.hostname = hostname;
         connect(InetAddress.getByName(hostname), port);
+    }
+
+    public void connect(String hostname, int port, Proxy proxy)
+            throws IOException {
+        this.hostname = hostname;
+        connect(InetAddress.getByName(hostname), port, proxy);
     }
 
     public void connect(InetAddress host, int port,
@@ -81,6 +95,16 @@ public abstract class SocketClient {
     public void connect(String hostname)
             throws IOException {
         connect(hostname, defaultPort);
+    }
+
+    public void connect(InetAddress host, Proxy proxy)
+            throws IOException {
+        connect(host, defaultPort, proxy);
+    }
+
+    public void connect(String hostname, Proxy proxy)
+            throws IOException {
+        connect(hostname, defaultPort, proxy);
     }
 
     public void disconnect()
