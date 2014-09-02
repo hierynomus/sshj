@@ -131,7 +131,7 @@ public interface Channel
     void join()
             throws ConnectionException;
 
-    void join(int timeout, TimeUnit unit)
+    void join(long timeout, TimeUnit unit)
             throws ConnectionException;
 
 }
