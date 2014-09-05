@@ -88,6 +88,13 @@ public interface Config {
     String getVersion();
 
     /**
+     * Returns the protocol prefix string sent to and expected from the server during SSH connection initialization.
+     * This is almost always {@code "SSH"}, but may be different when connecting to embedded servers that follow the
+     * SSH protocol but give it a different name.
+     */
+    String getProtocolPrefix();
+
+    /**
      * Set the named factories for {@link Cipher}.
      *
      * @param cipherFactories a list of named factories
@@ -143,5 +150,13 @@ public interface Config {
      * @param version software version info
      */
     void setVersion(String version);
+
+    /**
+     * Returns the protocol prefix string sent to and expected from the server during SSH connection initialization.
+     * For example, an embedded server may follow the SSH protocol but change the name to {@code "XYZ"}.
+     *
+     * @param protocolPrefix the protocol prefix
+     */
+    void setProtocolPrefix(String protocolPrefix);
 
 }

@@ -69,7 +69,8 @@ import java.util.List;
  * <li>{@link net.schmizz.sshj.ConfigImpl#setRandomFactory PRNG}: {@link net.schmizz.sshj.transport.random.BouncyCastleRandom}* or {@link net.schmizz.sshj.transport.random.JCERandom}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setFileKeyProviderFactories Key file support}: {@link net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile}*, {@link
  * net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile}*</li>
- * <li>{@link net.schmizz.sshj.ConfigImpl#setVersion Client version}: {@code "NET_3_0"}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setVersion Client version}: {@code "SSHJ_0_9_2"}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setProtocolPrefix Protocol prefix}: {@code "SSH"}</li>
  * </ul>
  * <p/>
  * [1] It is worth noting that Sun's JRE does not have the unlimited cryptography extension enabled by default. This
@@ -81,9 +82,11 @@ public class DefaultConfig
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private static final String VERSION = "SSHJ_0_9_2";
+    private static final String PROTOCOL_PREFIX = "SSH";
 
     public DefaultConfig() {
         setVersion(VERSION);
+        setProtocolPrefix(PROTOCOL_PREFIX);
         final boolean bouncyCastleRegistered = SecurityUtils.isBouncyCastleRegistered();
         initKeyExchangeFactories(bouncyCastleRegistered);
         initRandomFactory(bouncyCastleRegistered);

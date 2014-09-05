@@ -32,6 +32,7 @@ public class ConfigImpl
         implements Config {
 
     private String version;
+    private String protocolPrefix;
 
     private Factory<Random> randomFactory;
 
@@ -41,6 +42,7 @@ public class ConfigImpl
     private List<Factory.Named<MAC>> macFactories;
     private List<Factory.Named<Signature>> signatureFactories;
     private List<Factory.Named<FileKeyProvider>> fileKeyProviderFactories;
+
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
@@ -80,6 +82,11 @@ public class ConfigImpl
     @Override
     public String getVersion() {
         return version;
+    }
+
+    @Override
+    public String getProtocolPrefix() {
+        return protocolPrefix;
     }
 
     public void setCipherFactories(Factory.Named<Cipher>... cipherFactories) {
@@ -144,6 +151,11 @@ public class ConfigImpl
     @Override
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    @Override
+    public void setProtocolPrefix(String protocolPrefix) {
+        this.protocolPrefix = protocolPrefix;
     }
 
 }

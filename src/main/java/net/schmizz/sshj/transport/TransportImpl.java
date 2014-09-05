@@ -119,7 +119,7 @@ public final class TransportImpl
         this.encoder = new Encoder(config.getRandomFactory().create(), writeLock);
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
-        this.clientID = String.format("SSH-2.0-%s", config.getVersion());
+        this.clientID = String.format("%s-2.0-%s", config.getProtocolPrefix(), config.getVersion());
     }
 
     @Override
@@ -192,17 +192,25 @@ public final class TransportImpl
                 data[pos++] = b;
             }
             ident = new String(data, 0, pos);
-            if (ident.startsWith("SSH-"))
+            if (hasProtocol(ident))
                 break;
             if (buffer.rpos() > 16 * 1024)
                 throw new TransportException("Incorrect identification: too many header lines");
         }
 
-        if (!ident.startsWith("SSH-2.0-") && !ident.startsWith("SSH-1.99-"))
+        if (!hasProtocol(ident, "2.0") && !hasProtocol(ident, "1.99"))
             throw new TransportException(DisconnectReason.PROTOCOL_VERSION_NOT_SUPPORTED,
                                          "Server does not support SSHv2, identified as: " + ident);
 
         return ident;
+    }
+
+    private boolean hasProtocol(String ident) {
+        return ident.startsWith(config.getProtocolPrefix() + "-");
+    }
+
+    private boolean hasProtocol(String ident, String version) {
+        return ident.startsWith(config.getProtocolPrefix() + "-" + version + "-");
     }
 
     @Override
