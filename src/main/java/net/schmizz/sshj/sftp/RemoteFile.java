@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class RemoteFile
         extends RemoteResource {
 
-    public RemoteFile(Requester requester, String path, String handle) {
+    public RemoteFile(Requester requester, String path, byte[] handle) {
         super(requester, path, handle);
     }
 
@@ -108,7 +108,7 @@ public class RemoteFile
         return 1 + // packet type
                 4 + // request id
                 4 + // next length
-                handle.length() + // next
+                handle.length + // next
                 8 + // file offset
                 4 + // data length
                 4; // packet length
