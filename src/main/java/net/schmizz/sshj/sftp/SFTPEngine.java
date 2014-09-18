@@ -132,9 +132,9 @@ public class SFTPEngine
 
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)
             throws IOException {
-        final String handle = doRequest(
+        final byte[] handle = doRequest(
                 newRequest(PacketType.OPEN).putString(path).putUInt32(OpenMode.toMask(modes)).putFileAttributes(fa)
-        ).ensurePacketTypeIs(PacketType.HANDLE).readString();
+        ).ensurePacketTypeIs(PacketType.HANDLE).readBytes();
         return new RemoteFile(this, path, handle);
     }
 
@@ -150,9 +150,9 @@ public class SFTPEngine
 
     public RemoteDirectory openDir(String path)
             throws IOException {
-        final String handle = doRequest(
+        final byte[] handle = doRequest(
                 newRequest(PacketType.OPENDIR).putString(path)
-        ).ensurePacketTypeIs(PacketType.HANDLE).readString();
+        ).ensurePacketTypeIs(PacketType.HANDLE).readBytes();
         return new RemoteDirectory(this, path, handle);
     }
 

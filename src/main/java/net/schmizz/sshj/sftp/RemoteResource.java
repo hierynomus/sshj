@@ -30,9 +30,9 @@ public abstract class RemoteResource
 
     protected final Requester requester;
     protected final String path;
-    protected final String handle;
+    protected final byte[] handle;
 
-    protected RemoteResource(Requester requester, String path, String handle) {
+    protected RemoteResource(Requester requester, String path, byte[] handle) {
         this.requester = requester;
         this.path = path;
         this.handle = handle;
