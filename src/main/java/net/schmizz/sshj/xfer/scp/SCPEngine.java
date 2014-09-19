@@ -106,7 +106,7 @@ class SCPEngine {
         if (path == null || path.isEmpty())
             cmd.append(".");
         else
-            cmd.append("'").append(path.replaceAll("'", "\\'")).append("'");
+            cmd.append("\"").append(path.replaceAll("'", "\\'")).append("\"");
         scp = host.startSession().exec(cmd.toString());
     }
 
