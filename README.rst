@@ -1,6 +1,8 @@
 sshj - SSHv2 library for Java
 ==============================
 
+.. image:: https://travis-ci.org/hierynomus/sshj.svg?branch=master
+
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
 
 Features of the library include:

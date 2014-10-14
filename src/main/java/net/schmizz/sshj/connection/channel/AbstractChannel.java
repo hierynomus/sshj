@@ -254,7 +254,7 @@ public abstract class AbstractChannel
         closeEvent.await();
     }
 
-    public void join(int timeout, TimeUnit unit)
+    public void join(long timeout, TimeUnit unit)
             throws ConnectionException {
         closeEvent.await(timeout, unit);
     }
