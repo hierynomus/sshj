@@ -35,6 +35,6 @@ public class HMACSHA2256
     }
 
     public HMACSHA2256() {
-        super("HmacSHA256", 20, 20);
+        super("HmacSHA256", 32, 32);
     }
 }

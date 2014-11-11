@@ -310,11 +310,11 @@ final class KeyExchanger
 
         final MAC mac_C2S = Factory.Named.Util.create(transport.getConfig().getMACFactories(), negotiatedAlgs
                 .getClient2ServerMACAlgorithm());
-        mac_C2S.init(integrityKey_C2S);
+        mac_C2S.init(resizedKey(integrityKey_C2S, mac_C2S.getBlockSize(), hash, kex.getK(), kex.getH()));
 
         final MAC mac_S2C = Factory.Named.Util.create(transport.getConfig().getMACFactories(),
                                                       negotiatedAlgs.getServer2ClientMACAlgorithm());
-        mac_S2C.init(integrityKey_S2C);
+        mac_S2C.init(resizedKey(integrityKey_S2C, mac_S2C.getBlockSize(), hash, kex.getK(), kex.getH()));
 
         final Compression compression_S2C =
                 Factory.Named.Util.create(transport.getConfig().getCompressionFactories(),
