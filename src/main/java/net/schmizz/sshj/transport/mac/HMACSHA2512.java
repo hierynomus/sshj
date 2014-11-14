@@ -35,6 +35,6 @@ public class HMACSHA2512
     }
 
     public HMACSHA2512() {
-        super("HmacSHA512", 20, 20);
+        super("HmacSHA512", 64, 64);
     }
 }
