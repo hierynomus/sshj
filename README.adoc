@@ -47,7 +47,7 @@ Issue tracker https://github.com/hierynomus/sshj/issues
 
 == Discussion
 
-Google Group http://groups.google.com/group/sshj-users>
+Google Group http://groups.google.com/group/sshj-users
 
 == Contributing
 
