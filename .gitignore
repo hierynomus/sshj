@@ -1,0 +1,17 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipe
+.project
+.classpath
+.settings/
+
+# Output dirs
+target/
+build/
+.gradle/
+
+
