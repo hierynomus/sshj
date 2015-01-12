@@ -30,7 +30,6 @@ public class HMACSHA196Test {
     private static final String EXPECTED_HMAC = "24ddeed57ad91465c5b59dce";
 
     @Test
-    @Ignore
     public void testUpdateWithDoFinal() {
         HMACSHA196 hmac = initHmac();
         hmac.update(PLAIN_TEXT);
@@ -38,7 +37,6 @@ public class HMACSHA196Test {
     }
 
     @Test
-    @Ignore
     public void testDoFinalWithInput() {
         HMACSHA196 hmac = initHmac();
         assertThat(Hex.toHexString(hmac.doFinal(PLAIN_TEXT)), is(EXPECTED_HMAC));
