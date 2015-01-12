@@ -97,7 +97,7 @@ public class SessionChannel
     public Command exec(String command)
             throws ConnectionException, TransportException {
         checkReuse();
-        log.info("Will request to exec `{}`", command);
+        log.debug("Will request to exec `{}`", command);
         sendChannelRequest("exec", true, new Buffer.PlainBuffer().putString(command))
                 .await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
         usedUp = true;

@@ -26,7 +26,7 @@ signatures::
   `ssh-rsa`, `ssh-dss`
 
 mac::
-  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`
+  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`
 
 compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)
@@ -47,7 +47,7 @@ Issue tracker https://github.com/hierynomus/sshj/issues
 
 == Discussion
 
-Google Group http://groups.google.com/group/sshj-users>
+Google Group http://groups.google.com/group/sshj-users
 
 == Contributing
 

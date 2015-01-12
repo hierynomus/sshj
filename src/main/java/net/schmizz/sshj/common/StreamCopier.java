@@ -136,7 +136,7 @@ public class StreamCopier {
 
         final double timeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         final double sizeKiB = count / 1024.0;
-        log.info("{} KiB transferred in {} seconds ({} KiB/s)", sizeKiB, timeSeconds, (sizeKiB / timeSeconds));
+        log.debug("{} KiB transferred in {} seconds ({} KiB/s)", sizeKiB, timeSeconds, (sizeKiB / timeSeconds));
 
         if (length != -1 && read == -1)
             throw new IOException("Encountered EOF, could not transfer " + length + " bytes");
