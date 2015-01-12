@@ -41,12 +41,12 @@ public class BaseMAC
 
     @Override
     public byte[] doFinal() {
-        return mac.doFinal();
+        return resizeToHashSize(mac.doFinal());
     }
 
     @Override
     public byte[] doFinal(byte[] input) {
-        return mac.doFinal(input);
+        return resizeToHashSize(mac.doFinal(input));
     }
 
     @Override
@@ -60,6 +60,15 @@ public class BaseMAC
         } catch (ShortBufferException e) {
             throw new SSHRuntimeException(e);
         }
+    }
+
+    private byte[] resizeToHashSize(byte[] buf) {
+        if (bsize == defbsize)
+            return buf;
+
+        byte[] result = new byte[bsize];
+        System.arraycopy(buf, 0, result, 0, bsize);
+        return result;
     }
 
     @Override

@@ -172,7 +172,7 @@ public final class ChannelOutputStream
         if (!closed) {
             try {
                 buffer.flush(false);
-//                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
+                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
             } finally {
                 closed = true;
             }
