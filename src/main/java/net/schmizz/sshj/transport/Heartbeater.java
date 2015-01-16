@@ -36,8 +36,9 @@ final class Heartbeater
 
     synchronized void setInterval(int interval) {
         this.interval = interval;
-        if (interval > 0 && getState() == Thread.State.NEW)
+        if (interval > 0 && getState() == Thread.State.NEW) {
             start();
+        }
         notify();
     }
 
@@ -47,14 +48,15 @@ final class Heartbeater
 
     synchronized private int getPositiveInterval()
             throws InterruptedException {
-        while (interval <= 0)
+        while (interval <= 0) {
             wait();
+        }
         return interval;
     }
 
     @Override
     public void run() {
-        log.debug("Starting");
+        log.debug("Starting Heartbeat, sending heartbeat every {} seconds", interval);
         try {
             while (!isInterrupted()) {
                 final int hi = getPositiveInterval();
@@ -67,11 +69,12 @@ final class Heartbeater
         } catch (Exception e) {
             if (isInterrupted()) {
                 // We are meant to shut up and draw to a close if interrupted
-            } else
+            } else {
                 trans.die(e);
+            }
         }
 
-        log.debug("Stopping");
+        log.debug("Stopping Heartbeat");
     }
 
 }
