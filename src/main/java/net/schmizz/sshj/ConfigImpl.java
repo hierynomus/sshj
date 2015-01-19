@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj;
 
+import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.cipher.Cipher;
@@ -34,6 +35,7 @@ public class ConfigImpl
     private String version;
 
     private Factory<Random> randomFactory;
+    private KeepAliveProvider keepAliveProvider;
 
     private List<Factory.Named<KeyExchange>> kexFactories;
     private List<Factory.Named<Cipher>> cipherFactories;
@@ -146,4 +148,13 @@ public class ConfigImpl
         this.version = version;
     }
 
+    @Override
+    public KeepAliveProvider getKeepAliveProvider() {
+        return keepAliveProvider;
+    }
+
+    @Override
+    public void setKeepAliveProvider(KeepAliveProvider keepAliveProvider) {
+        this.keepAliveProvider = keepAliveProvider;
+    }
 }

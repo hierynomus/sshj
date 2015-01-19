@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj;
 
+import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
@@ -92,6 +93,7 @@ public class DefaultConfig
         initCompressionFactories();
         initMACFactories();
         initSignatureFactories();
+        setKeepAliveProvider(KeepAliveProvider.HEARTBEAT);
     }
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
