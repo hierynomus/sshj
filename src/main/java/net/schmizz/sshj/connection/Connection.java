@@ -16,6 +16,7 @@
 package net.schmizz.sshj.connection;
 
 import net.schmizz.concurrent.Promise;
+import net.schmizz.keepalive.KeepAlive;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException;
@@ -150,4 +151,9 @@ public interface Connection {
      * @param timeout timeout in milliseconds
      */
     void setTimeoutMs(int timeout);
+
+    /**
+     * @return The configured {@link net.schmizz.keepalive.KeepAlive} mechanism.
+     */
+    KeepAlive getKeepAlive();
 }

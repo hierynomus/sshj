@@ -19,6 +19,7 @@ import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Config;
+import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.Service;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
@@ -46,23 +47,23 @@ public final class TransportImpl
         NullService(Transport trans) {
             super("null-service", trans);
         }
-    }
 
+    }
     static final class ConnInfo {
 
         final String host;
+
         final int port;
         final InputStream in;
         final OutputStream out;
-
         public ConnInfo(String host, int port, InputStream in, OutputStream out) {
             this.host = host;
             this.port = port;
             this.in = in;
             this.out = out;
         }
-    }
 
+    }
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final Service nullService = new NullService(this);
@@ -80,7 +81,11 @@ public final class TransportImpl
 
     private final Reader reader;
 
-    private final Heartbeater heartbeater;
+    /**
+     * @deprecated Moved to {@link net.schmizz.sshj.SSHClient}
+     */
+    @Deprecated
+    private final SSHClient sshClient;
 
     private final Encoder encoder;
 
@@ -115,12 +120,30 @@ public final class TransportImpl
     public TransportImpl(Config config) {
         this.config = config;
         this.reader = new Reader(this);
-        this.heartbeater = new Heartbeater(this);
         this.encoder = new Encoder(config.getRandomFactory().create(), writeLock);
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
         this.clientID = String.format("SSH-2.0-%s", config.getVersion());
+        this.sshClient = null;
     }
+
+    /**
+     * Temporary constructor until we remove support for the set/get Heartbeat interval from transport.
+     * @param config
+     * @param sshClient
+     */
+    @Deprecated
+    public TransportImpl(Config config, SSHClient sshClient) {
+        this.config = config;
+        this.reader = new Reader(this);
+        this.encoder = new Encoder(config.getRandomFactory().create(), writeLock);
+        this.decoder = new Decoder(this);
+        this.kexer = new KeyExchanger(this);
+        this.clientID = String.format("SSH-2.0-%s", config.getVersion());
+        this.sshClient = sshClient;
+    }
+
+
 
     @Override
     public void init(String remoteHost, int remotePort, InputStream in, OutputStream out)
@@ -231,13 +254,17 @@ public final class TransportImpl
     }
 
     @Override
+    @Deprecated
     public int getHeartbeatInterval() {
-        return heartbeater.getInterval();
+        log.warn("**Deprecated**: Please use: sshClient.getConnection().getKeepAlive().getKeepAliveInterval()");
+        return sshClient.getConnection().getKeepAlive().getKeepAliveInterval();
     }
 
     @Override
+    @Deprecated
     public void setHeartbeatInterval(int interval) {
-        heartbeater.setInterval(interval);
+        log.warn("**Deprecated**: Please use: sshClient.getConnection().getKeepAlive().setKeepAliveInterval()");
+        sshClient.getConnection().getKeepAlive().setKeepAliveInterval(interval);
     }
 
     @Override
@@ -542,12 +569,11 @@ public final class TransportImpl
 
     private void finishOff() {
         reader.interrupt();
-        heartbeater.interrupt();
         IOUtils.closeQuietly(connInfo.in);
         IOUtils.closeQuietly(connInfo.out);
     }
 
-    void die(Exception ex) {
+    public void die(Exception ex) {
         close.lock();
         try {
             if (!close.isSet()) {

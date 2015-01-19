@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj;
 
+import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.cipher.Cipher;
@@ -144,4 +145,14 @@ public interface Config {
      */
     void setVersion(String version);
 
+    /**
+     * @return The provider that creates the keep-alive implementation of choice.
+     */
+    KeepAliveProvider getKeepAliveProvider();
+
+    /**
+     * Set the provider that provides the keep-alive implementation.
+     * @param keepAliveProvider keep-alive provider
+     */
+    void setKeepAliveProvider(KeepAliveProvider keepAliveProvider);
 }
