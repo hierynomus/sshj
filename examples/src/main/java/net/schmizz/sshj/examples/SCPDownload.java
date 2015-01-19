@@ -13,36 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package examples;
+package net.schmizz.sshj.examples;
 
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.channel.direct.Session;
-import net.schmizz.sshj.connection.channel.direct.Session.Command;
+import net.schmizz.sshj.xfer.FileSystemFile;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
-/** This examples demonstrates how a remote command can be executed. */
-public class Exec {
+/** This example demonstrates downloading of a file over SCP from the SSH server. */
+public class SCPDownload {
 
-    public static void main(String... args)
+    public static void main(String[] args)
             throws IOException {
-        final SSHClient ssh = new SSHClient();
+        SSHClient ssh = new SSHClient();
+        // ssh.useCompression(); // Can lead to significant speedup (needs JZlib in classpath)
         ssh.loadKnownHosts();
-
         ssh.connect("localhost");
         try {
             ssh.authPublickey(System.getProperty("user.name"));
-            final Session session = ssh.startSession();
-            try {
-                final Command cmd = session.exec("ping -c 1 google.com");
-                System.out.println(IOUtils.readFully(cmd.getInputStream()).toString());
-                cmd.join(5, TimeUnit.SECONDS);
-                System.out.println("\n** exit status: " + cmd.getExitStatus());
-            } finally {
-                session.close();
-            }
+            ssh.newSCPFileTransfer().download("test_file", new FileSystemFile("/tmp/"));
         } finally {
             ssh.disconnect();
         }

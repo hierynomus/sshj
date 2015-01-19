@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2009 sshj contributors
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>net.schmizz</groupId>
+    <artifactId>sshj</artifactId>
+    <packaging>jar</packaging>
+    <version>0.10.0</version>
+
+    <name>sshj-examples</name>
+    <description>Examples for SSHv2 library for Java</description>
+    <url>http://github.com/hierynomus/sshj</url>
+
+    <inceptionYear>2015</inceptionYear>
+
+    <issueManagement>
+        <system>github</system>
+        <url>http://github.com/hierynomus/sshj/issues</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git://github.com/hierynomus/sshj.git</connection>
+        <developerConnection>scm:git:git@github.com:hierynomus/sshj.git</developerConnection>
+        <url>http://github.com/hierynomus/sshj</url>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>Apache 2</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.schmizz</groupId>
+            <artifactId>sshj</artifactId>
+            <version>0.10.0</version>
+        </dependency>
+    </dependencies>
+
+
+    <developers>
+        <developer>
+            <id>hierynomus</id>
+            <name>Jeroen van Erp</name>
+            <email>jeroen@hierynomus.com</email>
+        </developer>
+        <developer>
+            <id>shikhar</id>
+            <name>Shikhar Bhushan</name>
+            <email>shikhar@schmizz.net</email>
+            <url>http://schmizz.net</url>
+        </developer>
+        <developer>
+            <id>iterate</id>
+            <name>David Kocher</name>
+            <email>dkocher@iterate.ch</email>
+            <organization>iterate GmbH</organization>
+            <organizationUrl>https://iterate.ch</organizationUrl>
+        </developer>
+    </developers>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
