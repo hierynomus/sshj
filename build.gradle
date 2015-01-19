@@ -4,7 +4,7 @@ apply plugin: "signing"
 apply plugin: "osgi"
 
 group = "nl.javadude"
-version = "0.11.0"
+version = "0.11.0-SNAPSHOT"
 
 repositories {
   mavenCentral()
@@ -71,8 +71,11 @@ artifacts {
 }
 
 signing {
+  required { !version.contains("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
   sign configurations.archives
 }
+
+//project.tasks.signArchives.onlyIf { !version.contains("SNAPSHOT") }
 
 uploadArchives {
   if(project.hasProperty('sonatypeUsername')) {
