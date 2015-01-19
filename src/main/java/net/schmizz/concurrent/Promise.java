@@ -202,6 +202,16 @@ public class Promise<V, T extends Throwable> {
         }
     }
 
+    /** @return whether this promise was fulfilled with either a value or an error. */
+    public boolean isFulfilled() {
+        lock.lock();
+        try {
+            return pendingEx != null || val != null;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     /** @return whether this promise has threads waiting on it. */
     public boolean hasWaiters() {
         lock.lock();

@@ -144,9 +144,9 @@ public class SSHClient
      */
     public SSHClient(Config config) {
         super(DEFAULT_PORT);
-        this.trans = new TransportImpl(config);
+        this.trans = new TransportImpl(config, this);
         this.auth = new UserAuthImpl(trans);
-        this.conn = new ConnectionImpl(trans);
+        this.conn = new ConnectionImpl(trans, config.getKeepAliveProvider());
     }
 
     /**

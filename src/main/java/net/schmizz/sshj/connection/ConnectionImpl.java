@@ -17,6 +17,8 @@ package net.schmizz.sshj.connection;
 
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Promise;
+import net.schmizz.keepalive.KeepAlive;
+import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
@@ -51,6 +53,9 @@ public class ConnectionImpl
 
     private final Queue<Promise<SSHPacket, ConnectionException>> globalReqPromises = new LinkedList<Promise<SSHPacket, ConnectionException>>();
 
+    /** {@code keep-alive} mechanism */
+    private final KeepAlive keepAlive;
+
     private long windowSize = 2048 * 1024;
     private int maxPacketSize = 32 * 1024;
 
@@ -59,11 +64,14 @@ public class ConnectionImpl
     /**
      * Create with an associated {@link Transport}.
      *
+     * @param config the ssh config
      * @param trans transport layer
+     * @param keepAlive
      */
-    public ConnectionImpl(Transport trans) {
+    public ConnectionImpl(Transport trans, KeepAliveProvider keepAlive) {
         super("ssh-connection", trans);
         timeoutMs = trans.getTimeoutMs();
+        this.keepAlive = keepAlive.provide(this);
     }
 
     @Override
@@ -250,6 +258,7 @@ public class ConnectionImpl
             ErrorDeliveryUtil.alertPromises(error, globalReqPromises);
             globalReqPromises.clear();
         }
+        keepAlive.interrupt();
         ErrorNotifiable.Util.alertAll(error, channels.values());
         channels.clear();
     }
@@ -262,6 +271,11 @@ public class ConnectionImpl
     @Override
     public int getTimeoutMs() {
         return timeoutMs;
+    }
+
+    @Override
+    public KeepAlive getKeepAlive() {
+        return keepAlive;
     }
 
 }

@@ -75,10 +75,18 @@ public interface Transport
      */
     void setTimeoutMs(int timeout);
 
-    /** @return the interval in seconds at which a heartbeat message is sent to the server */
+    /**
+     * @return the interval in seconds at which a heartbeat message is sent to the server
+     * @deprecated Moved to {@link net.schmizz.keepalive.KeepAlive#getKeepAliveInterval()}. This is accessible through the {@link net.schmizz.sshj.connection.Connection}.
+     */
+    @Deprecated
     int getHeartbeatInterval();
 
-    /** @param interval the interval in seconds, {@code 0} means no hearbeat */
+    /**
+     * @param interval the interval in seconds, {@code 0} means no hearbeat
+     * @deprecated Moved to {@link net.schmizz.keepalive.KeepAlive#getKeepAliveInterval()}. This is accessible through the {@link net.schmizz.sshj.connection.Connection}.
+     */
+    @Deprecated
     void setHeartbeatInterval(int interval);
 
     /** @return the hostname to which this transport is connected. */
@@ -211,4 +219,10 @@ public interface Transport
     /** @return the current disconnect listener. */
     DisconnectListener getDisconnectListener();
 
+    /**
+     * Kill the transport in an exceptional way.
+     *
+     * @param e The exception that occurred.
+     */
+    void die(Exception e);
 }
