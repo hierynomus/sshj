@@ -1,6 +1,7 @@
 apply plugin: "java"
 apply plugin: "maven"
 apply plugin: "signing"
+apply plugin: "osgi"
 
 group = "nl.javadude"
 version = "0.10.1-SNAPSHOT"
@@ -28,6 +29,20 @@ dependencies {
   testCompile "org.mockito:mockito-core:1.9.5"
   testCompile "org.apache.sshd:sshd-core:0.11.0"
   testRuntime "ch.qos.logback:logback-classic:1.1.2"
+}
+
+jar {
+  manifest {
+    instruction "Bundle-Description", "SSHv2 library for Java"
+    instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
+    instruction "Import-Package", "!net.schmizz.*"
+    instruction "Import-Package", "javax.crypto*"
+    instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
+    instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
+    instruction "Import-Package", "org.bouncycastle*"
+    instruction "Import-Package", "*"
+    instruction "Export-Package", "net.schmizz.*"
+  }
 }
 
 task javadocJar(type: Jar) {
