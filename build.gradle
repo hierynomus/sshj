@@ -4,7 +4,7 @@ apply plugin: "signing"
 apply plugin: "osgi"
 
 group = "nl.javadude"
-version = "0.10.1-SNAPSHOT"
+version = "0.11.0"
 
 repositories {
   mavenCentral()
@@ -17,7 +17,18 @@ configurations {
   }
 }
 
-def bouncycastleVersion = "1.50"
+test {
+  include "**/*Test.*"
+  afterSuite { descriptor, result ->
+    def indicator = "\u001B[32m✓\u001b[0m"
+    if (result.failedTestCount > 0) {
+      indicator = "\u001B[31m✘\u001b[0m"
+    }
+    logger.lifecycle("$indicator Test ${descriptor.name}; Executed: ${result.testCount}/\u001B[32m${result.successfulTestCount}\u001B[0m/\u001B[31m${result.failedTestCount}\u001B[0m")
+  }
+}
+
+def bouncycastleVersion = "1.51"
 
 dependencies {
   compile "org.slf4j:slf4j-api:1.7.7"
@@ -62,6 +73,7 @@ artifacts {
 signing {
   sign configurations.archives
 }
+
 uploadArchives {
   if(project.hasProperty('sonatypeUsername')) {
     repositories.mavenDeployer {
