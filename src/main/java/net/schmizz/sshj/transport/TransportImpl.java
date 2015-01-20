@@ -127,10 +127,9 @@ public final class TransportImpl
         this.sshClient = null;
     }
 
-    /**
+    /*
      * Temporary constructor until we remove support for the set/get Heartbeat interval from transport.
-     * @param config
-     * @param sshClient
+     * @deprecated To be removed in 0.12.0
      */
     @Deprecated
     public TransportImpl(Config config, SSHClient sshClient) {
