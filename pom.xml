@@ -28,19 +28,19 @@
 
     <name>sshj</name>
     <description>SSHv2 library for Java</description>
-    <url>http://github.com/shikhar/sshj</url>
+    <url>http://github.com/hierynomus/sshj</url>
 
     <inceptionYear>2009</inceptionYear>
 
     <issueManagement>
         <system>github</system>
-        <url>http://github.com/shikhar/sshj/issues</url>
+        <url>http://github.com/hierynomus/sshj/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git://github.com/shikhar/sshj.git</connection>
-        <developerConnection>scm:git:git@github.com:shikhar/sshj.git</developerConnection>
-        <url>http://github.com/shikhar/sshj</url>
+        <connection>scm:git:git://github.com/hierynomus/sshj.git</connection>
+        <developerConnection>scm:git:git@github.com:hierynomus/sshj.git</developerConnection>
+        <url>http://github.com/hierynomus/sshj</url>
     </scm>
 
     <licenses>
@@ -140,6 +140,11 @@
 
     <developers>
         <developer>
+            <id>hierynomus</id>
+            <name>Jeroen van Erp</name>
+            <email>jeroen@hierynomus.com</email>
+        </developer>
+        <developer>
             <id>shikhar</id>
             <name>Shikhar Bhushan</name>
             <email>shikhar@schmizz.net</email>
@@ -165,9 +170,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
-                    <excludes>
-                        <exclude>examples/*.java</exclude>
-                    </excludes>
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
@@ -245,24 +247,6 @@
                     <execution>
                         <goals>
                             <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2.1</version>
-                <configuration>
-                    <descriptors>
-                        <descriptor>src/assemble/examples.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
                         </goals>
                     </execution>
                 </executions>

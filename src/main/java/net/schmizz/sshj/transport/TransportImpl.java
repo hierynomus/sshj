@@ -127,10 +127,9 @@ public final class TransportImpl
         this.sshClient = null;
     }
 
-    /**
+    /*
      * Temporary constructor until we remove support for the set/get Heartbeat interval from transport.
-     * @param config
-     * @param sshClient
+     * @deprecated To be removed in 0.12.0
      */
     @Deprecated
     public TransportImpl(Config config, SSHClient sshClient) {
@@ -180,7 +179,7 @@ public final class TransportImpl
      * <p/>
      * This is not efficient but is only done once.
      *
-     * @param buffer
+     * @param buffer The buffer to read from.
      *
      * @return empty string if full ident string has not yet been received
      *
@@ -289,7 +288,7 @@ public final class TransportImpl
 
     @Override
     public String getServerVersion() {
-        return serverID == null ? serverID : serverID.substring(8);
+        return serverID == null ? null : serverID.substring(8);
     }
 
     @Override
@@ -554,13 +553,13 @@ public final class TransportImpl
     /**
      * Got an SSH_MSG_UNIMPLEMENTED, so lets see where we're at and act accordingly.
      *
-     * @param buf
+     * @param packet The 'unimplemented' packet received
      *
      * @throws TransportException
      */
-    private void gotUnimplemented(SSHPacket buf)
+    private void gotUnimplemented(SSHPacket packet)
             throws SSHException {
-        long seqNum = buf.readUInt32();
+        long seqNum = packet.readUInt32();
         log.debug("Received SSH_MSG_UNIMPLEMENTED #{}", seqNum);
         if (kexer.isKexOngoing())
             throw new TransportException("Received SSH_MSG_UNIMPLEMENTED while exchanging keys");

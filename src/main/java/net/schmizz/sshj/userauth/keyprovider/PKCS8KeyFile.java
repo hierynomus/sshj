@@ -139,9 +139,7 @@ public class PKCS8KeyFile
                     JcePEMDecryptorProviderBuilder decryptorBuilder = new JcePEMDecryptorProviderBuilder();
                     decryptorBuilder.setProvider("BC");
                     try {
-                        // Do not return null, as JcePEMDecryptorProviderBuilder$1$1.decrypt would throw an exception
-                        // in that case because it requires a 'password' (i.e. passphrase).
-                        passphrase = pwdf == null ? "".toCharArray() : pwdf.reqPassword(resource);
+                        passphrase = pwdf == null ? null : pwdf.reqPassword(resource);
                         kp = pemConverter.getKeyPair(encryptedKeyPair.decryptKeyPair(decryptorBuilder.build(passphrase)));
                     } finally {
                         PasswordUtils.blankOut(passphrase);
