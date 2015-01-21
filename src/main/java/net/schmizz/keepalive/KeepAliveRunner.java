@@ -50,9 +50,12 @@ public class KeepAliveRunner extends KeepAlive {
 
     @Override
     protected void doKeepAlive() throws TransportException, ConnectionException {
-        emptyQueue(queue);
-        checkMaxReached(queue);
-        queue.add(conn.sendGlobalRequest("keepalive@openssh.com", true, new byte[0]));
+        // Ensure the service is set... This means that the key exchange is done and the connection is up.
+        if (conn.equals(conn.getTransport().getService())) {
+            emptyQueue(queue);
+            checkMaxReached(queue);
+            queue.add(conn.sendGlobalRequest("keepalive@openssh.com", true, new byte[0]));
+        }
     }
 
     private void checkMaxReached(Queue<Promise<SSHPacket, ConnectionException>> queue) throws ConnectionException {
