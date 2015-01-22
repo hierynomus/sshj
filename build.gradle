@@ -3,7 +3,7 @@ apply plugin: "maven"
 apply plugin: "signing"
 apply plugin: "osgi"
 
-group = "nl.javadude"
+group = "com.hierynomus"
 version = "0.11.0-SNAPSHOT"
 
 repositories {

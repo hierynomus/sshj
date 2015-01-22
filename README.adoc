@@ -1,8 +1,51 @@
 = sshj - SSHv2 library for Java
+Jeroen van Erp
+:sshj_groupid: com.hierynomus
+:sshj_version: 0.11.0
+:source-highlighter: pygments
 
 image::https://travis-ci.org/hierynomus/sshj.svg?branch=master[]
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
+
+== Getting SSHJ
+
+To get SSHJ, you have two options:
+
+. Add a dependency to SSHJ to your project.
+. Build SSHJ yourself.
+
+And, if you want, you can also run the SSHJ examples.
+
+Binary releases of SSHJ are not provided here, but you can download it http://search.maven.org/#artifactdetails%7C{sshj_groupid}%7Csshj%7C{sshj_version}%7Cjar[straight from the Maven Central repository] if you want to.
+
+== Depending on SSHJ
+If you're building your project using Maven, you can add the following dependency to the `pom.xml`:
+
+[source,xml,subs="verbatim,attributes"]
+----
+<dependency>
+  <groupId>{sshj_groupid}</groupId>
+  <artifactId>sshj</artifactId>
+  <version>{sshj_version}</version>
+</dependency>
+----
+
+If your project is built using another build tool that uses the Maven Central repository, translate this dependency into the format used by your build tool.
+
+== Building SSHJ
+. Clone the Overthere repository.
+. Ensure you have Java6 installed with the http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html[Unlimited strength Java Cryptography Extensions (JCE)].
+. Run the command `./gradlew clean build`.
+
+== Running the examples
+In the `examples` directory, there is a separate Maven project that shows how the library can be used in some sample cases. If you want to run them, follow these guidelines:
+
+. Install http://maven.apache.org/[Maven 2.2.1] or up.
+. Clone the Overthere repository.
+. Go into the `examples` directory and run the command `mvn eclipse:eclipse`.
+. Import the `examples` project into Eclipse.
+. Change the login details in the example classes (address, username and password) and run them!
 
 == Features of the library include:
 
@@ -13,7 +56,6 @@ To get started, have a look at one of the examples. Hopefully you will find the 
 * scp + complete sftp version 0-3 implementation
 
 == Supported algorithms
-
 Implementations / adapters for the following algorithms are included:
 
 ciphers::
@@ -38,17 +80,27 @@ If you need something that is not included, it shouldn't be too hard to add (do 
 
 
 == Dependencies
-
 Java 6+. http://www.slf4j.org/download.html[slf4j] is required. http://www.bouncycastle.org/java.html[bouncycastle] is highly recommended and required for using some of the crypto algorithms. http://www.jcraft.com/jzlib/[jzlib] is required for using zlib compression.
 
 == Reporting bugs
-
-Issue tracker https://github.com/hierynomus/sshj/issues
+Issue tracker: https://github.com/hierynomus/sshj/issues
 
 == Discussion
-
-Google Group http://groups.google.com/group/sshj-users
+Google Group: http://groups.google.com/group/sshj-users
 
 == Contributing
-
 Fork away!
+
+== Release history
+
+* SSHJ 0.11.0 (No date set yet)
+** New maven coordinates `com.hierynomus:sshj:0.11.0` as https://github.com/hierynomus[@hierynomus] took over as maintainer of SSHJ
+** Migrated build system to Gradle 2.2.1
+** Merged https://github.com/hierynomus/sshj/issues/150[#150]: Fix for incorrect file handle on some SSH servers, fixes: https://github.com/hierynomus/sshj/issues/54[#54], https://github.com/hierynomus/sshj/issues/119[#119], https://github.com/hierynomus/sshj/issues/168[#168], https://github.com/hierynomus/sshj/issues/169[#169]
+** Made `jzlib` optional in OSGi bundling, fixes: https://github.com/hierynomus/sshj/issues/162[#162]
+** Improved some log levels, fixes: https://github.com/hierynomus/sshj/issues/161[#161]
+** Merged https://github.com/hierynomus/sshj/issues/156[#156], https://github.com/hierynomus/sshj/issues/164[#164], https://github.com/hierynomus/sshj/issues/165[#165]: Fixed block sizes for `hmac-sha2-256` and `hmac-sha2-512`
+** Merged https://github.com/hierynomus/sshj/issues/141[#141]: Add proxy support
+** Merged https://github.com/hierynomus/sshj/issues/157[#157], https://github.com/hierynomus/sshj/issues/163[#163]: Doc and build fixes
+** Upgraded BouncyCastle to 1.51, fixes: https://github.com/hierynomus/sshj/issues/142[#142]
+** Implemented keep-alive with connection drop detection, fixes https://github.com/hierynomus/sshj/issues/166[#166]
