@@ -93,14 +93,14 @@ Fork away!
 
 == Release history
 
-* SSHJ 0.11.0 (No date set yet)
-** New maven coordinates `com.hierynomus:sshj:0.11.0` as https://github.com/hierynomus[@hierynomus] took over as maintainer of SSHJ
-** Migrated build system to Gradle 2.2.1
-** Merged https://github.com/hierynomus/sshj/issues/150[#150]: Fix for incorrect file handle on some SSH servers, fixes: https://github.com/hierynomus/sshj/issues/54[#54], https://github.com/hierynomus/sshj/issues/119[#119], https://github.com/hierynomus/sshj/issues/168[#168], https://github.com/hierynomus/sshj/issues/169[#169]
-** Made `jzlib` optional in OSGi bundling, fixes: https://github.com/hierynomus/sshj/issues/162[#162]
-** Improved some log levels, fixes: https://github.com/hierynomus/sshj/issues/161[#161]
-** Merged https://github.com/hierynomus/sshj/issues/156[#156], https://github.com/hierynomus/sshj/issues/164[#164], https://github.com/hierynomus/sshj/issues/165[#165]: Fixed block sizes for `hmac-sha2-256` and `hmac-sha2-512`
-** Merged https://github.com/hierynomus/sshj/issues/141[#141]: Add proxy support
-** Merged https://github.com/hierynomus/sshj/issues/157[#157], https://github.com/hierynomus/sshj/issues/163[#163]: Doc and build fixes
-** Upgraded BouncyCastle to 1.51, fixes: https://github.com/hierynomus/sshj/issues/142[#142]
-** Implemented keep-alive with connection drop detection, fixes https://github.com/hierynomus/sshj/issues/166[#166]
+SSHJ 0.11.0 (2015-01-23)::
+* New maven coordinates `com.hierynomus:sshj:0.11.0` as https://github.com/hierynomus[@hierynomus] took over as maintainer of SSHJ
+* Migrated build system to Gradle 2.2.1
+* Merged https://github.com/hierynomus/sshj/issues/150[#150]: Fix for incorrect file handle on some SSH servers, fixes: https://github.com/hierynomus/sshj/issues/54[#54], https://github.com/hierynomus/sshj/issues/119[#119], https://github.com/hierynomus/sshj/issues/168[#168], https://github.com/hierynomus/sshj/issues/169[#169]
+* Made `jzlib` optional in OSGi bundling, fixes: https://github.com/hierynomus/sshj/issues/162[#162]
+* Improved some log levels, fixes: https://github.com/hierynomus/sshj/issues/161[#161]
+* Merged https://github.com/hierynomus/sshj/issues/156[#156], https://github.com/hierynomus/sshj/issues/164[#164], https://github.com/hierynomus/sshj/issues/165[#165]: Fixed block sizes for `hmac-sha2-256` and `hmac-sha2-512`
+* Merged https://github.com/hierynomus/sshj/issues/141[#141]: Add proxy support
+* Merged https://github.com/hierynomus/sshj/issues/157[#157], https://github.com/hierynomus/sshj/issues/163[#163]: Doc and build fixes
+* Upgraded BouncyCastle to 1.51, fixes: https://github.com/hierynomus/sshj/issues/142[#142]
+* Implemented keep-alive with connection drop detection, fixes https://github.com/hierynomus/sshj/issues/166[#166]
