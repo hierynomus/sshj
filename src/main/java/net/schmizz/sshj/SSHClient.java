@@ -39,6 +39,7 @@ import net.schmizz.sshj.transport.TransportImpl;
 import net.schmizz.sshj.transport.compression.DelayedZlibCompression;
 import net.schmizz.sshj.transport.compression.NoneCompression;
 import net.schmizz.sshj.transport.compression.ZlibCompression;
+import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.userauth.UserAuth;
@@ -153,10 +154,19 @@ public class SSHClient
      * Add a {@link HostKeyVerifier} which will be invoked for verifying host key during connection establishment and
      * future key exchanges.
      *
-     * @param hostKeyVerifier {@link HostKeyVerifier} instance
+     * @param verifier {@link HostKeyVerifier} instance
      */
-    public void addHostKeyVerifier(HostKeyVerifier hostKeyVerifier) {
-        trans.addHostKeyVerifier(hostKeyVerifier);
+    public void addHostKeyVerifier(HostKeyVerifier verifier) {
+        trans.addHostKeyVerifier(verifier);
+    }
+
+    /**
+     * Add a {@link AlgorithmsVerifier} which will be invoked for verifying negotiated algorithms.
+     *
+     * @param verifier {@link AlgorithmsVerifier} instance
+     */
+    public void addAlgorithmsVerifier(AlgorithmsVerifier verifier) {
+        trans.addAlgorithmsVerifier(verifier);
     }
 
     /**

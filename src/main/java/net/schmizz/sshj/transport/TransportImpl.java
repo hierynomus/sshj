@@ -27,6 +27,7 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,6 +231,11 @@ public final class TransportImpl
     @Override
     public void addHostKeyVerifier(HostKeyVerifier hkv) {
         kexer.addHostKeyVerifier(hkv);
+    }
+
+    @Override
+    public void addAlgorithmsVerifier(AlgorithmsVerifier verifier) {
+        kexer.addAlgorithmsVerifier(verifier);
     }
 
     @Override
