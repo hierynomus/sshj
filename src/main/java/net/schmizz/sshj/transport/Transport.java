@@ -20,6 +20,7 @@ import net.schmizz.sshj.Service;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.SSHPacketHandler;
+import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 import java.io.InputStream;
@@ -50,6 +51,13 @@ public interface Transport
      * @param hkv the host key verifier
      */
     void addHostKeyVerifier(HostKeyVerifier hkv);
+
+    /**
+     * Adds the specified verifier.
+     *
+     * @param verifier The verifier to call with negotiated algorithms
+     */
+    void addAlgorithmsVerifier(AlgorithmsVerifier verifier);
 
     /**
      * Do key exchange and algorithm negotiation. This can be the initial one or for algorithm renegotiation.

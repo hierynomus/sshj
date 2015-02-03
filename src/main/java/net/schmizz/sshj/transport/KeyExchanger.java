@@ -33,6 +33,8 @@ import net.schmizz.sshj.transport.digest.Digest;
 import net.schmizz.sshj.transport.kex.KeyExchange;
 import net.schmizz.sshj.transport.mac.MAC;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
+import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +69,8 @@ final class KeyExchanger
      * when we are ready to verify the the server's host key.
      */
     private final Queue<HostKeyVerifier> hostVerifiers = new LinkedList<HostKeyVerifier>();
+
+    private final Queue<AlgorithmsVerifier> algorithmVerifiers = new LinkedList<AlgorithmsVerifier>();
 
     private final AtomicBoolean kexOngoing = new AtomicBoolean();
 
@@ -106,6 +110,10 @@ final class KeyExchanger
      */
     synchronized void addHostKeyVerifier(HostKeyVerifier hkv) {
         hostVerifiers.add(hkv);
+    }
+
+    synchronized void addAlgorithmsVerifier(AlgorithmsVerifier verifier) {
+        algorithmVerifiers.add(verifier);
     }
 
     /**
@@ -218,6 +226,13 @@ final class KeyExchanger
         final Proposal serverProposal = new Proposal(buf);
         negotiatedAlgs = clientProposal.negotiate(serverProposal);
         log.debug("Negotiated algorithms: {}", negotiatedAlgs);
+        for(AlgorithmsVerifier v: algorithmVerifiers) {
+            log.debug("Trying to verify algorithms with {}", v);
+            if(!v.verify(negotiatedAlgs)) {
+                throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                        "Failed to verify negotiated algorithms `" + negotiatedAlgs + "`");
+            }
+        }
         kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(),
                                         negotiatedAlgs.getKeyExchangeAlgorithm());
         try {
