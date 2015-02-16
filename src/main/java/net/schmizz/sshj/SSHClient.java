@@ -15,6 +15,14 @@
  */
 package net.schmizz.sshj;
 
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
+
+import org.ietf.jgss.GSSException;
+import org.ietf.jgss.Oid;
+
+import com.sun.security.auth.callback.DialogCallbackHandler;
+
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -49,6 +57,7 @@ import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
 import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.method.AuthPassword;
@@ -63,11 +72,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
@@ -363,6 +376,30 @@ public class SSHClient
             }
         }
         authPublickey(username, keyProviders);
+    }
+
+    /**
+     * Authenticate {@code username} using the {@code "gssapi-with-mic"} authentication method, given a login context
+     * for the peer GSS machine and a list of supported OIDs.
+     * <p/>
+     * Supported OIDs should be ordered by preference as the SSH server will choose the first OID that it also
+     * supports. At least one OID is required
+     *
+     * @param username      user to authenticate
+     * @param context       {@code LoginContext} for the peer GSS machine
+     * @param supportedOid  first supported OID
+     * @param supportedOids other supported OIDs
+     *
+     * @throws UserAuthException  in case of authenication failure
+     * @throws TransportException if there was a transport-layer error
+     */
+    public void authGssApiWithMic(String username, LoginContext context, Oid supportedOid, Oid... supportedOids)
+            throws UserAuthException, TransportException {
+        // insert supportedOid to the front of the list since ordering matters
+        List<Oid> oids = new ArrayList<Oid>(Arrays.asList(supportedOids));
+        oids.add(0, supportedOid);
+
+        auth(username, new AuthGssApiWithMic(context, oids));
     }
 
     /**
