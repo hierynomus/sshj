@@ -88,7 +88,7 @@ public class RemoteFile
             throws IOException {
         return requester.request(newRequest(PacketType.WRITE)
                                          .putUInt64(fileOffset)
-                                         .putUInt32(len - off)
+                                         .putUInt32(len)
                                          .putRawBytes(data, off, len)
         );
     }
