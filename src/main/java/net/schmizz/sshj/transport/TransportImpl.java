@@ -158,7 +158,10 @@ public final class TransportImpl
             // Read server's ID
             final Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
             while ((serverID = readIdentification(buf)).isEmpty()) {
-                buf.putByte((byte) connInfo.in.read());
+                int b = connInfo.in.read();
+                if (b == -1)
+                    throw new TransportException("Server closed connection during identification exchange");
+                buf.putByte((byte) b);
             }
 
             log.info("Server identity string: {}", serverID);
