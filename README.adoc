@@ -93,6 +93,10 @@ Fork away!
 
 == Release history
 
+SSHJ 0.12.0 (not released yet)::
+* Added support for HTTP proxies when running JDK6 or JDK7, fixes: https://github.com/hierynomus/sshj/issues/170[#170]
+* Merged https://github.com/hierynomus/sshj/issues/186[#186]: Fix for detecting end-of-stream
+* Compiling to JDK6, fixes https://github.com/hierynomus/sshj/issues/179[#179] and https://github.com/hierynomus/sshj/issues/185[#185]
 SSHJ 0.11.0 (2015-01-23)::
 * New maven coordinates `com.hierynomus:sshj:0.11.0` as https://github.com/hierynomus[@hierynomus] took over as maintainer of SSHJ
 * Migrated build system to Gradle 2.2.1
