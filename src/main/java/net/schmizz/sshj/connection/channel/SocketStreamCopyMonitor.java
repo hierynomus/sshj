@@ -32,7 +32,7 @@ public class SocketStreamCopyMonitor
         setDaemon(true);
     }
 
-    private static Closeable wrapSocket(final Socket socket) {
+    public static Closeable wrapSocket(final Socket socket) {
         return new Closeable() {
             @Override
             public void close()
