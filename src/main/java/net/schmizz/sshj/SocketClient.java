@@ -15,8 +15,7 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.socket.SocketFactory;
-
+import javax.net.SocketFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,7 +32,10 @@ public abstract class SocketClient {
     private InputStream input;
     private OutputStream output;
 
-    private SocketFactory socketFactory = new SocketFactory();
+    private SocketFactory socketFactory = SocketFactory.getDefault();
+
+    private static final int DEFAULT_CONNECT_TIMEOUT = 0;
+    private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
 
     private int timeout = 0;
 
@@ -45,13 +47,15 @@ public abstract class SocketClient {
 
     public void connect(InetAddress host, int port)
             throws IOException {
-        socket = socketFactory.createSocket(new InetSocketAddress(host, port));
+        socket = socketFactory.createSocket();
+        socket.connect(new InetSocketAddress(host, port), connectTimeout);
         onConnect();
     }
 
     public void connect(InetAddress host, int port, Proxy proxy)
             throws IOException {
-        socket = socketFactory.createSocket(new InetSocketAddress(host, port), proxy);
+        socket = new Socket(proxy);
+        socket.connect(new InetSocketAddress(host, port), connectTimeout);
         onConnect();
     }
 
@@ -70,9 +74,9 @@ public abstract class SocketClient {
     public void connect(InetAddress host, int port,
                         InetAddress localAddr, int localPort)
             throws IOException {
-        InetSocketAddress bindpoint = new InetSocketAddress(localAddr, localPort);
-        InetSocketAddress endpoint = new InetSocketAddress(host, port);
-        socket = socketFactory.createSocket(bindpoint, endpoint);
+        socket = socketFactory.createSocket();
+        socket.bind(new InetSocketAddress(localAddr, localPort));
+        socket.connect(new InetSocketAddress(host, port), connectTimeout);
         onConnect();
     }
 
@@ -156,11 +160,11 @@ public abstract class SocketClient {
     }
 
     public int getConnectTimeout() {
-        return socketFactory.getConnectTimeout();
+        return connectTimeout;
     }
 
     public void setConnectTimeout(int connectTimeout) {
-        socketFactory.setConnectTimeout(connectTimeout);
+        this.connectTimeout = connectTimeout;
     }
 
     public int getTimeout() {
