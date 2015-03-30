@@ -1,12 +1,12 @@
 /**
  * Copyright 2009 sshj contributors
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,14 +15,11 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.socket.SocketFactory;
-
+import javax.net.SocketFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.Socket;
 
 public abstract class SocketClient {
@@ -33,9 +30,10 @@ public abstract class SocketClient {
     private InputStream input;
     private OutputStream output;
 
-    private SocketFactory socketFactory = new SocketFactory();
+    private SocketFactory socketFactory = SocketFactory.getDefault();
 
-    private int timeout = 0;
+    private static final int DEFAULT_TIMEOUT = 0;
+    private int timeout = DEFAULT_TIMEOUT;
 
     private String hostname;
 
@@ -45,13 +43,7 @@ public abstract class SocketClient {
 
     public void connect(InetAddress host, int port)
             throws IOException {
-        socket = socketFactory.createSocket(new InetSocketAddress(host, port));
-        onConnect();
-    }
-
-    public void connect(InetAddress host, int port, Proxy proxy)
-            throws IOException {
-        socket = socketFactory.createSocket(new InetSocketAddress(host, port), proxy);
+        socket = socketFactory.createSocket(host, port);
         onConnect();
     }
 
@@ -61,18 +53,10 @@ public abstract class SocketClient {
         connect(InetAddress.getByName(hostname), port);
     }
 
-    public void connect(String hostname, int port, Proxy proxy)
-            throws IOException {
-        this.hostname = hostname;
-        connect(InetAddress.getByName(hostname), port, proxy);
-    }
-
     public void connect(InetAddress host, int port,
                         InetAddress localAddr, int localPort)
             throws IOException {
-        InetSocketAddress bindpoint = new InetSocketAddress(localAddr, localPort);
-        InetSocketAddress endpoint = new InetSocketAddress(host, port);
-        socket = socketFactory.createSocket(bindpoint, endpoint);
+        socket = socketFactory.createSocket(host, port, localAddr, localPort);
         onConnect();
     }
 
@@ -93,27 +77,17 @@ public abstract class SocketClient {
         connect(hostname, defaultPort);
     }
 
-    public void connect(InetAddress host, Proxy proxy)
-            throws IOException {
-        connect(host, defaultPort, proxy);
-    }
-
-    public void connect(String hostname, Proxy proxy)
-            throws IOException {
-        connect(hostname, defaultPort, proxy);
-    }
-
     public void disconnect()
             throws IOException {
-        if (socket != null) {
+        if(socket != null) {
             socket.close();
             socket = null;
         }
-        if (input != null) {
+        if(input != null) {
             input.close();
             input = null;
         }
-        if (output != null) {
+        if(output != null) {
             output.close();
             output = null;
         }
@@ -145,22 +119,7 @@ public abstract class SocketClient {
     }
 
     public void setSocketFactory(SocketFactory factory) {
-        if (factory == null)
-            socketFactory = SocketFactory.getDefault();
-        else
-            socketFactory = factory;
-    }
-
-    public SocketFactory getSocketFactory() {
-        return socketFactory;
-    }
-
-    public int getConnectTimeout() {
-        return socketFactory.getConnectTimeout();
-    }
-
-    public void setConnectTimeout(int connectTimeout) {
-        socketFactory.setConnectTimeout(connectTimeout);
+        this.socketFactory = factory;
     }
 
     public int getTimeout() {
