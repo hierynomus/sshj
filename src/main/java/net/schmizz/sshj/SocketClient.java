@@ -15,6 +15,9 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.backport.JavaVersion;
+import com.hierynomus.sshj.backport.Jdk7HttpProxySocket;
+
 import javax.net.SocketFactory;
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,34 +48,35 @@ public abstract class SocketClient {
         this.defaultPort = defaultPort;
     }
 
-    public void connect(InetAddress host, int port)
-            throws IOException {
+    public void connect(InetAddress host, int port) throws IOException {
         socket = socketFactory.createSocket();
         socket.connect(new InetSocketAddress(host, port), connectTimeout);
         onConnect();
     }
 
-    public void connect(InetAddress host, int port, Proxy proxy)
-            throws IOException {
-        socket = new Socket(proxy);
+
+    public void connect(InetAddress host, int port, Proxy proxy) throws IOException {
+        if (JavaVersion.isJava7OrEarlier() && proxy.type() == Proxy.Type.HTTP) {
+            // Java7 and earlier have no support for HTTP Connect proxies, return our custom socket.
+            socket = new Jdk7HttpProxySocket(proxy);
+        } else {
+            socket = new Socket(proxy);
+        }
         socket.connect(new InetSocketAddress(host, port), connectTimeout);
         onConnect();
     }
 
-    public void connect(String hostname, int port)
-            throws IOException {
+    public void connect(String hostname, int port) throws IOException {
         this.hostname = hostname;
         connect(InetAddress.getByName(hostname), port);
     }
 
-    public void connect(String hostname, int port, Proxy proxy)
-            throws IOException {
+    public void connect(String hostname, int port, Proxy proxy) throws IOException {
         this.hostname = hostname;
         connect(InetAddress.getByName(hostname), port, proxy);
     }
 
-    public void connect(InetAddress host, int port,
-                        InetAddress localAddr, int localPort)
+    public void connect(InetAddress host, int port, InetAddress localAddr, int localPort)
             throws IOException {
         socket = socketFactory.createSocket();
         socket.bind(new InetSocketAddress(localAddr, localPort));
@@ -80,35 +84,28 @@ public abstract class SocketClient {
         onConnect();
     }
 
-    public void connect(String hostname, int port,
-                        InetAddress localAddr, int localPort)
-            throws IOException {
+    public void connect(String hostname, int port, InetAddress localAddr, int localPort) throws IOException {
         this.hostname = hostname;
         connect(InetAddress.getByName(hostname), port, localAddr, localPort);
     }
 
-    public void connect(InetAddress host)
-            throws IOException {
+    public void connect(InetAddress host) throws IOException {
         connect(host, defaultPort);
     }
 
-    public void connect(String hostname)
-            throws IOException {
+    public void connect(String hostname) throws IOException {
         connect(hostname, defaultPort);
     }
 
-    public void connect(InetAddress host, Proxy proxy)
-            throws IOException {
+    public void connect(InetAddress host, Proxy proxy) throws IOException {
         connect(host, defaultPort, proxy);
     }
 
-    public void connect(String hostname, Proxy proxy)
-            throws IOException {
+    public void connect(String hostname, Proxy proxy) throws IOException {
         connect(hostname, defaultPort, proxy);
     }
 
-    public void disconnect()
-            throws IOException {
+    public void disconnect() throws IOException {
         if (socket != null) {
             socket.close();
             socket = null;
@@ -131,7 +128,6 @@ public abstract class SocketClient {
         return socket.getLocalPort();
     }
 
-
     public InetAddress getLocalAddress() {
         return socket.getLocalAddress();
     }
@@ -149,10 +145,11 @@ public abstract class SocketClient {
     }
 
     public void setSocketFactory(SocketFactory factory) {
-        if (factory == null)
+        if (factory == null) {
             socketFactory = SocketFactory.getDefault();
-        else
+        } else {
             socketFactory = factory;
+        }
     }
 
     public SocketFactory getSocketFactory() {
@@ -187,8 +184,7 @@ public abstract class SocketClient {
         return output;
     }
 
-    void onConnect()
-            throws IOException {
+    void onConnect() throws IOException {
         socket.setSoTimeout(timeout);
         input = socket.getInputStream();
         output = socket.getOutputStream();
