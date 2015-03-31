@@ -30,7 +30,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
-import static com.hierynomus.sshj.socket.Sockets.asCloseable;
+import static com.hierynomus.sshj.backport.Sockets.asCloseable;
 
 public class LocalPortForwarder {
 

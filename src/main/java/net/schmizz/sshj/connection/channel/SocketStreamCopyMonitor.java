@@ -15,16 +15,14 @@
  */
 package net.schmizz.sshj.connection.channel;
 
-import com.hierynomus.sshj.socket.Sockets;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.IOUtils;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
-import static com.hierynomus.sshj.socket.Sockets.asCloseable;
+import static com.hierynomus.sshj.backport.Sockets.asCloseable;
 
 public class SocketStreamCopyMonitor
         extends Thread {

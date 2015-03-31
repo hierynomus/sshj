@@ -1,4 +1,4 @@
-package com.hierynomus.sshj.socket;
+package com.hierynomus.sshj.backport;
 
 import java.io.Closeable;
 import java.io.IOException;
