@@ -1,14 +1,10 @@
-plugins {
-    id 'nebula.nebula-release' version '2.2.5'
-}
-
 apply plugin: "java"
 apply plugin: "maven"
 apply plugin: "signing"
 apply plugin: "osgi"
 
 group = "com.hierynomus"
-version = "0.12.0-SNAPSHOT"
+version = "0.12.0"
 
 repositories {
   mavenCentral()
