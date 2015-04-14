@@ -93,7 +93,7 @@ Fork away!
 
 == Release history
 
-SSHJ 0.12.0 (not released yet)::
+SSHJ 0.12.0 (2015-04-14)::
 * Added support for HTTP proxies when running JDK6 or JDK7, fixes: https://github.com/hierynomus/sshj/issues/170[#170]
 * Merged https://github.com/hierynomus/sshj/issues/186[#186]: Fix for detecting end-of-stream
 * Compiling to JDK6, fixes https://github.com/hierynomus/sshj/issues/179[#179] and https://github.com/hierynomus/sshj/issues/185[#185]
