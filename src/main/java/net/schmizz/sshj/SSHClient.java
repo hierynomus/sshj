@@ -15,14 +15,6 @@
  */
 package net.schmizz.sshj;
 
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
-
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.Oid;
-
-import com.sun.security.auth.callback.DialogCallbackHandler;
-
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -67,20 +59,20 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
+import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.security.auth.login.LoginContext;
+
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
