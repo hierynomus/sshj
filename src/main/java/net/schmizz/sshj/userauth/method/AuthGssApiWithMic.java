@@ -27,13 +27,19 @@ public class AuthGssApiWithMic
 
     private final LoginContext loginContext;
     private final List<Oid> mechanismOids;
+    private final GSSManager manager;
 
     private GSSContext secContext;
 
     public AuthGssApiWithMic(LoginContext loginContext, List<Oid> mechanismOids) {
+        this(loginContext, mechanismOids, GSSManager.getInstance());
+    }
+
+    public AuthGssApiWithMic(LoginContext loginContext, List<Oid> mechanismOids, GSSManager manager) {
         super("gssapi-with-mic");
         this.loginContext = loginContext;
         this.mechanismOids = mechanismOids;
+        this.manager = manager;
 
         secContext = null;
     }
@@ -70,7 +76,6 @@ public class AuthGssApiWithMic
 
         @Override
         public GSSContext run() throws GSSException {
-            GSSManager manager = GSSManager.getInstance();
             GSSName clientName = manager.createName(params.getUsername(), GSSName.NT_USER_NAME);
             GSSCredential clientCreds = manager.createCredential(clientName, GSSContext.DEFAULT_LIFETIME, selectedOid, GSSCredential.INITIATE_ONLY);
             GSSName peerName = manager.createName("host@" + params.getTransport().getRemoteHost(), GSSName.NT_HOSTBASED_SERVICE);

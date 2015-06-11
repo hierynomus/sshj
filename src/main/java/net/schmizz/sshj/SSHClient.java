@@ -382,7 +382,7 @@ public class SSHClient
      * @param supportedOid  first supported OID
      * @param supportedOids other supported OIDs
      *
-     * @throws UserAuthException  in case of authenication failure
+     * @throws UserAuthException  in case of authentication failure
      * @throws TransportException if there was a transport-layer error
      */
     public void authGssApiWithMic(String username, LoginContext context, Oid supportedOid, Oid... supportedOids)
