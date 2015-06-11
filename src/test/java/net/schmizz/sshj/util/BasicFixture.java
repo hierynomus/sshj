@@ -33,9 +33,11 @@ package net.schmizz.sshj.util;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
+
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
 import org.apache.sshd.server.PasswordAuthenticator;
+import org.apache.sshd.server.auth.gss.GSSAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
 
 import java.io.IOException;
@@ -49,6 +51,8 @@ public class BasicFixture {
 
     public static final String hostname = "localhost";
     public final int port = gimmeAPort();
+
+    private GSSAuthenticator gssAuthenticator;
 
     private SSHClient client;
     private SshServer server;
@@ -99,6 +103,7 @@ public class BasicFixture {
                 return false;
             }
         });
+        server.setGSSAuthenticator(gssAuthenticator);
         server.start();
         serverRunning = true;
     }
@@ -135,6 +140,10 @@ public class BasicFixture {
 
     public SSHClient getClient() {
         return client;
+    }
+
+    public void setGssAuthenticator(GSSAuthenticator gssAuthenticator) {
+        this.gssAuthenticator = gssAuthenticator;
     }
 
     public void dummyAuth()
