@@ -33,7 +33,7 @@ import java.util.List;
 /** @see <a href="http://blogs.sun.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
 class SCPEngine {
 
-    static enum Arg {
+    enum Arg {
         SOURCE('f'),
         SINK('t'),
         RECURSIVE('r'),
@@ -100,13 +100,15 @@ class SCPEngine {
     void execSCPWith(List<Arg> args, String path)
             throws SSHException {
         final StringBuilder cmd = new StringBuilder(SCP_COMMAND);
-        for (Arg arg : args)
+        for (Arg arg : args) {
             cmd.append(" ").append(arg);
+        }
         cmd.append(" ");
-        if (path == null || path.isEmpty())
+        if (path == null || path.isEmpty()) {
             cmd.append(".");
-        else
+        } else {
             cmd.append("'").append(path.replaceAll("'", "\\'")).append("'");
+        }
         scp = host.startSession().exec(cmd.toString());
     }
 
@@ -119,11 +121,13 @@ class SCPEngine {
                 exitStatus = scp.getExitStatus();
                 if (scp.getExitStatus() != 0)
                     log.warn("SCP exit status: {}", scp.getExitStatus());
-            } else
+            } else {
                 exitStatus = -1;
+            }
 
-            if (scp.getExitSignal() != null)
+            if (scp.getExitSignal() != null) {
                 log.warn("SCP exit signal: {}", scp.getExitSignal());
+            }
         }
 
         scp = null;
@@ -133,36 +137,36 @@ class SCPEngine {
             throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int x;
-        while ((x = scp.getInputStream().read()) != LF)
+        while ((x = scp.getInputStream().read()) != LF) {
             if (x == -1) {
-                if (baos.size() == 0)
+                if (baos.size() == 0) {
                     return "";
-                else
+                } else {
                     throw new IOException("EOF while reading message");
-            } else
+                }
+            } else {
                 baos.write(x);
+            }
+        }
         final String msg = baos.toString(IOUtils.UTF8.displayName());
         log.debug("Read message: `{}`", msg);
         return msg;
     }
 
-    void sendMessage(String msg)
-            throws IOException {
+    void sendMessage(String msg) throws IOException {
         log.debug("Sending message: {}", msg);
         scp.getOutputStream().write((msg + LF).getBytes(IOUtils.UTF8));
         scp.getOutputStream().flush();
         check("Message ACK received");
     }
 
-    void signal(String what)
-            throws IOException {
+    void signal(String what) throws IOException {
         log.debug("Signalling: {}", what);
         scp.getOutputStream().write(0);
         scp.getOutputStream().flush();
     }
 
-    long transferToRemote(StreamCopier.Listener listener, InputStream src, long length)
-            throws IOException {
+    long transferToRemote(StreamCopier.Listener listener, InputStream src, long length) throws IOException {
         return new StreamCopier(src, scp.getOutputStream())
                 .bufSize(scp.getRemoteMaxPacketSize()).length(length)
                 .keepFlushing(false)
@@ -170,8 +174,7 @@ class SCPEngine {
                 .copy();
     }
 
-    long transferFromRemote(StreamCopier.Listener listener, OutputStream dest, long length)
-            throws IOException {
+    long transferFromRemote(StreamCopier.Listener listener, OutputStream dest, long length) throws IOException {
         return new StreamCopier(scp.getInputStream(), dest)
                 .bufSize(scp.getLocalMaxPacketSize()).length(length)
                 .keepFlushing(false)

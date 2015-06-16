@@ -18,10 +18,11 @@ package net.schmizz.sshj.connection.channel;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.IOUtils;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+
+import static com.hierynomus.sshj.backport.Sockets.asCloseable;
 
 public class SocketStreamCopyMonitor
         extends Thread {
@@ -30,16 +31,6 @@ public class SocketStreamCopyMonitor
         super(r);
         setName("sockmon");
         setDaemon(true);
-    }
-
-    private static Closeable wrapSocket(final Socket socket) {
-        return new Closeable() {
-            @Override
-            public void close()
-                    throws IOException {
-                socket.close();
-            }
-        };
     }
 
     public static void monitor(final int frequency, final TimeUnit unit,
@@ -54,7 +45,7 @@ public class SocketStreamCopyMonitor
                     }
                 } catch (IOException ignored) {
                 } finally {
-                    IOUtils.closeQuietly(channel, wrapSocket(socket));
+                    IOUtils.closeQuietly(channel, asCloseable(socket));
                 }
             }
         }).start();

@@ -93,10 +93,12 @@ Fork away!
 
 == Release history
 
-SSHJ 0.12.0 (not released yet)::
+SSHJ 0.12.0 (2015-04-14)::
 * Added support for HTTP proxies when running JDK6 or JDK7, fixes: https://github.com/hierynomus/sshj/issues/170[#170]
 * Merged https://github.com/hierynomus/sshj/issues/186[#186]: Fix for detecting end-of-stream
 * Compiling to JDK6, fixes https://github.com/hierynomus/sshj/issues/179[#179] and https://github.com/hierynomus/sshj/issues/185[#185]
+* Correctly close socket and channel when LocalPortForwarder fails to open and start the channel (Fixes https://github.com/hierynomus/sshj/issues/175[#175] and https://github.com/hierynomus/sshj/issues/176[#176])
+* Merged https://github.com/hierynomus/sshj/issues/181[#181]: Invalid write packet length when reading with offset (Fixes https://github.com/hierynomus/sshj/issues/180[#180])
 SSHJ 0.11.0 (2015-01-23)::
 * New maven coordinates `com.hierynomus:sshj:0.11.0` as https://github.com/hierynomus[@hierynomus] took over as maintainer of SSHJ
 * Migrated build system to Gradle 2.2.1

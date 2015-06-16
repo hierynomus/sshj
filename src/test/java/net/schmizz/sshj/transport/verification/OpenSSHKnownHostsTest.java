@@ -29,6 +29,7 @@ import java.security.PublicKey;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -78,6 +79,7 @@ public class OpenSSHKnownHostsTest {
 
         assertTrue(kh.verify("schmizz.net", 22, key));
         assertTrue(kh.verify("69.163.155.180", 22, key));
+        assertFalse(kh.verify("69.163.155.18", 22, key));
     }
 
     @Test
