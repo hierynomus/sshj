@@ -1,5 +1,6 @@
-package nl.javadude.sshj.connection.channel;
+package com.hierynomus.sshj.connection.channel;
 
+import com.hierynomus.sshj.SshIntegrationTestBase;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -11,8 +12,7 @@ import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ChannelCloseEofTest {
-
+public class ChannelCloseEofTest extends SshIntegrationTestBase {
     private SSHClient sshClient;
 
     @Before
@@ -28,7 +28,7 @@ public class ChannelCloseEofTest {
     @Test
     public void shouldCorrectlyHandleSessionChannelEof() throws IOException, InterruptedException {
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
-        sshClient.connect("172.16.37.129");
+        sshClient.connect(server.getHost(), server.getPort());
         sshClient.authPassword("jeroen", "jeroen");
         Session session = sshClient.startSession();
         session.allocateDefaultPTY();
@@ -36,4 +36,5 @@ public class ChannelCloseEofTest {
         Thread.sleep(1000);
         assertThat("Should still be connected", sshClient.isConnected());
     }
+
 }
