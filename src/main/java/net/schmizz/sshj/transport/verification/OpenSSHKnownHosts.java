@@ -352,7 +352,7 @@ public class OpenSSHKnownHosts
         @Override
         public boolean appliesTo(KeyType type, String host)
                 throws IOException {
-            return type == this.type && hostnames.contains(host);
+            return type == this.type && hosts.contains(host);
         }
     }
 
