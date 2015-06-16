@@ -66,7 +66,7 @@ public class ConnectionImpl
      *
      * @param config the ssh config
      * @param trans transport layer
-     * @param keepAlive
+     * @param keepAlive the keep alive provider
      */
     public ConnectionImpl(Transport trans, KeepAliveProvider keepAlive) {
         super("ssh-connection", trans);

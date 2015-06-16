@@ -9,7 +9,7 @@ public class Sockets {
     /**
      * Java 7 and up have Socket implemented as Closeable, whereas Java6 did not have this inheritance.
      * @param socket The socket to wrap as Closeable
-     * @return
+     * @return The (potentially wrapped) Socket as a Closeable.
      */
     public static Closeable asCloseable(final Socket socket) {
         if (Closeable.class.isAssignableFrom(socket.getClass())) {

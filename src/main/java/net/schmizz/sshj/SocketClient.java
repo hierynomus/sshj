@@ -61,7 +61,7 @@ public abstract class SocketClient {
      * @param port The port to connect to.
      * @param proxy The proxy to connect via.
      * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket(java.net.Proxy)} constructor.
+     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
      */
     @Deprecated
     public void connect(InetAddress host, int port, Proxy proxy) throws IOException {
@@ -86,7 +86,7 @@ public abstract class SocketClient {
      * @param port The port to connect to.
      * @param proxy The proxy to connect via.
      * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket(java.net.Proxy)} constructor.
+     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
      */
     @Deprecated
     public void connect(String hostname, int port, Proxy proxy) throws IOException {
@@ -120,7 +120,7 @@ public abstract class SocketClient {
      * @param host The host address to connect to.
      * @param proxy The proxy to connect via.
      * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket(java.net.Proxy)} constructor.
+     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
      */
     @Deprecated
     public void connect(InetAddress host, Proxy proxy) throws IOException {
@@ -132,7 +132,7 @@ public abstract class SocketClient {
      * @param hostname The host name to connect to.
      * @param proxy The proxy to connect via.
      * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket(java.net.Proxy)} constructor.
+     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
      */
     @Deprecated
     public void connect(String hostname, Proxy proxy) throws IOException {
