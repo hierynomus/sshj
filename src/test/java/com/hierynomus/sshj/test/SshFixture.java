@@ -9,15 +9,22 @@ import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
+import org.apache.sshd.common.util.OsUtils;
 import org.apache.sshd.server.Command;
+import org.apache.sshd.server.CommandFactory;
 import org.apache.sshd.server.PasswordAuthenticator;
+import org.apache.sshd.server.channel.ChannelSession;
+import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
+import org.apache.sshd.server.shell.ProcessShellFactory;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -97,7 +104,19 @@ public class SshFixture extends ExternalResource {
             }
         });
         sshServer.setGSSAuthenticator(new BogusGSSAuthenticator());
-        sshServer.setSubsystemFactories(Collections.<NamedFactory<Command>>singletonList(new SftpSubsystem.Factory()));
+        sshServer.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystem.Factory()));
+        sshServer.setCommandFactory(new ScpCommandFactory(new CommandFactory() {
+            public Command createCommand(String command) {
+                EnumSet<ProcessShellFactory.TtyOptions> ttyOptions;
+                if (OsUtils.isUNIX()) {
+                    ttyOptions = EnumSet.of(ProcessShellFactory.TtyOptions.ONlCr);
+                } else {
+                    ttyOptions = EnumSet.of(ProcessShellFactory.TtyOptions.Echo, ProcessShellFactory.TtyOptions.ICrNl, ProcessShellFactory.TtyOptions.ONlCr);
+                }
+                return new ProcessShellFactory(command.split(" "), ttyOptions).create();
+            }
+        }));
+
         return sshServer;
     }
 
