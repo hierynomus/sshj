@@ -92,7 +92,11 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-
+SSHJ 0.13.0 (2015-??-??)::
+* Merged https://github.com/hierynomus/sshj/issues/199[#199]: Fix for IndexOutOfBoundsException in ReadAheadRemoteFileInputStream, fixes https://github.com/hierynomus/sshj/issues/183[#183]
+* Merged https://github.com/hierynomus/sshj/issues/195[#195]: New authentication supported: `gssapi-with-mic`
+* Merged https://github.com/hierynomus/sshj/issues/201[#201]: New option to verify negotiated key exchange algorithms
+* Merged https://github.com/hierynomus/sshj/issues/196[#196]: Fix for looking up complete hostname in known hosts file
 SSHJ 0.12.0 (2015-04-14)::
 * Added support for HTTP proxies when running JDK6 or JDK7, fixes: https://github.com/hierynomus/sshj/issues/170[#170]
 * Merged https://github.com/hierynomus/sshj/issues/186[#186]: Fix for detecting end-of-stream
