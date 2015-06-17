@@ -1,32 +1,30 @@
-package net.schmizz.sshj.userauth;
+package com.hierynomus.sshj.userauth;
+
+import com.hierynomus.sshj.SshFixture;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
+import net.schmizz.sshj.util.gss.BogusGSSManager;
+import org.junit.Rule;
+import org.junit.Test;
+
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginContext;
+import java.util.Collections;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
-import java.util.Collections;
-
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginContext;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
-import net.schmizz.sshj.util.BasicFixture;
-import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
-import net.schmizz.sshj.util.gss.BogusGSSManager;
-
 public class GssApiTest {
+
+    @Rule
+    public SshFixture fixture = new SshFixture();
 
     private static final String LOGIN_CONTEXT_NAME = "TestLoginContext";
 
     private static class TestAuthConfiguration extends Configuration {
         private AppConfigurationEntry entry = new AppConfigurationEntry(
                 "testLoginModule",
-                LoginModuleControlFlag.REQUIRED,
+                AppConfigurationEntry.LoginModuleControlFlag.REQUIRED,
                 Collections.<String, Object> emptyMap());
 
         @Override
@@ -39,19 +37,6 @@ public class GssApiTest {
         }
     }
 
-    private final BasicFixture fixture = new BasicFixture();
-
-    @Before
-    public void setUp() throws Exception {
-        fixture.setGssAuthenticator(new BogusGSSAuthenticator());
-        fixture.init(false);
-    }
-
-    @After
-    public void tearDown() throws IOException, InterruptedException {
-        fixture.done();
-    }
-
     @Test
     public void authenticated() throws Exception {
         AuthGssApiWithMic authMethod = new AuthGssApiWithMic(
@@ -59,8 +44,9 @@ public class GssApiTest {
                 Collections.singletonList(BogusGSSManager.KRB5_MECH),
                 new BogusGSSManager());
 
-        fixture.getClient().auth("user", authMethod);
-        assertTrue(fixture.getClient().isAuthenticated());
+        SSHClient defaultClient = fixture.setupConnectedDefaultClient();
+        defaultClient.auth("user", authMethod);
+        assertTrue(defaultClient.isAuthenticated());
     }
 
 }

@@ -1,58 +1,39 @@
-/**
- * Copyright 2009 sshj contributors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package net.schmizz.sshj.transport;
+package com.hierynomus.sshj.transport;
 
+import com.hierynomus.sshj.SshFixture;
+import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.util.BasicFixture;
-import org.junit.After;
+import net.schmizz.sshj.transport.DisconnectListener;
+import net.schmizz.sshj.transport.TransportException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class Disconnection {
+public class DisconnectionTest {
+    private AtomicBoolean disconnected = null;
 
-    private final BasicFixture fixture = new BasicFixture();
-
-    private boolean notified;
+    @Rule
+    public SshFixture fixture = new SshFixture();
 
     @Before
-    public void setUp()
-            throws IOException {
-        fixture.init();
-
-        notified = false;
-
-        fixture.getClient().getTransport().setDisconnectListener(new DisconnectListener() {
+    public void setupFlag() throws IOException {
+        disconnected = new AtomicBoolean(false);
+        // Initialize the client
+        SSHClient defaultClient = fixture.setupDefaultClient();
+        defaultClient.getTransport().setDisconnectListener(new DisconnectListener() {
             @Override
             public void notifyDisconnect(DisconnectReason reason, String message) {
-                notified = true;
+                disconnected.set(true);
             }
         });
-
-    }
-
-    @After
-    public void tearDown()
-            throws IOException, InterruptedException {
-        fixture.done();
+        fixture.connectClient(defaultClient);
     }
 
     private boolean joinToClientTransport(int seconds) {
@@ -67,8 +48,8 @@ public class Disconnection {
     @Test
     public void listenerNotifiedOnClientDisconnect()
             throws IOException {
-        fixture.stopClient();
-        assertTrue(notified);
+        fixture.getClient().disconnect();
+        assertTrue(disconnected.get());
     }
 
     @Test
@@ -76,13 +57,13 @@ public class Disconnection {
             throws InterruptedException, IOException {
         fixture.stopServer();
         joinToClientTransport(2);
-        assertTrue(notified);
+        assertTrue(disconnected.get());
     }
 
     @Test
     public void joinNotifiedOnClientDisconnect()
             throws IOException {
-        fixture.stopClient();
+        fixture.getClient().disconnect();
         assertTrue(joinToClientTransport(2));
     }
 
