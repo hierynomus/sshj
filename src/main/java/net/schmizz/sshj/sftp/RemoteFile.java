@@ -1,12 +1,12 @@
 /**
  * Copyright 2009 sshj contributors
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -34,37 +34,31 @@ public class RemoteFile
         super(requester, path, handle);
     }
 
-    public FileAttributes fetchAttributes()
-            throws IOException {
+    public FileAttributes fetchAttributes() throws IOException {
         return requester.request(newRequest(PacketType.FSTAT))
                 .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS)
                 .ensurePacketTypeIs(PacketType.ATTRS)
                 .readFileAttributes();
     }
 
-    public long length()
-            throws IOException {
+    public long length() throws IOException {
         return fetchAttributes().getSize();
     }
 
-    public void setLength(long len)
-            throws IOException {
+    public void setLength(long len) throws IOException {
         setAttributes(new FileAttributes.Builder().withSize(len).build());
     }
 
-    public int read(long fileOffset, byte[] to, int offset, int len)
-            throws IOException {
+    public int read(long fileOffset, byte[] to, int offset, int len) throws IOException {
         final Response res = asyncRead(fileOffset, len).retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
         return checkReadResponse(res, to, offset);
     }
 
-    protected Promise<Response, SFTPException> asyncRead(long fileOffset, int len)
-            throws IOException {
+    protected Promise<Response, SFTPException> asyncRead(long fileOffset, int len) throws IOException {
         return requester.request(newRequest(PacketType.READ).putUInt64(fileOffset).putUInt32(len));
     }
 
-    protected int checkReadResponse(Response res, byte[] to, int offset)
-            throws Buffer.BufferException, SFTPException {
+    protected int checkReadResponse(Response res, byte[] to, int offset) throws Buffer.BufferException, SFTPException {
         switch (res.getType()) {
             case DATA:
                 int recvLen = res.readUInt32AsInt();
@@ -80,28 +74,25 @@ public class RemoteFile
         }
     }
 
-    public void write(long fileOffset, byte[] data, int off, int len)
-            throws IOException {
+    public void write(long fileOffset, byte[] data, int off, int len) throws IOException {
         checkWriteResponse(asyncWrite(fileOffset, data, off, len));
     }
 
     protected Promise<Response, SFTPException> asyncWrite(long fileOffset, byte[] data, int off, int len)
             throws IOException {
         return requester.request(newRequest(PacketType.WRITE)
-                                         .putUInt64(fileOffset)
-                                        // TODO The SFTP spec claims this field is unneeded...? See #187
-                                         .putUInt32(len)
-                                         .putRawBytes(data, off, len)
+                        .putUInt64(fileOffset)
+                        // TODO The SFTP spec claims this field is unneeded...? See #187
+                        .putUInt32(len)
+                        .putRawBytes(data, off, len)
         );
     }
 
-    private void checkWriteResponse(Promise<Response, SFTPException> responsePromise)
-            throws SFTPException {
+    private void checkWriteResponse(Promise<Response, SFTPException> responsePromise) throws SFTPException {
         responsePromise.retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS).ensureStatusPacketIsOK();
     }
 
-    public void setAttributes(FileAttributes attrs)
-            throws IOException {
+    public void setAttributes(FileAttributes attrs) throws IOException {
         requester.request(newRequest(PacketType.FSETSTAT).putFileAttributes(attrs))
                 .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS).ensureStatusPacketIsOK();
     }
@@ -141,15 +132,13 @@ public class RemoteFile
         }
 
         @Override
-        public void write(int w)
-                throws IOException {
+        public void write(int w) throws IOException {
             b[0] = (byte) w;
             write(b, 0, 1);
         }
 
         @Override
-        public void write(byte[] buf, int off, int len)
-                throws IOException {
+        public void write(byte[] buf, int off, int len) throws IOException {
             if (unconfirmedWrites.size() > maxUnconfirmedWrites) {
                 checkWriteResponse(unconfirmedWrites.remove());
             }
@@ -158,23 +147,20 @@ public class RemoteFile
         }
 
         @Override
-        public void flush()
-                throws IOException {
+        public void flush() throws IOException {
             while (!unconfirmedWrites.isEmpty()) {
                 checkWriteResponse(unconfirmedWrites.remove());
             }
         }
 
         @Override
-        public void close()
-                throws IOException {
+        public void close() throws IOException {
             flush();
         }
 
     }
 
-    public class RemoteFileInputStream
-            extends InputStream {
+    public class RemoteFileInputStream extends InputStream {
 
         private final byte[] b = new byte[1];
 
@@ -202,31 +188,29 @@ public class RemoteFile
         }
 
         @Override
-        public void reset()
-                throws IOException {
+        public void reset() throws IOException {
             fileOffset = markPos;
         }
 
         @Override
-        public long skip(long n)
-                throws IOException {
+        public long skip(long n) throws IOException {
             return (this.fileOffset = Math.min(fileOffset + n, length()));
         }
 
         @Override
-        public int read()
-                throws IOException {
+        public int read() throws IOException {
             return read(b, 0, 1) == -1 ? -1 : b[0] & 0xff;
         }
 
         @Override
-        public int read(byte[] into, int off, int len)
-                throws IOException {
+        public int read(byte[] into, int off, int len) throws IOException {
             int read = RemoteFile.this.read(fileOffset, into, off, len);
             if (read != -1) {
                 fileOffset += read;
-                if (markPos != 0 && read > readLimit) // Invalidate mark position
+                if (markPos != 0 && read > readLimit) {
+                    // Invalidate mark position
                     markPos = 0;
+                }
             }
             return read;
         }
@@ -260,33 +244,33 @@ public class RemoteFile
             this.requestOffset = this.responseOffset = fileOffset;
         }
 
-        private ByteArrayInputStream pending = new ByteArrayInputStream( new byte[0] );
+        private ByteArrayInputStream pending = new ByteArrayInputStream(new byte[0]);
 
         private boolean retrieveUnconfirmedRead(boolean blocking) throws IOException {
-
-            if (unconfirmedReads.size() <= 0)
+            if (unconfirmedReads.size() <= 0) {
                 return false;
+            }
 
-            if (!blocking && !unconfirmedReads.peek().isDelivered())
+            if (!blocking && !unconfirmedReads.peek().isDelivered()) {
                 return false;
+            }
 
             unconfirmedReadOffsets.remove();
-            final Response res = unconfirmedReads.remove().retrieve( requester.getTimeoutMs(), TimeUnit.MILLISECONDS );
+            final Response res = unconfirmedReads.remove().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             switch (res.getType()) {
                 case DATA:
                     int recvLen = res.readUInt32AsInt();
-
                     responseOffset += recvLen;
-                    pending = new ByteArrayInputStream( res.array(), res.rpos(), recvLen );
+                    pending = new ByteArrayInputStream(res.array(), res.rpos(), recvLen);
                     break;
 
                 case STATUS:
-                    res.ensureStatusIs( Response.StatusCode.EOF );
+                    res.ensureStatusIs(Response.StatusCode.EOF);
                     eof = true;
                     break;
 
                 default:
-                    throw new SFTPException( "Unexpected packet: " + res.getType() );
+                    throw new SFTPException("Unexpected packet: " + res.getType());
             }
             return true;
         }
@@ -307,9 +291,9 @@ public class RemoteFile
 
                 while (unconfirmedReads.size() <= maxUnconfirmedReads) {
                     // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
-                    int reqLen = Math.max( 1024, len ); // don't be shy!
-                    unconfirmedReads.add( RemoteFile.this.asyncRead( requestOffset, reqLen ) );
-                    unconfirmedReadOffsets.add( requestOffset );
+                    int reqLen = Math.max(1024, len); // don't be shy!
+                    unconfirmedReads.add(RemoteFile.this.asyncRead(requestOffset, reqLen));
+                    unconfirmedReadOffsets.add(requestOffset);
                     requestOffset += reqLen;
                 }
 
@@ -324,36 +308,38 @@ public class RemoteFile
                     assert (nextOffset - responseOffset) <= Integer.MAX_VALUE;
 
                     byte[] buf = new byte[(int) (nextOffset - responseOffset)];
-                    int recvLen = RemoteFile.this.read( responseOffset, buf, 0, buf.length );
+                    int recvLen = RemoteFile.this.read(responseOffset, buf, 0, buf.length);
 
                     if (recvLen < 0) {
                         eof = true;
                         return -1;
                     }
 
-                    if (0 == recvLen) // avoid infinite loops
-                        throw new SFTPException( "Unexpected response size (0), bailing out" );
+                    if (0 == recvLen) {
+                        // avoid infinite loops
+                        throw new SFTPException("Unexpected response size (0), bailing out");
+                    }
 
                     responseOffset += recvLen;
-                    pending = new ByteArrayInputStream( buf, 0, recvLen );
-                }
-                else
-                if (!retrieveUnconfirmedRead( true /*blocking*/ )) {
+                    pending = new ByteArrayInputStream(buf, 0, recvLen);
+                } else if (!retrieveUnconfirmedRead(true /*blocking*/)) {
 
                     // this may happen if we change prefetch strategy
                     // currently, we should never get here...
 
-                    throw new IllegalStateException( "Could not retrieve data for pending read request" );
+                    throw new IllegalStateException("Could not retrieve data for pending read request");
                 }
             }
 
-            return pending.read( into, off, len );
+            return pending.read(into, off, len);
         }
 
         @Override
         public int available() throws IOException {
-            while (!eof && (pending.available() <= 0) && retrieveUnconfirmedRead( false /*blocking*/ ))
-                /*loop*/;
+            boolean lastRead = true;
+            while (!eof && (pending.available() <= 0) && lastRead) {
+              lastRead = retrieveUnconfirmedRead(false /*blocking*/);
+            }
             return pending.available();
         }
     }
