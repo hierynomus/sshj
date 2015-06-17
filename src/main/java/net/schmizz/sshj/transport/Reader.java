@@ -48,23 +48,25 @@ public final class Reader
                 int read;
                 try {
                     read = inp.read(recvbuf, 0, needed);
-                }
-                catch(SocketTimeoutException e) {
+                } catch(SocketTimeoutException e) {
                     if (isInterrupted()) {
                         throw e;
                     }
                     continue;
                 }
-                if (read == -1)
+                if (read == -1) {
                     throw new TransportException("Broken transport; encountered EOF");
-                else
+                } else {
                     needed = decoder.received(recvbuf, read);
+                }
             }
         } catch (Exception e) {
+            //noinspection StatementWithEmptyBody
             if (isInterrupted()) {
                 // We are meant to shut up and draw to a close if interrupted
-            } else
+            } else {
                 trans.die(e);
+            }
         }
 
         log.debug("Stopping");

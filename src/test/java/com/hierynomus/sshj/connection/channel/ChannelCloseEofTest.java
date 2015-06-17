@@ -1,6 +1,6 @@
 package com.hierynomus.sshj.connection.channel;
 
-import com.hierynomus.sshj.SshFixture;
+import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import org.junit.Rule;
 import org.junit.Test;

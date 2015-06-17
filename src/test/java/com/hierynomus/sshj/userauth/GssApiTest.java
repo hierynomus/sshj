@@ -1,6 +1,6 @@
 package com.hierynomus.sshj.userauth;
 
-import com.hierynomus.sshj.SshFixture;
+import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
 import net.schmizz.sshj.util.gss.BogusGSSManager;

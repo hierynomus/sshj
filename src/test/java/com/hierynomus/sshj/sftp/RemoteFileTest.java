@@ -1,6 +1,6 @@
 package com.hierynomus.sshj.sftp;
 
-import com.hierynomus.sshj.SshFixture;
+import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.OpenMode;
 import net.schmizz.sshj.sftp.RemoteFile;
@@ -12,7 +12,6 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Random;
 

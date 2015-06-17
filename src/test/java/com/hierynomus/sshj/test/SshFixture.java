@@ -1,4 +1,4 @@
-package com.hierynomus.sshj;
+package com.hierynomus.sshj.test;
 
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
@@ -121,7 +121,7 @@ public class SshFixture extends ExternalResource {
             try {
                 client.disconnect();
             } catch (IOException e) {
-                // Ignore
+                throw new RuntimeException(e);
             } finally {
                 client = null;
             }
@@ -135,7 +135,7 @@ public class SshFixture extends ExternalResource {
             try {
                 server.stop();
             } catch (InterruptedException e) {
-                // ignore
+                throw new RuntimeException(e);
             }
         }
     }

@@ -1,6 +1,6 @@
 package com.hierynomus.sshj.transport;
 
-import com.hierynomus.sshj.SshFixture;
+import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.transport.DisconnectListener;
