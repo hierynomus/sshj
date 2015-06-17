@@ -3,15 +3,21 @@ package com.hierynomus.sshj;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.transport.TransportException;
+import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
 import org.apache.sshd.SshServer;
+import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
+import org.apache.sshd.server.Command;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -91,6 +97,7 @@ public class SshFixture extends ExternalResource {
             }
         });
         sshServer.setGSSAuthenticator(new BogusGSSAuthenticator());
+        sshServer.setSubsystemFactories(Collections.<NamedFactory<Command>>singletonList(new SftpSubsystem.Factory()));
         return sshServer;
     }
 
