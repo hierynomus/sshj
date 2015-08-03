@@ -21,10 +21,10 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.schmizz</groupId>
-    <artifactId>sshj</artifactId>
+    <groupId>com.hierynomus</groupId>
+    <artifactId>sshj-examples</artifactId>
     <packaging>jar</packaging>
-    <version>0.10.0</version>
+    <version>0.13.0-SNAPSHOT</version>
 
     <name>sshj-examples</name>
     <description>Examples for SSHv2 library for Java</description>
@@ -53,9 +53,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>net.schmizz</groupId>
+            <groupId>com.hierynomus</groupId>
             <artifactId>sshj</artifactId>
-            <version>0.10.0</version>
+            <version>0.12.0</version>
         </dependency>
     </dependencies>
 
