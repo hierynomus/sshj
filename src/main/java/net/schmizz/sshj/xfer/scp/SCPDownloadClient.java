@@ -24,18 +24,21 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
+import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArguments;
+
 /** Support for uploading files over a connected link using SCP. */
-public final class SCPDownloadClient {
+public final class SCPDownloadClient extends AbstractSCPClient {
 
     private boolean recursiveMode = true;
 
-    private final SCPEngine engine;
-
     SCPDownloadClient(SCPEngine engine) {
-        this.engine = engine;
+        super(engine);
+    }
+
+    SCPDownloadClient(SCPEngine engine, int bandwidthLimit) {
+        super(engine, bandwidthLimit);
     }
 
     /** Download a file from {@code sourcePath} on the connected host to {@code targetPath} locally. */
@@ -60,12 +63,12 @@ public final class SCPDownloadClient {
 
     void startCopy(String sourcePath, LocalDestFile targetFile)
             throws IOException {
-        List<Arg> args = new LinkedList<Arg>();
-        args.add(Arg.SOURCE);
-        args.add(Arg.QUIET);
-        args.add(Arg.PRESERVE_TIMES);
-        if (recursiveMode)
-            args.add(Arg.RECURSIVE);
+        List<Arg> args = SCPArguments.with(Arg.SOURCE)
+                            .and(Arg.QUIET)
+                            .and(Arg.PRESERVE_TIMES)
+                            .and(Arg.RECURSIVE, recursiveMode)
+                            .and(Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0))
+                            .arguments();
         engine.execSCPWith(args, sourcePath);
 
         engine.signal("Start status OK");

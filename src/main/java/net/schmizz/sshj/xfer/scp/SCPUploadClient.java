@@ -24,17 +24,21 @@ import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
 import java.util.List;
 
-/** Support for uploading files over a connected link using SCP. */
-public final class SCPUploadClient {
+import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArguments;
 
-    private final SCPEngine engine;
+/** Support for uploading files over a connected link using SCP. */
+public final class SCPUploadClient extends AbstractSCPClient {
+
     private LocalFileFilter uploadFilter;
 
     SCPUploadClient(SCPEngine engine) {
-        this.engine = engine;
+        super(engine);
+    }
+
+    SCPUploadClient(SCPEngine engine, int bandwidthLimit) {
+        super(engine, bandwidthLimit);
     }
 
     /** Upload a local file from {@code localFile} to {@code targetPath} on the remote host. */
@@ -55,11 +59,11 @@ public final class SCPUploadClient {
 
     private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
             throws IOException {
-        List<Arg> args = new LinkedList<Arg>();
-        args.add(Arg.SINK);
-        args.add(Arg.RECURSIVE);
-        if (sourceFile.providesAtimeMtime())
-            args.add(Arg.PRESERVE_TIMES);
+        List<Arg> args = SCPArguments.with(Arg.SINK)
+                            .and(Arg.RECURSIVE)
+                            .and(Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime())
+                            .and(Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0))
+                            .arguments();
         engine.execSCPWith(args, targetPath);
         engine.check("Start status OK");
         process(engine.getTransferListener(), sourceFile);

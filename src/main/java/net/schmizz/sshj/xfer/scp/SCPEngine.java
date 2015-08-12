@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 /** @see <a href="http://blogs.sun.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
@@ -39,17 +40,31 @@ class SCPEngine {
         RECURSIVE('r'),
         VERBOSE('v'),
         PRESERVE_TIMES('p'),
-        QUIET('q');
+        QUIET('q'),
+        LIMIT('l', "");
 
         private final char a;
+        private String v;
 
         private Arg(char a) {
             this.a = a;
         }
+        private Arg(char a, String v) {
+            this.a = a;
+            this.v = v;
+        }
+
+        public void setValue(String v) {
+            this.v = v;
+        }
 
         @Override
         public String toString() {
-            return "-" + a;
+            String arg = "-" + a;
+            if (v != null && v.length() > 0) {
+                arg = arg + v;
+            }
+            return arg;
         }
     }
 
@@ -186,4 +201,63 @@ class SCPEngine {
         return listener;
     }
 
+    public static class SCPArguments {
+
+        private static List<Arg> args = null;
+
+        private SCPArguments() {
+            this.args = new LinkedList<Arg>();
+        }
+
+        private static void addArg(Arg arg, String value, boolean accept) {
+            if (accept) {
+                if (null != value && value.length() > 0) {
+                    arg.setValue(value);
+                }
+                args.add(arg);
+            }
+        }
+
+        public static SCPArguments with(Arg arg) {
+            return with(arg, null, true);
+        }
+
+        public static SCPArguments with(Arg arg, String value) {
+            return with(arg, value, true);
+        }
+
+        public static SCPArguments with(Arg arg, boolean accept) {
+            return with(arg, null, accept);
+        }
+
+        public static SCPArguments with(Arg arg, String value, boolean accept) {
+            SCPArguments scpArguments = new SCPArguments();
+            addArg(arg, value, accept);
+            return scpArguments;
+        }
+
+        public SCPArguments and(Arg arg) {
+            addArg(arg, null, true);
+            return this;
+        }
+
+        public SCPArguments and(Arg arg, String value) {
+            addArg(arg, value, true);
+            return this;
+        }
+
+        public SCPArguments and(Arg arg, boolean accept) {
+            addArg(arg, null, accept);
+            return this;
+        }
+
+        public SCPArguments and(Arg arg, String value, boolean accept) {
+            addArg(arg, value, accept);
+            return this;
+        }
+
+        public List<Arg> arguments() {
+            return args;
+        }
+    }
 }

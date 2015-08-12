@@ -28,18 +28,23 @@ public class SCPFileTransfer
         extends AbstractFileTransfer
         implements FileTransfer {
 
+    /** Default bandwidth limit for SCP transfert in Kbit/s (-1 means unlimited) */
+    private static final int DEFAULT_BANDWIDTH_LIMIT = -1;
+
     private final SessionFactory sessionFactory;
+    private int bandwidthLimit;
 
     public SCPFileTransfer(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
+        this.bandwidthLimit = DEFAULT_BANDWIDTH_LIMIT;
     }
 
     public SCPDownloadClient newSCPDownloadClient() {
-        return new SCPDownloadClient(newSCPEngine());
+        return new SCPDownloadClient(newSCPEngine(), bandwidthLimit);
     }
 
     public SCPUploadClient newSCPUploadClient() {
-        return new SCPUploadClient(newSCPEngine());
+        return new SCPUploadClient(newSCPEngine(), bandwidthLimit);
     }
 
     private SCPEngine newSCPEngine() {
@@ -70,4 +75,10 @@ public class SCPFileTransfer
         newSCPUploadClient().copy(localFile, remotePath);
     }
 
+    public SCPFileTransfer bandwidthLimit(int limit) {
+        if (limit > 0) {
+            this.bandwidthLimit = limit;
+        }
+        return this;
+    }
 }
