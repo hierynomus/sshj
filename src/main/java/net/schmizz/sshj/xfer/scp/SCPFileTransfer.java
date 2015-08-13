@@ -28,7 +28,7 @@ public class SCPFileTransfer
         extends AbstractFileTransfer
         implements FileTransfer {
 
-    /** Default bandwidth limit for SCP transfert in Kbit/s (-1 means unlimited) */
+    /** Default bandwidth limit for SCP transfer in kilobit/s (-1 means unlimited) */
     private static final int DEFAULT_BANDWIDTH_LIMIT = -1;
 
     private final SessionFactory sessionFactory;
