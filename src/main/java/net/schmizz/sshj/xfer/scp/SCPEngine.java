@@ -41,30 +41,17 @@ class SCPEngine {
         VERBOSE('v'),
         PRESERVE_TIMES('p'),
         QUIET('q'),
-        LIMIT('l', "");
+        LIMIT('l');
 
         private final char a;
-        private String v;
 
         private Arg(char a) {
             this.a = a;
         }
-        private Arg(char a, String v) {
-            this.a = a;
-            this.v = v;
-        }
-
-        public void setValue(String v) {
-            this.v = v;
-        }
 
         @Override
         public String toString() {
-            String arg = "-" + a;
-            if (v != null && v.length() > 0) {
-                arg = arg + v;
-            }
-            return arg;
+            return "-" + a;
         }
     }
 
@@ -112,10 +99,10 @@ class SCPEngine {
         exitStatus = -1;
     }
 
-    void execSCPWith(List<Arg> args, String path)
+    void execSCPWith(List<SCPArgument> args, String path)
             throws SSHException {
         final StringBuilder cmd = new StringBuilder(SCP_COMMAND);
-        for (Arg arg : args) {
+        for (SCPArgument arg : args) {
             cmd.append(" ").append(arg);
         }
         cmd.append(" ");
@@ -201,62 +188,83 @@ class SCPEngine {
         return listener;
     }
 
-    public static class SCPArguments {
+    public static class SCPArgument {
 
-        private static List<Arg> args = null;
+        private Arg name;
+        private String value;
 
-        private SCPArguments() {
-            this.args = new LinkedList<Arg>();
+        private SCPArgument(Arg name, String value) {
+            this.name = name;
+            this.value = value;
         }
 
-        private static void addArg(Arg arg, String value, boolean accept) {
+        public static SCPArgument addArgument(Arg name, String value) {
+            return new SCPArgument(name, value);
+        }
+
+        @Override
+        public String toString() {
+            String option = name.toString();
+            if (value != null) {
+                option = option + value;
+            }
+            return option;
+        }
+    }
+
+    public static class SCPArguments {
+
+        private static List<SCPArgument> args = null;
+
+        private SCPArguments() {
+            this.args = new LinkedList<SCPArgument>();
+        }
+
+        private static void addArgument(Arg name, String value, boolean accept) {
             if (accept) {
-                if (null != value && value.length() > 0) {
-                    arg.setValue(value);
-                }
-                args.add(arg);
+                args.add(SCPArgument.addArgument(name, value));
             }
         }
 
-        public static SCPArguments with(Arg arg) {
-            return with(arg, null, true);
+        public static SCPArguments with(Arg name) {
+            return with(name, null, true);
         }
 
-        public static SCPArguments with(Arg arg, String value) {
-            return with(arg, value, true);
+        public static SCPArguments with(Arg name, String value) {
+            return with(name, value, true);
         }
 
-        public static SCPArguments with(Arg arg, boolean accept) {
-            return with(arg, null, accept);
+        public static SCPArguments with(Arg name, boolean accept) {
+            return with(name, null, accept);
         }
 
-        public static SCPArguments with(Arg arg, String value, boolean accept) {
+        public static SCPArguments with(Arg name, String value, boolean accept) {
             SCPArguments scpArguments = new SCPArguments();
-            addArg(arg, value, accept);
+            addArgument(name, value, accept);
             return scpArguments;
         }
 
-        public SCPArguments and(Arg arg) {
-            addArg(arg, null, true);
+        public SCPArguments and(Arg name) {
+            addArgument(name, null, true);
             return this;
         }
 
-        public SCPArguments and(Arg arg, String value) {
-            addArg(arg, value, true);
+        public SCPArguments and(Arg name, String value) {
+            addArgument(name, value, true);
             return this;
         }
 
-        public SCPArguments and(Arg arg, boolean accept) {
-            addArg(arg, null, accept);
+        public SCPArguments and(Arg name, boolean accept) {
+            addArgument(name, null, accept);
             return this;
         }
 
-        public SCPArguments and(Arg arg, String value, boolean accept) {
-            addArg(arg, value, accept);
+        public SCPArguments and(Arg name, String value, boolean accept) {
+            addArgument(name, value, accept);
             return this;
         }
 
-        public List<Arg> arguments() {
+        public List<SCPArgument> arguments() {
             return args;
         }
     }

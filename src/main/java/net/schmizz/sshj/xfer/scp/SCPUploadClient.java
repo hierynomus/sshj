@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArgument;
 import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArguments;
 
 /** Support for uploading files over a connected link using SCP. */
@@ -59,7 +60,7 @@ public final class SCPUploadClient extends AbstractSCPClient {
 
     private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
             throws IOException {
-        List<Arg> args = SCPArguments.with(Arg.SINK)
+        List<SCPArgument> args = SCPArguments.with(Arg.SINK)
                             .and(Arg.RECURSIVE)
                             .and(Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime())
                             .and(Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0))

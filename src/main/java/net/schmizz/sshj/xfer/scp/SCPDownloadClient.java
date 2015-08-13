@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArgument;
 import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArguments;
 
 /** Support for uploading files over a connected link using SCP. */
@@ -63,7 +64,7 @@ public final class SCPDownloadClient extends AbstractSCPClient {
 
     void startCopy(String sourcePath, LocalDestFile targetFile)
             throws IOException {
-        List<Arg> args = SCPArguments.with(Arg.SOURCE)
+        List<SCPArgument> args = SCPArguments.with(Arg.SOURCE)
                             .and(Arg.QUIET)
                             .and(Arg.PRESERVE_TIMES)
                             .and(Arg.RECURSIVE, recursiveMode)
