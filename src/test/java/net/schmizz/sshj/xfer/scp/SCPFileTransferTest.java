@@ -47,7 +47,7 @@ public class SCPFileTransferTest {
     }
 
     @Test
-    public void should_SCP_Upload_File() throws IOException {
+    public void shouldSCPUpload_File() throws IOException {
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer();
         assertFalse(targetFile.exists());
         scpFileTransfer.upload(sourceFile.getAbsolutePath(), targetDir.getAbsolutePath());
@@ -55,7 +55,7 @@ public class SCPFileTransferTest {
     }
 
     @Test
-    public void should_SCP_Upload_File_With_Bandwidth_Limit() throws IOException {
+    public void shouldSCPUploadFileWithBandwidthLimit() throws IOException {
         // Limit upload transfert at 2Mo/s
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer().bandwidthLimit(16000);
         assertFalse(targetFile.exists());
@@ -64,7 +64,7 @@ public class SCPFileTransferTest {
     }
 
     @Test
-    public void should_SCP_Download_File() throws IOException {
+    public void shouldSCPDownloadFile() throws IOException {
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer();
         assertFalse(targetFile.exists());
         scpFileTransfer.download(sourceFile.getAbsolutePath(), targetDir.getAbsolutePath());
@@ -72,7 +72,7 @@ public class SCPFileTransferTest {
     }
 
     @Test
-    public void should_SCP_Download_File_With_Bandwidth_Limit() throws IOException {
+    public void shouldSCPDownloadFileWithBandwidthLimit() throws IOException {
         // Limit download transfert at 128Ko/s
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer().bandwidthLimit(1024);
         assertFalse(targetFile.exists());
