@@ -194,7 +194,10 @@ public class RemoteFile
 
         @Override
         public long skip(long n) throws IOException {
-            return (this.fileOffset = Math.min(fileOffset + n, length()));
+			final long fileLength = length();
+			final Long previousFileOffset = fileOffset;
+			fileOffset = Math.min(fileOffset + n, fileLength);
+			return fileOffset - previousFileOffset;
         }
 
         @Override
