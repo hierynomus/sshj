@@ -51,8 +51,7 @@ public class KeyProviderUtil {
      * @return name of the key file format
      * @throws java.io.IOException
      */
-    public static KeyFormat detectKeyFileFormat(String privateKey,
-                                                             boolean separatePubKey)
+    public static KeyFormat detectKeyFileFormat(String privateKey, boolean separatePubKey)
             throws IOException {
         return detectKeyFileFormat(new StringReader(privateKey), separatePubKey);
     }
@@ -67,35 +66,44 @@ public class KeyProviderUtil {
      * @return name of the key file format
      * @throws java.io.IOException
      */
-    public static KeyFormat detectKeyFileFormat(Reader privateKey,
-                                                             boolean separatePubKey)
+    public static KeyFormat detectKeyFileFormat(Reader privateKey, boolean separatePubKey)
             throws IOException {
-        BufferedReader br = new BufferedReader(privateKey);
-        final String firstLine;
-        try {
-            firstLine = br.readLine();
-        }
-        finally {
-            IOUtils.closeQuietly(br);
-        }
-        if(firstLine == null) {
+        String header = readHeader(privateKey);
+        if (header == null) {
             throw new IOException("Empty file");
         }
-        if(firstLine.startsWith("-----BEGIN") && firstLine.endsWith("PRIVATE KEY-----")) {
-            if(separatePubKey)
-            // Can delay asking for password since have unencrypted pubkey
-            {
-                return KeyFormat.OpenSSH;
+        return keyFormatFromHeader(header, separatePubKey);
+    }
+
+    private static String readHeader(Reader privateKey) throws IOException {
+        BufferedReader br = new BufferedReader(privateKey);
+        try {
+            String header;
+            while ((header = br.readLine()) != null) {
+                header = header.trim();
+                if (!header.isEmpty()) {
+                    break;
+                }
             }
-            else
-            // More general
-            {
+            return header;
+        } finally {
+            IOUtils.closeQuietly(br);
+        }
+    }
+
+    private static KeyFormat keyFormatFromHeader(String header, boolean separatePubKey) {
+        if (header.startsWith("-----BEGIN") && header.endsWith("PRIVATE KEY-----")) {
+            if (separatePubKey) {
+                // Can delay asking for password since have unencrypted pubkey
+                return KeyFormat.OpenSSH;
+            } else {
+                // More general
                 return KeyFormat.PKCS8;
             }
-        }
-        if(firstLine.startsWith("PuTTY-User-Key-File-")) {
+        } else if (header.startsWith("PuTTY-User-Key-File-")) {
             return KeyFormat.PuTTY;
+        } else {
+            return KeyFormat.Unknown;
         }
-        return KeyFormat.Unknown;
     }
 }
