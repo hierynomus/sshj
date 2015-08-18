@@ -21,6 +21,9 @@ configurations {
 }
 
 test {
+  testLogging {
+    exceptionFormat = 'full'
+  }
   include "**/*Test.*"
   if (!project.hasProperty("allTests")) {
     useJUnit {

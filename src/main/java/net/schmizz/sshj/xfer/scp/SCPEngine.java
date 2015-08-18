@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 /** @see <a href="http://blogs.sun.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
@@ -39,7 +40,8 @@ class SCPEngine {
         RECURSIVE('r'),
         VERBOSE('v'),
         PRESERVE_TIMES('p'),
-        QUIET('q');
+        QUIET('q'),
+        LIMIT('l');
 
         private final char a;
 
@@ -97,10 +99,10 @@ class SCPEngine {
         exitStatus = -1;
     }
 
-    void execSCPWith(List<Arg> args, String path)
+    void execSCPWith(List<SCPArgument> args, String path)
             throws SSHException {
         final StringBuilder cmd = new StringBuilder(SCP_COMMAND);
-        for (Arg arg : args) {
+        for (SCPArgument arg : args) {
             cmd.append(" ").append(arg);
         }
         cmd.append(" ");
@@ -186,4 +188,84 @@ class SCPEngine {
         return listener;
     }
 
+    public static class SCPArgument {
+
+        private Arg name;
+        private String value;
+
+        private SCPArgument(Arg name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public static SCPArgument addArgument(Arg name, String value) {
+            return new SCPArgument(name, value);
+        }
+
+        @Override
+        public String toString() {
+            String option = name.toString();
+            if (value != null) {
+                option = option + value;
+            }
+            return option;
+        }
+    }
+
+    public static class SCPArguments {
+
+        private static List<SCPArgument> args = null;
+
+        private SCPArguments() {
+            this.args = new LinkedList<SCPArgument>();
+        }
+
+        private static void addArgument(Arg name, String value, boolean accept) {
+            if (accept) {
+                args.add(SCPArgument.addArgument(name, value));
+            }
+        }
+
+        public static SCPArguments with(Arg name) {
+            return with(name, null, true);
+        }
+
+        public static SCPArguments with(Arg name, String value) {
+            return with(name, value, true);
+        }
+
+        public static SCPArguments with(Arg name, boolean accept) {
+            return with(name, null, accept);
+        }
+
+        public static SCPArguments with(Arg name, String value, boolean accept) {
+            SCPArguments scpArguments = new SCPArguments();
+            addArgument(name, value, accept);
+            return scpArguments;
+        }
+
+        public SCPArguments and(Arg name) {
+            addArgument(name, null, true);
+            return this;
+        }
+
+        public SCPArguments and(Arg name, String value) {
+            addArgument(name, value, true);
+            return this;
+        }
+
+        public SCPArguments and(Arg name, boolean accept) {
+            addArgument(name, null, accept);
+            return this;
+        }
+
+        public SCPArguments and(Arg name, String value, boolean accept) {
+            addArgument(name, value, accept);
+            return this;
+        }
+
+        public List<SCPArgument> arguments() {
+            return args;
+        }
+    }
 }
