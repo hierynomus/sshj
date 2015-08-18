@@ -92,6 +92,9 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.14.0 (2015-??-??)::
+* Merged https://github.com/hierynomus/sshj/issues/208[#208]: Added SCP bandwidth limitation support
+* Merged https://github.com/hierynomus/sshj/issues/211[#211]: Made keyfile format detection more robust
 SSHJ 0.13.0 (2015-08-18)::
 * Merged https://github.com/hierynomus/sshj/issues/199[#199]: Fix for IndexOutOfBoundsException in ReadAheadRemoteFileInputStream, fixes https://github.com/hierynomus/sshj/issues/183[#183]
 * Merged https://github.com/hierynomus/sshj/issues/195[#195]: New authentication supported: `gssapi-with-mic`
