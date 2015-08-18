@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.11.0
+:sshj_version: 0.13.0
 :source-highlighter: pygments
 
 image::https://travis-ci.org/hierynomus/sshj.svg?branch=master[]
@@ -92,7 +92,7 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.13.0 (2015-??-??)::
+SSHJ 0.13.0 (2015-08-18)::
 * Merged https://github.com/hierynomus/sshj/issues/199[#199]: Fix for IndexOutOfBoundsException in ReadAheadRemoteFileInputStream, fixes https://github.com/hierynomus/sshj/issues/183[#183]
 * Merged https://github.com/hierynomus/sshj/issues/195[#195]: New authentication supported: `gssapi-with-mic`
 * Merged https://github.com/hierynomus/sshj/issues/201[#201]: New option to verify negotiated key exchange algorithms
