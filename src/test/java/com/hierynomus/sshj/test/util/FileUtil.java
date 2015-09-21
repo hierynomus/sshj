@@ -2,10 +2,7 @@ package com.hierynomus.sshj.test.util;
 
 import net.schmizz.sshj.common.IOUtils;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 
 public class FileUtil {
 
@@ -15,6 +12,16 @@ public class FileUtil {
             w.write(content);
         } finally {
             IOUtils.closeQuietly(w);
+        }
+    }
+
+    public static String readFromFile(File f) throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(f);
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = IOUtils.readFully(fileInputStream);
+            return byteArrayOutputStream.toString("UTF-8");
+        } finally {
+            IOUtils.closeQuietly(fileInputStream);
         }
     }
 }

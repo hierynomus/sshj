@@ -18,16 +18,12 @@ package net.schmizz.sshj.xfer.scp;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.xfer.LocalDestFile;
 import net.schmizz.sshj.xfer.TransferListener;
-import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArgument;
-import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArguments;
 
 /** Support for uploading files over a connected link using SCP. */
 public final class SCPDownloadClient extends AbstractSCPClient {
@@ -43,11 +39,15 @@ public final class SCPDownloadClient extends AbstractSCPClient {
     }
 
     /** Download a file from {@code sourcePath} on the connected host to {@code targetPath} locally. */
-    public synchronized int copy(String sourcePath, LocalDestFile targetFile)
+    public synchronized int copy(String sourcePath, LocalDestFile targetFile) throws IOException {
+        return copy(sourcePath, targetFile, ScpCommandLine.EscapeMode.NoEscape);
+    }
+
+    public synchronized int copy(String sourcePath, LocalDestFile targetFile, ScpCommandLine.EscapeMode escapeMode)
             throws IOException {
         engine.cleanSlate();
         try {
-            startCopy(sourcePath, targetFile);
+            startCopy(sourcePath, targetFile, escapeMode);
         } finally {
             engine.exit();
         }
@@ -62,15 +62,15 @@ public final class SCPDownloadClient extends AbstractSCPClient {
         this.recursiveMode = recursive;
     }
 
-    void startCopy(String sourcePath, LocalDestFile targetFile)
+    private void startCopy(String sourcePath, LocalDestFile targetFile, ScpCommandLine.EscapeMode escapeMode)
             throws IOException {
-        List<SCPArgument> args = SCPArguments.with(Arg.SOURCE)
-                            .and(Arg.QUIET)
-                            .and(Arg.PRESERVE_TIMES)
-                            .and(Arg.RECURSIVE, recursiveMode)
-                            .and(Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0))
-                            .arguments();
-        engine.execSCPWith(args, sourcePath);
+        ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SOURCE)
+                            .and(ScpCommandLine.Arg.QUIET)
+                            .and(ScpCommandLine.Arg.PRESERVE_TIMES)
+                            .and(ScpCommandLine.Arg.RECURSIVE, recursiveMode)
+                            .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
+        commandLine.withPath(sourcePath, escapeMode);
+        engine.execSCPWith(commandLine);
 
         engine.signal("Start status OK");
 

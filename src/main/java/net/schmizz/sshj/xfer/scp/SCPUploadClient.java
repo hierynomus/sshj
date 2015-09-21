@@ -1,12 +1,12 @@
 /**
  * Copyright 2009 sshj contributors
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,14 +20,9 @@ import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.xfer.LocalFileFilter;
 import net.schmizz.sshj.xfer.LocalSourceFile;
 import net.schmizz.sshj.xfer.TransferListener;
-import net.schmizz.sshj.xfer.scp.SCPEngine.Arg;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
-
-import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArgument;
-import static net.schmizz.sshj.xfer.scp.SCPEngine.SCPArguments;
 
 /** Support for uploading files over a connected link using SCP. */
 public final class SCPUploadClient extends AbstractSCPClient {
@@ -45,9 +40,14 @@ public final class SCPUploadClient extends AbstractSCPClient {
     /** Upload a local file from {@code localFile} to {@code targetPath} on the remote host. */
     public synchronized int copy(LocalSourceFile sourceFile, String remotePath)
             throws IOException {
+        return copy(sourceFile, remotePath, ScpCommandLine.EscapeMode.SingleQuote);
+    }
+
+    public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode)
+            throws IOException {
         engine.cleanSlate();
         try {
-            startCopy(sourceFile, remotePath);
+            startCopy(sourceFile, remotePath, escapeMode);
         } finally {
             engine.exit();
         }
@@ -58,14 +58,14 @@ public final class SCPUploadClient extends AbstractSCPClient {
         this.uploadFilter = uploadFilter;
     }
 
-    private synchronized void startCopy(LocalSourceFile sourceFile, String targetPath)
+    private void startCopy(LocalSourceFile sourceFile, String targetPath, ScpCommandLine.EscapeMode escapeMode)
             throws IOException {
-        List<SCPArgument> args = SCPArguments.with(Arg.SINK)
-                            .and(Arg.RECURSIVE)
-                            .and(Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime())
-                            .and(Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0))
-                            .arguments();
-        engine.execSCPWith(args, targetPath);
+        ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SINK)
+                .and(ScpCommandLine.Arg.RECURSIVE)
+                .and(ScpCommandLine.Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime())
+                .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
+        commandLine.withPath(targetPath, escapeMode);
+        engine.execSCPWith(commandLine);
         engine.check("Start status OK");
         process(engine.getTransferListener(), sourceFile);
     }
