@@ -123,7 +123,7 @@ public final class SCPDownloadClient extends AbstractSCPClient {
 
             case (char) 1:
             case (char) 2:
-                throw new SCPException("Remote SCP command returned error: " + msg.substring(1));
+                throw new SCPRemoteException("Remote SCP command returned error: " + msg.substring(1), msg.substring(1));
 
             default:
                 final String err = "Unrecognized message: `" + msg + "`";
