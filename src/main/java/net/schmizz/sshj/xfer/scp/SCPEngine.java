@@ -69,7 +69,8 @@ class SCPEngine {
                 return;
             case 1: // Warning? not
             case 2:
-                throw new SCPException("Remote SCP command had error: " + readMessage());
+                final String remoteMessage = readMessage();
+                throw new SCPRemoteException("Remote SCP command had error: " + remoteMessage, remoteMessage);
             default:
                 throw new SCPException("Received unknown response code");
         }
