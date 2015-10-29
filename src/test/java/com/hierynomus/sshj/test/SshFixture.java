@@ -158,4 +158,8 @@ public class SshFixture extends ExternalResource {
             }
         }
     }
+
+    public SshServer getServer() {
+        return server;
+    }
 }

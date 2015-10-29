@@ -38,20 +38,13 @@ import java.util.Arrays;
  * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the
  * {@link DH} class in the
  */
-public abstract class AbstractDHG
+public abstract class AbstractDHG extends KeyExchangeBase
         implements KeyExchange {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private Transport trans;
-
     private final Digest sha1 = new SHA1();
     private final DH dh = new DH();
-
-    private String V_S;
-    private String V_C;
-    private byte[] I_S;
-    private byte[] I_C;
 
     private byte[] H;
     private PublicKey hostKey;
@@ -79,11 +72,7 @@ public abstract class AbstractDHG
     @Override
     public void init(Transport trans, String V_S, String V_C, byte[] I_S, byte[] I_C)
             throws GeneralSecurityException, TransportException {
-        this.trans = trans;
-        this.V_S = V_S;
-        this.V_C = V_C;
-        this.I_S = Arrays.copyOf(I_S, I_S.length);
-        this.I_C = Arrays.copyOf(I_C, I_C.length);
+        super.init(trans, V_S, V_C, I_S, I_C);
         sha1.init();
         initDH(dh);
 
@@ -112,11 +101,7 @@ public abstract class AbstractDHG
 
         dh.computeK(f);
 
-        final Buffer.PlainBuffer buf = new Buffer.PlainBuffer()
-                .putString(V_C)
-                .putString(V_S)
-                .putString(I_C)
-                .putString(I_S)
+        final Buffer.PlainBuffer buf = initializedBuffer()
                 .putString(K_S)
                 .putMPInt(dh.getE())
                 .putMPInt(f)

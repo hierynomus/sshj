@@ -73,4 +73,11 @@ public class DH {
         return K;
     }
 
+    public BigInteger getP() {
+        return p;
+    }
+
+    public BigInteger getG() {
+        return g;
+    }
 }
