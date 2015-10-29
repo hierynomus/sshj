@@ -62,7 +62,7 @@ ciphers::
   `aes{128,192,256}-{cbc,ctr}`, `blowfish-cbc`, `3des-cbc`
 
 key exchange::
-  `diffie-hellman-group1-sha1`, `diffie-hellman-group14-sha1`
+  `diffie-hellman-group1-sha1`, `diffie-hellman-group14-sha1`, `diffie-hellman-group-exhange-sha1`, `diffie-hellman-group-exchange-sha256`
 
 signatures::
   `ssh-rsa`, `ssh-dss`
@@ -93,6 +93,9 @@ Fork away!
 
 == Release history
 SSHJ 0.14.0 (2015-??-??)::
+* Fixed https://github.com/hierynomus/sshj/issues/167[#167]: Added support for `diffie-hellman-group-exhange-sha1` and `diffie-hellman-group-exhange-sha256` key exchange methods
+* Fixed https://github.com/hierynomus/sshj/issues/212[#212]: Configure path escaping to enable shell expansion to work correctly
+* Merged https://github.com/hierynomus/sshj/issues/210[#210]: RemoteFileInputStream.skip returns wrong value (Fixes https://github.com/hierynomus/sshj/issues/209[#209])
 * Merged https://github.com/hierynomus/sshj/issues/208[#208]: Added SCP bandwidth limitation support
 * Merged https://github.com/hierynomus/sshj/issues/211[#211]: Made keyfile format detection more robust
 SSHJ 0.13.0 (2015-08-18)::
