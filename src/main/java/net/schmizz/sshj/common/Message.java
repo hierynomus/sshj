@@ -30,7 +30,7 @@ public enum Message {
 
     KEXDH_INIT(30),
 
-    /** { KEXDH_REPLY, KEXDH_GEX_GROUP } */
+    /** { KEXDH_REPLY, KEXDH_GEX_GROUP, SSH_MSG_KEX_ECDH_REPLY } */
     KEXDH_31(31),
 
     KEX_DH_GEX_INIT(32),

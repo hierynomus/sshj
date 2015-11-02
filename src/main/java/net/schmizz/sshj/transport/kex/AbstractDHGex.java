@@ -8,56 +8,28 @@ import net.schmizz.sshj.transport.digest.Digest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.spec.DHParameterSpec;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.PublicKey;
-import java.util.Arrays;
 
-public abstract class AbstractDHGex extends KeyExchangeBase {
+public abstract class AbstractDHGex extends AbstractDH {
     private final Logger log = LoggerFactory.getLogger(getClass());
-
-    private Digest digest;
 
     private int minBits = 1024;
     private int maxBits = 8192;
     private int preferredBits = 2048;
 
-    private DH dh;
-    private PublicKey hostKey;
-    private byte[] H;
-
     public AbstractDHGex(Digest digest) {
-        this.digest = digest;
+        super(new DH(), digest);
     }
 
     @Override
     public void init(Transport trans, String V_S, String V_C, byte[] I_S, byte[] I_C) throws GeneralSecurityException, TransportException {
         super.init(trans, V_S, V_C, I_S, I_C);
-        dh = new DH();
         digest.init();
 
         log.debug("Sending {}", Message.KEX_DH_GEX_REQUEST);
         trans.write(new SSHPacket(Message.KEX_DH_GEX_REQUEST).putUInt32(minBits).putUInt32(preferredBits).putUInt32(maxBits));
-    }
-
-    @Override
-    public byte[] getH() {
-        return Arrays.copyOf(H, H.length);
-    }
-
-    @Override
-    public BigInteger getK() {
-        return dh.getK();
-    }
-
-    @Override
-    public Digest getHash() {
-        return digest;
-    }
-
-    @Override
-    public PublicKey getHostKey() {
-        return hostKey;
     }
 
     @Override
@@ -78,7 +50,7 @@ public abstract class AbstractDHGex extends KeyExchangeBase {
 
     private boolean parseGexReply(SSHPacket buffer) throws Buffer.BufferException, GeneralSecurityException, TransportException {
         byte[] K_S = buffer.readBytes();
-        BigInteger f = buffer.readMPInt();
+        byte[] f = buffer.readBytes();
         byte[] sig = buffer.readBytes();
         hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
 
@@ -90,10 +62,10 @@ public abstract class AbstractDHGex extends KeyExchangeBase {
                 .putUInt32(minBits)
                 .putUInt32(preferredBits)
                 .putUInt32(maxBits)
-                .putMPInt(dh.getP())
-                .putMPInt(dh.getG())
-                .putMPInt(dh.getE())
-                .putMPInt(f)
+                .putMPInt(((DH) dh).getP())
+                .putMPInt(((DH) dh).getG())
+                .putBytes(dh.getE())
+                .putBytes(f)
                 .putMPInt(k);
         digest.update(buf.array(), buf.rpos(), buf.available());
         H = digest.digest();
@@ -116,9 +88,9 @@ public abstract class AbstractDHGex extends KeyExchangeBase {
             throw new GeneralSecurityException("Server generated gex p is out of range (" + bitLength + " bits)");
         }
         log.debug("Received server p bitlength {}", bitLength);
-        dh.init(p, g);
+        dh.init(new DHParameterSpec(p, g));
         log.debug("Sending {}", Message.KEX_DH_GEX_INIT);
-        trans.write(new SSHPacket(Message.KEX_DH_GEX_INIT).putMPInt(dh.getE()));
+        trans.write(new SSHPacket(Message.KEX_DH_GEX_INIT).putBytes(dh.getE()));
         return false;
     }
 }

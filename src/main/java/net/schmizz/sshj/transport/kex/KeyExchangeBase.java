@@ -7,9 +7,6 @@ import net.schmizz.sshj.transport.TransportException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 
-/**
- * Created by ajvanerp on 29/10/15.
- */
 public abstract class KeyExchangeBase implements KeyExchange {
     protected Transport trans;
 

@@ -15,6 +15,9 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import net.schmizz.sshj.transport.digest.SHA1;
+
+import javax.crypto.spec.DHParameterSpec;
 import java.security.GeneralSecurityException;
 
 /**
@@ -42,10 +45,12 @@ public class DHG14
 
     }
 
-    @Override
-    protected void initDH(DH dh)
-            throws GeneralSecurityException {
-        dh.init(DHGroupData.P14, DHGroupData.G);
+    public DHG14() {
+        super(new DH(), new SHA1());
     }
 
+    @Override
+    protected void initDH(DHBase dh) throws GeneralSecurityException {
+        dh.init(new DHParameterSpec(DHGroupData.P14, DHGroupData.G));
+    }
 }

@@ -38,46 +38,24 @@ import java.util.Arrays;
  * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the
  * {@link DH} class in the
  */
-public abstract class AbstractDHG extends KeyExchangeBase
+public abstract class AbstractDHG extends AbstractDH
         implements KeyExchange {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final Digest sha1 = new SHA1();
-    private final DH dh = new DH();
-
-    private byte[] H;
-    private PublicKey hostKey;
-
-    @Override
-    public byte[] getH() {
-        return Arrays.copyOf(H, H.length);
-    }
-
-    @Override
-    public BigInteger getK() {
-        return dh.getK();
-    }
-
-    @Override
-    public Digest getHash() {
-        return sha1;
-    }
-
-    @Override
-    public PublicKey getHostKey() {
-        return hostKey;
+    public AbstractDHG(DHBase dhBase, Digest digest) {
+        super(dhBase, digest);
     }
 
     @Override
     public void init(Transport trans, String V_S, String V_C, byte[] I_S, byte[] I_C)
             throws GeneralSecurityException, TransportException {
         super.init(trans, V_S, V_C, I_S, I_C);
-        sha1.init();
+        digest.init();
         initDH(dh);
 
         log.debug("Sending SSH_MSG_KEXDH_INIT");
-        trans.write(new SSHPacket(Message.KEXDH_INIT).putMPInt(dh.getE()));
+        trans.write(new SSHPacket(Message.KEXDH_INIT).putBytes(dh.getE()));
     }
 
     @Override
@@ -88,11 +66,11 @@ public abstract class AbstractDHG extends KeyExchangeBase
 
         log.debug("Received SSH_MSG_KEXDH_REPLY");
         final byte[] K_S;
-        final BigInteger f;
+        final byte[] f;
         final byte[] sig; // signature sent by server
         try {
             K_S = packet.readBytes();
-            f = packet.readMPInt();
+            f = packet.readBytes();
             sig = packet.readBytes();
             hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
         } catch (Buffer.BufferException be) {
@@ -103,11 +81,11 @@ public abstract class AbstractDHG extends KeyExchangeBase
 
         final Buffer.PlainBuffer buf = initializedBuffer()
                 .putString(K_S)
-                .putMPInt(dh.getE())
-                .putMPInt(f)
+                .putBytes(dh.getE())
+                .putBytes(f)
                 .putMPInt(dh.getK());
-        sha1.update(buf.array(), buf.rpos(), buf.available());
-        H = sha1.digest();
+        digest.update(buf.array(), buf.rpos(), buf.available());
+        H = digest.digest();
 
         Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(),
                                                         KeyType.fromKey(hostKey).toString());
@@ -119,7 +97,7 @@ public abstract class AbstractDHG extends KeyExchangeBase
         return true;
     }
 
-    protected abstract void initDH(DH dh)
+    protected abstract void initDH(DHBase dh)
             throws GeneralSecurityException;
 
 }

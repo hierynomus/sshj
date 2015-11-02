@@ -31,10 +31,7 @@ import net.schmizz.sshj.transport.cipher.BlowfishCBC;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.cipher.TripleDESCBC;
 import net.schmizz.sshj.transport.compression.NoneCompression;
-import net.schmizz.sshj.transport.kex.DHG1;
-import net.schmizz.sshj.transport.kex.DHG14;
-import net.schmizz.sshj.transport.kex.DHGexSHA1;
-import net.schmizz.sshj.transport.kex.DHGexSHA256;
+import net.schmizz.sshj.transport.kex.*;
 import net.schmizz.sshj.transport.mac.HMACMD5;
 import net.schmizz.sshj.transport.mac.HMACMD596;
 import net.schmizz.sshj.transport.mac.HMACSHA1;
@@ -100,7 +97,13 @@ public class DefaultConfig
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
         if (bouncyCastleRegistered)
-            setKeyExchangeFactories(new DHG14.Factory(), new DHG1.Factory(), new DHGexSHA1.Factory(), new DHGexSHA256.Factory());
+            setKeyExchangeFactories(new DHG14.Factory(),
+                    new DHG1.Factory(),
+                    new DHGexSHA1.Factory(),
+                    new DHGexSHA256.Factory(),
+                    new ECDHNistP.Factory256(),
+                    new ECDHNistP.Factory384());
+                    // TODO 521 fails sometimes with key verification errors new ECDHNistP.Factory521());
         else
             setKeyExchangeFactories(new DHG1.Factory(), new DHGexSHA1.Factory());
     }

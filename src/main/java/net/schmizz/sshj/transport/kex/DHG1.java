@@ -15,12 +15,17 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import net.schmizz.sshj.transport.digest.SHA1;
+
+import javax.crypto.spec.DHParameterSpec;
 import java.security.GeneralSecurityException;
 
 /**
  * Diffie-Hellman key exchange with SHA-1 and Oakley Group 2 [RFC2409] (1024-bit MODP Group).
  *
  * @see <a href="http://www.ietf.org/rfc/rfc4253.txt">RFC 4253</a>
+ *
+ * TODO refactor away the (unneeded) class
  */
 public class DHG1
         extends AbstractDHG {
@@ -38,13 +43,14 @@ public class DHG1
         public String getName() {
             return "diffie-hellman-group1-sha1";
         }
+    }
 
+    public DHG1() {
+        super(new DH(), new SHA1());
     }
 
     @Override
-    protected void initDH(DH dh)
-            throws GeneralSecurityException {
-        dh.init(DHGroupData.P1, DHGroupData.G);
+    protected void initDH(DHBase dh) throws GeneralSecurityException {
+        dh.init(new DHParameterSpec(DHGroupData.P1, DHGroupData.G));
     }
-
 }
