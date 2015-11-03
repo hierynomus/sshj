@@ -102,8 +102,8 @@ public class DefaultConfig
                     new DHGexSHA1.Factory(),
                     new DHGexSHA256.Factory(),
                     new ECDHNistP.Factory256(),
-                    new ECDHNistP.Factory384());
-                    // TODO 521 fails sometimes with key verification errors new ECDHNistP.Factory521());
+                    new ECDHNistP.Factory384(),
+                    new ECDHNistP.Factory521());
         else
             setKeyExchangeFactories(new DHG1.Factory(), new DHGexSHA1.Factory());
     }
