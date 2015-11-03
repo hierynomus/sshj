@@ -80,7 +80,7 @@ public class DefaultConfig
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final String VERSION = "SSHJ_0_13_0";
+    private static final String VERSION = "SSHJ_0_14_0";
 
     public DefaultConfig() {
         setVersion(VERSION);
@@ -97,13 +97,14 @@ public class DefaultConfig
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
         if (bouncyCastleRegistered)
-            setKeyExchangeFactories(new DHG14.Factory(),
-                    new DHG1.Factory(),
-                    new DHGexSHA1.Factory(),
+            setKeyExchangeFactories(new Curve25519SHA256.Factory(),
                     new DHGexSHA256.Factory(),
-                    new ECDHNistP.Factory256(),
+                    new ECDHNistP.Factory521(),
                     new ECDHNistP.Factory384(),
-                    new ECDHNistP.Factory521());
+                    new ECDHNistP.Factory256(),
+                    new DHGexSHA1.Factory(),
+                    new DHG14.Factory(),
+                    new DHG1.Factory());
         else
             setKeyExchangeFactories(new DHG1.Factory(), new DHGexSHA1.Factory());
     }
