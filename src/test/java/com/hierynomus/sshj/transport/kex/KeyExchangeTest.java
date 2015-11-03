@@ -5,14 +5,17 @@ import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.kex.BuiltinDHFactories;
 import org.apache.sshd.server.kex.DHGEXServer;
 import org.apache.sshd.server.kex.DHGServer;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,9 +59,14 @@ public class KeyExchangeTest {
     }
 
     @Test
-    @Category({KnownFailingTests.class})
     public void shouldKexWithEllipticCurveDiffieHellmanNistP521() throws IOException {
         attemptKex(100, DHGServer.newFactory(BuiltinDHFactories.ecdhp521), new ECDHNistP.Factory521());
+    }
+
+    @Test
+    @Ignore("Apache SSHD does (not yet) have Curve25519 support")
+    public void shouldKexWithCurve25519() throws IOException {
+        attemptKex(100, null, new Curve25519SHA256.Factory());
     }
 
 
