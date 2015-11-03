@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj;
 
-import net.schmizz.sshj.util.BasicFixture;
+import com.hierynomus.sshj.test.SshFixture;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +26,17 @@ public class LoadsOfConnects {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final BasicFixture fixture = new BasicFixture();
+    private final SshFixture fixture = new SshFixture();
 
     @Test
     public void loadsOfConnects()
             throws IOException, InterruptedException {
         for (int i = 0; i < 1000; i++) {
             System.out.println("Try " + i);
-            fixture.init(false);
-            fixture.done();
+            fixture.start();
+            fixture.setupConnectedDefaultClient();
+            fixture.stopClient();
+            fixture.stopServer();
         }
     }
 

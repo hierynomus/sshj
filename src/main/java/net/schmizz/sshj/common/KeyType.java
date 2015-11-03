@@ -135,7 +135,7 @@ public enum KeyType {
                 BigInteger bigY = new BigInteger(1, y);
 
                 X9ECParameters ecParams = NISTNamedCurves.getByName("p-256");
-                ECPoint pPublicPoint = ecParams.getCurve().createPoint(bigX, bigY, false);
+                ECPoint pPublicPoint = ecParams.getCurve().createPoint(bigX, bigY);
                 ECParameterSpec spec = new ECParameterSpec(ecParams.getCurve(),
                         ecParams.getG(), ecParams.getN());
                 ECPublicKeySpec publicSpec = new ECPublicKeySpec(pPublicPoint, spec);

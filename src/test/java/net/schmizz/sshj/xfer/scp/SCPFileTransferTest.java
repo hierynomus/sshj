@@ -52,6 +52,7 @@ public class SCPFileTransferTest {
     public void shouldSCPUploadFile() throws IOException {
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer();
         assertFalse(targetFile.exists());
+        assertTrue(targetDir.exists());
         scpFileTransfer.upload(sourceFile.getAbsolutePath(), targetDir.getAbsolutePath());
         assertTrue(targetFile.exists());
     }

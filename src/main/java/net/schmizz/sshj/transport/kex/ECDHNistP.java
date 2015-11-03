@@ -7,7 +7,6 @@ import net.schmizz.sshj.transport.digest.SHA512;
 import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec;
 
 import java.security.GeneralSecurityException;
-import java.security.spec.ECGenParameterSpec;
 
 public class ECDHNistP extends AbstractDHG {
 

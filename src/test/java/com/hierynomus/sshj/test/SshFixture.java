@@ -3,21 +3,19 @@ package com.hierynomus.sshj.test;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.transport.TransportException;
-import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
-import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
-import org.apache.sshd.common.keyprovider.FileKeyPairProvider;
+import org.apache.sshd.common.keyprovider.AbstractClassLoadableResourceKeyPairProvider;
 import org.apache.sshd.common.util.OsUtils;
+import org.apache.sshd.common.util.SecurityUtils;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.CommandFactory;
-import org.apache.sshd.server.PasswordAuthenticator;
-import org.apache.sshd.server.channel.ChannelSession;
+import org.apache.sshd.server.SshServer;
+import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.session.ServerSession;
-import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.apache.sshd.server.shell.ProcessShellFactory;
+import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
@@ -31,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Can be used as a rule to ensure the server is teared down after each test.
  */
 public class SshFixture extends ExternalResource {
-    public static final String hostkey = "src/test/resources/hostkey.pem";
+    public static final String hostkey = "hostkey.pem";
     public static final String fingerprint = "ce:a7:c1:cf:17:3f:96:49:6a:53:1a:05:0b:ba:90:db";
 
     private SshServer server = defaultSshServer();
@@ -60,8 +58,9 @@ public class SshFixture extends ExternalResource {
     }
 
     public void start() throws IOException {
-        server.start();
-        started.set(true);
+        if (!started.getAndSet(true)) {
+            server.start();
+        }
     }
 
     public SSHClient setupConnectedDefaultClient() throws IOException {
@@ -96,7 +95,9 @@ public class SshFixture extends ExternalResource {
     private SshServer defaultSshServer() {
         SshServer sshServer = SshServer.setUpDefaultServer();
         sshServer.setPort(randomPort());
-        sshServer.setKeyPairProvider(new FileKeyPairProvider(new String[]{hostkey}));
+        AbstractClassLoadableResourceKeyPairProvider fileKeyPairProvider = SecurityUtils.createClassLoadableResourceKeyPairProvider();
+        fileKeyPairProvider.setResources(Collections.singletonList(hostkey));
+        sshServer.setKeyPairProvider(fileKeyPairProvider);
         sshServer.setPasswordAuthenticator(new PasswordAuthenticator() {
             @Override
             public boolean authenticate(String username, String password, ServerSession session) {
@@ -104,18 +105,15 @@ public class SshFixture extends ExternalResource {
             }
         });
         sshServer.setGSSAuthenticator(new BogusGSSAuthenticator());
-        sshServer.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystem.Factory()));
-        sshServer.setCommandFactory(new ScpCommandFactory(new CommandFactory() {
+        sshServer.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystemFactory()));
+        ScpCommandFactory commandFactory = new ScpCommandFactory();
+        commandFactory.setDelegateCommandFactory(new CommandFactory() {
+            @Override
             public Command createCommand(String command) {
-                EnumSet<ProcessShellFactory.TtyOptions> ttyOptions;
-                if (OsUtils.isUNIX()) {
-                    ttyOptions = EnumSet.of(ProcessShellFactory.TtyOptions.ONlCr);
-                } else {
-                    ttyOptions = EnumSet.of(ProcessShellFactory.TtyOptions.Echo, ProcessShellFactory.TtyOptions.ICrNl, ProcessShellFactory.TtyOptions.ONlCr);
-                }
-                return new ProcessShellFactory(command.split(" "), ttyOptions).create();
+                return new ProcessShellFactory(command.split(" ")).create();
             }
-        }));
+        });
+        sshServer.setCommandFactory(commandFactory);
 
         return sshServer;
     }
@@ -150,10 +148,10 @@ public class SshFixture extends ExternalResource {
     }
 
     public void stopServer() {
-        if (started.get()) {
+        if (started.getAndSet(false)) {
             try {
-                server.stop();
-            } catch (InterruptedException e) {
+                server.stop(true);
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }

@@ -53,7 +53,7 @@ dependencies {
 
   testCompile "junit:junit:4.11"
   testCompile "org.mockito:mockito-core:1.9.5"
-  testCompile "org.apache.sshd:sshd-core:0.11.0"
+  testCompile "org.apache.sshd:sshd-core:1.0.0"
   testRuntime "ch.qos.logback:logback-classic:1.1.2"
 }
 

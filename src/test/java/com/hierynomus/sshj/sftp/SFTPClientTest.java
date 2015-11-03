@@ -24,6 +24,8 @@ public class SFTPClientTest {
         SSHClient sshClient = fixture.setupConnectedDefaultClient();
         sshClient.authPassword("test", "test");
         SFTPClient sftpClient = sshClient.newSFTPClient();
+        // TODO workaround for bug in Mina 1.0.0 --> Should be fixed in 1.1.0
+        sftpClient.getFileTransfer().setPreserveAttributes(false);
         File file = temp.newFile("source.txt");
         FileUtil.writeToFile(file, "This is the source");
         try {

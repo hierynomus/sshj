@@ -15,9 +15,9 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
-import net.schmizz.sshj.util.BasicFixture;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,18 +29,20 @@ import static org.junit.Assert.assertTrue;
 /* Kinda basic right now */
 public class SmokeTest {
 
-    private final BasicFixture fixture = new BasicFixture();
+    private final SshFixture fixture = new SshFixture();
 
     @Before
     public void setUp()
             throws IOException {
-        fixture.init(false);
+        fixture.start();
+        fixture.setupConnectedDefaultClient();
     }
 
     @After
     public void tearDown()
             throws IOException, InterruptedException {
-        fixture.done();
+        fixture.stopClient();
+        fixture.stopServer();
     }
 
     @Test
@@ -52,7 +54,7 @@ public class SmokeTest {
     @Test
     public void authenticated()
             throws UserAuthException, TransportException {
-        fixture.dummyAuth();
+        fixture.getClient().authPassword("dummy", "dummy");
         assertTrue(fixture.getClient().isAuthenticated());
     }
 
