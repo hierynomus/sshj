@@ -66,7 +66,7 @@ key exchange::
   `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384`, `ecdh-sha2-nistp521`, `curve25519-sha256@libssh.org`
 
 signatures::
-  `ssh-rsa`, `ssh-dss`
+  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`
 
 mac::
   `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`
