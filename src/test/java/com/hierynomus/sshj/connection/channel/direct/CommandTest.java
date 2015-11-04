@@ -26,9 +26,11 @@ public class CommandTest {
         sshClient.authPassword("jeroen", "jeroen");
         File file = new File(temp.getRoot(), "testdir");
         assertThat("File should not exist", !file.exists());
+        // TODO figure out why this does not really execute in the background.
         Session.Command exec = sshClient.startSession().exec("mkdir " + file.getPath() + " &");
         exec.join();
         assertThat("File should exist", file.exists());
         assertThat("File should be directory", file.isDirectory());
+        
     }
 }
