@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.13.0
+:sshj_version: 0.14.0
 :source-highlighter: pygments
 
 image::https://travis-ci.org/hierynomus/sshj.svg?branch=master[]
@@ -93,7 +93,7 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.14.0 (2015-??-??)::
+SSHJ 0.14.0 (2015-11-04)::
 * Fixed https://github.com/hierynomus/sshj/issues/171[#171]: Added support for `curve25519-sha256@libssh.org` key exchange algorithm
 * Added support for `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384` and  `ecdh-sha2-nistp521` key exchange algorithms
 * Fixed https://github.com/hierynomus/sshj/issues/167[#167]: Added support for `diffie-hellman-group-exhange-sha1` and `diffie-hellman-group-exhange-sha256` key exchange methods
