@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -48,6 +50,7 @@ import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.image.ByteLookupTable;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -130,7 +133,29 @@ public class DefaultConfig
                 new AES192CBC.Factory(),
                 new AES256CBC.Factory(),
                 new TripleDESCBC.Factory(),
-                new BlowfishCBC.Factory()));
+                new BlowfishCBC.Factory(),
+                BlockCiphers.BlowfishCTR(),
+                BlockCiphers.Cast128CBC(),
+                BlockCiphers.Cast128CTR(),
+                BlockCiphers.IDEACBC(),
+                BlockCiphers.IDEACTR(),
+                BlockCiphers.Serpent128CBC(),
+                BlockCiphers.Serpent128CTR(),
+                BlockCiphers.Serpent192CBC(),
+                BlockCiphers.Serpent192CTR(),
+                BlockCiphers.Serpent256CBC(),
+                BlockCiphers.Serpent256CTR(),
+                BlockCiphers.TripleDESCTR(),
+                BlockCiphers.Twofish128CBC(),
+                BlockCiphers.Twofish128CTR(),
+                BlockCiphers.Twofish192CBC(),
+                BlockCiphers.Twofish192CTR(),
+                BlockCiphers.Twofish256CBC(),
+                BlockCiphers.Twofish256CTR(),
+                BlockCiphers.TwofishCBC(),
+                StreamCiphers.Arcfour(),
+                StreamCiphers.Arcfour128(),
+                StreamCiphers.Arcfour256()));
 
         boolean warn = false;
         // Ref. https://issues.apache.org/jira/browse/SSHD-24
@@ -144,6 +169,7 @@ public class DefaultConfig
                 c.init(Cipher.Mode.Encrypt, key, iv);
             } catch (Exception e) {
                 warn = true;
+                log.warn(e.getCause().getMessage());
                 i.remove();
             }
         }
@@ -151,6 +177,7 @@ public class DefaultConfig
             log.warn("Disabling high-strength ciphers: cipher strengths apparently limited by JCE policy");
 
         setCipherFactories(avail);
+        log.debug("Available cipher factories: {}", avail);
     }
 
     protected void initSignatureFactories() {

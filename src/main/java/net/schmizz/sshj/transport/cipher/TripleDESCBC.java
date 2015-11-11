@@ -17,7 +17,7 @@ package net.schmizz.sshj.transport.cipher;
 
 /** {@code 3des-cbc} cipher */
 public class TripleDESCBC
-        extends BaseCipher {
+        extends BlockCipher {
 
     /** Named factory for TripleDESCBC Cipher */
     public static class Factory

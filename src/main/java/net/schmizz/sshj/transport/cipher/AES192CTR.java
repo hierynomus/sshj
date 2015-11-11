@@ -17,7 +17,7 @@ package net.schmizz.sshj.transport.cipher;
 
 /** {@code aes192-ctr} cipher */
 public class AES192CTR
-        extends BaseCipher {
+        extends BlockCipher {
 
     /** Named factory for AES192CTR Cipher */
     public static class Factory

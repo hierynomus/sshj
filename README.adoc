@@ -59,7 +59,8 @@ In the `examples` directory, there is a separate Maven project that shows how th
 Implementations / adapters for the following algorithms are included:
 
 ciphers::
-  `aes{128,192,256}-{cbc,ctr}`, `blowfish-cbc`, `3des-cbc`
+  `aes{128,192,256}-{cbc,ctr}`, `blowfish-{cbc,ctr}`, `3des-{cbc,ctr}`, `twofish{128,192,256}-{cbc,ctr}`, `twofish-cbc`, `serpent{128,192,256}-{cbc,ctr}`, `idea-{cbc,ctr}`, `cast128-{cbc,ctr}`, `arcfour`, `arcfour{128,256}`
+  SSHJ also supports the following extended (non official) ciphers: `camellia{128,192,256}-{cbc,ctr}`, `camellia{128,192,256}-{cbc,ctr}@openssh.org`
 
 key exchange::
   `diffie-hellman-group1-sha1`, `diffie-hellman-group14-sha1`, `diffie-hellman-group-exchange-sha1`, `diffie-hellman-group-exchange-sha256`,
@@ -79,6 +80,8 @@ private key files::
 
 If you need something that is not included, it shouldn't be too hard to add (do contribute it!)
 
+== Comparing to other implementations
+http://ssh-comparison.quendi.de/comparison.html[SSH Implementation Comparison]
 
 == Dependencies
 Java 6+. http://www.slf4j.org/download.html[slf4j] is required. http://www.bouncycastle.org/java.html[bouncycastle] is highly recommended and required for using some of the crypto algorithms. http://www.jcraft.com/jzlib/[jzlib] is required for using zlib compression.
@@ -93,6 +96,9 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.15.0 (2015-??-??)::
+* Added arcfour Stream Ciphers from RFC4253 and RFC4345
+* Added all Block Ciphers from RFC4344 and RFC4253
 SSHJ 0.14.0 (2015-11-04)::
 * Fixed https://github.com/hierynomus/sshj/issues/171[#171]: Added support for `curve25519-sha256@libssh.org` key exchange algorithm
 * Added support for `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384` and  `ecdh-sha2-nistp521` key exchange algorithms

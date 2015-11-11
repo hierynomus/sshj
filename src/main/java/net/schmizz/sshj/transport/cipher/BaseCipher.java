@@ -22,9 +22,11 @@ import javax.crypto.ShortBufferException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 
 /** Base class for all Cipher implementations delegating to the JCE provider. */
-public class BaseCipher
+public abstract class BaseCipher
         implements Cipher {
 
     private static byte[] resize(byte[] data, int size) {
@@ -66,12 +68,20 @@ public class BaseCipher
         iv = BaseCipher.resize(iv, ivsize);
         try {
             cipher = SecurityUtils.getCipher(transformation);
-            cipher.init((mode == Mode.Encrypt ? javax.crypto.Cipher.ENCRYPT_MODE : javax.crypto.Cipher.DECRYPT_MODE),
-                        new SecretKeySpec(key, algorithm), new IvParameterSpec(iv));
+            initCipher(cipher, mode, key, iv);
         } catch (GeneralSecurityException e) {
             cipher = null;
             throw new SSHRuntimeException(e);
         }
+    }
+
+    protected abstract void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv) throws InvalidKeyException, InvalidAlgorithmParameterException;
+    protected SecretKeySpec getKeySpec(byte[] key) {
+        return new SecretKeySpec(key, algorithm);
+    }
+
+    protected int getMode(Mode mode) {
+        return mode == Mode.Encrypt ? javax.crypto.Cipher.ENCRYPT_MODE : javax.crypto.Cipher.DECRYPT_MODE;
     }
 
     @Override

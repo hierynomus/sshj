@@ -17,7 +17,7 @@ package net.schmizz.sshj.transport.cipher;
 
 /** {@code blowfish-ctr} cipher */
 public class BlowfishCBC
-        extends BaseCipher {
+        extends BlockCipher {
 
     /** Named factory for BlowfishCBC Cipher */
     public static class Factory
