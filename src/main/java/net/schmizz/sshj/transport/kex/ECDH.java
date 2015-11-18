@@ -1,6 +1,5 @@
 package net.schmizz.sshj.transport.kex;
 
-import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
 
 import java.math.BigInteger;
@@ -10,10 +9,9 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.*;
-import java.util.Arrays;
 
-import static net.schmizz.sshj.transport.kex.SecgUtils.getDecoded;
-import static net.schmizz.sshj.transport.kex.SecgUtils.getEncoded;
+import static com.hierynomus.sshj.secg.SecgUtils.getDecoded;
+import static com.hierynomus.sshj.secg.SecgUtils.getEncoded;
 
 public class ECDH extends DHBase {
 

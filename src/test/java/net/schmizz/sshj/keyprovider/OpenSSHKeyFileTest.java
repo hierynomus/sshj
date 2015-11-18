@@ -30,9 +30,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
+import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Scanner;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
@@ -125,6 +128,16 @@ public class OpenSSHKeyFileTest {
         assertEquals(dsa.getType(), KeyType.DSA);
         assertEquals(KeyUtil.newDSAPublicKey(y, p, q, g), dsa.getPublic());
         assertEquals(KeyUtil.newDSAPrivateKey(x, p, q, g), dsa.getPrivate());
+    }
+
+    @Test
+    public void shouldHaveCorrectFingerprintForECDSA() throws IOException, GeneralSecurityException {
+        OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/test_ecdsa_nistp256"));
+        String expected = "256 MD5:53:ae:db:ed:8f:2d:02:d4:d5:6c:24:bc:a4:66:88:79 root@itgcpkerberosstack-cbgateway-0-20151117031915 (ECDSA)\n";
+        PublicKey aPublic = keyFile.getPublic();
+        String sshjFingerprintSshjKey = net.schmizz.sshj.common.SecurityUtils.getFingerprint(aPublic);
+        assertThat(expected, containsString(sshjFingerprintSshjKey));
     }
 
     @Before

@@ -1,4 +1,4 @@
-package net.schmizz.sshj.transport.kex;
+package com.hierynomus.sshj.secg;
 
 import net.schmizz.sshj.common.SSHRuntimeException;
 
@@ -7,11 +7,11 @@ import java.security.spec.ECPoint;
 import java.security.spec.EllipticCurve;
 import java.util.Arrays;
 
-class SecgUtils {
+public class SecgUtils {
     /**
      * SECG 2.3.4 Octet String to ECPoint
      */
-    static ECPoint getDecoded(byte[] M, EllipticCurve curve) {
+    public static ECPoint getDecoded(byte[] M, EllipticCurve curve) {
         int elementSize = getElementSize(curve);
         if (M.length != 2 * elementSize + 1 || M[0] != 0x04) {
             throw new SSHRuntimeException("Invalid 'f' for Elliptic Curve " + curve.toString());
@@ -26,7 +26,7 @@ class SecgUtils {
     /**
      * SECG 2.3.3 ECPoint to Octet String
      */
-    static byte[] getEncoded(ECPoint point, EllipticCurve curve) {
+    public static byte[] getEncoded(ECPoint point, EllipticCurve curve) {
         int elementSize = getElementSize(curve);
         byte[] M = new byte[2 * elementSize + 1];
         M[0] = 0x04;
