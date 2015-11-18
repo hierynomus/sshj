@@ -92,7 +92,7 @@ public class OpenSSHKeyFile
             try {
                 final String keydata = br.readLine();
                 if (keydata != null) {
-                    String[] parts = keydata.split(" ");
+                    String[] parts = keydata.trim().split(" ");
                     assert parts.length >= 2;
                     type = KeyType.fromString(parts[0]);
                     pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();

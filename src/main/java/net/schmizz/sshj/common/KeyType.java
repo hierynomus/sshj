@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.common;
 
+import com.hierynomus.sshj.secg.SecgUtils;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECParameterSpec;
@@ -151,17 +152,11 @@ public enum KeyType {
         @Override
         public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final ECPublicKey ecdsa = (ECPublicKey) pk;
-            final java.security.spec.ECPoint point = ecdsa.getW();
-            final byte[] x = trimStartingZeros(point.getAffineX().toByteArray());
-            final byte[] y = trimStartingZeros(point.getAffineY().toByteArray());
+            byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
 
             buf.putString(sType)
                 .putString(NISTP_CURVE)
-                .putUInt32(1 + x.length + y.length)
-                .putRawBytes(new byte[] { (byte) 0x04 })
-                .putRawBytes(x)
-                .putRawBytes(y)
-            ;
+                .putBytes(encoded);
         }
 
         @Override
