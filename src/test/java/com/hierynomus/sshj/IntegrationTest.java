@@ -3,6 +3,7 @@ package com.hierynomus.sshj;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -12,7 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class IntegrationTest {
 
-    @Test
+    @Test @Ignore // Should only be enabled for testing against VM
     public void shouldConnect() throws IOException {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
         sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(new File("/Users/ajvanerp/.ssh/known_hosts")));
