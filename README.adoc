@@ -67,7 +67,7 @@ key exchange::
   `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384`, `ecdh-sha2-nistp521`, `curve25519-sha256@libssh.org`
 
 signatures::
-  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`
+  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ssh-ed25519
 
 mac::
   `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`
@@ -97,7 +97,9 @@ Fork away!
 
 == Release history
 SSHJ 0.15.0 (2015-??-??)::
-* Added arcfour Stream Ciphers from RFC4253 and RFC4345
+* Fixed https://github.com/hierynomus/sshj/issues/220[#220]: Added support for `ssh-ed25519` host keys
+* Fixed https://github.com/hierynomus/sshj/issues/225[#225]: Fixed bug in ECDSA fingerprint calculation that sometimes produced an incorrect fingerprint
+* Added `arcfour` Stream Ciphers from RFC4253 and RFC4345
 * Added all Block Ciphers from RFC4344 and RFC4253
 SSHJ 0.14.0 (2015-11-04)::
 * Fixed https://github.com/hierynomus/sshj/issues/171[#171]: Added support for `curve25519-sha256@libssh.org` key exchange algorithm
