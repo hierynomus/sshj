@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.14.0
+:sshj_version: 0.15.0
 :source-highlighter: pygments
 
 image::https://travis-ci.org/hierynomus/sshj.svg?branch=master[]
@@ -96,7 +96,7 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.15.0 (2015-??-??)::
+SSHJ 0.15.0 (2015-11-20)::
 * Fixed https://github.com/hierynomus/sshj/issues/220[#220]: Added support for `ssh-ed25519` host keys
 * Fixed https://github.com/hierynomus/sshj/issues/225[#225]: Fixed bug in ECDSA fingerprint calculation that sometimes produced an incorrect fingerprint
 * Added `arcfour` Stream Ciphers from RFC4253 and RFC4345
