@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import net.schmizz.keepalive.KeepAliveProvider;
@@ -181,7 +182,7 @@ public class DefaultConfig
     }
 
     protected void initSignatureFactories() {
-        setSignatureFactories(new SignatureECDSA.Factory(), new SignatureRSA.Factory(), new SignatureDSA.Factory());
+        setSignatureFactories(new SignatureECDSA.Factory(), new SignatureRSA.Factory(), new SignatureDSA.Factory(), new SignatureEdDSA.Factory());
     }
 
     protected void initMACFactories() {

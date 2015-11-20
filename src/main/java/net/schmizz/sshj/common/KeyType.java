@@ -16,6 +16,13 @@
 package net.schmizz.sshj.common;
 
 import com.hierynomus.sshj.secg.SecgUtils;
+import com.hierynomus.sshj.signature.Ed25519PublicKey;
+import net.i2p.crypto.eddsa.*;
+import net.i2p.crypto.eddsa.math.GroupElement;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
+import net.i2p.crypto.eddsa.spec.EdDSAParameterSpec;
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECParameterSpec;
@@ -26,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.security.*;
+import java.security.KeyFactory;
 import java.security.interfaces.*;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -163,18 +171,43 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return ("ECDSA".equals(key.getAlgorithm()));
         }
+    },
 
-        private byte[] trimStartingZeros(byte[] in) {
-
-            int i = 0;
-            for (; i < in.length; i++) {
-                if (in[i] != 0) {
-                    break;
+    ED25519("ssh-ed25519") {
+        private final Logger logger = LoggerFactory.getLogger(KeyType.class);
+        @Override
+        public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf) throws GeneralSecurityException {
+            try {
+                final int keyLen = buf.readUInt32AsInt();
+                final byte[] p = new byte[keyLen];
+                buf.readRawBytes(p);
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("Key algo: %s, Key curve: 25519, Key Len: %s\np: %s",
+                            type,
+                            keyLen,
+                            Arrays.toString(p))
+                    );
                 }
+
+                EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("ed25519-sha-512");
+                GroupElement point = ed25519.getCurve().createPoint(p, true);
+                EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(point, ed25519);
+                return new Ed25519PublicKey(publicSpec);
+
+            } catch (Buffer.BufferException be) {
+                throw new SSHRuntimeException(be);
             }
-            final byte[] out = new byte[in.length - i];
-            System.arraycopy(in, i, out, 0, out.length);
-            return out;
+        }
+
+        @Override
+        public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            EdDSAPublicKey key = (EdDSAPublicKey) pk;
+            buf.putString(sType).putBytes(key.getAbyte());
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return "EdDSA".equals(key.getAlgorithm());
         }
     },
 
