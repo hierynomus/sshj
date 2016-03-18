@@ -44,6 +44,8 @@ public class ConfigImpl
     private List<Factory.Named<Signature>> signatureFactories;
     private List<Factory.Named<FileKeyProvider>> fileKeyProviderFactories;
 
+    private boolean waitForServerIdentBeforeSendingClientIdent = false;
+
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
         return cipherFactories;
@@ -156,5 +158,15 @@ public class ConfigImpl
     @Override
     public void setKeepAliveProvider(KeepAliveProvider keepAliveProvider) {
         this.keepAliveProvider = keepAliveProvider;
+    }
+
+    @Override
+    public boolean isWaitForServerIdentBeforeSendingClientIdent() {
+        return waitForServerIdentBeforeSendingClientIdent;
+    }
+
+    @Override
+    public void setWaitForServerIdentBeforeSendingClientIdent(boolean waitForServerIdentBeforeSendingClientIdent) {
+        this.waitForServerIdentBeforeSendingClientIdent = waitForServerIdentBeforeSendingClientIdent;
     }
 }

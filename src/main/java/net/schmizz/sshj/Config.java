@@ -155,4 +155,24 @@ public interface Config {
      * @param keepAliveProvider keep-alive provider
      */
     void setKeepAliveProvider(KeepAliveProvider keepAliveProvider);
+
+    /**
+     * Gets whether the client should first wait for a received server ident, before sending the client ident.
+     * <p/>
+     * <stong>NB:</stong> This is non-standard behaviour, and can potentially deadlock if the server also waits on the client ident.
+     *
+     * The default value is set to false.
+     *
+     * @return Whether to first wait for the server ident.
+     */
+    boolean isWaitForServerIdentBeforeSendingClientIdent();
+
+    /**
+     * Sets whether the SSH client should wait for a received server ident, before sending the client ident.
+     * <p/>
+     * <stong>NB:</stong> This is non-standard behaviour, and can potentially deadlock if the server also waits on the client ident.
+
+     * @param waitForServerIdentBeforeSendingClientIdent Whether to wait for the server ident.
+     */
+    void setWaitForServerIdentBeforeSendingClientIdent(boolean waitForServerIdentBeforeSendingClientIdent);
 }

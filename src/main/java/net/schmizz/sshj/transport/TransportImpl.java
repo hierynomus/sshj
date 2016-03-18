@@ -152,18 +152,14 @@ public final class TransportImpl
 
         try {
 
-            log.info("Client identity string: {}", clientID);
-            connInfo.out.write((clientID + "\r\n").getBytes(IOUtils.UTF8));
-            connInfo.out.flush();
-
-            // Read server's ID
-            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
-            while ((serverID = readIdentification(buf)).isEmpty()) {
-                int b = connInfo.in.read();
-                if (b == -1)
-                    throw new TransportException("Server closed connection during identification exchange");
-                buf.putByte((byte) b);
+            if (config.isWaitForServerIdentBeforeSendingClientIdent()) {
+                receiveServerIdent();
+                sendClientIdent();
+            } else {
+                sendClientIdent();
+                receiveServerIdent();
             }
+
 
             log.info("Server identity string: {}", serverID);
 
@@ -172,6 +168,26 @@ public final class TransportImpl
         }
 
         reader.start();
+    }
+
+    private void receiveServerIdent() throws IOException {
+        final Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
+        while ((serverID = readIdentification(buf)).isEmpty()) {
+            int b = connInfo.in.read();
+            if (b == -1)
+                throw new TransportException("Server closed connection during identification exchange");
+            buf.putByte((byte) b);
+        }
+    }
+
+    /**
+     * Receive the server identification string.
+     * @throws IOException If there was an error writing to the outputstream.
+     */
+    private void sendClientIdent() throws IOException {
+        log.info("Client identity string: {}", clientID);
+        connInfo.out.write((clientID + "\r\n").getBytes(IOUtils.UTF8));
+        connInfo.out.flush();
     }
 
     /**
