@@ -15,12 +15,17 @@
  */
 package net.schmizz.sshj.userauth.method;
 
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.password.AccountResource;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.PasswordUpdateProvider;
+import net.schmizz.sshj.userauth.password.Resource;
+
+import static net.schmizz.sshj.common.Message.USERAUTH_REQUEST;
 
 /** Implements the {@code password} authentication method. Password-change request handling is not currently supported. */
 public class AuthPassword
@@ -28,9 +33,28 @@ public class AuthPassword
 
     private final PasswordFinder pwdf;
 
+    private static final PasswordUpdateProvider nullProvider = new PasswordUpdateProvider() {
+        @Override
+        public char[] provideNewPassword(Resource<?> resource, String prompt) {
+            return null;
+        }
+
+        @Override
+        public boolean shouldRetry(Resource<?> resource) {
+            return false;
+        }
+    };
+
+    private final PasswordUpdateProvider newPasswordProvider;
+
     public AuthPassword(PasswordFinder pwdf) {
+        this(pwdf, nullProvider);
+    }
+
+    public AuthPassword(PasswordFinder pwdf, PasswordUpdateProvider newPasswordProvider) {
         super("password");
         this.pwdf = pwdf;
+        this.newPasswordProvider = newPasswordProvider;
     }
 
     @Override
@@ -46,10 +70,23 @@ public class AuthPassword
     @Override
     public void handle(Message cmd, SSHPacket buf)
             throws UserAuthException, TransportException {
-        if (cmd == Message.USERAUTH_60)
-            throw new UserAuthException("Password change request received; unsupported operation");
-        else
+        if (cmd == Message.USERAUTH_60 && newPasswordProvider != null) {
+            log.info("Received SSH_MSG_USERAUTH_PASSWD_CHANGEREQ.");
+            try {
+                String prompt = buf.readString();
+                buf.readString(); // lang-tag
+                AccountResource resource = makeAccountResource();
+                char[] newPassword = newPasswordProvider.provideNewPassword(resource, prompt);
+                SSHPacket sshPacket = super.buildReq().putBoolean(true).putSensitiveString(pwdf.reqPassword(resource)).putSensitiveString(newPassword);
+                params.getTransport().write(sshPacket);
+            } catch (Buffer.BufferException e) {
+                throw new TransportException(e);
+            }
+        } else if (cmd == Message.USERAUTH_60) {
+            throw new UserAuthException("Password change request received; unsupported operation (newPassword was 'null')");
+        } else {
             super.handle(cmd, buf);
+        }
     }
 
     /**
@@ -58,7 +95,8 @@ public class AuthPassword
      */
     @Override
     public boolean shouldRetry() {
-        return pwdf.shouldRetry(makeAccountResource());
+        AccountResource accountResource = makeAccountResource();
+        return newPasswordProvider.shouldRetry(accountResource) || pwdf.shouldRetry(accountResource);
     }
 
 }

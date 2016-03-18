@@ -57,6 +57,7 @@ import net.schmizz.sshj.userauth.method.AuthPassword;
 import net.schmizz.sshj.userauth.method.AuthPublickey;
 import net.schmizz.sshj.userauth.method.PasswordResponseProvider;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.PasswordUpdateProvider;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
@@ -291,6 +292,22 @@ public class SSHClient
     public void authPassword(String username, PasswordFinder pfinder)
             throws UserAuthException, TransportException {
         auth(username, new AuthPassword(pfinder), new AuthKeyboardInteractive(new PasswordResponseProvider(pfinder)));
+    }
+
+    /**
+     * Authenticate {@code username} using the {@code "password"} authentication method and as a fallback basic
+     * challenge-response authentication.
+     *
+     * @param username user to authenticate
+     * @param pfinder  the {@link PasswordFinder} to use for authentication
+     * @param newPasswordProvider  the {@link PasswordUpdateProvider} to use when a new password is being requested from the user.
+     *
+     * @throws UserAuthException  in case of authentication failure
+     * @throws TransportException if there was a transport-layer error
+     */
+    public void authPassword(String username, PasswordFinder pfinder, PasswordUpdateProvider newPasswordProvider)
+            throws UserAuthException, TransportException {
+        auth(username, new AuthPassword(pfinder, newPasswordProvider), new AuthKeyboardInteractive(new PasswordResponseProvider(pfinder)));
     }
 
     /**
