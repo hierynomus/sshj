@@ -1,6 +1,5 @@
 package com.hierynomus.sshj.transport.cipher;
 
-import net.schmizz.sshj.transport.cipher.BaseCipher;
 import net.schmizz.sshj.transport.cipher.BlockCipher;
 import net.schmizz.sshj.transport.cipher.Cipher;
 
