@@ -45,7 +45,7 @@ public class Curve25519DH extends DHBase {
 
     /**
      * TODO want to figure out why BouncyCastle does not work.
-     * @return
+     * @return The initialized curve25519 parameter spec
      */
     public static AlgorithmParameterSpec getCurve25519Params() {
         X9ECParameters ecP = CustomNamedCurves.getByName("curve25519");

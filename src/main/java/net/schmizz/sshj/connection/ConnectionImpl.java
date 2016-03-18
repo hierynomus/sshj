@@ -64,7 +64,6 @@ public class ConnectionImpl
     /**
      * Create with an associated {@link Transport}.
      *
-     * @param config the ssh config
      * @param trans transport layer
      * @param keepAlive the keep alive provider
      */
