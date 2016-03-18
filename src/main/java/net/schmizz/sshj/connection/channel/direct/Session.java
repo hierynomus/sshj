@@ -48,18 +48,24 @@ public interface Session
         /**
          * If the command exit violently {@link #getExitSignal() with a signal}, an error message would have been
          * received and can be retrieved via this method. Otherwise, this method will return {@code null}.
+         * <p/>
+         * <strong>NOTE: </strong> Always call {@link #close()} first before inspecting the exit error message.
          */
         String getExitErrorMessage();
 
         /**
          * Returns the {@link Signal signal} if the command exit violently, or {@code null} if this information was not
          * received.
+         * <p/>
+         * <strong>NOTE: </strong> Always call {@link #close()} first before inspecting the exit signal.
          */
         Signal getExitSignal();
 
         /**
          * Returns the exit status of the command if it was received, or {@code null} if this information was not
          * received.
+         * <p/>
+         * <strong>NOTE: </strong> Always call {@link #close()} first before inspecting the exit status.
          */
         Integer getExitStatus();
 
