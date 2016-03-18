@@ -216,13 +216,15 @@ public class ConnectionImpl
             throws ConnectionException {
         synchronized (globalReqPromises) {
             Promise<SSHPacket, ConnectionException> gr = globalReqPromises.poll();
-            if (gr == null)
+            if (gr == null) {
                 throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
-                                              "Got a global request response when none was requested");
-            else if (response == null)
+                        "Got a global request response when none was requested");
+            } else if (response == null) {
                 gr.deliverError(new ConnectionException("Global request [" + gr + "] failed"));
-            else
-                gr.deliver(response);
+            } else {
+                // To prevent a race condition, copy the packet before delivering, as it will be handled in a different thread.
+                gr.deliver(new SSHPacket(response));
+            }
         }
     }
 
