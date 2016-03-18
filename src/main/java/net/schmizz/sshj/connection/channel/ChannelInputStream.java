@@ -130,7 +130,12 @@ public final class ChannelInputStream
             buf.putRawBytes(data, offset, len);
             buf.notifyAll();
         }
-        win.consume(len);
+        // Potential fix for #203 (window consumed below 0).
+        // This seems to be a race condition if we receive more data, while we're already sending a SSH_MSG_CHANNEL_WINDOW_ADJUST
+        // And the window has not expanded yet.
+        synchronized (win) {
+            win.consume(len);
+        }
         if (chan.getAutoExpand())
             checkWindow();
     }
