@@ -221,7 +221,7 @@ public class SSHClient
     public void auth(String username, Iterable<AuthMethod> methods)
             throws UserAuthException, TransportException {
         checkConnected();
-        final Deque<UserAuthException> savedEx = new LinkedList<UserAuthException>();
+        final Deque<UserAuthException> savedEx = new LinkedList<>();
         for (AuthMethod method: methods) {
             try {
                 if (auth.authenticate(username, (Service) conn, method, trans.getTimeoutMs()))
@@ -342,7 +342,7 @@ public class SSHClient
      */
     public void authPublickey(String username, Iterable<KeyProvider> keyProviders)
             throws UserAuthException, TransportException {
-        final List<AuthMethod> am = new LinkedList<AuthMethod>();
+        final List<AuthMethod> am = new LinkedList<>();
         for (KeyProvider kp : keyProviders)
             am.add(new AuthPublickey(kp));
         auth(username, am);
@@ -385,7 +385,7 @@ public class SSHClient
      */
     public void authPublickey(String username, String... locations)
             throws UserAuthException, TransportException {
-        final List<KeyProvider> keyProviders = new LinkedList<KeyProvider>();
+        final List<KeyProvider> keyProviders = new LinkedList<>();
         for (String loc : locations) {
             try {
                 log.debug("Attempting to load key from: {}", loc);
@@ -415,7 +415,7 @@ public class SSHClient
     public void authGssApiWithMic(String username, LoginContext context, Oid supportedOid, Oid... supportedOids)
             throws UserAuthException, TransportException {
         // insert supportedOid to the front of the list since ordering matters
-        List<Oid> oids = new ArrayList<Oid>(Arrays.asList(supportedOids));
+        List<Oid> oids = new ArrayList<>(Arrays.asList(supportedOids));
         oids.add(0, supportedOid);
 
         auth(username, new AuthGssApiWithMic(context, oids));
