@@ -17,7 +17,7 @@ public interface PasswordUpdateProvider {
     char[] provideNewPassword(Resource<?> resource, String prompt);
 
     /**
-     * If password turns out to be incorrect, indicates whether another call to {@link #reqPassword(Resource)} should be
+     * If password turns out to be incorrect, indicates whether another call to {@link #provideNewPassword(Resource, String)} should be
      * made.
      * <p/>
      * This method is geared at interactive implementations, and stub implementations may simply return {@code false}.
