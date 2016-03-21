@@ -46,7 +46,8 @@ public class UserAuthImpl
     private volatile List<String> allowedMethods = new LinkedList<String>();
 
     // Internal state
-    private AuthMethod currentMethod;
+    private volatile AuthMethod currentMethod;
+    private volatile Service nextService; // The next service layer to set on the transport once we're authenticated.
 
     public UserAuthImpl(Transport trans) {
         super("ssh-userauth", trans);
@@ -62,6 +63,7 @@ public class UserAuthImpl
             super.request(); // Request "ssh-userauth" service (if not already active)
 
             currentMethod = method;
+            this.nextService = nextService;
             currentMethod.init(makeAuthParams(username, nextService));
             authenticated.clear();
             log.debug("Trying `{}` auth...", method.getName());
@@ -70,14 +72,14 @@ public class UserAuthImpl
 
             if (outcome) {
                 log.debug("`{}` auth successful", method.getName());
-                trans.setAuthenticated(); // So it can put delayed compression into force if applicable
-                trans.setService(nextService); // We aren't in charge anymore, next service is
             } else {
                 log.debug("`{}` auth failed", method.getName());
             }
 
         } finally {
+            // Clear the internal state.
             currentMethod = null;
+            this.nextService = null;
             authenticated.unlock();
         }
 
@@ -115,6 +117,11 @@ public class UserAuthImpl
                 break;
 
                 case USERAUTH_SUCCESS: {
+                    // In order to prevent race conditions, we immediately set the authenticated flag on the transport
+                    // And change the service before delivering the authenticated promise.
+                    // Should fix https://github.com/hierynomus/sshj/issues/237
+                    trans.setAuthenticated(); // So it can put delayed compression into force if applicable
+                    trans.setService(nextService); // We aren't in charge anymore, next service is
                     authenticated.deliver(true);
                 }
                 break;
