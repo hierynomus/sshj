@@ -18,13 +18,20 @@ package com.hierynomus.sshj.sftp;
 import com.hierynomus.sshj.test.SshFixture;
 import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.sftp.FileAttributes;
 import net.schmizz.sshj.sftp.SFTPClient;
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.theories.DataPoint;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SFTPClientTest {
 
@@ -50,5 +57,22 @@ public class SFTPClientTest {
         } finally {
             sshClient.disconnect();
         }
+    }
+
+    @Test
+    @DataPoint
+    public void shouldNotCreateAbsoluteDirectoryWhenPathIsRelative() throws IOException {
+        SSHClient sshClient = fixture.setupConnectedDefaultClient();
+        sshClient.authPassword("test", "test");
+        SFTPClient sftpClient = sshClient.newSFTPClient();
+        String foo = sftpClient.canonicalize("foo");
+        String fooAbs = sftpClient.canonicalize("/foo");
+        assertThat(sftpClient.statExistence("foo"), nullValue());
+        sftpClient.mkdirs("foo");
+        assertThat(sftpClient.statExistence("foo"), notNullValue());
+        sftpClient.rmdir("foo");
+        assertThat(sftpClient.statExistence("foo"), nullValue());
+        sftpClient.close();
+        sshClient.disconnect();
     }
 }
