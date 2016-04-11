@@ -1,7 +1,5 @@
 package com.hierynomus.sshj.backport;
 
-import java.math.BigDecimal;
-
 public class JavaVersion {
     public static boolean isJava7OrEarlier() {
         String property = System.getProperty("java.specification.version");

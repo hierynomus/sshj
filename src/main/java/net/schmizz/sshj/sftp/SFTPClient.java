@@ -89,7 +89,7 @@ public class SFTPClient
 
     public void mkdirs(String path)
             throws IOException {
-        final Deque<String> dirsToMake = new LinkedList<String>();
+        final Deque<String> dirsToMake = new LinkedList<>();
         for (PathComponents current = engine.getPathHelper().getComponents(path); ;
              current = engine.getPathHelper().getComponents(current.getParent())) {
             final FileAttributes attrs = statExistence(current.getPath());
