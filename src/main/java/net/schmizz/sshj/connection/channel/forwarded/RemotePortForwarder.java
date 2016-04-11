@@ -117,6 +117,34 @@ public class RemotePortForwarder
             return address + ":" + port;
         }
 
+        private boolean handles(ForwardedTCPIPChannel channel) {
+            Forward channelForward = channel.getParentForward();
+            if (channelForward.getPort() != port) {
+                return false;
+            }
+            if ("".equals(address)) {
+                // This forward handles all protocols
+                return true;
+            }
+            if (channelForward.address.equals(address)) {
+                // Addresses match up
+                return true;
+            }
+            if ("localhost".equals(address) && (channelForward.address.equals("127.0.0.1") || channelForward.address.equals("::1"))) {
+                // Localhost special case.
+                return true;
+            }
+            if ("::".equals(address) && channelForward.address.indexOf("::") > 0) {
+                // Listen on all IPv6
+                return true;
+            }
+            if ("0.0.0.0".equals(address) && channelForward.address.indexOf('.') > 0) {
+                // Listen on all IPv4
+                return true;
+            }
+            return false;
+        }
+
     }
 
     /** A {@code forwarded-tcpip} channel. */
@@ -224,11 +252,15 @@ public class RemotePortForwarder
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }
-        if (listeners.containsKey(chan.getParentForward()))
-            callListener(listeners.get(chan.getParentForward()), chan);
-        else
-            chan.reject(OpenFailException.Reason.ADMINISTRATIVELY_PROHIBITED, "Forwarding was not requested on `"
-                    + chan.getParentForward() + "`");
+
+        for (Forward forward : listeners.keySet()) {
+            if (forward.handles(chan)) {
+                callListener(listeners.get(forward), chan);
+                return;
+            }
+        }
+        chan.reject(OpenFailException.Reason.ADMINISTRATIVELY_PROHIBITED, "Forwarding was not requested on `"
+                + chan.getParentForward() + "`");
     }
 
 }

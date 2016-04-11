@@ -65,6 +65,7 @@ dependencies {
     testCompile "org.apache.sshd:sshd-core:1.1.0"
     testRuntime "ch.qos.logback:logback-classic:1.1.2"
     testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.2'
 
 }
 
