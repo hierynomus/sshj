@@ -1,30 +1,41 @@
 plugins {
     id "java"
     id "maven"
+    id "idea"
     id "signing"
     id "osgi"
+    id "org.ajoberstar.release-opinion" version "1.4.0-rc.1"
+    id "com.github.hierynomus.license" version "0.12.1"
 }
 
-apply plugin: "java"
-apply plugin: "maven"
-apply plugin: "signing"
-apply plugin: "osgi"
-
 group = "com.hierynomus"
-version = "0.16.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-configurations {
-    compile {
-        transitive = false
+configurations.compile.transitive = false
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
     }
+}
+
+license {
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+    header rootProject.file('LICENSE_HEADER')
+    strictCheck true
+}
+
+release {
+    grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
 }
 
 test {
@@ -100,7 +111,7 @@ artifacts {
 }
 
 signing {
-    required { !version.contains("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+    required { !version.toString().contains("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
 
