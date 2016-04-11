@@ -194,3 +194,5 @@ uploadArchives {
         }
     }
 }
+
+tasks.release.dependsOn 'build', 'uploadArchives'
