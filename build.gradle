@@ -103,7 +103,14 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-    manifest = project.tasks.jar.manifest
+    manifest = osgiManifest {
+        classesDir = project.sourceSets.main.output.classesDir
+        classpath = project.sourceSets.main.runtimeClasspath
+        instruction "Bundle-ManifestVersion", "2"
+        instruction "Bundle-SymbolicName", "${project.group}.${project.name}.source"
+        instruction "Bundle-Version", project.version.toString()
+        instruction "Eclipse-SourceBundle", "${project.group}.${project.name};version=\"${project.version}\";roots:=\".\""
+    }
 }
 
 artifacts {
