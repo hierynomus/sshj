@@ -4,7 +4,9 @@ Jeroen van Erp
 :sshj_version: 0.15.0
 :source-highlighter: pygments
 
-image::https://travis-ci.org/hierynomus/sshj.svg?branch=master[]
+image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
+image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
+image:https://javadoc-emblem.rhcloud.com/doc/com.hierynomus/sshj/badge.svg["Javadoc",link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
 
