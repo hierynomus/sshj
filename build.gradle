@@ -103,7 +103,16 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-    manifest = project.tasks.jar.manifest
+    manifest {
+        attributes(
+            // Add the needed OSGI attributes
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "${project.jar.manifest.name} Source",
+            "Bundle-Version": project.jar.manifest.version,
+            "Eclipse-SourceBundle": "${project.jar.manifest.symbolicName};version=\"${project.jar.manifest.version}\";roots:=\".\"",
+            "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
+        )
+    }
 }
 
 artifacts {
