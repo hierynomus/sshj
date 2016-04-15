@@ -95,14 +95,6 @@ jar {
     }
 }
 
-sourceSets {
-    emptySet {
-        java {
-            srcDir "src/empty/java"
-        }
-    }
-}
-
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
     from javadoc
