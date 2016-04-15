@@ -95,6 +95,14 @@ jar {
     }
 }
 
+sourceSets {
+    emptySet {
+        java {
+            srcDir "src/empty/java"
+        }
+    }
+}
+
 task javadocJar(type: Jar) {
     classifier = 'javadoc'
     from javadoc
@@ -103,13 +111,15 @@ task javadocJar(type: Jar) {
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
-    manifest = osgiManifest {
-        classesDir = project.sourceSets.main.output.classesDir
-        classpath = project.sourceSets.main.runtimeClasspath
-        instruction "Bundle-ManifestVersion", "2"
-        instruction "Bundle-SymbolicName", "${project.group}.${project.name}.source"
-        instruction "Bundle-Version", project.version.toString()
-        instruction "Eclipse-SourceBundle", "${project.group}.${project.name};version=\"${project.version}\";roots:=\".\""
+    manifest {
+        attributes(
+            // Add the needed OSGI attributes
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "${project.jar.manifest.name} Source",
+            "Bundle-Version": project.jar.manifest.version,
+            "Eclipse-SourceBundle": "${project.jar.manifest.symbolicName};version=\"${project.jar.manifest.version}\";roots:=\".\"",
+            "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
+        )
     }
 }
 
