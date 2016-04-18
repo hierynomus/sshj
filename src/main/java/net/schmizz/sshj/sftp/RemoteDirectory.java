@@ -15,12 +15,12 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.sshj.sftp.Response.StatusCode;
-
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import net.schmizz.sshj.sftp.Response.StatusCode;
 
 public class RemoteDirectory
         extends RemoteResource {
@@ -31,7 +31,7 @@ public class RemoteDirectory
 
     public List<RemoteResourceInfo> scan(RemoteResourceFilter filter)
             throws IOException {
-        List<RemoteResourceInfo> rri = new LinkedList<RemoteResourceInfo>();
+        List<RemoteResourceInfo> rri = new ArrayList<>();
         loop:
         for (; ; ) {
             final Response res = requester.request(newRequest(PacketType.READDIR))

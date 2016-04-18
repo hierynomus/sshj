@@ -15,6 +15,23 @@
  */
 package net.schmizz.sshj;
 
+import org.ietf.jgss.Oid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.security.auth.login.LoginContext;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -61,23 +78,6 @@ import net.schmizz.sshj.userauth.password.PasswordUpdateProvider;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
-import org.ietf.jgss.Oid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.security.auth.login.LoginContext;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Secure SHell client API.
@@ -221,7 +221,7 @@ public class SSHClient
     public void auth(String username, Iterable<AuthMethod> methods)
             throws UserAuthException, TransportException {
         checkConnected();
-        final Deque<UserAuthException> savedEx = new LinkedList<>();
+        final Deque<UserAuthException> savedEx = new ConcurrentLinkedDeque<>();
         for (AuthMethod method: methods) {
             try {
                 if (auth.authenticate(username, (Service) conn, method, trans.getTimeoutMs()))
@@ -342,7 +342,7 @@ public class SSHClient
      */
     public void authPublickey(String username, Iterable<KeyProvider> keyProviders)
             throws UserAuthException, TransportException {
-        final List<AuthMethod> am = new LinkedList<>();
+        final List<AuthMethod> am = new ArrayList<>();
         for (KeyProvider kp : keyProviders)
             am.add(new AuthPublickey(kp));
         auth(username, am);
@@ -385,7 +385,7 @@ public class SSHClient
      */
     public void authPublickey(String username, String... locations)
             throws UserAuthException, TransportException {
-        final List<KeyProvider> keyProviders = new LinkedList<>();
+        final List<KeyProvider> keyProviders = new ArrayList<>();
         for (String loc : locations) {
             try {
                 log.debug("Attempting to load key from: {}", loc);

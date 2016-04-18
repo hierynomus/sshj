@@ -15,12 +15,6 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.StreamCopier;
-import net.schmizz.sshj.connection.channel.direct.Session.Command;
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
-import net.schmizz.sshj.xfer.TransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +22,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.SSHException;
+import net.schmizz.sshj.common.StreamCopier;
+import net.schmizz.sshj.connection.channel.direct.Session.Command;
+import net.schmizz.sshj.connection.channel.direct.SessionFactory;
+import net.schmizz.sshj.xfer.TransferListener;
 
 /** @see <a href="http://blogs.sun.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
 class SCPEngine {

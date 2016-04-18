@@ -15,9 +15,6 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.sshj.xfer.FilePermission;
-import net.schmizz.sshj.xfer.LocalDestFile;
-import net.schmizz.sshj.xfer.LocalSourceFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +22,13 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
+
+import net.schmizz.sshj.xfer.FilePermission;
+import net.schmizz.sshj.xfer.LocalDestFile;
+import net.schmizz.sshj.xfer.LocalSourceFile;
 
 public class SFTPClient
         implements Closeable {
@@ -89,7 +90,7 @@ public class SFTPClient
 
     public void mkdirs(String path)
             throws IOException {
-        final Deque<String> dirsToMake = new LinkedList<>();
+        final Deque<String> dirsToMake = new ConcurrentLinkedDeque<>();
         for (PathComponents current = engine.getPathHelper().getComponents(path); ;
              current = engine.getPathHelper().getComponents(current.getParent())) {
             final FileAttributes attrs = statExistence(current.getPath());

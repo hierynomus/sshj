@@ -15,6 +15,12 @@
  */
 package net.schmizz.sshj.userauth;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Service;
@@ -25,12 +31,6 @@ import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.method.AuthMethod;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /** {@link UserAuth} implementation. */
 public class UserAuthImpl
@@ -43,7 +43,7 @@ public class UserAuthImpl
     // Externally available
     private volatile String banner = "";
     private volatile boolean partialSuccess = false;
-    private volatile List<String> allowedMethods = new LinkedList<String>();
+    private volatile List<String> allowedMethods = new ArrayList<>();
 
     // Internal state
     private volatile AuthMethod currentMethod;

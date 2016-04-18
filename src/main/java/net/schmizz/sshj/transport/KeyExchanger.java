@@ -15,6 +15,18 @@
  */
 package net.schmizz.sshj.transport;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.Buffer;
@@ -32,20 +44,8 @@ import net.schmizz.sshj.transport.compression.Compression;
 import net.schmizz.sshj.transport.digest.Digest;
 import net.schmizz.sshj.transport.kex.KeyExchange;
 import net.schmizz.sshj.transport.mac.MAC;
-import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 /** Algorithm negotiation and key exchange. */
 final class KeyExchanger
@@ -68,9 +68,9 @@ final class KeyExchanger
      * {@link HostKeyVerifier#verify(String, int, java.security.PublicKey)} is invoked by {@link #verifyHost(PublicKey)}
      * when we are ready to verify the the server's host key.
      */
-    private final Queue<HostKeyVerifier> hostVerifiers = new LinkedList<HostKeyVerifier>();
+    private final Queue<HostKeyVerifier> hostVerifiers = new ConcurrentLinkedQueue<HostKeyVerifier>();
 
-    private final Queue<AlgorithmsVerifier> algorithmVerifiers = new LinkedList<AlgorithmsVerifier>();
+    private final Queue<AlgorithmsVerifier> algorithmVerifiers = new ConcurrentLinkedQueue<AlgorithmsVerifier>();
 
     private final AtomicBoolean kexOngoing = new AtomicBoolean();
 

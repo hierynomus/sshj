@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj.common;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,7 +81,7 @@ public interface Factory<T> {
              * @return a comma separated list of factory names
              */
             public static <T> List<String> getNames(List<Named<T>> factories) {
-                List<String> list = new LinkedList<String>();
+                List<String> list = new ArrayList<>();
                 for (Named<T> f : factories)
                     list.add(f.getName());
                 return list;

@@ -15,6 +15,14 @@
  */
 package net.schmizz.sshj;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
@@ -34,7 +42,12 @@ import net.schmizz.sshj.transport.cipher.BlowfishCBC;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.cipher.TripleDESCBC;
 import net.schmizz.sshj.transport.compression.NoneCompression;
-import net.schmizz.sshj.transport.kex.*;
+import net.schmizz.sshj.transport.kex.Curve25519SHA256;
+import net.schmizz.sshj.transport.kex.DHG1;
+import net.schmizz.sshj.transport.kex.DHG14;
+import net.schmizz.sshj.transport.kex.DHGexSHA1;
+import net.schmizz.sshj.transport.kex.DHGexSHA256;
+import net.schmizz.sshj.transport.kex.ECDHNistP;
 import net.schmizz.sshj.transport.mac.HMACMD5;
 import net.schmizz.sshj.transport.mac.HMACMD596;
 import net.schmizz.sshj.transport.mac.HMACSHA1;
@@ -47,15 +60,6 @@ import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.image.ByteLookupTable;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * A {@link net.schmizz.sshj.Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
@@ -126,7 +130,7 @@ public class DefaultConfig
 
 
     protected void initCipherFactories() {
-        List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
+        List<Factory.Named<Cipher>> avail = new ArrayList<>(Arrays.<Factory.Named<Cipher>>asList(
                 new AES128CTR.Factory(),
                 new AES192CTR.Factory(),
                 new AES256CTR.Factory(),

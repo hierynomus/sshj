@@ -15,6 +15,12 @@
  */
 package net.schmizz.sshj.connection;
 
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Promise;
 import net.schmizz.keepalive.KeepAlive;
@@ -32,12 +38,6 @@ import net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /** {@link Connection} implementation. */
 public class ConnectionImpl
         extends AbstractService
@@ -51,7 +51,7 @@ public class ConnectionImpl
 
     private final Map<String, ForwardedChannelOpener> openers = new ConcurrentHashMap<String, ForwardedChannelOpener>();
 
-    private final Queue<Promise<SSHPacket, ConnectionException>> globalReqPromises = new LinkedList<Promise<SSHPacket, ConnectionException>>();
+    private final Queue<Promise<SSHPacket, ConnectionException>> globalReqPromises = new ConcurrentLinkedQueue<Promise<SSHPacket, ConnectionException>>();
 
     /** {@code keep-alive} mechanism */
     private final KeepAlive keepAlive;

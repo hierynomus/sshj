@@ -15,17 +15,17 @@
  */
 package net.schmizz.sshj.sftp;
 
-import net.schmizz.concurrent.Promise;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.sftp.Response.StatusCode;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+
+import net.schmizz.concurrent.Promise;
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.sftp.Response.StatusCode;
 
 public class RemoteFile
         extends RemoteResource {
@@ -128,7 +128,7 @@ public class RemoteFile
         public RemoteFileOutputStream(long startingOffset, int maxUnconfirmedWrites) {
             this.fileOffset = startingOffset;
             this.maxUnconfirmedWrites = maxUnconfirmedWrites;
-            this.unconfirmedWrites = new LinkedList<Promise<Response, SFTPException>>();
+            this.unconfirmedWrites = new ConcurrentLinkedQueue<Promise<Response, SFTPException>>();
         }
 
         @Override
@@ -226,8 +226,8 @@ public class RemoteFile
         private final byte[] b = new byte[1];
 
         private final int maxUnconfirmedReads;
-        private final Queue<Promise<Response, SFTPException>> unconfirmedReads = new LinkedList<Promise<Response, SFTPException>>();
-        private final Queue<Long> unconfirmedReadOffsets = new LinkedList<Long>();
+        private final Queue<Promise<Response, SFTPException>> unconfirmedReads = new ConcurrentLinkedQueue<Promise<Response, SFTPException>>();
+        private final Queue<Long> unconfirmedReadOffsets = new ConcurrentLinkedQueue<Long>();
 
         private long requestOffset;
         private long responseOffset;
@@ -249,15 +249,7 @@ public class RemoteFile
 
         private ByteArrayInputStream pending = new ByteArrayInputStream(new byte[0]);
 
-        private boolean retrieveUnconfirmedRead(boolean blocking) throws IOException {
-            if (unconfirmedReads.size() <= 0) {
-                return false;
-            }
-
-            if (!blocking && !unconfirmedReads.peek().isDelivered()) {
-                return false;
-            }
-
+        private boolean retrieveUnconfirmedRead() throws IOException {
             unconfirmedReadOffsets.remove();
             final Response res = unconfirmedReads.remove().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             switch (res.getType()) {
@@ -325,12 +317,8 @@ public class RemoteFile
 
                     responseOffset += recvLen;
                     pending = new ByteArrayInputStream(buf, 0, recvLen);
-                } else if (!retrieveUnconfirmedRead(true /*blocking*/)) {
-
-                    // this may happen if we change prefetch strategy
-                    // currently, we should never get here...
-
-                    throw new IllegalStateException("Could not retrieve data for pending read request");
+                } else {
+                    retrieveUnconfirmedRead();
                 }
             }
 
@@ -341,7 +329,8 @@ public class RemoteFile
         public int available() throws IOException {
             boolean lastRead = true;
             while (!eof && (pending.available() <= 0) && lastRead) {
-              lastRead = retrieveUnconfirmedRead(false /*blocking*/);
+              // Blocking
+              lastRead = retrieveUnconfirmedRead();
             }
             return pending.available();
         }

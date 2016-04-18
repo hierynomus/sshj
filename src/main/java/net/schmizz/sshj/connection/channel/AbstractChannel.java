@@ -15,6 +15,16 @@
  */
 package net.schmizz.sshj.connection.channel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.Buffer;
@@ -28,15 +38,6 @@ import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractChannel
         implements Channel {
@@ -58,7 +59,7 @@ public abstract class AbstractChannel
     /** Remote recipient ID */
     private int recipient;
 
-    private final Queue<Event<ConnectionException>> chanReqResponseEvents = new LinkedList<Event<ConnectionException>>();
+    private final Queue<Event<ConnectionException>> chanReqResponseEvents = new ConcurrentLinkedQueue<Event<ConnectionException>>();
 
     /* The lock used by to create the open & close events */
     private final ReentrantLock openCloseLock = new ReentrantLock();

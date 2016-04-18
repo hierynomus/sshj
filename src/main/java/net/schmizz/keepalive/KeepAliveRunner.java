@@ -15,14 +15,14 @@
  */
 package net.schmizz.keepalive;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.ConnectionImpl;
 import net.schmizz.sshj.transport.TransportException;
-
-import java.util.LinkedList;
-import java.util.Queue;
 
 import static java.lang.String.format;
 import static net.schmizz.sshj.common.DisconnectReason.CONNECTION_LOST;
@@ -34,7 +34,7 @@ public class KeepAliveRunner extends KeepAlive {
 
     /** The queue of promises. */
     private final Queue<Promise<SSHPacket, ConnectionException>> queue =
-            new LinkedList<Promise<SSHPacket, ConnectionException>>();
+            new ConcurrentLinkedQueue<Promise<SSHPacket, ConnectionException>>();
 
     KeepAliveRunner(ConnectionImpl conn) {
         super(conn, "keep-alive");

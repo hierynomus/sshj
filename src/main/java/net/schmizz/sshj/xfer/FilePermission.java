@@ -15,8 +15,8 @@
  */
 package net.schmizz.sshj.xfer;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -72,7 +72,7 @@ public enum FilePermission {
     }
 
     public static Set<FilePermission> fromMask(int mask) {
-        final List<FilePermission> perms = new LinkedList<FilePermission>();
+        final List<FilePermission> perms = new ArrayList<>();
         for (FilePermission p : FilePermission.values())
             if (p.isIn(mask))
                 perms.add(p);
