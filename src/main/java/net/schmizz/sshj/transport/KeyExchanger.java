@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,9 +68,9 @@ final class KeyExchanger
      * {@link HostKeyVerifier#verify(String, int, java.security.PublicKey)} is invoked by {@link #verifyHost(PublicKey)}
      * when we are ready to verify the the server's host key.
      */
-    private final Queue<HostKeyVerifier> hostVerifiers = new ConcurrentLinkedQueue<HostKeyVerifier>();
+    private final List<HostKeyVerifier> hostVerifiers = new ArrayList<>();
 
-    private final Queue<AlgorithmsVerifier> algorithmVerifiers = new ConcurrentLinkedQueue<AlgorithmsVerifier>();
+    private final List<AlgorithmsVerifier> algorithmVerifiers = new ArrayList();
 
     private final AtomicBoolean kexOngoing = new AtomicBoolean();
 
