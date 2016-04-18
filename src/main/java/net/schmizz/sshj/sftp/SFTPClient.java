@@ -1,5 +1,5 @@
-/**
- * Copyright 2009 sshj contributors
+/*
+ * Copyright (C)2009 - SSHJ Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ public class SFTPClient
 
     public void mkdirs(String path)
             throws IOException {
-        final Deque<String> dirsToMake = new LinkedList<String>();
+        final Deque<String> dirsToMake = new LinkedList<>();
         for (PathComponents current = engine.getPathHelper().getComponents(path); ;
              current = engine.getPathHelper().getComponents(current.getParent())) {
             final FileAttributes attrs = statExistence(current.getPath());

@@ -4,7 +4,9 @@ Jeroen van Erp
 :sshj_version: 0.15.0
 :source-highlighter: pygments
 
-image::https://travis-ci.org/hierynomus/sshj.svg?branch=master[]
+image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
+image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
+image:https://javadoc-emblem.rhcloud.com/doc/com.hierynomus/sshj/badge.svg["Javadoc",link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
 
@@ -96,6 +98,15 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.16.0 (2016-04-11)::
+* Fixed https://github.com/hierynomus/sshj/issues/239[#239]: Remote port forwards did not work if you used the empty string as address, or a catch-all address.
+* Fixed https://github.com/hierynomus/sshj/issues/242[#242]: Added OSGI headers to sources jar manifest
+* Fixed https://github.com/hierynomus/sshj/issues/236[#236]: Remote Port forwarding with dynamic port allocation fails with BufferUnderflowException
+* Upgraded gradle distribution to 2.12
+* Closed https://github.com/hierynomus/sshj/issues/234[#234]: Dropped Java6 support (0.15.0 was already Java6 incompatible due to Java7 dependency)
+* Fixed https://github.com/hierynomus/sshj/issues/118[#118]: Added configuration switch for waiting on a server ident before sending the client ident.
+* Fixed https://github.com/hierynomus/sshj/issues/114[#114]: Added javadoc that you always need to call close() on a Command before inspecting the exit codes.
+* Fixed https://github.com/hierynomus/sshj/issues/237[#237]: Fixed race condition if a `hostkeys-00@openssh.com` global request is received directly after a successful auth.
 SSHJ 0.15.0 (2015-11-20)::
 * Fixed https://github.com/hierynomus/sshj/issues/220[#220]: Added support for `ssh-ed25519` host keys
 * Fixed https://github.com/hierynomus/sshj/issues/225[#225]: Fixed bug in ECDSA fingerprint calculation that sometimes produced an incorrect fingerprint

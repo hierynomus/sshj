@@ -1,105 +1,127 @@
 plugins {
-  id "java"
-  id "maven"
-  id "signing"
-  id "osgi"
+    id "java"
+    id "maven"
+    id "idea"
+    id "signing"
+    id "osgi"
+    id "org.ajoberstar.release-opinion" version "1.4.0-rc.1"
+    id "com.github.hierynomus.license" version "0.12.1"
 }
 
-apply plugin: "java"
-apply plugin: "maven"
-apply plugin: "signing"
-apply plugin: "osgi"
-
 group = "com.hierynomus"
-version = "0.16.0-SNAPSHOT"
 
 repositories {
-  mavenCentral()
-  mavenLocal()
+    mavenCentral()
 }
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-configurations {
-  compile {
-    transitive = false
-  }
+configurations.compile.transitive = false
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+license {
+    mapping {
+        java = 'SLASHSTAR_STYLE'
+    }
+    header rootProject.file('LICENSE_HEADER')
+    strictCheck true
+}
+
+release {
+    grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
 }
 
 test {
-  testLogging {
-    exceptionFormat = 'full'
-  }
-  include "**/*Test.*"
-  if (!project.hasProperty("allTests")) {
-    useJUnit {
-      excludeCategories 'com.hierynomus.sshj.test.SlowTests'
-      excludeCategories 'com.hierynomus.sshj.test.KnownFailingTests'
+    testLogging {
+        exceptionFormat = 'full'
     }
-  }
+    include "**/*Test.*"
+    if (!project.hasProperty("allTests")) {
+        useJUnit {
+            excludeCategories 'com.hierynomus.sshj.test.SlowTests'
+            excludeCategories 'com.hierynomus.sshj.test.KnownFailingTests'
+        }
+    }
 
-  afterSuite { descriptor, result ->
-    if (descriptor.className != null) {
-      def indicator = "\u001B[32m✓\u001b[0m"
-      if (result.failedTestCount > 0) {
-        indicator = "\u001B[31m✘\u001b[0m"
-      }
-      logger.lifecycle("$indicator Test ${descriptor.name}; Executed: ${result.testCount}/\u001B[32m${result.successfulTestCount}\u001B[0m/\u001B[31m${result.failedTestCount}\u001B[0m")
+    afterSuite { descriptor, result ->
+        if (descriptor.className != null) {
+            def indicator = "\u001B[32m✓\u001b[0m"
+            if (result.failedTestCount > 0) {
+                indicator = "\u001B[31m✘\u001b[0m"
+            }
+            logger.lifecycle("$indicator Test ${descriptor.name}; Executed: ${result.testCount}/\u001B[32m${result.successfulTestCount}\u001B[0m/\u001B[31m${result.failedTestCount}\u001B[0m")
+        }
     }
-  }
 }
 
 def bouncycastleVersion = "1.51"
 
 dependencies {
-  compile "org.slf4j:slf4j-api:1.7.7"
-  compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
-  compile "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
-  compile "com.jcraft:jzlib:1.1.3"
+    compile "org.slf4j:slf4j-api:1.7.7"
+    compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
+    compile "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
+    compile "com.jcraft:jzlib:1.1.3"
 
-  compile "net.vrallev.ecc:ecc-25519-java:1.0.1"
+    compile "net.vrallev.ecc:ecc-25519-java:1.0.1"
 
-  testCompile "junit:junit:4.11"
-  testCompile "org.mockito:mockito-core:1.9.5"
-  testCompile "org.apache.sshd:sshd-core:1.1.0"
-  testRuntime "ch.qos.logback:logback-classic:1.1.2"
-  testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
+    testCompile "junit:junit:4.11"
+    testCompile "org.mockito:mockito-core:1.9.5"
+    testCompile "org.apache.sshd:sshd-core:1.1.0"
+    testRuntime "ch.qos.logback:logback-classic:1.1.2"
+    testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
+    testCompile 'org.apache.httpcomponents:httpclient:4.5.2'
 
 }
 
 jar {
-  manifest {
-    instruction "Bundle-Description", "SSHv2 library for Java"
-    instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
-    instruction "Import-Package", "!net.schmizz.*"
-    instruction "Import-Package", "javax.crypto*"
-    instruction "Import-Package", "net.i2p*"
-    instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
-    instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
-    instruction "Import-Package", "org.bouncycastle*"
-    instruction "Import-Package", "*"
-    instruction "Export-Package", "net.schmizz.*"
-  }
+    manifest {
+        instruction "Bundle-Description", "SSHv2 library for Java"
+        instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        instruction "Import-Package", "!net.schmizz.*"
+        instruction "Import-Package", "javax.crypto*"
+        instruction "Import-Package", "net.i2p*"
+        instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
+        instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
+        instruction "Import-Package", "org.bouncycastle*"
+        instruction "Import-Package", "*"
+        instruction "Export-Package", "net.schmizz.*"
+    }
 }
 
 task javadocJar(type: Jar) {
-  classifier = 'javadoc'
-  from javadoc
+    classifier = 'javadoc'
+    from javadoc
 }
 
 task sourcesJar(type: Jar) {
-  classifier = 'sources'
-  from sourceSets.main.allSource
+    classifier = 'sources'
+    from sourceSets.main.allSource
+    manifest {
+        attributes(
+            // Add the needed OSGI attributes
+            "Bundle-ManifestVersion": "2",
+            "Bundle-Name": "${project.jar.manifest.name} Source",
+            "Bundle-Version": project.jar.manifest.version,
+            "Eclipse-SourceBundle": "${project.jar.manifest.symbolicName};version=\"${project.jar.manifest.version}\";roots:=\".\"",
+            "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
+        )
+    }
 }
 
 artifacts {
-  archives javadocJar, sourcesJar
+    archives javadocJar, sourcesJar
 }
 
 signing {
-  required { !version.contains("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
-  sign configurations.archives
+    required { !version.toString().contains("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
 }
 
 // This disables the pedantic doclint feature of JDK8
@@ -110,74 +132,76 @@ if (JavaVersion.current().isJava8Compatible()) {
 }
 
 uploadArchives {
-  if(project.hasProperty('sonatypeUsername')) {
-    repositories.mavenDeployer {
-      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+    if (project.hasProperty('sonatypeUsername')) {
+        repositories.mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-      configuration = configurations.archives
+            configuration = configurations.archives
 
-      repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
-        authentication(userName: sonatypeUsername, password: sonatypePassword)
-      }
-      snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-        authentication(userName: sonatypeUsername, password: sonatypePassword)
-      }
-
-      pom.project {
-        name "sshj"
-        description "SSHv2 library for Java"
-        url "https://github.com/hierynomus/sshj"
-        inceptionYear "2009"
-
-        issueManagement {
-          system "github"
-          url "https://github.com/hierynomus/sshj/issues"
-        }
-
-        scm {
-          connection "scm:git:git://github.com/hierynomus/sshj.git"
-          developerConnection "scm:git:git@github.com:hierynomus/sshj.git"
-          url "https://github.com/hierynomus/sshj.git"
-        }
-
-        licenses {
-          license {
-            name "Apache 2"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution "repo"
-          }
-        }
-
-        developers {
-          developer {
-            id "hierynomus"
-            name "Jeroen van Erp"
-            email "jeroen@javadude.nl"
-            roles {
-              role "Lead developer"
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
             }
-          }
-          developer {
-            id "shikhar"
-            name "Shikhar Bhushan"
-            email "shikhar@schmizz.net"
-            url "http://schmizz.net"
-            roles {
-              role "Previous lead developer"
+            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
             }
-          }
-          developer {
-            id "iterate"
-            name "David Kocher"
-            email "dkocher@iterate.ch"
-            organization "iterage GmbH"
-            organizationUrl "https://iterate.ch"
-            roles {
-              role "Developer"
+
+            pom.project {
+                name "sshj"
+                description "SSHv2 library for Java"
+                url "https://github.com/hierynomus/sshj"
+                inceptionYear "2009"
+
+                issueManagement {
+                    system "github"
+                    url "https://github.com/hierynomus/sshj/issues"
+                }
+
+                scm {
+                    connection "scm:git:git://github.com/hierynomus/sshj.git"
+                    developerConnection "scm:git:git@github.com:hierynomus/sshj.git"
+                    url "https://github.com/hierynomus/sshj.git"
+                }
+
+                licenses {
+                    license {
+                        name "Apache 2"
+                        url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution "repo"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id "hierynomus"
+                        name "Jeroen van Erp"
+                        email "jeroen@javadude.nl"
+                        roles {
+                            role "Lead developer"
+                        }
+                    }
+                    developer {
+                        id "shikhar"
+                        name "Shikhar Bhushan"
+                        email "shikhar@schmizz.net"
+                        url "http://schmizz.net"
+                        roles {
+                            role "Previous lead developer"
+                        }
+                    }
+                    developer {
+                        id "iterate"
+                        name "David Kocher"
+                        email "dkocher@iterate.ch"
+                        organization "iterage GmbH"
+                        organizationUrl "https://iterate.ch"
+                        roles {
+                            role "Developer"
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 }
+
+tasks.release.dependsOn 'build', 'uploadArchives'
