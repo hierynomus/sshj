@@ -140,7 +140,7 @@ public class RemoteFile
         @Override
         public void write(byte[] buf, int off, int len) throws IOException {
             if (unconfirmedWrites.size() > maxUnconfirmedWrites) {
-                checkWriteResponse(unconfirmedWrites.remove());
+                checkWriteResponse(unconfirmedWrites.poll());
             }
             unconfirmedWrites.add(RemoteFile.this.asyncWrite(fileOffset, buf, off, len));
             fileOffset += len;
@@ -149,7 +149,7 @@ public class RemoteFile
         @Override
         public void flush() throws IOException {
             while (!unconfirmedWrites.isEmpty()) {
-                checkWriteResponse(unconfirmedWrites.remove());
+                checkWriteResponse(unconfirmedWrites.poll());
             }
         }
 
@@ -250,8 +250,8 @@ public class RemoteFile
         private ByteArrayInputStream pending = new ByteArrayInputStream(new byte[0]);
 
         private boolean retrieveUnconfirmedRead() throws IOException {
-            unconfirmedReadOffsets.remove();
-            final Response res = unconfirmedReads.remove().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
+            unconfirmedReadOffsets.poll();
+            final Response res = unconfirmedReads.poll().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             switch (res.getType()) {
                 case DATA:
                     int recvLen = res.readUInt32AsInt();

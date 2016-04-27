@@ -69,7 +69,7 @@ public class KeepAliveRunner extends KeepAlive {
         Promise<SSHPacket, ConnectionException> peek = queue.peek();
         while (peek != null && peek.isFulfilled()) {
             log.debug("Received response from server to our keep-alive.");
-            queue.remove();
+            queue.poll();
             peek = queue.peek();
         }
     }
