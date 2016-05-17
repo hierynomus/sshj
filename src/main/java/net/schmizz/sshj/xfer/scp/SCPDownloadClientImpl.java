@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/** Support for uploading files over a connected link using SCP. */
+/** Support for downloading files over a connected link using SCP. */
 public final class SCPDownloadClientImpl extends AbstractSCPClient implements SCPDownloadClient {
 
     private boolean recursiveMode = true;
