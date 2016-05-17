@@ -40,11 +40,11 @@ public class SCPFileTransfer
     }
 
     public SCPDownloadClient newSCPDownloadClient() {
-        return new SCPDownloadClient(newSCPEngine(), bandwidthLimit);
+        return new SCPDownloadClientImpl(newSCPEngine(), bandwidthLimit);
     }
 
     public SCPUploadClient newSCPUploadClient() {
-        return new SCPUploadClient(newSCPEngine(), bandwidthLimit);
+        return new SCPUploadClientImpl(newSCPEngine(), bandwidthLimit);
     }
 
     private SCPEngine newSCPEngine() {
