@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /** Support for uploading files over a connected link using SCP. */
-public final class SCPUploadClient extends AbstractSCPClient {
+public class SCPUploadClient extends AbstractSCPClient {
 
     private LocalFileFilter uploadFilter;
 
