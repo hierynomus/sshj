@@ -26,6 +26,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 public class SFTPClientTest {
 
     @Rule
@@ -36,19 +38,74 @@ public class SFTPClientTest {
 
     @Test
     public void shouldNotThrowExceptionOnCloseBeforeDisconnect() throws IOException {
-        SSHClient sshClient = fixture.setupConnectedDefaultClient();
-        sshClient.authPassword("test", "test");
-        SFTPClient sftpClient = sshClient.newSFTPClient();
         File file = temp.newFile("source.txt");
         FileUtil.writeToFile(file, "This is the source");
+
+        doUpload(file, temp.newFile("dest.txt"));
+
+    }
+
+    @Test
+    public void shouldUploadContentsToDestIfExistsAndSameNameAsSource() throws IOException {
+        File srcDir = temp.newFolder("toto");
+        File destDir = temp.newFolder("dest", "toto");
+        FileUtil.writeToFile(new File(srcDir, "toto.txt"), "Toto file");
+
+        doUpload(srcDir, destDir);
+
+        assertThat("dest/toto exists", destDir.exists());
+        assertThat("dest/toto/toto not exists", !new File(destDir, "toto").exists());
+        assertThat("dest/toto/toto.txt exists", new File(destDir, "toto.txt").exists());
+    }
+
+    @Test
+    public void shouldUploadIntoDestIfExistsAndDifferentNameAsSource() throws IOException {
+        File srcDir = temp.newFolder("toto");
+        File destDir = temp.newFolder("dest");
+        FileUtil.writeToFile(new File(srcDir, "toto.txt"), "Toto file");
+
+        doUpload(srcDir, destDir);
+
+        assertThat("dest/toto exists", destDir.exists());
+        assertThat("dest/toto/toto.txt exists", new File(destDir, "toto/toto.txt").exists());
+    }
+
+    @Test
+    public void shouldNotMergeSameNameSubDirs() throws IOException {
+        File toto = temp.newFolder("toto");
+        File tutu = mkdir(toto, "tutu");
+        File toto2 = mkdir(toto, "toto");
+        File dest = temp.newFolder("dest");
+        FileUtil.writeToFile(new File(toto, "toto.txt"), "Toto file");
+        FileUtil.writeToFile(new File(tutu, "tototutu.txt"), "Toto/Tutu file");
+        FileUtil.writeToFile(new File(toto2, "totototo.txt"), "Toto/Toto file");
+
+        doUpload(toto, dest);
+
+        assertThat("toto root should exist", new File(dest, "toto").exists());
+        assertThat("toto/toto.txt should exist", new File(dest, "toto/toto.txt").exists());
+        assertThat("toto/tutu should exist", new File(dest, "toto/tutu").exists());
+        assertThat("toto/tutu/tototutu.txt should exist", new File(dest, "toto/tutu/tototutu.txt").exists());
+        assertThat("toto/toto should exist", new File(dest, "toto/toto").exists());
+        assertThat("toto/toto/totototo.txt should exist", new File(dest, "toto/toto/totototo.txt").exists());
+        assertThat("toto/totototo.txt should not exist", !new File(dest, "totototo.txt").exists());
+    }
+
+    private void doUpload(File src, File dest) throws IOException {
+        SSHClient sshClient = fixture.setupConnectedDefaultClient();
+        sshClient.authPassword("test", "test");
         try {
-            try {
-                sftpClient.put(file.getPath(), temp.newFile("dest.txt").getPath());
-             } finally {
-                sftpClient.close();
+            try (SFTPClient sftpClient = sshClient.newSFTPClient()) {
+                sftpClient.put(src.getPath(), dest.getPath());
             }
         } finally {
             sshClient.disconnect();
         }
+    }
+
+    private File mkdir(File parent, String name) {
+        File file = new File(parent, name);
+        file.mkdir();
+        return file;
     }
 }

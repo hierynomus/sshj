@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumSet;
+import java.util.List;
 
 public class SFTPFileTransfer
         extends AbstractFileTransfer
@@ -67,7 +68,7 @@ public class SFTPFileTransfer
     @Override
     public void upload(LocalSourceFile localFile, String remotePath)
             throws IOException {
-        new Uploader().upload(getTransferListener(), localFile, remotePath);
+        new Uploader(localFile, remotePath).upload(getTransferListener());
     }
 
     @Override
@@ -173,6 +174,35 @@ public class SFTPFileTransfer
 
     private class Uploader {
 
+        private final LocalSourceFile source;
+        private final String remote;
+
+        private Uploader(final LocalSourceFile source, final String remote) {
+            this.source = source;
+            this.remote = remote; //new RemotePath(remote, engine.getPathHelper().getPathSeparator());
+        }
+
+        private void upload(final TransferListener listener) throws IOException {
+            // This ensures "backwards compatible" behaviour.
+            if (source.isDirectory()) {
+                if (engine.getPathHelper().getComponents(remote).getName().equals(source.getName())) {
+                    makeDirIfNotExists(remote); // Ensure that the directory exists
+                    uploadDir(listener.directory(source.getName()), source, remote);
+                    setAttributes(source, remote);
+                } else {
+                    String adjusted = engine.getPathHelper().adjustForParent(remote, source.getName());
+                    makeDirIfNotExists(adjusted);
+                    uploadDir(listener.directory(source.getName()), source, adjusted);
+                    setAttributes(source, adjusted);
+                }
+            } else if (source.isFile()) {
+                uploadFile(listener.file(source.getName(), source.getLength()), source, remote);
+                setAttributes(source, remote);
+            } else {
+                throw new IOException(source + " is not a file or directory");
+            }
+        }
+
         private void upload(final TransferListener listener,
                             final LocalSourceFile local,
                             final String remote)
@@ -182,20 +212,26 @@ public class SFTPFileTransfer
                 adjustedPath = uploadDir(listener.directory(local.getName()), local, remote);
             } else if (local.isFile()) {
                 adjustedPath = uploadFile(listener.file(local.getName(), local.getLength()), local, remote);
-            } else
+            } else {
                 throw new IOException(local + " is not a file or directory");
-            if (getPreserveAttributes())
-                engine.setAttributes(adjustedPath, getAttributes(local));
+            }
+            setAttributes(local, adjustedPath);
+        }
+
+        private void setAttributes(LocalSourceFile local, String remotePath) throws IOException {
+            if (getPreserveAttributes()) {
+                engine.setAttributes(remotePath, getAttributes(local));
+            }
         }
 
         private String uploadDir(final TransferListener listener,
                                  final LocalSourceFile local,
                                  final String remote)
                 throws IOException {
-            final String adjusted = prepareDir(local, remote);
+            makeDirIfNotExists(remote);
             for (LocalSourceFile f : local.getChildren(getUploadFilter()))
-                upload(listener, f, adjusted);
-            return adjusted;
+                upload(listener, f, engine.getPathHelper().adjustForParent(remote, f.getName()));
+            return remote;
         }
 
         private String uploadFile(final StreamCopier.Listener listener,
@@ -203,52 +239,36 @@ public class SFTPFileTransfer
                                   final String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
-            final RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE,
-                                                                   OpenMode.CREAT,
-                                                                   OpenMode.TRUNC));
-            try {
-                final InputStream fis = local.getInputStream();
-                final RemoteFile.RemoteFileOutputStream rfos = rf.new RemoteFileOutputStream(0, 16);
-                try {
+            try (RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC))) {
+                try (InputStream fis = local.getInputStream();
+                     RemoteFile.RemoteFileOutputStream rfos = rf.new RemoteFileOutputStream(0, 16)) {
                     new StreamCopier(fis, rfos)
                             .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
                             .keepFlushing(false)
                             .listener(listener)
                             .copy();
-                } finally {
-                    fis.close();
-                    rfos.close();
                 }
-            } finally {
-                rf.close();
             }
             return adjusted;
         }
 
-        private String prepareDir(final LocalSourceFile local, final String remote)
-                throws IOException {
-            final FileAttributes attrs;
+        private boolean makeDirIfNotExists(final String remote) throws IOException {
             try {
-                attrs = engine.stat(remote);
+                FileAttributes attrs = engine.stat(remote);
+                if (attrs.getMode().getType() != FileMode.Type.DIRECTORY) {
+                    throw new IOException(remote + " exists and should be a directory, but was a " + attrs.getMode().getType());
+                }
+                // Was not created, but existed.
+                return false;
             } catch (SFTPException e) {
                 if (e.getStatusCode() == StatusCode.NO_SUCH_FILE) {
                     log.debug("probeDir: {} does not exist, creating", remote);
                     engine.makeDir(remote);
-                    return remote;
+                    return true;
                 } else
                     throw e;
             }
 
-            if (attrs.getMode().getType() == FileMode.Type.DIRECTORY)
-                if (engine.getPathHelper().getComponents(remote).getName().equals(local.getName())) {
-                    log.debug("probeDir: {} already exists", remote);
-                    return remote;
-                } else {
-                    log.debug("probeDir: {} already exists, path adjusted for {}", remote, local.getName());
-                    return prepareDir(local, engine.getPathHelper().adjustForParent(remote, local.getName()));
-                }
-            else
-                throw new IOException(attrs.getMode().getType() + " file already exists at " + remote);
         }
 
         private String prepareFile(final LocalSourceFile local, final String remote)
@@ -264,8 +284,9 @@ public class SFTPFileTransfer
                     throw e;
             }
             if (attrs.getMode().getType() == FileMode.Type.DIRECTORY) {
-                log.debug("probeFile: {} was directory, path adjusted for {}", remote, local.getName());
-                return engine.getPathHelper().adjustForParent(remote, local.getName());
+                throw new IllegalStateException();
+//                log.debug("probeFile: {} was directory, path adjusted for {}", remote, local.getName());
+//                return engine.getPathHelper().adjustForParent(remote, local.getName());
             } else {
                 log.debug("probeFile: {} is a {} file that will be replaced", remote, attrs.getMode().getType());
                 return remote;
@@ -281,5 +302,37 @@ public class SFTPFileTransfer
         }
 
     }
-
+//
+//    private static class RemotePath {
+//        private String base;
+//        private String pathSep;
+//        private String relativePath;
+//
+//        private RemotePath(String base, String pathSep) {
+//            this.base = base;
+//            this.pathSep = pathSep;
+//        }
+//
+//        public RemotePath(String base, String pathSep, String relativePath) {
+//            this.base = base;
+//            this.pathSep = pathSep;
+//            this.relativePath = relativePath;
+//        }
+//
+//        public String getRelativePath() {
+//            return relativePath;
+//        }
+//
+//        private RemotePath subdir(String dir) {
+//            return new RemotePath(base, pathSep, relativePath + pathSep + dir);
+//        }
+//
+//        private String filePath(String fileName) {
+//            return path() + pathSep + fileName;
+//        }
+//
+//        private String path() {
+//            return base + relativePath;
+//        }
+//    }
 }
