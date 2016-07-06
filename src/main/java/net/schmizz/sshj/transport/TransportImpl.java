@@ -15,18 +15,14 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.transport.IdentificationStringParser;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.Service;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import org.slf4j.Logger;
@@ -207,38 +203,47 @@ public final class TransportImpl
      */
     private String readIdentification(Buffer.PlainBuffer buffer)
             throws IOException {
-        String ident;
-
-        byte[] data = new byte[256];
-        for (; ; ) {
-            int savedBufPos = buffer.rpos();
-            int pos = 0;
-            boolean needLF = false;
-            for (; ; ) {
-                if (buffer.available() == 0) {
-                    // Need more data, so undo reading and return null
-                    buffer.rpos(savedBufPos);
-                    return "";
-                }
-                byte b = buffer.readByte();
-                if (b == '\r') {
-                    needLF = true;
-                    continue;
-                }
-                if (b == '\n')
-                    break;
-                if (needLF)
-                    throw new TransportException("Incorrect identification: bad line ending");
-                if (pos >= data.length)
-                    throw new TransportException("Incorrect identification: line too long");
-                data[pos++] = b;
-            }
-            ident = new String(data, 0, pos);
-            if (ident.startsWith("SSH-"))
-                break;
-            if (buffer.rpos() > 16 * 1024)
-                throw new TransportException("Incorrect identification: too many header lines");
+        String ident = new IdentificationStringParser(buffer).parseIdentificationString();
+        if (ident.isEmpty()) {
+            return ident;
         }
+//
+//        byte[] data = new byte[256];
+//        for (; ; ) {
+//            int savedBufPos = buffer.rpos();
+//            int pos = 0;
+//            boolean needLF = false;
+//            for (; ; ) {
+//                if (buffer.available() == 0) {
+//                    // Need more data, so undo reading and return null
+//                    buffer.rpos(savedBufPos);
+//                    return "";
+//                }
+//                byte b = buffer.readByte();
+//                if (b == '\r') {
+//                    needLF = true;
+//                    continue;
+//                }
+//                if (b == '\n')
+//                    break;
+//                if (needLF) {
+//                    log.error("Incorrect identification, was expecting a '\n' after the '\r', got: '{}' (hex: {})", b, Integer.toHexString(b & 0xFF));
+//                    log.error("Data received up til here was: {}", new String(data, 0, pos));
+//                    throw new TransportException("Incorrect identification: bad line ending: " + ByteArrayUtils.toHex(data, 0, pos));
+//                }
+//                if (pos >= data.length) {
+//                    log.error("Incorrect identification String received, line was longer than expected: {}", new String(data, 0, pos));
+//                    log.error("Just for good measure, bytes were: {}", ByteArrayUtils.printHex(data, 0, pos));
+//                    throw new TransportException("Incorrect identification: line too long: " + ByteArrayUtils.printHex(data, 0, pos));
+//                }
+//                data[pos++] = b;
+//            }
+//            ident = new String(data, 0, pos);
+//            if (ident.startsWith("SSH-"))
+//                break;
+//            if (buffer.rpos() > 16 * 1024)
+//                throw new TransportException("Incorrect identification: too many header lines");
+//        }
 
         if (!ident.startsWith("SSH-2.0-") && !ident.startsWith("SSH-1.99-"))
             throw new TransportException(DisconnectReason.PROTOCOL_VERSION_NOT_SUPPORTED,
