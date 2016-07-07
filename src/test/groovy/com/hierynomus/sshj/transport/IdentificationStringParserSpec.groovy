@@ -33,6 +33,18 @@ class IdentificationStringParserSpec extends Specification {
         ident == "SSH-2.0-OpenSSH-6.13"
     }
 
+    def "should leniently parse identification string without carriage return"() {
+        given:
+        def buffer = new Buffer.PlainBuffer()
+        buffer.putRawBytes("SSH-2.0-OpenSSH-6.13\n".bytes)
+
+        when:
+        def ident = new IdentificationStringParser(buffer).parseIdentificationString()
+
+        then:
+        ident == "SSH-2.0-OpenSSH-6.13"
+    }
+
     def "should not parse header lines as part of ident"() {
         given:
         def buffer = new Buffer.PlainBuffer()
@@ -67,6 +79,19 @@ class IdentificationStringParserSpec extends Specification {
         byte[] bs = new byte[255 - buffer.wpos()]
         new Random().nextBytes(bs)
         buffer.putRawBytes(bs).putRawBytes("\r\n".bytes)
+        buffer.putRawBytes("SSH-2.0-OpenSSH-6.13\r\n".bytes)
+
+        when:
+        def ident = new IdentificationStringParser(buffer).parseIdentificationString()
+
+        then:
+        ident == "SSH-2.0-OpenSSH-6.13"
+    }
+
+    def "should not fail on very short header line"() {
+        given:
+        def buffer = new Buffer.PlainBuffer()
+        buffer.putRawBytes("h1\n".bytes)
         buffer.putRawBytes("SSH-2.0-OpenSSH-6.13\r\n".bytes)
 
         when:

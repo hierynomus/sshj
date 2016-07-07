@@ -48,11 +48,17 @@ public class IdentificationStringParser {
                 if (b == '\n') {
                     if (checkForIdentification(lineBuffer)) {
                         return readIdentification(lineBuffer);
+                    } else {
+                        logHeaderLine(lineBuffer);
                     }
                     break;
                 }
             }
         }
+    }
+
+    private void logHeaderLine(Buffer.PlainBuffer lineBuffer) {
+
     }
 
     private String readIdentification(Buffer.PlainBuffer lineBuffer) throws Buffer.BufferException, TransportException {
@@ -64,9 +70,12 @@ public class IdentificationStringParser {
             throw new TransportException("Incorrect identification: line too long: " + ByteArrayUtils.printHex(bytes, 0, bytes.length));
         }
         if (bytes[bytes.length - 2] != '\r') {
-            logger.error("Incorrect identification, was expecting a '\\r\\n' however got: '{}' (hex: {})", bytes[bytes.length - 2], Integer.toHexString(bytes[bytes.length - 2] & 0xFF));
-            logger.error("Data received up til here was: {}", new String(bytes));
-            throw new TransportException("Incorrect identification: bad line ending: " + ByteArrayUtils.toHex(bytes, 0, bytes.length));
+            String ident = new String(bytes, 0, bytes.length - 1);
+            logger.warn("Server identification has bad line ending, was expecting a '\\r\\n' however got: '{}' (hex: {})", (char) (bytes[bytes.length - 2] & 0xFF), Integer.toHexString(bytes[bytes.length - 2] & 0xFF));
+            logger.warn("Will treat the identification of this server '{}' leniently", ident);
+            return ident;
+            // logger.error("Data received up til here was: {}", new String(bytes));
+            // throw new TransportException("Incorrect identification: bad line ending: " + ByteArrayUtils.toHex(bytes, 0, bytes.length));
         }
 
         // Strip off the \r\n
@@ -74,6 +83,9 @@ public class IdentificationStringParser {
     }
 
     private boolean checkForIdentification(Buffer.PlainBuffer lineBuffer) throws Buffer.BufferException {
+        if (lineBuffer.available() < 4) {
+            return false;
+        }
         byte[] buf = new byte[4];
         lineBuffer.readRawBytes(buf);
         // Reset

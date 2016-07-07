@@ -44,6 +44,7 @@ test {
         exceptionFormat = 'full'
     }
     include "**/*Test.*"
+    include "**/*Spec.*"
     if (!project.hasProperty("allTests")) {
         useJUnit {
             excludeCategories 'com.hierynomus.sshj.test.SlowTests'

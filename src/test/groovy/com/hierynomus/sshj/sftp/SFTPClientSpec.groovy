@@ -26,7 +26,7 @@ import spock.lang.Unroll
 
 import static org.codehaus.groovy.runtime.IOGroovyMethods.withCloseable
 
-class SFTPClientTest extends Specification {
+class SFTPClientSpec extends Specification {
 
     @Rule
     public SshFixture fixture = new SshFixture()
