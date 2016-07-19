@@ -98,6 +98,10 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.17.3 (????-??-??)::
+* Fixed https://github.com/hierynomus/sshj/issues/255[#255]: No longer depending on 'privately marked' classes in `net.i2p.crypto.eddsa.math` package, fixes OSGI dependencies
+SSHJ 0.17.2 (2016-07-07)::
+* Treating SSH Server identification line ending in '\n' instead of '\r\n' leniently.
 SSHJ 0.17.1 (2016-07-06)::
 * Improved parsing of the SSH Server identification. Too long header lines now no longer break the protocol.
 SSHJ 0.17.0 (2016-07-05)::
