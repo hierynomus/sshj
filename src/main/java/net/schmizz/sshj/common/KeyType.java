@@ -18,7 +18,6 @@ package net.schmizz.sshj.common;
 import com.hierynomus.sshj.secg.SecgUtils;
 import com.hierynomus.sshj.signature.Ed25519PublicKey;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
-import net.i2p.crypto.eddsa.math.GroupElement;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
@@ -191,8 +190,7 @@ public enum KeyType {
                 }
 
                 EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("ed25519-sha-512");
-                GroupElement point = ed25519.getCurve().createPoint(p, true);
-                EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(point, ed25519);
+                EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(p, ed25519);
                 return new Ed25519PublicKey(publicSpec);
 
             } catch (Buffer.BufferException be) {
