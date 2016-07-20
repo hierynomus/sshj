@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>ch.iterate.ssh</groupId>
     <artifactId>sshj</artifactId>
-    <version>0.17.2</version>
+    <version>0.18-SNAPSHOT</version>
     <packaging>jar</packaging>
     <url>https://github.com/iterate-ch/sshj</url>
     <prerequisites>
@@ -18,7 +18,7 @@
         <url>https://github.com/iterate-ch/sshj</url>
         <connection>https://github.com/iterate-ch/sshj</connection>
         <developerConnection>scm:git:git@github.com:iterate-ch/sshj.git</developerConnection>
-      <tag>sshj-0.17.2</tag>
+      <tag>HEAD</tag>
   </scm>
     <dependencies>
         <dependency>
