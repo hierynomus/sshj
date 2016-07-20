@@ -1,10 +1,11 @@
 plugins {
     id "java"
+    id "groovy"
     id "maven"
     id "idea"
     id "signing"
     id "osgi"
-    id "org.ajoberstar.release-opinion" version "1.4.0-rc.1"
+    id "org.ajoberstar.release-opinion" version "1.4.2"
     id "com.github.hierynomus.license" version "0.12.1"
 }
 
@@ -43,6 +44,7 @@ test {
         exceptionFormat = 'full'
     }
     include "**/*Test.*"
+    include "**/*Spec.*"
     if (!project.hasProperty("allTests")) {
         useJUnit {
             excludeCategories 'com.hierynomus.sshj.test.SlowTests'
@@ -72,6 +74,7 @@ dependencies {
     compile "net.vrallev.ecc:ecc-25519-java:1.0.1"
 
     testCompile "junit:junit:4.11"
+    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
     testCompile "org.mockito:mockito-core:1.9.5"
     testCompile "org.apache.sshd:sshd-core:1.1.0"
     testRuntime "ch.qos.logback:logback-classic:1.1.2"
@@ -204,4 +207,5 @@ uploadArchives {
     }
 }
 
+tasks.compileGroovy.onlyIf { false }
 tasks.release.dependsOn 'build', 'uploadArchives'
