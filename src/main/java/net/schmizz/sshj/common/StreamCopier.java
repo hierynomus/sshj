@@ -107,7 +107,7 @@ public class StreamCopier {
                     log.debug("Done copying from {}", in);
                     doneEvent.set();
                 } catch (IOException ioe) {
-                    log.error("In pipe from {} to {}: {}", in, out, ioe);
+                    log.error(String.format("In pipe from %1$s to %2$s", in.toString(), out.toString()), ioe);
                     doneEvent.deliverError(ioe);
                 }
             }
@@ -136,7 +136,7 @@ public class StreamCopier {
 
         final double timeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
         final double sizeKiB = count / 1024.0;
-        log.debug("{} KiB transferred in {} seconds ({} KiB/s)", sizeKiB, timeSeconds, (sizeKiB / timeSeconds));
+        log.debug(String.format("%1$d KiB transferred in %2$d seconds (%3$d KiB/s)", sizeKiB, timeSeconds, (sizeKiB / timeSeconds)));
 
         if (length != -1 && read == -1)
             throw new IOException("Encountered EOF, could not transfer " + length + " bytes");

@@ -12,6 +12,9 @@
 # Output dirs
 target/
 build/
+docs/
 .gradle/
+sshj.jar
 
-
+# MacOS X
+.DS_Store
