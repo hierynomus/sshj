@@ -262,6 +262,13 @@ public class OpenSSHKnownHosts
     }
 
     public interface HostEntry {
+	KeyType getType();
+
+	String getFingerprint();
+
+	boolean appliesTo(String host)
+		throws IOException;
+
         boolean appliesTo(KeyType type, String host)
                 throws IOException;
 
@@ -278,6 +285,22 @@ public class OpenSSHKnownHosts
         public CommentEntry(String comment) {
             this.comment = comment;
         }
+
+	@Override
+	public KeyType getType() {
+	    return KeyType.UNKNOWN;
+	}
+
+	@Override
+	public String getFingerprint() {
+	    return null;
+	}
+
+	@Override
+	public boolean appliesTo(String host)
+		throws IOException {
+	    return false;
+	}
 
         @Override
         public boolean appliesTo(KeyType type, String host) {
@@ -307,6 +330,16 @@ public class OpenSSHKnownHosts
             this.type = type;
             this.key = key;
         }
+
+	@Override
+	public KeyType getType() {
+	    return type;
+	}
+
+	@Override
+	public String getFingerprint() {
+	    return SecurityUtils.getFingerprint(key);
+	}
 
         @Override
         public boolean verify(PublicKey key)
@@ -349,6 +382,12 @@ public class OpenSSHKnownHosts
             return hostnames;
         }
 
+	@Override
+	public boolean appliesTo(String host)
+		throws IOException {
+	    return hosts.contains(host);
+	}
+
         @Override
         public boolean appliesTo(KeyType type, String host)
                 throws IOException {
@@ -376,6 +415,12 @@ public class OpenSSHKnownHosts
                 salt = hostParts[2];
             }
         }
+
+	@Override
+	public boolean appliesTo(String host)
+		 throws IOException {
+	    return hashedHost.equals(hashHost(host));
+	}
 
         @Override
         public boolean appliesTo(KeyType type, String host)

@@ -33,8 +33,9 @@ clean:
 classes: classdirs $(CLASS_FILES)
 
 install: all
-	cp sshj.jar $(TOP)/../jOVAL-Commercial/components/provider/remote/rsrc/lib
-	cp sshj.jar $(TOP)/../jOVAL-Commercial/components/sdk/dist/3rd-party
+	cp sshj.jar $(TOP)/../jOVAL-Commercial/components/wsmv/winrs/rsrc/lib
+#	cp sshj.jar $(TOP)/../jOVAL-Commercial/components/provider/remote/rsrc/lib
+#	cp sshj.jar $(TOP)/../jOVAL-Commercial/components/sdk/dist/3rd-party
 
 classdirs: $(foreach pkg, $(PACKAGEDIRS), $(BUILD)/$(pkg)/)
 
