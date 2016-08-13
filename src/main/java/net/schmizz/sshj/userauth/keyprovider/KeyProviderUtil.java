@@ -96,9 +96,10 @@ public class KeyProviderUtil {
             if (separatePubKey) {
                 // Can delay asking for password since have unencrypted pubkey
                 return KeyFormat.OpenSSH;
-            } else {
-                // More general
+            } else if (header.indexOf("BEGIN PRIVATE KEY") != -1 || header.indexOf("BEGIN ENCRYPTED PRIVATE KEY") != -1) {
                 return KeyFormat.PKCS8;
+	    } else {
+                return KeyFormat.PKCS5;
             }
         } else if (header.startsWith("PuTTY-User-Key-File-")) {
             return KeyFormat.PuTTY;
