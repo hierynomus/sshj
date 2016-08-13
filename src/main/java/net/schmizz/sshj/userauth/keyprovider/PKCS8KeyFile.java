@@ -198,6 +198,8 @@ public class PKCS8KeyFile
 		    CharBuffer cb = CharBuffer.wrap(pwdf.reqPassword(resource));
 		    ByteBuffer bb = IOUtils.UTF8.encode(cb);
 		    byte[] passphrase = Arrays.copyOfRange(bb.array(), bb.position(), bb.limit());
+		    Arrays.fill(cb.array(), '\u0000');
+		    Arrays.fill(bb.array(), (byte)0);
 		    byte[] key = new byte[cipher.getBlockSize()];
 		    iv = Arrays.copyOfRange(iv, 0, cipher.getIVSize());
 		    Digest md5 = new MD5();
@@ -215,13 +217,12 @@ public class PKCS8KeyFile
                         System.arraycopy(tmp, 0, hn, i, tmp.length);
                         i += tmp.length;
                     }
+		    Arrays.fill(passphrase, (byte)0);
                     System.arraycopy(hn, 0, key, 0, key.length);
 		    cipher.init(Cipher.Mode.Decrypt, key, iv);
+		    Arrays.fill(key, (byte)0);
 		    cipher.update(data, 0, data.length);
 		    decrypted = 0x30 == data[0];
-		    Arrays.fill(cb.array(), '\u0000');
-		    Arrays.fill(bb.array(), (byte) 0);
-		    Arrays.fill(key, (byte) 0);
 		} while (!decrypted && pwdf.shouldRetry(resource));
 	    }
 	    if (0x30 != data[0]) {
