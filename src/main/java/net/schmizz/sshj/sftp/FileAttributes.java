@@ -222,7 +222,7 @@ public final class FileAttributes {
             sb.append("size=").append(size).append(";");
 
         if (has(Flag.UIDGID))
-            sb.append("uid=").append(size).append(",gid=").append(gid).append(";");
+            sb.append("uid=").append(uid).append(",gid=").append(gid).append(";");
 
         if (has(Flag.MODE))
             sb.append("mode=").append(mode.toString()).append(";");
