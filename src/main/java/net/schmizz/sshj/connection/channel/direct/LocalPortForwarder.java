@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.TimeUnit;
 
 import static com.hierynomus.sshj.backport.Sockets.asCloseable;
@@ -134,11 +135,33 @@ public class LocalPortForwarder {
             throws IOException {
         log.info("Listening on {}", serverSocket.getLocalSocketAddress());
         while (!Thread.currentThread().isInterrupted()) {
-            final Socket socket = serverSocket.accept();
-            log.debug("Got connection from {}", socket.getRemoteSocketAddress());
-            startChannel(socket);
+            try {
+                final Socket socket = serverSocket.accept();
+                log.debug("Got connection from {}", socket.getRemoteSocketAddress());
+                startChannel(socket);
+            } catch (SocketException e) {
+                if (!serverSocket.isClosed()) {
+                    throw e;
+                }
+            }
         }
-        log.debug("Interrupted!");
+        if (serverSocket.isClosed()) {
+            log.debug("LocalPortForwarder closed");
+        } else {
+            log.debug("LocalPortForwarder interrupted!");
+        }
+    }
+
+    /**
+     * Close the ServerSocket that's listening for connections to forward.
+     *
+     * @throws IOException
+     */
+    public void close() throws IOException {
+        if (!serverSocket.isClosed()) {
+            log.info("Closing listener on {}", serverSocket.getLocalSocketAddress());
+            serverSocket.close();
+        }
     }
 
 }
