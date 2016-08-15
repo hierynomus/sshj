@@ -36,6 +36,12 @@ public class KeyProviderUtilTest {
     }
 
     @Test
+    public void testPkcs5() throws IOException {
+        KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "pkcs5"));
+        assertEquals(KeyFormat.PKCS5, format);
+    }
+
+    @Test
     public void testPkcs8() throws IOException {
         KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "pkcs8"));
         assertEquals(KeyFormat.PKCS8, format);
