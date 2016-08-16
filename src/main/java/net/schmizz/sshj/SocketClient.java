@@ -118,18 +118,26 @@ public abstract class SocketClient {
     }
 
     public void connect(String hostname, int port) throws IOException {
-        this.hostname = hostname;
-        socket = socketFactory.createSocket();
-        socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
-        onConnect();
+        if (hostname == null) {
+            connect(InetAddress.getByName(null), port);
+        } else {
+            this.hostname = hostname;
+            socket = socketFactory.createSocket();
+            socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+            onConnect();
+        }
     }
 
     public void connect(String hostname, int port, InetAddress localAddr, int localPort) throws IOException {
-        this.hostname = hostname;
-        socket = socketFactory.createSocket();
-        socket.bind(new InetSocketAddress(localAddr, localPort));
-        socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
-        onConnect();
+        if (hostname == null) {
+            connect(InetAddress.getByName(null), port, localAddr, localPort);
+        } else {
+            this.hostname = hostname;
+            socket = socketFactory.createSocket();
+            socket.bind(new InetSocketAddress(localAddr, localPort));
+            socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+            onConnect();
+        }
     }
 
     public void connect(InetAddress host) throws IOException {
