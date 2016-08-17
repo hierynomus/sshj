@@ -139,6 +139,8 @@ public class SSHClient
     /** {@code ssh-connection} service */
     protected final Connection conn;
 
+    private final List<LocalPortForwarder> forwarders = new ArrayList<LocalPortForwarder>();
+
     /** Default constructor. Initializes this object using {@link DefaultConfig}. */
     public SSHClient() {
         this(new DefaultConfig());
@@ -431,6 +433,14 @@ public class SSHClient
     @Override
     public void disconnect()
             throws IOException {
+        for (LocalPortForwarder forwarder : forwarders) {
+            try {
+                forwarder.close();
+            } catch (IOException e) {
+                log.warn("Error closing forwarder", e);
+            }
+        }
+        forwarders.clear();
         trans.disconnect();
         super.disconnect();
     }
@@ -648,7 +658,9 @@ public class SSHClient
      */
     public LocalPortForwarder newLocalPortForwarder(LocalPortForwarder.Parameters parameters,
                                                     ServerSocket serverSocket) {
-        return new LocalPortForwarder(conn, parameters, serverSocket);
+        LocalPortForwarder forwarder = new LocalPortForwarder(conn, parameters, serverSocket);
+        forwarders.add(forwarder);
+        return forwarder;
     }
 
     /**
