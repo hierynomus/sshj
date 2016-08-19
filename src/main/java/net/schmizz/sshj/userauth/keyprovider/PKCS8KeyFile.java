@@ -17,12 +17,7 @@ package net.schmizz.sshj.userauth.keyprovider;
 
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
-import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
-import net.schmizz.sshj.userauth.password.PrivateKeyReaderResource;
-import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
-import net.schmizz.sshj.userauth.password.Resource;
+import net.schmizz.sshj.userauth.password.*;
 import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;

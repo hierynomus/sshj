@@ -25,8 +25,6 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUpdateProvider;
 import net.schmizz.sshj.userauth.password.Resource;
 
-import static net.schmizz.sshj.common.Message.USERAUTH_REQUEST;
-
 /** Implements the {@code password} authentication method. Password-change request handling is not currently supported. */
 public class AuthPassword
         extends AbstractAuthMethod {

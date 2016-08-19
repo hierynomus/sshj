@@ -19,12 +19,7 @@ import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.security.PublicKey;
 
 

@@ -20,8 +20,8 @@ import org.junit.Test;
 
 import java.nio.charset.Charset;
 
-import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class HMACSHA2512Test {
     private static final Charset CHARSET = Charset.forName("US-ASCII");

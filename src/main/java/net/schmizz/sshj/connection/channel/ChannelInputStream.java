@@ -15,11 +15,7 @@
  */
 package net.schmizz.sshj.connection.channel;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.ErrorNotifiable;
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;

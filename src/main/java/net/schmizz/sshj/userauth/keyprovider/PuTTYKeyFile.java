@@ -15,45 +15,21 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import net.schmizz.sshj.common.Base64;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.userauth.password.*;
 import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.DSAPrivateKeySpec;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
+import java.security.*;
+import java.security.spec.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
-import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
-import net.schmizz.sshj.userauth.password.PrivateKeyReaderResource;
-import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
-import net.schmizz.sshj.userauth.password.Resource;
 
 /**
  * <h2>Sample PuTTY file format</h2>
