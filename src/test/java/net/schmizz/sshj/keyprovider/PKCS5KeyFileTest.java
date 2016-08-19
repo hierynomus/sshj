@@ -19,6 +19,7 @@ import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.PKCS5KeyFile;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.KeyUtil;
 import org.junit.Before;
 import org.junit.Test;
