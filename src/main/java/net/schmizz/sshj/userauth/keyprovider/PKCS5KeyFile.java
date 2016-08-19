@@ -50,10 +50,31 @@ public class PKCS5KeyFile
         }
     }
 
+    /**
+     * Indicates a format issue with PKCS5 data
+     */
+    public static class FormatException
+            extends IOException {
+
+        FormatException(String msg) {
+            super(msg);
+        }
+    }
+
+    /**
+     * Indicates a problem decrypting the data
+     */
+    public static class DecryptException
+            extends IOException {
+
+        DecryptException(String msg) {
+            super(msg);
+        }
+    }
+
     protected PasswordFinder pwdf;
     protected Resource<?> resource;
     protected KeyPair kp;
-
     protected KeyType type;
     protected byte[] data;
 
@@ -114,6 +135,7 @@ public class PKCS5KeyFile
 
     protected KeyPair readKeyPair()
             throws IOException {
+
         BufferedReader reader = new BufferedReader(resource.getReader());
         try {
             String line = null;
@@ -152,19 +174,16 @@ public class PKCS5KeyFile
                             String algorithm = line.substring(10,ptr);
                             if ("DES-EDE3-CBC".equals(algorithm)) {
                                 cipher = new TripleDESCBC();
-                                iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr+1)), 0, cipher.getIVSize());
                             } else if ("AES-128-CBC".equals(algorithm)) {
                                 cipher = new AES128CBC();
-                                iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr+1)), 0, cipher.getIVSize());
                             } else if ("AES-192-CBC".equals(algorithm)) {
                                 cipher = new AES192CBC();
-                                iv = Arrays.copyOfRange(Base64.decode(line.substring(ptr+1)), 0, cipher.getIVSize());
                             } else if ("AES-256-CBC".equals(algorithm)) {
                                 cipher = new AES256CBC();
-                                iv = Arrays.copyOfRange(Base64.decode(line.substring(ptr+1)), 0, cipher.getIVSize());
                             } else {
                                 throw new FormatException("Not a supported algorithm: " + algorithm);
                             }
+                            iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr+1)), 0, Math.min(cipher.getIVSize(), 8));
                         }
                     } else if (line.length() > 0) {
                         sb.append(line);
@@ -242,7 +261,7 @@ public class PKCS5KeyFile
                    md5.update(tmp, 0, tmp.length);
                 }
                 md5.update(passphrase, 0, passphrase.length);
-                md5.update(iv, 0, iv.length > 8 ? 8 : iv.length);
+                md5.update(iv, 0, iv.length);
                 tmp = md5.digest();
                 System.arraycopy(tmp, 0, hn, i, tmp.length);
                 i += tmp.length;
@@ -258,24 +277,6 @@ public class PKCS5KeyFile
             }
         } while (pwdf.shouldRetry(resource));
         throw new DecryptException("Decryption failed");
-    }
-
-    /**
-     * Indicates a format issue with PKCS5 data
-     */
-    public static class FormatException extends IOException {
-        FormatException(String msg) {
-            super(msg);
-        }
-    }
-
-    /**
-     * Indicates a problem decrypting the data
-     */
-    public static class DecryptException extends IOException {
-        DecryptException(String msg) {
-            super(msg);
-        }
     }
 
     class ASN1Data {
