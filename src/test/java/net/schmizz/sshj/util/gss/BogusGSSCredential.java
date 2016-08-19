@@ -15,12 +15,12 @@
  */
 package net.schmizz.sshj.util.gss;
 
-import static net.schmizz.sshj.util.gss.BogusGSSManager.unavailable;
-
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
+
+import static net.schmizz.sshj.util.gss.BogusGSSManager.unavailable;
 
 public class BogusGSSCredential
         implements GSSCredential {

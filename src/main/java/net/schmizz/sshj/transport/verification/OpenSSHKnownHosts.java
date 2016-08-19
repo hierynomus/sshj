@@ -15,25 +15,13 @@
  */
 package net.schmizz.sshj.transport.verification;
 
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.mac.HMACSHA1;
 import net.schmizz.sshj.transport.mac.MAC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -461,14 +449,14 @@ public class OpenSSHKnownHosts
         public String getMarkerString() {
             return sMarker;
         }
-        
+
         public static Marker fromString(String str) {
             for (Marker m: values())
                 if (m.sMarker.equals(str))
                     return m;
             return null;
         }
-        
+
     }
 
 }

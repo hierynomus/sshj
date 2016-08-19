@@ -21,7 +21,6 @@ import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -15,24 +15,15 @@
  */
 package net.schmizz.sshj.transport.kex;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.Factory;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.digest.Digest;
-import net.schmizz.sshj.transport.digest.SHA1;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.PublicKey;
-import java.util.Arrays;
 
 /**
  * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the

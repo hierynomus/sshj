@@ -19,7 +19,6 @@ import com.hierynomus.sshj.test.HttpServer;
 import com.hierynomus.sshj.test.SshFixture;
 import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
@@ -34,9 +33,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;

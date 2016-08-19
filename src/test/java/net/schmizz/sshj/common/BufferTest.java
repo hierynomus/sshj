@@ -15,11 +15,10 @@
  */
 package net.schmizz.sshj.common;
 
-import static org.junit.Assert.fail;
-
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-
 import org.junit.Test;
+
+import static org.junit.Assert.fail;
 
 public class BufferTest {
 

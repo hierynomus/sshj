@@ -15,26 +15,19 @@
  */
 package net.schmizz.sshj.userauth.method;
 
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.util.List;
-
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
-
 import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
+import org.ietf.jgss.*;
+
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.List;
 
 /** Implements authentication by GSS-API. */
 public class AuthGssApiWithMic

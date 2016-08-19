@@ -17,19 +17,12 @@ package net.schmizz.sshj.sftp;
 
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.sftp.Response.StatusCode;
-import net.schmizz.sshj.xfer.AbstractFileTransfer;
-import net.schmizz.sshj.xfer.FileSystemFile;
-import net.schmizz.sshj.xfer.FileTransfer;
-import net.schmizz.sshj.xfer.LocalDestFile;
-import net.schmizz.sshj.xfer.LocalFileFilter;
-import net.schmizz.sshj.xfer.LocalSourceFile;
-import net.schmizz.sshj.xfer.TransferListener;
+import net.schmizz.sshj.xfer.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumSet;
-import java.util.List;
 
 public class SFTPFileTransfer
         extends AbstractFileTransfer

@@ -45,17 +45,8 @@ import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.userauth.UserAuth;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.UserAuthImpl;
-import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
-import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
-import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
-import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
-import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
-import net.schmizz.sshj.userauth.method.AuthMethod;
-import net.schmizz.sshj.userauth.method.AuthPassword;
-import net.schmizz.sshj.userauth.method.AuthPublickey;
-import net.schmizz.sshj.userauth.method.PasswordResponseProvider;
+import net.schmizz.sshj.userauth.keyprovider.*;
+import net.schmizz.sshj.userauth.method.*;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUpdateProvider;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -66,18 +57,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginContext;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Secure SHell client API.

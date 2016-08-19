@@ -15,9 +15,6 @@
  */
 package net.schmizz.sshj.transport.kex;
 
-import net.schmizz.sshj.common.*;
-import net.schmizz.sshj.signature.Signature;
-import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.digest.SHA256;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

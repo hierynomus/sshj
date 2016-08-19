@@ -18,41 +18,19 @@ package net.schmizz.sshj.userauth.keyprovider;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.transport.cipher.AES128CBC;
-import net.schmizz.sshj.transport.cipher.AES192CBC;
-import net.schmizz.sshj.transport.cipher.AES256CBC;
-import net.schmizz.sshj.transport.cipher.Cipher;
-import net.schmizz.sshj.transport.cipher.NoneCipher;
-import net.schmizz.sshj.transport.cipher.TripleDESCBC;
+import net.schmizz.sshj.transport.cipher.*;
 import net.schmizz.sshj.transport.digest.Digest;
 import net.schmizz.sshj.transport.digest.MD5;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
-import net.schmizz.sshj.userauth.password.PrivateKeyFileResource;
-import net.schmizz.sshj.userauth.password.PrivateKeyReaderResource;
-import net.schmizz.sshj.userauth.password.PrivateKeyStringResource;
-import net.schmizz.sshj.userauth.password.Resource;
+import net.schmizz.sshj.userauth.password.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.Reader;
+import javax.xml.bind.DatatypeConverter;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.DSAPrivateKeySpec;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
+import java.security.*;
+import java.security.spec.*;
 import java.util.Arrays;
-import javax.xml.bind.DatatypeConverter;
 
 /** Represents a PKCS5-encoded key file. This is the format typically used by OpenSSH, OpenSSL, Amazon, etc. */
 public class PKCS5KeyFile

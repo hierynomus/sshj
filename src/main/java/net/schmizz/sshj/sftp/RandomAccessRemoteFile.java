@@ -15,12 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 
 public class RandomAccessRemoteFile
         implements DataInput, DataOutput {

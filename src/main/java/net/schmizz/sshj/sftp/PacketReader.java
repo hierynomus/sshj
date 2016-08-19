@@ -17,7 +17,6 @@ package net.schmizz.sshj.sftp;
 
 import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.common.SSHException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

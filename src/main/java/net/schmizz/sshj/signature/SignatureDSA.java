@@ -15,10 +15,10 @@
  */
 package net.schmizz.sshj.signature;
 
-import java.security.SignatureException;
-
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
+
+import java.security.SignatureException;
 
 /** DSA {@link Signature} */
 public class SignatureDSA

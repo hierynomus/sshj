@@ -21,10 +21,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static net.schmizz.sshj.sftp.PathHelper.DEFAULT_PATH_SEPARATOR;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class SFTPClientTest {
     private final SFTPEngine sftpEngine = mock(SFTPEngine.class);

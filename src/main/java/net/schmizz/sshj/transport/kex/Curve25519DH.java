@@ -15,21 +15,15 @@
  */
 package net.schmizz.sshj.transport.kex;
 
-import net.schmizz.sshj.common.SecurityUtils;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.math.ec.ECFieldElement;
-import org.bouncycastle.math.ec.custom.djb.Curve25519;
 
 import java.math.BigInteger;
-import java.security.*;
-import java.security.interfaces.ECPublicKey;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.ECPoint;
-import java.security.spec.ECPublicKeySpec;
 import java.util.Arrays;
-import java.util.BitSet;
 
 public class Curve25519DH extends DHBase {
 

@@ -18,8 +18,6 @@ package com.hierynomus.sshj.test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-
 /**
  * Can be used to setup a test HTTP server
  */

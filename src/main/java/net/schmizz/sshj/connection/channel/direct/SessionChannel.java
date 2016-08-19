@@ -15,12 +15,7 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
-import net.schmizz.sshj.common.SSHRuntimeException;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.ChannelInputStream;

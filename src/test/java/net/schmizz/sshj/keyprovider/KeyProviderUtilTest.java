@@ -15,15 +15,14 @@
  */
 package net.schmizz.sshj.keyprovider;
 
-import static org.junit.Assert.assertEquals;
+import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
+import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Test;
-
-import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
-import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+import static org.junit.Assert.assertEquals;
 
 public class KeyProviderUtilTest {
 
