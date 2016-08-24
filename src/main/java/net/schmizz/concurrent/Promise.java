@@ -64,7 +64,7 @@ public class Promise<V, T extends Throwable> {
         this.name = name;
         this.chainer = chainer;
         this.lock = lock == null ? new ReentrantLock() : lock;
-	this.log = loggerFactory.getLogger(getClass());
+        this.log = loggerFactory.getLogger(getClass());
         this.cond = this.lock.newCondition();
     }
 
