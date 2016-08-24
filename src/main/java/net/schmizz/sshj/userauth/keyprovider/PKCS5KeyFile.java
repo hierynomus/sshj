@@ -183,7 +183,7 @@ public class PKCS5KeyFile
                             } else {
                                 throw new FormatException("Not a supported algorithm: " + algorithm);
                             }
-                            iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr+1)), 0, Math.min(cipher.getIVSize(), 8));
+                            iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr+1)), 0, cipher.getIVSize());
                         }
                     } else if (line.length() > 0) {
                         sb.append(line);
@@ -261,7 +261,7 @@ public class PKCS5KeyFile
                    md5.update(tmp, 0, tmp.length);
                 }
                 md5.update(passphrase, 0, passphrase.length);
-                md5.update(iv, 0, iv.length);
+                md5.update(iv, 0, iv.length > 8 ? 8 : iv.length);
                 tmp = md5.digest();
                 System.arraycopy(tmp, 0, hn, i, tmp.length);
                 i += tmp.length;
