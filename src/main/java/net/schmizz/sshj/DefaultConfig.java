@@ -85,24 +85,6 @@ public class DefaultConfig
         setKeepAliveProvider(KeepAliveProvider.HEARTBEAT);
     }
 
-    /**
-     * Default SLF4J-based implementation of the SSHJ LoggerFactory.
-     */
-    public static class DefaultLoggerFactory implements LoggerFactory {
-        private DefaultLoggerFactory() {
-        }
-
-        @Override
-        public Logger getLogger(String name) {
-            return org.slf4j.LoggerFactory.getLogger(name);
-        }
-
-        @Override
-        public Logger getLogger(Class<?> clazz) {
-            return org.slf4j.LoggerFactory.getLogger(clazz);
-        }
-    }
-
     @Override
     public void setLoggerFactory(LoggerFactory loggerFactory) {
 	super.setLoggerFactory(loggerFactory);
