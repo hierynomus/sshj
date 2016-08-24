@@ -16,7 +16,6 @@
 package net.schmizz.sshj.connection.channel.direct;
 
 import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.Connection;

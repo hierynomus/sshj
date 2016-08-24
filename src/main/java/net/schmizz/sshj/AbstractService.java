@@ -16,7 +16,6 @@
 package net.schmizz.sshj;
 
 import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacket;
