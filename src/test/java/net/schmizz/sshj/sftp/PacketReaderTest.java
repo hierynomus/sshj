@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
 import org.junit.Before;
@@ -43,6 +44,7 @@ public class PacketReaderTest {
 
         engine = Mockito.mock(SFTPEngine.class);
         subsystem = Mockito.mock(Subsystem.class);
+        Mockito.when(engine.getLoggerFactory()).thenReturn(LoggerFactory.DEFAULT);
         Mockito.when(engine.getSubsystem()).thenReturn(subsystem);
         Mockito.when(subsystem.getInputStream()).thenReturn(pipedin);
 
