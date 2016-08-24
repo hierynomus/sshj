@@ -16,6 +16,7 @@
 package net.schmizz.sshj.connection.channel;
 
 import net.schmizz.sshj.common.ErrorNotifiable;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacketHandler;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.transport.TransportException;
@@ -134,4 +135,8 @@ public interface Channel
     void join(long timeout, TimeUnit unit)
             throws ConnectionException;
 
+    /**
+     * Get the LoggerFactory associated with the SSH client.
+     */
+    LoggerFactory getLoggerFactory();
 }

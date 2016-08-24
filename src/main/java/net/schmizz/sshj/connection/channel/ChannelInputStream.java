@@ -34,7 +34,7 @@ public final class ChannelInputStream
         extends InputStream
         implements ErrorNotifiable {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log;
 
     private final Channel chan;
     private final Transport trans;
@@ -47,6 +47,7 @@ public final class ChannelInputStream
 
     public ChannelInputStream(Channel chan, Transport trans, Window.Local win) {
         this.chan = chan;
+        log = chan.getLoggerFactory().getLogger(getClass());
         this.trans = trans;
         this.win = win;
         buf = new Buffer.PlainBuffer(chan.getLocalMaxPacketSize());

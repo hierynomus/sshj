@@ -23,7 +23,6 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,7 +37,8 @@ public abstract class AbstractChannel
     private static final int REMOTE_MAX_PACKET_SIZE_CEILING = 1024 * 1024;
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final LoggerFactory loggerFactory;
+    protected final Logger log;
 
     /** Transport layer */
     protected final Transport trans;
@@ -77,21 +77,23 @@ public abstract class AbstractChannel
 
     protected AbstractChannel(Connection conn, String type) {
         this.conn = conn;
+        this.loggerFactory = conn.getTransport().getConfig().getLoggerFactory();
         this.type = type;
+        this.log = loggerFactory.getLogger(getClass());
         this.trans = conn.getTransport();
 
         id = conn.nextID();
 
-        lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize());
+        lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize(), loggerFactory);
         in = new ChannelInputStream(this, trans, lwin);
 
-        openEvent = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, openCloseLock);
-        closeEvent = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, openCloseLock);
+        openEvent = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, openCloseLock, loggerFactory);
+        closeEvent = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, openCloseLock, loggerFactory);
     }
 
     protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
         this.recipient = recipient;
-        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING));
+        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING), loggerFactory);
         out = new ChannelOutputStream(this, trans, rwin);
         log.debug("Initialized - {}", this);
     }
@@ -187,6 +189,11 @@ public abstract class AbstractChannel
                 gotUnknown(msg, buf);
 
         }
+    }
+
+    @Override
+    public LoggerFactory getLoggerFactory() {
+	return loggerFactory;
     }
 
     private void gotClose()
@@ -356,7 +363,7 @@ public abstract class AbstractChannel
             Event<ConnectionException> responseEvent = null;
             if (wantReply) {
                 responseEvent = new Event<ConnectionException>("chan#" + id + " / " + "chanreq for " + reqType,
-                                                               ConnectionException.chainer);
+                                                               ConnectionException.chainer, loggerFactory);
                 chanReqResponseEvents.add(responseEvent);
             }
             return responseEvent;

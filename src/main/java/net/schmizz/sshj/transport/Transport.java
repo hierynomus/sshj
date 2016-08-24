@@ -18,6 +18,7 @@ package net.schmizz.sshj.transport;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.Service;
 import net.schmizz.sshj.common.DisconnectReason;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.SSHPacketHandler;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;

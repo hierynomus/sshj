@@ -17,6 +17,7 @@ package net.schmizz.sshj.connection;
 
 import net.schmizz.concurrent.Promise;
 import net.schmizz.keepalive.KeepAlive;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException;

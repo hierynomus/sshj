@@ -19,8 +19,6 @@ import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -30,8 +28,6 @@ import java.util.concurrent.TimeUnit;
 /** A {@link ConnectListener} that forwards what is received over the channel to a socket and vice-versa. */
 public class SocketForwardingConnectListener
         implements ConnectListener {
-
-    protected final Logger log = LoggerFactory.getLogger(getClass());
 
     protected final SocketAddress addr;
 
@@ -44,7 +40,7 @@ public class SocketForwardingConnectListener
     @Override
     public void gotConnect(Channel.Forwarded chan)
             throws IOException {
-        log.debug("New connection from {}:{}", chan.getOriginatorIP(), chan.getOriginatorPort());
+        chan.getLoggerFactory().getLogger(getClass()).debug("New connection from {}:{}", chan.getOriginatorIP(), chan.getOriginatorPort());
 
         final Socket sock = new Socket();
         sock.setSendBufferSize(chan.getLocalMaxPacketSize());
@@ -55,11 +51,11 @@ public class SocketForwardingConnectListener
         // ok so far -- could connect, let's confirm the channel
         chan.confirm();
 
-        final Event<IOException> soc2chan = new StreamCopier(sock.getInputStream(), chan.getOutputStream())
+        final Event<IOException> soc2chan = new StreamCopier(sock.getInputStream(), chan.getOutputStream(), chan.getLoggerFactory())
                 .bufSize(chan.getRemoteMaxPacketSize())
                 .spawnDaemon("soc2chan");
 
-        final Event<IOException> chan2soc = new StreamCopier(chan.getInputStream(), sock.getOutputStream())
+        final Event<IOException> chan2soc = new StreamCopier(chan.getInputStream(), sock.getOutputStream(), chan.getLoggerFactory())
                 .bufSize(chan.getLocalMaxPacketSize())
                 .spawnDaemon("chan2soc");
 

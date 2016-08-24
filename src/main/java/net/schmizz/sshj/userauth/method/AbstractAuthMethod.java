@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.method;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.TransportException;
@@ -22,14 +23,13 @@ import net.schmizz.sshj.userauth.AuthParams;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.password.AccountResource;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** This abstract class for {@link AuthMethod} implements common or default functionality. */
 public abstract class AbstractAuthMethod
         implements AuthMethod {
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected Logger log = org.slf4j.LoggerFactory.getLogger(getClass());
 
     private final String name;
 
@@ -39,6 +39,11 @@ public abstract class AbstractAuthMethod
     /** @param name the {@code name} of this authentication method. */
     protected AbstractAuthMethod(String name) {
         this.name = name;
+    }
+
+    @Override
+    public void setLoggerFactory(LoggerFactory loggerFactory) {
+        log = loggerFactory.getLogger(getClass());
     }
 
     @Override

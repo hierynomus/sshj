@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.method;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacketHandler;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.AuthParams;
@@ -44,4 +45,5 @@ public interface AuthMethod
     /** @return whether authentication should be reattempted if it failed. */
     boolean shouldRetry();
 
+    void setLoggerFactory(LoggerFactory loggerFactory);
 }

@@ -19,7 +19,6 @@ import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.mac.HMACSHA1;
 import net.schmizz.sshj.transport.mac.MAC;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -38,23 +37,29 @@ import java.util.List;
 public class OpenSSHKnownHosts
         implements HostKeyVerifier {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OpenSSHKnownHosts.class);
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log;
 
     protected final File khFile;
     protected final List<HostEntry> entries = new ArrayList<HostEntry>();
 
     public OpenSSHKnownHosts(File khFile)
             throws IOException {
+        this(khFile, LoggerFactory.DEFAULT);
+    }
+
+    public OpenSSHKnownHosts(File khFile, LoggerFactory loggerFactory)
+            throws IOException {
         this.khFile = khFile;
+        log = loggerFactory.getLogger(getClass());
         if (khFile.exists()) {
+            final EntryFactory entryFactory = new EntryFactory();
             final BufferedReader br = new BufferedReader(new FileReader(khFile));
             try {
                 // Read in the file, storing each line as an entry
                 String line;
                 while ((line = br.readLine()) != null)
                     try {
-                        HostEntry entry = EntryFactory.parseEntry(line);
+                        HostEntry entry = entryFactory.parseEntry(line);
                         if (entry != null) {
                             entries.add(entry);
                         }
@@ -173,9 +178,11 @@ public class OpenSSHKnownHosts
      * <p/>
      * Lines starting with `#' and empty lines are ignored as comments.
      */
-    public static class EntryFactory {
+    public class EntryFactory {
+        EntryFactory() {
+        }
 
-        public static HostEntry parseEntry(String line)
+        public HostEntry parseEntry(String line)
                 throws IOException {
             if (isComment(line)) {
                 return new CommentEntry(line);
@@ -189,7 +196,7 @@ public class OpenSSHKnownHosts
                 i++;
             }
             if(split.length < 3) {
-                LOG.error("Error reading entry `{}`", line);
+                log.error("Error reading entry `{}`", line);
                 return null;
             }
             final String hostnames = split[i++];
@@ -210,11 +217,11 @@ public class OpenSSHKnownHosts
                     final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
                     key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
                 } catch (Exception ex) {
-                    LOG.error("Error reading entry `{}`, could not create key", line, ex);
+                    log.error("Error reading entry `{}`, could not create key", line, ex);
                     return null;
                 }
             } else {
-                LOG.error("Error reading entry `{}`, could not determine type", line);
+                log.error("Error reading entry `{}`, could not determine type", line);
                 return null;
             }
 
@@ -225,12 +232,12 @@ public class OpenSSHKnownHosts
             }
         }
 
-        private static PublicKey getKey(String sKey)
+        private PublicKey getKey(String sKey)
                 throws IOException {
             return new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
         }
 
-        private static boolean isBits(String type) {
+        private boolean isBits(String type) {
             try {
                 Integer.parseInt(type);
                 return true;
@@ -239,23 +246,23 @@ public class OpenSSHKnownHosts
             }
         }
 
-        private static boolean isComment(String line) {
+        private boolean isComment(String line) {
             return line.isEmpty() || line.startsWith("#");
         }
 
-        public static boolean isHashed(String line) {
+        public boolean isHashed(String line) {
             return line.startsWith("|1|");
         }
 
     }
 
     public interface HostEntry {
-	KeyType getType();
+        KeyType getType();
 
-	String getFingerprint();
+        String getFingerprint();
 
-	boolean appliesTo(String host)
-		throws IOException;
+        boolean appliesTo(String host)
+                throws IOException;
 
         boolean appliesTo(KeyType type, String host)
                 throws IOException;
@@ -274,21 +281,21 @@ public class OpenSSHKnownHosts
             this.comment = comment;
         }
 
-	@Override
-	public KeyType getType() {
-	    return KeyType.UNKNOWN;
-	}
+        @Override
+        public KeyType getType() {
+            return KeyType.UNKNOWN;
+        }
 
-	@Override
-	public String getFingerprint() {
-	    return null;
-	}
+        @Override
+        public String getFingerprint() {
+            return null;
+        }
 
-	@Override
-	public boolean appliesTo(String host)
-		throws IOException {
-	    return false;
-	}
+        @Override
+        public boolean appliesTo(String host)
+                throws IOException {
+            return false;
+        }
 
         @Override
         public boolean appliesTo(KeyType type, String host) {
@@ -319,15 +326,15 @@ public class OpenSSHKnownHosts
             this.key = key;
         }
 
-	@Override
-	public KeyType getType() {
-	    return type;
-	}
+        @Override
+        public KeyType getType() {
+            return type;
+        }
 
-	@Override
-	public String getFingerprint() {
-	    return SecurityUtils.getFingerprint(key);
-	}
+        @Override
+        public String getFingerprint() {
+            return SecurityUtils.getFingerprint(key);
+        }
 
         @Override
         public boolean verify(PublicKey key)
@@ -370,11 +377,11 @@ public class OpenSSHKnownHosts
             return hostnames;
         }
 
-	@Override
-	public boolean appliesTo(String host)
-		throws IOException {
-	    return hosts.contains(host);
-	}
+        @Override
+        public boolean appliesTo(String host)
+                throws IOException {
+            return hosts.contains(host);
+        }
 
         @Override
         public boolean appliesTo(KeyType type, String host)
@@ -404,11 +411,11 @@ public class OpenSSHKnownHosts
             }
         }
 
-	@Override
-	public boolean appliesTo(String host)
-		 throws IOException {
-	    return hashedHost.equals(hashHost(host));
-	}
+        @Override
+        public boolean appliesTo(String host)
+                 throws IOException {
+            return hashedHost.equals(hashHost(host));
+        }
 
         @Override
         public boolean appliesTo(KeyType type, String host)

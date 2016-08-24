@@ -16,6 +16,7 @@
 package net.schmizz.sshj;
 
 import net.schmizz.keepalive.KeepAliveProvider;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.cipher.Cipher;
@@ -45,6 +46,7 @@ public class ConfigImpl
     private List<Factory.Named<FileKeyProvider>> fileKeyProviderFactories;
 
     private boolean waitForServerIdentBeforeSendingClientIdent = false;
+    private LoggerFactory loggerFactory;
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
@@ -168,5 +170,15 @@ public class ConfigImpl
     @Override
     public void setWaitForServerIdentBeforeSendingClientIdent(boolean waitForServerIdentBeforeSendingClientIdent) {
         this.waitForServerIdentBeforeSendingClientIdent = waitForServerIdentBeforeSendingClientIdent;
+    }
+
+    @Override
+    public LoggerFactory getLoggerFactory() {
+        return loggerFactory;
+    }
+
+    @Override
+    public void setLoggerFactory(LoggerFactory loggerFactory) {
+        this.loggerFactory = loggerFactory;
     }
 }

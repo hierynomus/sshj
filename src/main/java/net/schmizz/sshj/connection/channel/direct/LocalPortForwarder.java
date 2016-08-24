@@ -17,12 +17,12 @@ package net.schmizz.sshj.connection.channel.direct;
 
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -82,10 +82,10 @@ public class LocalPortForwarder {
                 throws IOException {
             socket.setSendBufferSize(getLocalMaxPacketSize());
             socket.setReceiveBufferSize(getRemoteMaxPacketSize());
-            final Event<IOException> soc2chan = new StreamCopier(socket.getInputStream(), getOutputStream())
+            final Event<IOException> soc2chan = new StreamCopier(socket.getInputStream(), getOutputStream(), loggerFactory)
                     .bufSize(getRemoteMaxPacketSize())
                     .spawnDaemon("soc2chan");
-            final Event<IOException> chan2soc = new StreamCopier(getInputStream(), socket.getOutputStream())
+            final Event<IOException> chan2soc = new StreamCopier(getInputStream(), socket.getOutputStream(), loggerFactory)
                     .bufSize(getLocalMaxPacketSize())
                     .spawnDaemon("chan2soc");
             SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, soc2chan, chan2soc, this, socket);
@@ -102,16 +102,18 @@ public class LocalPortForwarder {
 
     }
 
-    private final Logger log = LoggerFactory.getLogger(LocalPortForwarder.class);
-
+    private final LoggerFactory loggerFactory;
+    private final Logger log;
     private final Connection conn;
     private final Parameters parameters;
     private final ServerSocket serverSocket;
 
-    public LocalPortForwarder(Connection conn, Parameters parameters, ServerSocket serverSocket) {
+    public LocalPortForwarder(Connection conn, Parameters parameters, ServerSocket serverSocket, LoggerFactory loggerFactory) {
         this.conn = conn;
         this.parameters = parameters;
         this.serverSocket = serverSocket;
+        this.loggerFactory = loggerFactory;
+        this.log = loggerFactory.getLogger(getClass());
     }
 
     private void startChannel(Socket socket) throws IOException {

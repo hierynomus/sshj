@@ -174,15 +174,15 @@ public enum KeyType {
     },
 
     ED25519("ssh-ed25519") {
-        private final Logger logger = LoggerFactory.getLogger(KeyType.class);
+        private final Logger log = LoggerFactory.getLogger(KeyType.class);
         @Override
         public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf) throws GeneralSecurityException {
             try {
                 final int keyLen = buf.readUInt32AsInt();
                 final byte[] p = new byte[keyLen];
                 buf.readRawBytes(p);
-                if (logger.isDebugEnabled()) {
-                    logger.debug(String.format("Key algo: %s, Key curve: 25519, Key Len: %s\np: %s",
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Key algo: %s, Key curve: 25519, Key Len: %s\np: %s",
                             type,
                             keyLen,
                             Arrays.toString(p))

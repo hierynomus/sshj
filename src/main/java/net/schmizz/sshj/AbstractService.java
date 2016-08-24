@@ -16,20 +16,20 @@
 package net.schmizz.sshj;
 
 import net.schmizz.sshj.common.DisconnectReason;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** An abstract class for {@link Service} that implements common or default functionality. */
 public abstract class AbstractService
         implements Service {
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log;
 
     /** Assigned name of this service */
     protected final String name;
@@ -39,6 +39,7 @@ public abstract class AbstractService
     public AbstractService(String name, Transport trans) {
         this.name = name;
         this.trans = trans;
+	log = trans.getConfig().getLoggerFactory().getLogger(getClass());
     }
 
     @Override

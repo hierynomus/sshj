@@ -15,14 +15,14 @@
  */
 package net.schmizz.sshj.connection.channel;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.connection.ConnectionException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class Window {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log;
 
     protected final Object lock = new Object();
 
@@ -30,9 +30,10 @@ public abstract class Window {
 
     protected long size;
 
-    public Window(long initialWinSize, int maxPacketSize) {
+    public Window(long initialWinSize, int maxPacketSize, LoggerFactory loggerFactory) {
         size = initialWinSize;
         this.maxPacketSize = maxPacketSize;
+        log = loggerFactory.getLogger(getClass());
     }
 
     public void expand(long inc) {
@@ -72,8 +73,8 @@ public abstract class Window {
     public static final class Remote
             extends Window {
 
-        public Remote(long initialWinSize, int maxPacketSize) {
-            super(initialWinSize, maxPacketSize);
+        public Remote(long initialWinSize, int maxPacketSize, LoggerFactory loggerFactory) {
+            super(initialWinSize, maxPacketSize, loggerFactory);
         }
 
         public long awaitExpansion(long was)
@@ -108,8 +109,8 @@ public abstract class Window {
         private final long initialSize;
         private final long threshold;
 
-        public Local(long initialWinSize, int maxPacketSize) {
-            super(initialWinSize, maxPacketSize);
+        public Local(long initialWinSize, int maxPacketSize, LoggerFactory loggerFactory) {
+            super(initialWinSize, maxPacketSize, loggerFactory);
             this.initialSize = initialWinSize;
             threshold = Math.min(maxPacketSize * 20, initialSize / 4);
         }

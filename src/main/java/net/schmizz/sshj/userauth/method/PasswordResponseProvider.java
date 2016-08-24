@@ -15,10 +15,10 @@
  */
 package net.schmizz.sshj.userauth.method;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,12 +29,11 @@ public class PasswordResponseProvider
 
     public static final Pattern DEFAULT_PROMPT_PATTERN = Pattern.compile(".*[pP]assword:\\s?\\z", Pattern.DOTALL);
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
     private static final char[] EMPTY_RESPONSE = new char[0];
 
     private final Pattern promptPattern;
     private final PasswordFinder pwdf;
+    private final Logger log;
 
     private Resource resource;
 
@@ -43,8 +42,13 @@ public class PasswordResponseProvider
     }
 
     public PasswordResponseProvider(PasswordFinder pwdf, Pattern promptPattern) {
+        this(pwdf, promptPattern, LoggerFactory.DEFAULT);
+    }
+
+    public PasswordResponseProvider(PasswordFinder pwdf, Pattern promptPattern, LoggerFactory loggerFactory) {
         this.pwdf = pwdf;
         this.promptPattern = promptPattern;
+        log = loggerFactory.getLogger(getClass());
     }
 
     @Override

@@ -29,7 +29,7 @@ public class PacketReader
         extends Thread {
 
     /** Logger */
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log;
 
     private final InputStream in;
     private final Map<Long, Promise<Response, SFTPException>> promises = new ConcurrentHashMap<Long, Promise<Response, SFTPException>>();
@@ -39,6 +39,7 @@ public class PacketReader
 
     public PacketReader(SFTPEngine engine) {
         this.engine = engine;
+        log = engine.getLoggerFactory().getLogger(getClass());
         this.in = engine.getSubsystem().getInputStream();
         setName("sftp reader");
     }
@@ -106,7 +107,7 @@ public class PacketReader
 
     public Promise<Response, SFTPException> expectResponseTo(long requestId) {
         final Promise<Response, SFTPException> promise
-                = new Promise<Response, SFTPException>("sftp / " + requestId, SFTPException.chainer);
+                = new Promise<Response, SFTPException>("sftp / " + requestId, SFTPException.chainer, engine.getLoggerFactory());
         promises.put(requestId, promise);
         return promise;
     }

@@ -199,7 +199,7 @@ public class ConnectionImpl
 
             Promise<SSHPacket, ConnectionException> promise = null;
             if (wantReply) {
-                promise = new Promise<SSHPacket, ConnectionException>("global req for " + name, ConnectionException.chainer);
+                promise = new Promise<SSHPacket, ConnectionException>("global req for " + name, ConnectionException.chainer, trans.getConfig().getLoggerFactory());
                 globalReqPromises.add(promise);
             }
             return promise;
