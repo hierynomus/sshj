@@ -229,14 +229,36 @@ public class SFTPFileTransfer
                                   final String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
-            try (RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC))) {
-                try (InputStream fis = local.getInputStream();
-                     RemoteFile.RemoteFileOutputStream rfos = rf.new RemoteFileOutputStream(0, 16)) {
-                    new StreamCopier(fis, rfos, engine.getLoggerFactory())
-                            .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
-                            .keepFlushing(false)
-                            .listener(listener)
-                            .copy();
+            RemoteFile rf = null;
+            InputStream fis = null;
+            RemoteFile.RemoteFileOutputStream rfos = null;
+            try {
+                rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC));
+                fis = local.getInputStream();
+                rfos = rf.new RemoteFileOutputStream(0, 16);
+                new StreamCopier(fis, rfos, engine.getLoggerFactory())
+                        .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
+                        .keepFlushing(false)
+                        .listener(listener)
+                        .copy();
+            } finally {
+                if (rf != null) {
+                    try {
+                        rf.close();
+                    } catch (IOException e) {
+                    }
+                }
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                    }
+                }
+                if (rfos != null) {
+                    try {
+                        rfos.close();
+                    } catch (IOException e) {
+                    }
                 }
             }
             return adjusted;
