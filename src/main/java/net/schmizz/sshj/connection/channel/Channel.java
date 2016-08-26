@@ -136,6 +136,11 @@ public interface Channel
             throws ConnectionException;
 
     /**
+     * Returns whether EOF has been received.
+     */
+    boolean isEOF();
+
+    /**
      * Get the LoggerFactory associated with the SSH client.
      */
     LoggerFactory getLoggerFactory();

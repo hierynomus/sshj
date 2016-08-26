@@ -36,7 +36,7 @@ public class FileMode {
         /** directory */
         DIRECTORY(0040000),
         /** symbolic link */
-        SYMKLINK(0120000),
+        SYMLINK(0120000),
         /** unknown */
         UNKNOWN(0);
 
