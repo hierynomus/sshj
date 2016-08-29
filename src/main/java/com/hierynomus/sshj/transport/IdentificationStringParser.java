@@ -31,10 +31,10 @@ public class IdentificationStringParser {
     private byte[] EXPECTED_START_BYTES = new byte[] {'S', 'S', 'H', '-'};
 
     public IdentificationStringParser(Buffer.PlainBuffer buffer) {
-	this(LoggerFactory.DEFAULT, buffer);
+	this(buffer, LoggerFactory.DEFAULT);
     }
 
-    public IdentificationStringParser(LoggerFactory loggerFactory, Buffer.PlainBuffer buffer) {
+    public IdentificationStringParser(Buffer.PlainBuffer buffer, LoggerFactory loggerFactory) {
         this.log = loggerFactory.getLogger(IdentificationStringParser.class);
         this.buffer = buffer;
     }

@@ -219,7 +219,7 @@ public final class TransportImpl
      */
     private String readIdentification(Buffer.PlainBuffer buffer)
             throws IOException {
-        String ident = new IdentificationStringParser(loggerFactory, buffer).parseIdentificationString();
+        String ident = new IdentificationStringParser(buffer, loggerFactory).parseIdentificationString();
         if (ident.isEmpty()) {
             return ident;
         }
