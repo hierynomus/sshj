@@ -20,6 +20,7 @@ import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureECDSA;
@@ -35,7 +36,6 @@ import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -67,11 +67,12 @@ import java.util.List;
 public class DefaultConfig
         extends ConfigImpl {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
     private static final String VERSION = "SSHJ_0_17_2";
 
+    private Logger log;
+
     public DefaultConfig() {
+        setLoggerFactory(LoggerFactory.DEFAULT);
         setVersion(VERSION);
         final boolean bouncyCastleRegistered = SecurityUtils.isBouncyCastleRegistered();
         initKeyExchangeFactories(bouncyCastleRegistered);
@@ -82,6 +83,12 @@ public class DefaultConfig
         initMACFactories();
         initSignatureFactories();
         setKeepAliveProvider(KeepAliveProvider.HEARTBEAT);
+    }
+
+    @Override
+    public void setLoggerFactory(LoggerFactory loggerFactory) {
+	super.setLoggerFactory(loggerFactory);
+	log = loggerFactory.getLogger(getClass());
     }
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
@@ -141,7 +148,8 @@ public class DefaultConfig
                 BlockCiphers.TwofishCBC(),
                 StreamCiphers.Arcfour(),
                 StreamCiphers.Arcfour128(),
-                StreamCiphers.Arcfour256()));
+                StreamCiphers.Arcfour256())
+        );
 
         boolean warn = false;
         // Ref. https://issues.apache.org/jira/browse/SSHD-24
@@ -167,17 +175,26 @@ public class DefaultConfig
     }
 
     protected void initSignatureFactories() {
-        setSignatureFactories(new SignatureECDSA.Factory(), new SignatureRSA.Factory(), new SignatureDSA.Factory(), new SignatureEdDSA.Factory());
+        setSignatureFactories(
+                new SignatureECDSA.Factory(),
+                new SignatureRSA.Factory(),
+                new SignatureDSA.Factory(),
+                new SignatureEdDSA.Factory()
+        );
     }
 
     protected void initMACFactories() {
-        setMACFactories(new HMACSHA1.Factory(), new HMACSHA196.Factory(), new HMACMD5.Factory(),
-                new HMACMD596.Factory(), new HMACSHA2256.Factory(), new HMACSHA2512.Factory());
+        setMACFactories(
+                new HMACSHA1.Factory(),
+                new HMACSHA196.Factory(),
+                new HMACMD5.Factory(),
+                new HMACMD596.Factory(),
+                new HMACSHA2256.Factory(),
+                new HMACSHA2512.Factory()
+        );
     }
 
     protected void initCompressionFactories() {
         setCompressionFactories(new NoneCompression.Factory());
     }
-
-
 }

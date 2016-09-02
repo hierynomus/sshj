@@ -15,23 +15,32 @@
  */
 package net.schmizz.sshj.xfer;
 
+import net.schmizz.sshj.common.LoggerFactory;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractFileTransfer {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final LoggerFactory loggerFactory;
+    protected final Logger log;
 
-    public static final LoggingTransferListener LOGGING_TRANSFER_LISTENER = new LoggingTransferListener();
+    private final LoggingTransferListener loggingTransferListener;
 
-    private volatile TransferListener transferListener = LOGGING_TRANSFER_LISTENER;
+    private volatile TransferListener transferListener;
+
+    protected AbstractFileTransfer(LoggerFactory loggerFactory) {
+        this.loggerFactory = loggerFactory;
+        log = loggerFactory.getLogger(getClass());
+        loggingTransferListener = new LoggingTransferListener(loggerFactory);
+        transferListener = loggingTransferListener;
+    }
 
     public TransferListener getTransferListener() {
         return transferListener;
     }
 
     public void setTransferListener(TransferListener transferListener) {
-        this.transferListener = (transferListener == null) ? LOGGING_TRANSFER_LISTENER : transferListener;
+        this.transferListener = (transferListener == null) ? loggingTransferListener : transferListener;
     }
 
 }

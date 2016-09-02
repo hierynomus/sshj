@@ -29,14 +29,14 @@ import java.io.IOException;
 public abstract class AbstractForwardedChannelOpener
         implements ForwardedChannelOpener {
 
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-
+    protected final Logger log;
     protected final String chanType;
     protected final Connection conn;
 
     protected AbstractForwardedChannelOpener(String chanType, Connection conn) {
         this.chanType = chanType;
         this.conn = conn;
+        log = conn.getTransport().getConfig().getLoggerFactory().getLogger(getClass());
     }
 
     @Override

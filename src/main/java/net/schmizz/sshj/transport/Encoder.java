@@ -15,13 +15,13 @@
  */
 package net.schmizz.sshj.transport;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;
 import net.schmizz.sshj.transport.mac.MAC;
 import net.schmizz.sshj.transport.random.Random;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.Lock;
 
@@ -29,15 +29,14 @@ import java.util.concurrent.locks.Lock;
 final class Encoder
         extends Converter {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
+    private final Logger log;
     private final Random prng;
-
     private final Lock encodeLock;
 
-    Encoder(Random prng, Lock encodeLock) {
+    Encoder(Random prng, Lock encodeLock, LoggerFactory loggerFactory) {
         this.prng = prng;
         this.encodeLock = encodeLock;
+        log = loggerFactory.getLogger(getClass());
     }
 
     private SSHPacket checkHeaderSpace(SSHPacket buffer) {

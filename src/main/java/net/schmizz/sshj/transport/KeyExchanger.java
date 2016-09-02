@@ -50,8 +50,7 @@ final class KeyExchanger
         NEWKEYS,
     }
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
+    private final Logger log;
     private final TransportImpl transport;
 
     /**
@@ -76,18 +75,20 @@ final class KeyExchanger
     private Proposal clientProposal;
     private NegotiatedAlgorithms negotiatedAlgs;
 
-    private final Event<TransportException> kexInitSent =
-            new Event<TransportException>("kexinit sent", TransportException.chainer);
+    private final Event<TransportException> kexInitSent;
 
     private final Event<TransportException> done;
 
     KeyExchanger(TransportImpl trans) {
         this.transport = trans;
+        log = trans.getConfig().getLoggerFactory().getLogger(getClass());
+        kexInitSent = new Event<TransportException>("kexinit sent", TransportException.chainer, trans.getConfig().getLoggerFactory());
+
         /*
          * Use TransportImpl's writeLock, since TransportImpl.write() may wait on this event and the lock should
          * be released while waiting.
          */
-        this.done = new Event<TransportException>("kex done", TransportException.chainer, trans.getWriteLock());
+        this.done = new Event<TransportException>("kex done", TransportException.chainer, trans.getWriteLock(), trans.getConfig().getLoggerFactory());
     }
 
     /**

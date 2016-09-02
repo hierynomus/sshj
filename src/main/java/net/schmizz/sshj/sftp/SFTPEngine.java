@@ -16,11 +16,11 @@
 package net.schmizz.sshj.sftp;
 
 import net.schmizz.concurrent.Promise;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
+import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -38,13 +38,14 @@ public class SFTPEngine
     public static final int DEFAULT_TIMEOUT_MS = 30 * 1000; // way too long, but it was the original default
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final LoggerFactory loggerFactory;
+    protected final Logger log;
 
     protected volatile int timeoutMs = DEFAULT_TIMEOUT_MS;
 
     protected final PathHelper pathHelper;
 
-    protected final Subsystem sub;
+    protected final Session.Subsystem sub;
     protected final PacketReader reader;
     protected final OutputStream out;
 
@@ -59,7 +60,10 @@ public class SFTPEngine
 
     public SFTPEngine(SessionFactory ssh, String pathSep)
             throws SSHException {
-        sub = ssh.startSession().startSubsystem("sftp");
+        Session session = ssh.startSession();
+        loggerFactory = session.getLoggerFactory();
+        log = loggerFactory.getLogger(getClass());
+        sub = session.startSubsystem("sftp");
         out = sub.getOutputStream();
         reader = new PacketReader(this);
         pathHelper = new PathHelper(new PathHelper.Canonicalizer() {
@@ -94,7 +98,7 @@ public class SFTPEngine
         return this;
     }
 
-    public Subsystem getSubsystem() {
+    public Session.Subsystem getSubsystem() {
         return sub;
     }
 
@@ -246,6 +250,10 @@ public class SFTPEngine
             throws IOException {
         sub.close();
         reader.interrupt();
+    }
+
+    protected LoggerFactory getLoggerFactory() {
+	return loggerFactory;
     }
 
     protected FileAttributes stat(PacketType pt, String path)

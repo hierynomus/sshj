@@ -35,6 +35,7 @@ public class SFTPFileTransfer
     private volatile boolean preserveAttributes = true;
 
     public SFTPFileTransfer(SFTPEngine engine) {
+	super(engine.getLoggerFactory());
         this.engine = engine;
     }
 
@@ -138,7 +139,7 @@ public class SFTPFileTransfer
                 final RemoteFile.ReadAheadRemoteFileInputStream rfis = rf.new ReadAheadRemoteFileInputStream(16);
                 final OutputStream os = adjusted.getOutputStream();
                 try {
-                    new StreamCopier(rfis, os)
+                    new StreamCopier(rfis, os, engine.getLoggerFactory())
                             .bufSize(engine.getSubsystem().getLocalMaxPacketSize())
                             .keepFlushing(false)
                             .listener(listener)
@@ -231,7 +232,7 @@ public class SFTPFileTransfer
             try (RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC))) {
                 try (InputStream fis = local.getInputStream();
                      RemoteFile.RemoteFileOutputStream rfos = rf.new RemoteFileOutputStream(0, 16)) {
-                    new StreamCopier(fis, rfos)
+                    new StreamCopier(fis, rfos, engine.getLoggerFactory())
                             .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
                             .keepFlushing(false)
                             .listener(listener)

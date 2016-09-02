@@ -37,8 +37,7 @@ public class UserAuthImpl
         extends AbstractService
         implements UserAuth {
 
-    private final Promise<Boolean, UserAuthException> authenticated
-            = new Promise<Boolean, UserAuthException>("authenticated", UserAuthException.chainer);
+    private final Promise<Boolean, UserAuthException> authenticated;
 
     // Externally available
     private volatile String banner = "";
@@ -51,6 +50,7 @@ public class UserAuthImpl
 
     public UserAuthImpl(Transport trans) {
         super("ssh-userauth", trans);
+        authenticated = new Promise<Boolean, UserAuthException>("authenticated", UserAuthException.chainer, trans.getConfig().getLoggerFactory());
     }
 
     @Override

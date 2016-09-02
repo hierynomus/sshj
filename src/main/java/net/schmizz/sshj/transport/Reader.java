@@ -24,12 +24,12 @@ import java.net.SocketTimeoutException;
 public final class Reader
         extends Thread {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
+    private final Logger log;
     private final TransportImpl trans;
 
     public Reader(TransportImpl trans) {
         this.trans = trans;
+        log = trans.getConfig().getLoggerFactory().getLogger(getClass());
         setName("reader");
     }
 

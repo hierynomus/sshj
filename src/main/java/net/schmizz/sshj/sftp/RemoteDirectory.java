@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 public class RemoteDirectory
         extends RemoteResource {
 
-    public RemoteDirectory(Requester requester, String path, byte[] handle) {
+    public RemoteDirectory(SFTPEngine requester, String path, byte[] handle) {
         super(requester, path, handle);
     }
 

@@ -16,6 +16,7 @@
 package net.schmizz.sshj;
 
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.connection.Connection;
@@ -54,7 +55,6 @@ import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginContext;
 import java.io.Closeable;
@@ -114,7 +114,8 @@ public class SSHClient
     public static final int DEFAULT_PORT = 22;
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final LoggerFactory loggerFactory;
+    protected final Logger log;
 
     /** Transport layer */
     protected final Transport trans;
@@ -139,6 +140,8 @@ public class SSHClient
      */
     public SSHClient(Config config) {
         super(DEFAULT_PORT);
+	loggerFactory = config.getLoggerFactory();
+	log = loggerFactory.getLogger(getClass());
         this.trans = new TransportImpl(config, this);
         this.auth = new UserAuthImpl(trans);
         this.conn = new ConnectionImpl(trans, config.getKeepAliveProvider());
@@ -211,6 +214,7 @@ public class SSHClient
         checkConnected();
         final Deque<UserAuthException> savedEx = new LinkedList<>();
         for (AuthMethod method: methods) {
+            method.setLoggerFactory(loggerFactory);
             try {
                 if (auth.authenticate(username, (Service) conn, method, trans.getTimeoutMs()))
                     return;
@@ -626,7 +630,7 @@ public class SSHClient
      */
     public void loadKnownHosts(File location)
             throws IOException {
-        addHostKeyVerifier(new OpenSSHKnownHosts(location));
+        addHostKeyVerifier(new OpenSSHKnownHosts(location, loggerFactory));
     }
 
     /**
@@ -644,7 +648,7 @@ public class SSHClient
      */
     public LocalPortForwarder newLocalPortForwarder(LocalPortForwarder.Parameters parameters,
                                                     ServerSocket serverSocket) {
-        LocalPortForwarder forwarder = new LocalPortForwarder(conn, parameters, serverSocket);
+        LocalPortForwarder forwarder = new LocalPortForwarder(conn, parameters, serverSocket, loggerFactory);
         forwarders.add(forwarder);
         return forwarder;
     }
@@ -673,7 +677,7 @@ public class SSHClient
     public SCPFileTransfer newSCPFileTransfer() {
         checkConnected();
         checkAuthenticated();
-        return new SCPFileTransfer(this);
+        return new SCPFileTransfer(this, loggerFactory);
     }
 
     /**

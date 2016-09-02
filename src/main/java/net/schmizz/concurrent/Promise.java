@@ -16,12 +16,13 @@
 package net.schmizz.concurrent;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+
+import net.schmizz.sshj.common.LoggerFactory;
 
 /**
  * Represents promised data of the parameterized type {@code V} and allows waiting on it. An exception may also be
@@ -32,8 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class Promise<V, T extends Throwable> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
+    private final Logger log;
     private final String name;
     private final ExceptionChainer<T> chainer;
     private final ReentrantLock lock;
@@ -49,8 +49,8 @@ public class Promise<V, T extends Throwable> {
      * @param name    name of this promise
      * @param chainer {@link ExceptionChainer} that will be used for chaining exceptions
      */
-    public Promise(String name, ExceptionChainer<T> chainer) {
-        this(name, chainer, null);
+    public Promise(String name, ExceptionChainer<T> chainer, LoggerFactory loggerFactory) {
+        this(name, chainer, null, loggerFactory);
     }
 
     /**
@@ -60,10 +60,11 @@ public class Promise<V, T extends Throwable> {
      * @param chainer {@link ExceptionChainer} that will be used for chaining exceptions
      * @param lock    lock to use
      */
-    public Promise(String name, ExceptionChainer<T> chainer, ReentrantLock lock) {
+    public Promise(String name, ExceptionChainer<T> chainer, ReentrantLock lock, LoggerFactory loggerFactory) {
         this.name = name;
         this.chainer = chainer;
         this.lock = lock == null ? new ReentrantLock() : lock;
+        this.log = loggerFactory.getLogger(getClass());
         this.cond = this.lock.newCondition();
     }
 

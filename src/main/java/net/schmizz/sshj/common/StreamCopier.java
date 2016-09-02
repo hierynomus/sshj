@@ -15,10 +15,10 @@
  */
 package net.schmizz.sshj.common;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.concurrent.Event;
 import net.schmizz.concurrent.ExceptionChainer;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +39,8 @@ public class StreamCopier {
         }
     };
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
+    private final LoggerFactory loggerFactory;
+    private final Logger log;
     private final InputStream in;
     private final OutputStream out;
 
@@ -50,9 +50,11 @@ public class StreamCopier {
     private boolean keepFlushing = true;
     private long length = -1;
 
-    public StreamCopier(InputStream in, OutputStream out) {
+    public StreamCopier(InputStream in, OutputStream out, LoggerFactory loggerFactory) {
         this.in = in;
         this.out = out;
+        this.loggerFactory = loggerFactory;
+        this.log = loggerFactory.getLogger(getClass());
     }
 
     public StreamCopier bufSize(int bufSize) {
@@ -91,7 +93,7 @@ public class StreamCopier {
                     public IOException chain(Throwable t) {
                         return (t instanceof IOException) ? (IOException) t : new IOException(t);
                     }
-                });
+                }, loggerFactory);
 
         new Thread() {
             {

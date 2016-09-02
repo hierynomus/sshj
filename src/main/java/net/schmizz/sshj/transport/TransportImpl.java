@@ -26,7 +26,6 @@ import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /** A thread-safe {@link Transport} implementation. */
 public final class TransportImpl
-        implements Transport {
+        implements Transport, DisconnectListener {
 
     private static final class NullService
             extends AbstractService {
@@ -46,6 +45,7 @@ public final class TransportImpl
         }
 
     }
+
     static final class ConnInfo {
 
         final String host;
@@ -61,16 +61,12 @@ public final class TransportImpl
         }
 
     }
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final Service nullService = new NullService(this);
+    private final LoggerFactory loggerFactory;
 
-    private final DisconnectListener nullDisconnectListener = new DisconnectListener() {
-        @Override
-        public void notifyDisconnect(DisconnectReason reason, String message) {
-            log.info("Disconnected - {}", reason);
-        }
-    };
+    private final Logger log;
+
+    private final Service nullService;
 
     private final Config config;
 
@@ -88,9 +84,9 @@ public final class TransportImpl
 
     private final Decoder decoder;
 
-    private final Event<TransportException> serviceAccept = new Event<TransportException>("service accept", TransportException.chainer);
+    private final Event<TransportException> serviceAccept;
 
-    private final Event<TransportException> close = new Event<TransportException>("transport close", TransportException.chainer);
+    private final Event<TransportException> close;
 
     /** Client version identification string */
     private final String clientID;
@@ -100,9 +96,9 @@ public final class TransportImpl
     private volatile boolean authed = false;
 
     /** Currently active service e.g. UserAuthService, ConnectionService */
-    private volatile Service service = nullService;
+    private volatile Service service;
 
-    private DisconnectListener disconnectListener = nullDisconnectListener;
+    private DisconnectListener disconnectListener;
 
     private ConnInfo connInfo;
 
@@ -116,8 +112,15 @@ public final class TransportImpl
 
     public TransportImpl(Config config) {
         this.config = config;
+        this.loggerFactory = config.getLoggerFactory();
+        this.serviceAccept = new Event<TransportException>("service accept", TransportException.chainer, loggerFactory);
+        this.close = new Event<TransportException>("transport close", TransportException.chainer, loggerFactory);
+        this.nullService  = new NullService(this);
+        this.service = nullService;
+	this.log = loggerFactory.getLogger(getClass());
+        this.disconnectListener = this;
         this.reader = new Reader(this);
-        this.encoder = new Encoder(config.getRandomFactory().create(), writeLock);
+        this.encoder = new Encoder(config.getRandomFactory().create(), writeLock, loggerFactory);
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
         this.clientID = String.format("SSH-2.0-%s", config.getVersion());
@@ -131,15 +134,20 @@ public final class TransportImpl
     @Deprecated
     public TransportImpl(Config config, SSHClient sshClient) {
         this.config = config;
+        this.loggerFactory = config.getLoggerFactory();
+        this.serviceAccept = new Event<TransportException>("service accept", TransportException.chainer, loggerFactory);
+        this.close = new Event<TransportException>("transport close", TransportException.chainer, loggerFactory);
+        this.log = loggerFactory.getLogger(getClass());
+        this.nullService  = new NullService(this);
+        this.service = nullService;
+        this.disconnectListener = this;
         this.reader = new Reader(this);
-        this.encoder = new Encoder(config.getRandomFactory().create(), writeLock);
+        this.encoder = new Encoder(config.getRandomFactory().create(), writeLock, loggerFactory);
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
         this.clientID = String.format("SSH-2.0-%s", config.getVersion());
         this.sshClient = sshClient;
     }
-
-
 
     @Override
     public void init(String remoteHost, int remotePort, InputStream in, OutputStream out)
@@ -164,6 +172,14 @@ public final class TransportImpl
         }
 
         reader.start();
+    }
+
+    /**
+     * TransportImpl implements its own default DisconnectListener.
+     */
+    @Override
+    public void notifyDisconnect(DisconnectReason reason, String message) {
+        log.info("Disconnected - {}", reason);
     }
 
     private void receiveServerIdent() throws IOException {
@@ -203,7 +219,7 @@ public final class TransportImpl
      */
     private String readIdentification(Buffer.PlainBuffer buffer)
             throws IOException {
-        String ident = new IdentificationStringParser(buffer).parseIdentificationString();
+        String ident = new IdentificationStringParser(buffer, loggerFactory).parseIdentificationString();
         if (ident.isEmpty()) {
             return ident;
         }
@@ -432,7 +448,7 @@ public final class TransportImpl
 
     @Override
     public void setDisconnectListener(DisconnectListener listener) {
-        this.disconnectListener = listener == null ? nullDisconnectListener : listener;
+        this.disconnectListener = listener == null ? this : listener;
     }
 
     @Override

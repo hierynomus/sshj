@@ -16,13 +16,13 @@
 package net.schmizz.sshj.xfer.scp;
 
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.TransferListener;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,7 +35,8 @@ class SCPEngine {
 
     private static final char LF = '\n';
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final LoggerFactory loggerFactory;
+    private final Logger log;
 
     private final SessionFactory host;
     private final TransferListener listener;
@@ -43,9 +44,11 @@ class SCPEngine {
     private Command scp;
     private int exitStatus;
 
-    SCPEngine(SessionFactory host, TransferListener listener) {
+    SCPEngine(SessionFactory host, TransferListener listener, LoggerFactory loggerFactory) {
         this.host = host;
         this.listener = listener;
+        this.loggerFactory = loggerFactory;
+        log = loggerFactory.getLogger(getClass());
     }
 
     public int getExitStatus() {
@@ -57,7 +60,7 @@ class SCPEngine {
         int code = scp.getInputStream().read();
         switch (code) {
             case -1:
-                String stderr = IOUtils.readFully(scp.getErrorStream()).toString();
+                String stderr = IOUtils.readFully(scp.getErrorStream(), loggerFactory).toString();
                 if (!stderr.isEmpty())
                     stderr = ". Additional info: `" + stderr + "`";
                 throw new SCPException("EOF while expecting response to protocol message" + stderr);
@@ -137,7 +140,7 @@ class SCPEngine {
     }
 
     long transferToRemote(StreamCopier.Listener listener, InputStream src, long length) throws IOException {
-        return new StreamCopier(src, scp.getOutputStream())
+        return new StreamCopier(src, scp.getOutputStream(), loggerFactory)
                 .bufSize(scp.getRemoteMaxPacketSize()).length(length)
                 .keepFlushing(false)
                 .listener(listener)
@@ -145,7 +148,7 @@ class SCPEngine {
     }
 
     long transferFromRemote(StreamCopier.Listener listener, OutputStream dest, long length) throws IOException {
-        return new StreamCopier(scp.getInputStream(), dest)
+        return new StreamCopier(scp.getInputStream(), dest, loggerFactory)
                 .bufSize(scp.getLocalMaxPacketSize()).length(length)
                 .keepFlushing(false)
                 .listener(listener)

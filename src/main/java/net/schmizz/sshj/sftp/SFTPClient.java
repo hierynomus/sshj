@@ -29,13 +29,14 @@ public class SFTPClient
         implements Closeable {
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log;
 
     protected final SFTPEngine engine;
     protected final SFTPFileTransfer xfer;
 
     public SFTPClient(SFTPEngine engine) {
         this.engine = engine;
+        log = engine.getLoggerFactory().getLogger(getClass());
         this.xfer = new SFTPFileTransfer(engine);
     }
 
