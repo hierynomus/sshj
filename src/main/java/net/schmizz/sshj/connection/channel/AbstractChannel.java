@@ -52,6 +52,8 @@ public abstract class AbstractChannel
     /** Remote recipient ID */
     private int recipient;
 
+    private boolean eof = false;
+
     private final Queue<Event<ConnectionException>> chanReqResponseEvents = new LinkedList<Event<ConnectionException>>();
 
     /* The lock used by to create the open & close events */
@@ -192,8 +194,13 @@ public abstract class AbstractChannel
     }
 
     @Override
+    public boolean isEOF() {
+        return eof;
+    }
+
+    @Override
     public LoggerFactory getLoggerFactory() {
-	return loggerFactory;
+        return loggerFactory;
     }
 
     private void gotClose()
@@ -394,6 +401,7 @@ public abstract class AbstractChannel
     /** Called when EOF has been received. Subclasses can override but must call super. */
     protected void eofInputStreams() {
         in.eof();
+        eof = true;
     }
 
     @Override
