@@ -33,6 +33,7 @@ license {
     }
     header rootProject.file('LICENSE_HEADER')
     strictCheck true
+    excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java'])
 }
 
 release {
@@ -71,7 +72,7 @@ dependencies {
     compile "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
     compile "com.jcraft:jzlib:1.1.3"
 
-    compile "net.vrallev.ecc:ecc-25519-java:1.0.1"
+    compile "net.i2p.crypto:eddsa:0.1.0"
 
     testCompile "junit:junit:4.11"
     testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'

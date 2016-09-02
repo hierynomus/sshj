@@ -26,13 +26,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
-/** A channel is the basic medium for application-layer data on top of an SSH transport. */
-public interface Channel
-        extends Closeable, SSHPacketHandler, ErrorNotifiable {
+/**
+ * A channel is the basic medium for application-layer data on top of an SSH transport.
+ */
+public interface Channel extends Closeable, SSHPacketHandler, ErrorNotifiable {
 
-    /** Direct channels are those that are initiated by us. */
-    interface Direct
-            extends Channel {
+    /**
+     * Direct channels are those that are initiated by us.
+     */
+    interface Direct extends Channel {
 
         /**
          * Request opening this channel from remote end.
@@ -41,27 +43,30 @@ public interface Channel
          * @throws ConnectionException other connection-layer error
          * @throws TransportException  error writing packets etc.
          */
-        void open()
-                throws ConnectionException, TransportException;
+        void open() throws ConnectionException, TransportException;
 
     }
 
-    /** Forwarded channels are those that are initiated by the server. */
-    interface Forwarded
-            extends Channel {
+    /**
+     * Forwarded channels are those that are initiated by the server.
+     */
+    interface Forwarded extends Channel {
 
         /**
          * Confirm {@code CHANNEL_OPEN} request.
          *
          * @throws TransportException error sending confirmation packet
          */
-        void confirm()
-                throws TransportException;
+        void confirm() throws TransportException;
 
-        /** @return the IP of where the forwarded connection originates. */
+        /**
+         * @return the IP of where the forwarded connection originates.
+         */
         String getOriginatorIP();
 
-        /** @return port from which the forwarded connection originates. */
+        /**
+         * @return port from which the forwarded connection originates.
+         */
         int getOriginatorPort();
 
         /**
@@ -69,55 +74,73 @@ public interface Channel
          *
          * @param reason  indicate {@link OpenFailException.Reason reason} for rejection of the request
          * @param message indicate a message for why the request is rejected
-         *
          * @throws TransportException error sending rejection packet
          */
-        void reject(OpenFailException.Reason reason, String message)
-                throws TransportException;
+        void reject(OpenFailException.Reason reason, String message) throws TransportException;
 
     }
 
 
-    /** Close this channel. */
+    /**
+     * Close this channel.
+     */
     @Override
-    void close()
-            throws TransportException, ConnectionException;
+    void close() throws TransportException, ConnectionException;
 
     /**
      * @return whether auto-expansion of local window is set.
-     *
      * @see #setAutoExpand(boolean)
      */
     boolean getAutoExpand();
 
-    /** @return the channel ID */
+    /**
+     * @return the channel ID
+     */
     int getID();
 
-    /** @return the {@code InputStream} for this channel. */
+    /**
+     * @return the {@code InputStream} for this channel.
+     */
     InputStream getInputStream();
 
-    /** @return the maximum packet size that we have specified. */
+    /**
+     * @return the maximum packet size that we have specified.
+     */
     int getLocalMaxPacketSize();
 
-    /** @return the current local window size. */
+    /**
+     * @return the current local window size.
+     */
     long getLocalWinSize();
 
-    /** @return an {@code OutputStream} for this channel. */
+    /**
+     * @return an {@code OutputStream} for this channel.
+     */
     OutputStream getOutputStream();
 
-    /** @return the channel ID at the remote end. */
+    /**
+     * @return the channel ID at the remote end.
+     */
     int getRecipient();
 
-    /** @return the maximum packet size as specified by the remote end. */
+    /**
+     * @return the maximum packet size as specified by the remote end.
+     */
     int getRemoteMaxPacketSize();
 
-    /** @return the current remote window size. */
+    /**
+     * @return the current remote window size.
+     */
     long getRemoteWinSize();
 
-    /** @return the channel type identifier. */
+    /**
+     * @return the channel type identifier.
+     */
     String getType();
 
-    /** @return whether the channel is open. */
+    /**
+     * @return whether the channel is open.
+     */
     boolean isOpen();
 
     /**
@@ -129,11 +152,9 @@ public interface Channel
      */
     void setAutoExpand(boolean autoExpand);
 
-    void join()
-            throws ConnectionException;
+    void join() throws ConnectionException;
 
-    void join(long timeout, TimeUnit unit)
-            throws ConnectionException;
+    void join(long timeout, TimeUnit unit) throws ConnectionException;
 
     /**
      * Returns whether EOF has been received.
