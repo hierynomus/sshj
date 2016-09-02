@@ -139,7 +139,7 @@ public class AuthPasswordTest {
     }
 
     private static class StaticPasswordUpdateProvider implements PasswordUpdateProvider {
-        private Stack<String> newPasswords = new Stack<>();
+        private Stack<String> newPasswords = new Stack<String>();
 
         public StaticPasswordUpdateProvider(String... newPasswords) {
             for (int i = newPasswords.length - 1; i >= 0; i--) {
