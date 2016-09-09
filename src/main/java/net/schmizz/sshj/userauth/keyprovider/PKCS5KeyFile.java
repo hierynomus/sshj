@@ -194,31 +194,31 @@ public class PKCS5KeyFile
                 throw new FormatException("PKCS5 header not found");
             }
             ASN1Data asn = new ASN1Data(data = decrypt(Base64.decode(sb.toString()), cipher, iv));
-            switch(type) {
-              case RSA: {
-                KeyFactory factory = KeyFactory.getInstance("RSA");
-                asn.readNext();
-                BigInteger modulus = asn.readNext();
-                BigInteger pubExp = asn.readNext();
-                BigInteger prvExp = asn.readNext();
-                PublicKey pubKey = factory.generatePublic(new RSAPublicKeySpec(modulus, pubExp));
-                PrivateKey prvKey = factory.generatePrivate(new RSAPrivateKeySpec(modulus, prvExp));
-                return new KeyPair(pubKey, prvKey);
-              }
-              case DSA: {
-                KeyFactory factory = KeyFactory.getInstance("DSA");
-                asn.readNext();
-                BigInteger p = asn.readNext();
-                BigInteger q = asn.readNext();
-                BigInteger g = asn.readNext();
-                BigInteger pub = asn.readNext();
-                BigInteger prv = asn.readNext();
-                PublicKey pubKey = factory.generatePublic(new DSAPublicKeySpec(pub, p, q, g));
-                PrivateKey prvKey = factory.generatePrivate(new DSAPrivateKeySpec(prv, p, q, g));
-                return new KeyPair(pubKey, prvKey);
-              }
-              default:
-                throw new IOException("Unrecognized PKCS5 key type: " + type);
+            switch (type) {
+                case RSA: {
+                    KeyFactory factory = KeyFactory.getInstance("RSA");
+                    asn.readNext();
+                    BigInteger modulus = asn.readNext();
+                    BigInteger pubExp = asn.readNext();
+                    BigInteger prvExp = asn.readNext();
+                    PublicKey pubKey = factory.generatePublic(new RSAPublicKeySpec(modulus, pubExp));
+                    PrivateKey prvKey = factory.generatePrivate(new RSAPrivateKeySpec(modulus, prvExp));
+                    return new KeyPair(pubKey, prvKey);
+                }
+                case DSA: {
+                    KeyFactory factory = KeyFactory.getInstance("DSA");
+                    asn.readNext();
+                    BigInteger p = asn.readNext();
+                    BigInteger q = asn.readNext();
+                    BigInteger g = asn.readNext();
+                    BigInteger pub = asn.readNext();
+                    BigInteger prv = asn.readNext();
+                    PublicKey pubKey = factory.generatePublic(new DSAPublicKeySpec(pub, p, q, g));
+                    PrivateKey prvKey = factory.generatePrivate(new DSAPrivateKeySpec(prv, p, q, g));
+                    return new KeyPair(pubKey, prvKey);
+                }
+                default:
+                    throw new IOException("Unrecognized PKCS5 key type: " + type);
             }
         } catch (NoSuchAlgorithmException e) {
             throw new IOException(e);
