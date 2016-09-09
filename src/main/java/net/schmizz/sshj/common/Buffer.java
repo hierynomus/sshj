@@ -426,8 +426,18 @@ public class Buffer<T extends Buffer<T>> {
     public PublicKey readPublicKey()
             throws BufferException {
         try {
-            final String type = readString();
-            return KeyType.fromString(type).readPubKeyFromBuffer(type, this);
+            final KeyType type = KeyType.fromString(readString());
+            switch(type) {
+              case RSA:
+              case DSA:
+                return type.readPubKeyFromBuffer(this);
+              default:
+                if (SecurityUtils.isBouncyCastleRegistered()) {
+                    return type.readPubKeyFromBuffer(this);
+                } else {
+                    throw new BufferException("BouncyCastle is required to read a key of type " + type);
+                }
+            }
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
         }

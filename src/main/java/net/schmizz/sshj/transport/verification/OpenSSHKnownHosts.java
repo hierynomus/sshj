@@ -207,7 +207,7 @@ public class OpenSSHKnownHosts
 
             if (type != KeyType.UNKNOWN) {
                 final String sKey = split[i++];
-                key = getKey(sKey);
+                key = new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
                 // int bits = Integer.valueOf(sType);
@@ -230,11 +230,6 @@ public class OpenSSHKnownHosts
             } else {
                 return new SimpleEntry(marker, hostnames, type, key);
             }
-        }
-
-        private PublicKey getKey(String sKey)
-                throws IOException {
-            return new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
         }
 
         private boolean isBits(String type) {
