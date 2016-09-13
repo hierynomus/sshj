@@ -57,7 +57,7 @@ public class OpenSSHKnownHosts
             try {
                 // Read in the file, storing each line as an entry
                 String line;
-                while ((line = br.readLine()) != null)
+                while ((line = br.readLine()) != null) {
                     try {
                         HostEntry entry = entryFactory.parseEntry(line);
                         if (entry != null) {
@@ -65,7 +65,10 @@ public class OpenSSHKnownHosts
                         }
                     } catch (SSHException ignore) {
                         log.debug("Bad line ({}): {} ", ignore.toString(), line);
+                    } catch (SSHRuntimeException ignore) {
+                        log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
                     }
+                }
             } finally {
                 IOUtils.closeQuietly(br);
             }
@@ -207,7 +210,7 @@ public class OpenSSHKnownHosts
 
             if (type != KeyType.UNKNOWN) {
                 final String sKey = split[i++];
-                key = getKey(sKey);
+                key = new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
                 // int bits = Integer.valueOf(sType);
@@ -230,11 +233,6 @@ public class OpenSSHKnownHosts
             } else {
                 return new SimpleEntry(marker, hostnames, type, key);
             }
-        }
-
-        private PublicKey getKey(String sKey)
-                throws IOException {
-            return new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
         }
 
         private boolean isBits(String type) {

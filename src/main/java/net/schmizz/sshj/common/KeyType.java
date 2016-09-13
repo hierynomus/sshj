@@ -46,7 +46,7 @@ public enum KeyType {
     /** SSH identifier for RSA keys */
     RSA("ssh-rsa") {
         @Override
-        public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
             final BigInteger e, n;
             try {
@@ -77,7 +77,7 @@ public enum KeyType {
     /** SSH identifier for DSA keys */
     DSA("ssh-dss") {
         @Override
-        public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
             BigInteger p, q, g, y;
             try {
@@ -114,8 +114,11 @@ public enum KeyType {
         private final Logger log = LoggerFactory.getLogger(getClass());
 
         @Override
-        public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
+            if (!SecurityUtils.isBouncyCastleRegistered()) {
+                throw new GeneralSecurityException("BouncyCastle is required to read a key of type " + sType);
+            }
             try {
                 // final String algo = buf.readString();  it has been already read
                 final String curveName = buf.readString();
@@ -127,7 +130,7 @@ public enum KeyType {
                 buf.readRawBytes(y);
                 if(log.isDebugEnabled()) {
                     log.debug(String.format("Key algo: %s, Key curve: %s, Key Len: %s, 0x04: %s\nx: %s\ny: %s",
-                            type,
+                            sType,
                             curveName,
                             keyLen,
                             x04,
@@ -176,14 +179,14 @@ public enum KeyType {
     ED25519("ssh-ed25519") {
         private final Logger log = LoggerFactory.getLogger(KeyType.class);
         @Override
-        public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf) throws GeneralSecurityException {
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf) throws GeneralSecurityException {
             try {
                 final int keyLen = buf.readUInt32AsInt();
                 final byte[] p = new byte[keyLen];
                 buf.readRawBytes(p);
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Key algo: %s, Key curve: 25519, Key Len: %s\np: %s",
-                            type,
+                            sType,
                             keyLen,
                             Arrays.toString(p))
                     );
@@ -213,9 +216,9 @@ public enum KeyType {
     /** Unrecognized */
     UNKNOWN("unknown") {
         @Override
-        public PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
-            throw new UnsupportedOperationException("Don't know how to decode key:" + type);
+            throw new UnsupportedOperationException("Don't know how to decode key:" + sType);
         }
 
         @Override
@@ -238,7 +241,7 @@ public enum KeyType {
         this.sType = type;
     }
 
-    public abstract PublicKey readPubKeyFromBuffer(String type, Buffer<?> buf)
+    public abstract PublicKey readPubKeyFromBuffer(Buffer<?> buf)
             throws GeneralSecurityException;
 
     public abstract void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf);
@@ -263,5 +266,4 @@ public enum KeyType {
     public String toString() {
         return sType;
     }
-
 }
