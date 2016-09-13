@@ -32,7 +32,9 @@ import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
 
-/** Represents a PKCS5-encoded key file. This is the format typically used by OpenSSH, OpenSSL, Amazon, etc. */
+/**
+ * Represents a PKCS5-encoded key file. This is the format typically used by OpenSSH, OpenSSL, Amazon, etc.
+ */
 public class PKCS5KeyFile
         implements FileKeyProvider {
 
@@ -171,7 +173,7 @@ public class PKCS5KeyFile
                         if (ptr == -1) {
                             throw new FormatException("Unrecognized DEK-Info: " + line.substring(10));
                         } else {
-                            String algorithm = line.substring(10,ptr);
+                            String algorithm = line.substring(10, ptr);
                             if ("DES-EDE3-CBC".equals(algorithm)) {
                                 cipher = new TripleDESCBC();
                             } else if ("AES-128-CBC".equals(algorithm)) {
@@ -183,7 +185,7 @@ public class PKCS5KeyFile
                             } else {
                                 throw new FormatException("Not a supported algorithm: " + algorithm);
                             }
-                            iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr+1)), 0, cipher.getIVSize());
+                            iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr + 1)), 0, cipher.getIVSize());
                         }
                     } else if (line.length() > 0) {
                         sb.append(line);
@@ -239,7 +241,7 @@ public class PKCS5KeyFile
         ByteBuffer bb = IOUtils.UTF8.encode(cb);
         byte[] result = Arrays.copyOfRange(bb.array(), bb.position(), bb.limit());
         Arrays.fill(cb.array(), '\u0000');
-        Arrays.fill(bb.array(), (byte)0);
+        Arrays.fill(bb.array(), (byte) 0);
         return result;
     }
 
@@ -256,9 +258,9 @@ public class PKCS5KeyFile
             byte[] hn = new byte[hnlen];
             byte[] tmp = null;
             byte[] passphrase = getPassphraseBytes();
-            for (int i=0; i + hsize <= hn.length;) {
+            for (int i = 0; i + hsize <= hn.length; ) {
                 if (tmp != null) {
-                   md5.update(tmp, 0, tmp.length);
+                    md5.update(tmp, 0, tmp.length);
                 }
                 md5.update(passphrase, 0, passphrase.length);
                 md5.update(iv, 0, iv.length > 8 ? 8 : iv.length);
@@ -266,10 +268,10 @@ public class PKCS5KeyFile
                 System.arraycopy(tmp, 0, hn, i, tmp.length);
                 i += tmp.length;
             }
-            Arrays.fill(passphrase, (byte)0);
+            Arrays.fill(passphrase, (byte) 0);
             byte[] key = Arrays.copyOfRange(hn, 0, bsize);
             cipher.init(Cipher.Mode.Decrypt, key, iv);
-            Arrays.fill(key, (byte)0);
+            Arrays.fill(key, (byte) 0);
             byte[] decrypted = Arrays.copyOf(raw, raw.length);
             cipher.update(decrypted, 0, decrypted.length);
             if (ASN1Data.MAGIC == decrypted[0]) {
@@ -280,7 +282,7 @@ public class PKCS5KeyFile
     }
 
     class ASN1Data {
-        static final byte MAGIC = (byte)0x30;
+        static final byte MAGIC = (byte) 0x30;
 
         private byte[] buff;
         private int index, length;
