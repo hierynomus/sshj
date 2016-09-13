@@ -57,7 +57,7 @@ public class OpenSSHKnownHosts
             try {
                 // Read in the file, storing each line as an entry
                 String line;
-                while ((line = br.readLine()) != null)
+                while ((line = br.readLine()) != null) {
                     try {
                         HostEntry entry = entryFactory.parseEntry(line);
                         if (entry != null) {
@@ -65,7 +65,10 @@ public class OpenSSHKnownHosts
                         }
                     } catch (SSHException ignore) {
                         log.debug("Bad line ({}): {} ", ignore.toString(), line);
+                    } catch (SSHRuntimeException ignore) {
+                        log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
                     }
+                }
             } finally {
                 IOUtils.closeQuietly(br);
             }

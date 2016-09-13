@@ -116,6 +116,9 @@ public enum KeyType {
         @Override
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
+            if (!SecurityUtils.isBouncyCastleRegistered()) {
+                throw new GeneralSecurityException("BouncyCastle is required to read a key of type " + sType);
+            }
             try {
                 // final String algo = buf.readString();  it has been already read
                 final String curveName = buf.readString();
