@@ -1,18 +1,22 @@
+import java.text.SimpleDateFormat
+
 plugins {
-    id "java"
-    id "groovy"
-    id "maven"
-    id "idea"
-    id "signing"
-    id "osgi"
-    id "org.ajoberstar.release-opinion" version "1.4.2"
-    id "com.github.hierynomus.license" version "0.12.1"
+  id "java"
+  id "groovy"
+  id "osgi"
+  id "maven-publish"
+  id "org.ajoberstar.release-opinion" version "1.4.2"
+  id "com.github.hierynomus.license" version "0.12.1"
+  id "com.jfrog.bintray" version "1.7"
+  id 'ru.vyarus.pom' version '1.0.3'
+  id 'ru.vyarus.github-info' version '1.1.0'
 }
 
 group = "com.hierynomus"
+defaultTasks "build"
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 sourceCompatibility = 1.6
@@ -20,193 +24,188 @@ targetCompatibility = 1.6
 
 configurations.compile.transitive = false
 
-idea {
-    module {
-        downloadJavadoc = true
-        downloadSources = true
-    }
-}
-
-license {
-    mapping {
-        java = 'SLASHSTAR_STYLE'
-    }
-    header rootProject.file('LICENSE_HEADER')
-    strictCheck true
-    excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java'])
-}
-
-release {
-    grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
-}
-
-test {
-    testLogging {
-        exceptionFormat = 'full'
-    }
-    include "**/*Test.*"
-    include "**/*Spec.*"
-    if (!project.hasProperty("allTests")) {
-        useJUnit {
-            excludeCategories 'com.hierynomus.sshj.test.SlowTests'
-            excludeCategories 'com.hierynomus.sshj.test.KnownFailingTests'
-        }
-    }
-
-    afterSuite { descriptor, result ->
-        if (descriptor.className != null) {
-            def indicator = "\u001B[32m✓\u001b[0m"
-            if (result.failedTestCount > 0) {
-                indicator = "\u001B[31m✘\u001b[0m"
-            }
-            logger.lifecycle("$indicator Test ${descriptor.name}; Executed: ${result.testCount}/\u001B[32m${result.successfulTestCount}\u001B[0m/\u001B[31m${result.failedTestCount}\u001B[0m")
-        }
-    }
-}
-
 def bouncycastleVersion = "1.51"
 
 dependencies {
-    compile "org.slf4j:slf4j-api:1.7.7"
-    compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
-    compile "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
-    compile "com.jcraft:jzlib:1.1.3"
+  compile "org.slf4j:slf4j-api:1.7.7"
+  compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
+  compile "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
+  compile "com.jcraft:jzlib:1.1.3"
 
-    compile "net.i2p.crypto:eddsa:0.1.0"
+  compile "net.i2p.crypto:eddsa:0.1.0"
 
-    testCompile "junit:junit:4.11"
-    testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-    testCompile "org.mockito:mockito-core:1.9.5"
-    testCompile "org.apache.sshd:sshd-core:1.1.0"
-    testRuntime "ch.qos.logback:logback-classic:1.1.2"
-    testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
-    testCompile 'org.apache.httpcomponents:httpclient:4.5.2'
+  testCompile "junit:junit:4.11"
+  testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
+  testCompile "org.mockito:mockito-core:1.9.5"
+  testCompile "org.apache.sshd:sshd-core:1.1.0"
+  testRuntime "ch.qos.logback:logback-classic:1.1.2"
+  testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
+  testCompile 'org.apache.httpcomponents:httpclient:4.5.2'
 
 }
 
-jar {
-    manifest {
-        instruction "Bundle-Description", "SSHv2 library for Java"
-        instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
-        instruction "Import-Package", "!net.schmizz.*"
-        instruction "Import-Package", "javax.crypto*"
-        instruction "Import-Package", "net.i2p*"
-        instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
-        instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
-        instruction "Import-Package", "org.bouncycastle*"
-        instruction "Import-Package", "*"
-        instruction "Export-Package", "net.schmizz.*"
-    }
+license {
+  header rootProject.file('LICENSE_HEADER')
+  strictCheck true
+  mapping {
+    java = 'SLASHSTAR_STYLE'
+  }
+  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java'])
 }
 
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-    manifest {
-        attributes(
-            // Add the needed OSGI attributes
-            "Bundle-ManifestVersion": "2",
-            "Bundle-Name": "${project.jar.manifest.name} Source",
-            "Bundle-Version": project.jar.manifest.version,
-            "Eclipse-SourceBundle": "${project.jar.manifest.symbolicName};version=\"${project.jar.manifest.version}\";roots:=\".\"",
-            "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
-        )
-    }
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-signing {
-    required { !version.toString().contains("SNAPSHOT") && gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
+release {
+  grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
 }
 
 // This disables the pedantic doclint feature of JDK8
 if (JavaVersion.current().isJava8Compatible()) {
-    tasks.withType(Javadoc) {
-        options.addStringOption('Xdoclint:none', '-quiet')
-    }
+  tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+  }
 }
 
-uploadArchives {
-    if (project.hasProperty('sonatypeUsername')) {
-        repositories.mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+jar {
+  manifest {
+    instruction "Bundle-Description", "SSHv2 library for Java"
+    instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
+    instruction "Import-Package", "!net.schmizz.*"
+    instruction "Import-Package", "javax.crypto*"
+    instruction "Import-Package", "net.i2p*"
+    instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
+    instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
+    instruction "Import-Package", "org.bouncycastle*"
+    instruction "Import-Package", "*"
+    instruction "Export-Package", "net.schmizz.*"
+  }
+}
 
-            configuration = configurations.archives
+task javadocJar(type: Jar) {
+  classifier = 'javadoc'
+  from javadoc
+}
 
-            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
-            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
-            }
+task sourcesJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+  manifest {
+    attributes(
+      // Add the needed OSGI attributes
+      "Bundle-ManifestVersion": "2",
+      "Bundle-Name": "${project.jar.manifest.name} Source",
+      "Bundle-Version": project.jar.manifest.version,
+      "Eclipse-SourceBundle": "${project.jar.manifest.symbolicName};version=\"${project.jar.manifest.version}\";roots:=\".\"",
+      "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
+    )
+  }
+}
 
-            pom.project {
-                name "sshj"
-                description "SSHv2 library for Java"
-                url "https://github.com/hierynomus/sshj"
-                inceptionYear "2009"
+tasks.withType(Test) {
+  testLogging {
+    exceptionFormat = 'full'
+  }
+  include "**/*Test.*"
+  include "**/*Spec.*"
+  if (!project.hasProperty("allTests")) {
+    useJUnit {
+      excludeCategories 'com.hierynomus.sshj.test.SlowTests'
+      excludeCategories 'com.hierynomus.sshj.test.KnownFailingTests'
+    }
+  }
 
-                issueManagement {
-                    system "github"
-                    url "https://github.com/hierynomus/sshj/issues"
-                }
+  afterSuite { descriptor, result ->
+    if (descriptor.className != null) {
+      def indicator = "\u001B[32m✓\u001b[0m"
+      if (result.failedTestCount > 0) {
+        indicator = "\u001B[31m✘\u001b[0m"
+      }
+      logger.lifecycle("$indicator Test ${descriptor.name}; Executed: ${result.testCount}/\u001B[32m${result.successfulTestCount}\u001B[0m/\u001B[31m${result.failedTestCount}\u001B[0m")
+    }
+  }
+}
 
-                scm {
-                    connection "scm:git:git://github.com/hierynomus/sshj.git"
-                    developerConnection "scm:git:git@github.com:hierynomus/sshj.git"
-                    url "https://github.com/hierynomus/sshj.git"
-                }
+project.tasks.compileGroovy.onlyIf { false }
 
-                licenses {
-                    license {
-                        name "Apache 2"
-                        url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                        distribution "repo"
-                    }
-                }
+github {
+  user 'hierynomus'
+  license 'Apache'
+}
 
-                developers {
-                    developer {
-                        id "hierynomus"
-                        name "Jeroen van Erp"
-                        email "jeroen@javadude.nl"
-                        roles {
-                            role "Lead developer"
-                        }
-                    }
-                    developer {
-                        id "shikhar"
-                        name "Shikhar Bhushan"
-                        email "shikhar@schmizz.net"
-                        url "http://schmizz.net"
-                        roles {
-                            role "Previous lead developer"
-                        }
-                    }
-                    developer {
-                        id "iterate"
-                        name "David Kocher"
-                        email "dkocher@iterate.ch"
-                        organization "iterage GmbH"
-                        organizationUrl "https://iterate.ch"
-                        roles {
-                            role "Developer"
-                        }
-                    }
-                }
-            }
+pom {
+  description "SSHv2 library for Java"
+  url "https://github.com/hierynomus/sshj"
+  inceptionYear "2009"
+  developers {
+    developer {
+      id "hierynomus"
+      name "Jeroen van Erp"
+      email "jeroen@javadude.nl"
+      roles {
+        role "Lead developer"
+      }
+    }
+    developer {
+      id "shikhar"
+      name "Shikhar Bhushan"
+      email "shikhar@schmizz.net"
+      url "http://schmizz.net"
+      roles {
+        role "Previous lead developer"
+      }
+    }
+    developer {
+      id "iterate"
+      name "David Kocher"
+      email "dkocher@iterate.ch"
+      organization "iterage GmbH"
+      organizationUrl "https://iterate.ch"
+      roles {
+        role "Developer"
+      }
+    }
+  }
+}
+
+publishing {
+  publications {
+    Sshj(MavenPublication) {
+      from components.java
+      artifact sourcesJar
+      artifact javadocJar
+    }
+  }
+}
+
+
+if (project.hasProperty("bintrayUsername") && project.hasProperty("bintrayApiKey")) {
+  bintray {
+    user = project.property("bintrayUsername")
+    key = project.property("bintrayApiKey")
+    publish = true
+    publications = ["Sshj"]
+    pkg {
+      repo = "maven"
+      name = project.name
+      licenses = ["Apache-2.0"]
+      vcsUrl = "https://github.com/hierynomus/sshj.git"
+      labels = ["ssh", "sftp", "secure-shell", "network", "file-transfer"]
+      githubRepo = "hierynomus/sshj"
+      version {
+        name = project.version.toString()
+        vcsTag = "v${project.version}"
+        released = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').format(new Date())
+        gpg {
+          sign = true
+          passphrase = project.property("signing.password")
         }
+        mavenCentralSync {
+          sync = true
+          user = project.property("sonatypeUsername")
+          password = project.property("sonatypePassword")
+          close = 1
+        }
+      }
     }
+  }
 }
 
-tasks.compileGroovy.onlyIf { false }
-tasks.release.dependsOn 'build', 'uploadArchives'
+project.tasks.release.dependsOn([project.tasks.build, project.tasks.bintrayUpload])
