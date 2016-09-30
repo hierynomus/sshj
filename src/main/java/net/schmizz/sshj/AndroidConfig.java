@@ -1,5 +1,5 @@
-/**
- * Copyright 2009 sshj contributors
+/*
+ * Copyright (C)2009 - SSHJ Contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,6 @@
  */
 package net.schmizz.sshj;
 
-import java.security.Provider;
-import java.security.Security;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
@@ -31,26 +25,14 @@ public class AndroidConfig
         extends DefaultConfig {
 
     static {
-        final Logger log = LoggerFactory.getLogger(AndroidConfig.class);
-        SecurityUtils.setRegisterBouncyCastle(false);
-        try {
-            Class<?> bcpClazz = Class.forName("org.spongycastle.jce.provider.BouncyCastleProvider");
-            Security.addProvider((Provider) bcpClazz.newInstance());
-            SecurityUtils.setSecurityProvider("SC");
-        } catch (ClassNotFoundException e) {
-            log.info("SpongyCastle was not found.");
-        } catch (IllegalAccessException e) {
-            log.error("IllegalAccessException", e);
-        } catch (InstantiationException e) {
-            log.info("InstantiationException", e);
-        }
+        SecurityUtils.registerSecurityProvider("org.spongycastle.jce.provider.BouncyCastleProvider");
     }
 
     // don't add ECDSA
     protected void initSignatureFactories() {
         setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory());
     }
-    
+
     @Override
     protected void initRandomFactory(boolean ignored) {
         setRandomFactory(new SingletonRandomFactory(new JCERandom.Factory()));
