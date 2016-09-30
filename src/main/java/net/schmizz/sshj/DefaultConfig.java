@@ -92,7 +92,7 @@ public class DefaultConfig
     }
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
-        if (bouncyCastleRegistered)
+        if (bouncyCastleRegistered) {
             setKeyExchangeFactories(new Curve25519SHA256.Factory(),
                     new DHGexSHA256.Factory(),
                     new ECDHNistP.Factory521(),
@@ -101,8 +101,9 @@ public class DefaultConfig
                     new DHGexSHA1.Factory(),
                     new DHG14.Factory(),
                     new DHG1.Factory());
-        else
+        } else {
             setKeyExchangeFactories(new DHG1.Factory(), new DHGexSHA1.Factory());
+        }
     }
 
     protected void initRandomFactory(boolean bouncyCastleRegistered) {
