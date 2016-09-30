@@ -165,13 +165,11 @@ pom {
   }
 }
 
-publishing {
-  publications {
-    Sshj(MavenPublication) {
-      from components.java
-      artifact sourcesJar
-      artifact javadocJar
-    }
+publishing.publications {
+  Sshj(MavenPublication) {
+    from components.java
+    artifact sourcesJar
+    artifact javadocJar
   }
 }
 

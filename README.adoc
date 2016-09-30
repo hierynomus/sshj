@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.17.3
+:sshj_version: 0.18.0
 :source-highlighter: pygments
 
 image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
@@ -99,7 +99,7 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.17.3 (2016-09-30)::
+SSHJ 0.18.0 (2016-09-30)::
 * Fixed Android compatibility
 * Upgrade to Gradle 3.0
 * Merged https://github.com/hierynomus/sshj/pulls/271[#271]: Load known_hosts without requiring BouncyCastle
