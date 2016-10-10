@@ -15,21 +15,19 @@
  */
 package net.schmizz.sshj.sftp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import net.schmizz.sshj.common.LoggerFactory;
+import net.schmizz.sshj.common.SSHException;
+import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Arrays;
 
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
+import static org.junit.Assert.*;
 
 public class PacketReaderTest {
 
@@ -46,6 +44,7 @@ public class PacketReaderTest {
 
         engine = Mockito.mock(SFTPEngine.class);
         subsystem = Mockito.mock(Subsystem.class);
+        Mockito.when(engine.getLoggerFactory()).thenReturn(LoggerFactory.DEFAULT);
         Mockito.when(engine.getSubsystem()).thenReturn(subsystem);
         Mockito.when(subsystem.getInputStream()).thenReturn(pipedin);
 
@@ -59,7 +58,7 @@ public class PacketReaderTest {
         dataout.writeInt(10);
         dataout.write(bytes);
         dataout.flush();
-        
+
         SFTPPacket<Response> packet = reader.readPacket();
         assertEquals(packet.available(), 10);
         assertTrue("actual=" + Arrays.toString(packet.array()), Arrays.equals(bytes, subArray(packet.array(), 0, 10)));
@@ -69,7 +68,7 @@ public class PacketReaderTest {
     public void shouldFailWhenPacketLengthTooLarge() throws Exception {
         dataout.writeInt(Integer.MAX_VALUE);
         dataout.flush();
-        
+
         try {
             reader.readPacket();
             fail("Should have failed to read packet of size " + Integer.MAX_VALUE);

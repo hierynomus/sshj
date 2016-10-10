@@ -15,17 +15,12 @@
  */
 package net.schmizz.sshj.util.gss;
 
-import java.security.Provider;
-
 import org.apache.sshd.server.auth.gss.UserAuthGSS;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
+import org.ietf.jgss.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.Provider;
 
 /**
  * Implements a fake Kerberos 5 mechanism. MINA only supports Kerberos 5 over

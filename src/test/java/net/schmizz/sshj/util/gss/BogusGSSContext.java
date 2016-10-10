@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj.util.gss;
 
-import static net.schmizz.sshj.util.gss.BogusGSSManager.unavailable;
+import org.ietf.jgss.*;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,13 +24,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
-import org.ietf.jgss.ChannelBinding;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.MessageProp;
-import org.ietf.jgss.Oid;
+import static net.schmizz.sshj.util.gss.BogusGSSManager.unavailable;
 
 public class BogusGSSContext
         implements GSSContext {

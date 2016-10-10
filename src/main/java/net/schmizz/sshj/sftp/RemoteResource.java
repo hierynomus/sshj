@@ -26,14 +26,15 @@ public abstract class RemoteResource
         implements Closeable {
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log;
 
-    protected final Requester requester;
+    protected final SFTPEngine requester;
     protected final String path;
     protected final byte[] handle;
 
-    protected RemoteResource(Requester requester, String path, byte[] handle) {
+    protected RemoteResource(SFTPEngine requester, String path, byte[] handle) {
         this.requester = requester;
+        log = requester.getLoggerFactory().getLogger(getClass());
         this.path = path;
         this.handle = handle;
     }

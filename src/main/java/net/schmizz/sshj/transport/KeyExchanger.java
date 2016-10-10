@@ -15,30 +15,9 @@
  */
 package net.schmizz.sshj.transport;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.ErrorNotifiable;
-import net.schmizz.sshj.common.Factory;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
-import net.schmizz.sshj.common.SSHPacketHandler;
-import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;
 import net.schmizz.sshj.transport.digest.Digest;
@@ -46,6 +25,17 @@ import net.schmizz.sshj.transport.kex.KeyExchange;
 import net.schmizz.sshj.transport.mac.MAC;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Algorithm negotiation and key exchange. */
 final class KeyExchanger
@@ -60,17 +50,16 @@ final class KeyExchanger
         NEWKEYS,
     }
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
+    private final Logger log;
     private final TransportImpl transport;
 
     /**
      * {@link HostKeyVerifier#verify(String, int, java.security.PublicKey)} is invoked by {@link #verifyHost(PublicKey)}
      * when we are ready to verify the the server's host key.
      */
-    private final List<HostKeyVerifier> hostVerifiers = new ArrayList<>();
+    private final Queue<HostKeyVerifier> hostVerifiers = new LinkedList<HostKeyVerifier>();
 
-    private final List<AlgorithmsVerifier> algorithmVerifiers = new ArrayList();
+    private final Queue<AlgorithmsVerifier> algorithmVerifiers = new LinkedList<AlgorithmsVerifier>();
 
     private final AtomicBoolean kexOngoing = new AtomicBoolean();
 
@@ -86,18 +75,20 @@ final class KeyExchanger
     private Proposal clientProposal;
     private NegotiatedAlgorithms negotiatedAlgs;
 
-    private final Event<TransportException> kexInitSent =
-            new Event<TransportException>("kexinit sent", TransportException.chainer);
+    private final Event<TransportException> kexInitSent;
 
     private final Event<TransportException> done;
 
     KeyExchanger(TransportImpl trans) {
         this.transport = trans;
+        log = trans.getConfig().getLoggerFactory().getLogger(getClass());
+        kexInitSent = new Event<TransportException>("kexinit sent", TransportException.chainer, trans.getConfig().getLoggerFactory());
+
         /*
          * Use TransportImpl's writeLock, since TransportImpl.write() may wait on this event and the lock should
          * be released while waiting.
          */
-        this.done = new Event<TransportException>("kex done", TransportException.chainer, trans.getWriteLock());
+        this.done = new Event<TransportException>("kex done", TransportException.chainer, trans.getWriteLock(), trans.getConfig().getLoggerFactory());
     }
 
     /**

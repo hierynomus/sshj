@@ -18,6 +18,8 @@ package net.schmizz.concurrent;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import net.schmizz.sshj.common.LoggerFactory;
+
 /**
  * An event can be set, cleared, or awaited, similar to Python's {@code threading.event}. The key difference is that a
  * waiter may be delivered an exception of parameterized type {@code T}.
@@ -42,8 +44,8 @@ public class Event<T extends Throwable> {
      * @param name    name of this event
      * @param chainer {@link ExceptionChainer} that will be used for chaining exceptions
      */
-    public Event(String name, ExceptionChainer<T> chainer) {
-        promise = new Promise<Object, T>(name, chainer);
+    public Event(String name, ExceptionChainer<T> chainer, LoggerFactory loggerFactory) {
+        promise = new Promise<Object, T>(name, chainer, loggerFactory);
     }
 
     /**
@@ -53,8 +55,8 @@ public class Event<T extends Throwable> {
      * @param chainer {@link ExceptionChainer} that will be used for chaining exceptions
      * @param lock    lock to use
      */
-    public Event(String name, ExceptionChainer<T> chainer, ReentrantLock lock) {
-        promise = new Promise<Object, T>(name, chainer, lock);
+    public Event(String name, ExceptionChainer<T> chainer, ReentrantLock lock, LoggerFactory loggerFactory) {
+        promise = new Promise<Object, T>(name, chainer, lock, loggerFactory);
     }
 
     /** Sets this event to be {@code true}. Short for {@code set(true)}. */

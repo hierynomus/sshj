@@ -1,2 +1,5 @@
 language: java
 sudo: false
+jdk:
+  - oraclejdk7
+  - oraclejdk8

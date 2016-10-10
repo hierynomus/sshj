@@ -15,11 +15,7 @@
  */
 package net.schmizz.sshj.connection.channel;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.ErrorNotifiable;
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
@@ -38,7 +34,7 @@ public final class ChannelInputStream
         extends InputStream
         implements ErrorNotifiable {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log;
 
     private final Channel chan;
     private final Transport trans;
@@ -51,6 +47,7 @@ public final class ChannelInputStream
 
     public ChannelInputStream(Channel chan, Transport trans, Window.Local win) {
         this.chan = chan;
+        log = chan.getLoggerFactory().getLogger(getClass());
         this.trans = trans;
         this.win = win;
         buf = new Buffer.PlainBuffer(chan.getLocalMaxPacketSize());

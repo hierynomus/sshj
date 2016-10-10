@@ -26,12 +26,7 @@ import net.schmizz.concurrent.Promise;
 import net.schmizz.keepalive.KeepAlive;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.AbstractService;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.ErrorNotifiable;
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException.Reason;
 import net.schmizz.sshj.connection.channel.forwarded.ForwardedChannelOpener;
@@ -204,7 +199,7 @@ public class ConnectionImpl
 
             Promise<SSHPacket, ConnectionException> promise = null;
             if (wantReply) {
-                promise = new Promise<SSHPacket, ConnectionException>("global req for " + name, ConnectionException.chainer);
+                promise = new Promise<SSHPacket, ConnectionException>("global req for " + name, ConnectionException.chainer, trans.getConfig().getLoggerFactory());
                 globalReqPromises.add(promise);
             }
             return promise;

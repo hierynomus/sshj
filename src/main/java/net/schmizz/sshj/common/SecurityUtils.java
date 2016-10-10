@@ -15,47 +15,25 @@
  */
 package net.schmizz.sshj.common;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.security.*;
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.KeyPairGenerator;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.Signature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// TODO refactor
+import static java.lang.String.format;
 
-/** Static utility method relating to security facilities. */
+/**
+ * Static utility method relating to security facilities.
+ */
 public class SecurityUtils {
-
-    private static class BouncyCastleRegistration {
-
-        public void run()
-                throws Exception {
-            if (java.security.Security.getProvider(BOUNCY_CASTLE) == null) {
-                LOG.debug("Trying to register BouncyCastle as a JCE provider");
-                java.security.Security.addProvider(new BouncyCastleProvider());
-                MessageDigest.getInstance("MD5", BOUNCY_CASTLE);
-                KeyAgreement.getInstance("DH", BOUNCY_CASTLE);
-                LOG.info("BouncyCastle registration succeeded");
-            } else
-                LOG.info("BouncyCastle already registered as a JCE provider");
-            securityProvider = BOUNCY_CASTLE;
-        }
-    }
-
     private static final Logger LOG = LoggerFactory.getLogger(SecurityUtils.class);
 
-    /** Identifier for the BouncyCastle JCE provider */
+    /**
+     * Identifier for the BouncyCastle JCE provider
+     */
     public static final String BOUNCY_CASTLE = "BC";
 
     /*
@@ -66,6 +44,42 @@ public class SecurityUtils {
     // relate to BC registration
     private static Boolean registerBouncyCastle;
     private static boolean registrationDone;
+
+    public static boolean registerSecurityProvider(String providerClassName) {
+        Provider provider = null;
+        try {
+            Class<?> name = Class.forName(providerClassName);
+            provider = (Provider) name.newInstance();
+        } catch (ClassNotFoundException e) {
+            LOG.info("Security Provider class '{}' not found", providerClassName);
+        } catch (InstantiationException e) {
+            LOG.info("Security Provider class '{}' could not be created", providerClassName);
+        } catch (IllegalAccessException e) {
+            LOG.info("Security Provider class '{}' could not be accessed", providerClassName);
+        }
+
+        if (provider == null) {
+            return false;
+        }
+
+        try {
+            if (Security.getProvider(provider.getName()) == null) {
+                Security.addProvider(provider);
+            }
+
+            if (securityProvider == null) {
+                MessageDigest.getInstance("MD5", provider.getName());
+                KeyAgreement.getInstance("DH", provider.getName());
+                setSecurityProvider(provider.getName());
+                return true;
+            }
+        } catch (NoSuchAlgorithmException e) {
+            LOG.info(format("Security Provider '%s' does not support necessary algorithm", providerClassName), e);
+        } catch (NoSuchProviderException e) {
+            LOG.info("Registration of Security Provider '{}' unexpectedly failed", providerClassName);
+        }
+        return false;
+    }
 
     public static synchronized Cipher getCipher(String transformation)
             throws NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException {
@@ -80,9 +94,7 @@ public class SecurityUtils {
      * Computes the fingerprint for a public key, in the standard SSH format, e.g. "4b:69:6c:72:6f:79:20:77:61:73:20:68:65:72:65:21"
      *
      * @param key the public key
-     *
      * @return the fingerprint
-     *
      * @see <a href="http://tools.ietf.org/html/draft-friedl-secsh-fingerprint-00">specification</a>
      */
     public static String getFingerprint(PublicKey key) {
@@ -105,9 +117,7 @@ public class SecurityUtils {
      * Creates a new instance of {@link KeyAgreement} with the given algorithm.
      *
      * @param algorithm key agreement algorithm
-     *
      * @return new instance
-     *
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
@@ -124,9 +134,7 @@ public class SecurityUtils {
      * Creates a new instance of {@link KeyFactory} with the given algorithm.
      *
      * @param algorithm key factory algorithm e.g. RSA, DSA
-     *
      * @return new instance
-     *
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
@@ -143,9 +151,7 @@ public class SecurityUtils {
      * Creates a new instance of {@link KeyPairGenerator} with the given algorithm.
      *
      * @param algorithm key pair generator algorithm
-     *
      * @return new instance
-     *
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
@@ -162,9 +168,7 @@ public class SecurityUtils {
      * Create a new instance of {@link Mac} with the given algorithm.
      *
      * @param algorithm MAC algorithm
-     *
      * @return new instance
-     *
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
@@ -181,9 +185,7 @@ public class SecurityUtils {
      * Create a new instance of {@link MessageDigest} with the given algorithm.
      *
      * @param algorithm MessageDigest algorithm name
-     *
      * @return new instance
-     *
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
      */
@@ -243,20 +245,16 @@ public class SecurityUtils {
 
     private static void register() {
         if (!registrationDone) {
-            if (securityProvider == null && (registerBouncyCastle == null || registerBouncyCastle))
-                // Use an inner class to avoid a strong dependency on BouncyCastle
-                try {
-                    new BouncyCastleRegistration().run();
-                } catch (Throwable t) {
-                    if (registerBouncyCastle == null)
-                        LOG.info("BouncyCastle not registered, using the default JCE provider");
-                    else {
-                        LOG.error("Failed to register BouncyCastle as the defaut JCE provider");
-                        throw new SSHRuntimeException("Failed to register BouncyCastle as the defaut JCE provider", t);
-                    }
+            if (securityProvider == null && (registerBouncyCastle == null || registerBouncyCastle)) {
+                registerSecurityProvider("org.bouncycastle.jce.provider.BouncyCastleProvider");
+                if (securityProvider == null && registerBouncyCastle == null) {
+                    LOG.info("BouncyCastle not registered, using the default JCE provider");
+                } else if (securityProvider == null) {
+                    LOG.error("Failed to register BouncyCastle as the defaut JCE provider");
+                    throw new SSHRuntimeException("Failed to register BouncyCastle as the defaut JCE provider");
                 }
-            registrationDone = true;
+            }
         }
+        registrationDone = true;
     }
-
 }

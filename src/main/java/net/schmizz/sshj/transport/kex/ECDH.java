@@ -23,7 +23,10 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
-import java.security.spec.*;
+import java.security.spec.AlgorithmParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
 
 import static com.hierynomus.sshj.secg.SecgUtils.getDecoded;
 import static com.hierynomus.sshj.secg.SecgUtils.getEncoded;

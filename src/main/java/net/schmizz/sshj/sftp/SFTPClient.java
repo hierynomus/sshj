@@ -15,32 +15,28 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.sshj.xfer.FilePermission;
+import net.schmizz.sshj.xfer.LocalDestFile;
+import net.schmizz.sshj.xfer.LocalSourceFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Deque;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
-
-import net.schmizz.sshj.xfer.FilePermission;
-import net.schmizz.sshj.xfer.LocalDestFile;
-import net.schmizz.sshj.xfer.LocalSourceFile;
+import java.util.*;
 
 public class SFTPClient
         implements Closeable {
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log;
 
     protected final SFTPEngine engine;
     protected final SFTPFileTransfer xfer;
 
     public SFTPClient(SFTPEngine engine) {
         this.engine = engine;
+        log = engine.getLoggerFactory().getLogger(getClass());
         this.xfer = new SFTPFileTransfer(engine);
     }
 
@@ -90,7 +86,7 @@ public class SFTPClient
 
     public void mkdirs(String path)
             throws IOException {
-        final Deque<String> dirsToMake = new ConcurrentLinkedDeque<>();
+        final Deque<String> dirsToMake = new LinkedList<String>();
         for (PathComponents current = engine.getPathHelper().getComponents(path); ;
              current = engine.getPathHelper().getComponents(current.getParent())) {
             final FileAttributes attrs = statExistence(current.getPath());

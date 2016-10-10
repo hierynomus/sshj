@@ -15,24 +15,8 @@
  */
 package net.schmizz.sshj;
 
-import org.ietf.jgss.Oid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.security.auth.login.LoginContext;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
-
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.connection.Connection;
@@ -62,22 +46,24 @@ import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.userauth.UserAuth;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.UserAuthImpl;
-import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
-import net.schmizz.sshj.userauth.keyprovider.KeyPairWrapper;
-import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
-import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
-import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
-import net.schmizz.sshj.userauth.method.AuthMethod;
-import net.schmizz.sshj.userauth.method.AuthPassword;
-import net.schmizz.sshj.userauth.method.AuthPublickey;
-import net.schmizz.sshj.userauth.method.PasswordResponseProvider;
+import net.schmizz.sshj.userauth.keyprovider.*;
+import net.schmizz.sshj.userauth.method.*;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUpdateProvider;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
+import org.ietf.jgss.Oid;
+import org.slf4j.Logger;
+
+import javax.security.auth.login.LoginContext;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.util.*;
 
 /**
  * Secure SHell client API.
@@ -128,7 +114,8 @@ public class SSHClient
     public static final int DEFAULT_PORT = 22;
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final LoggerFactory loggerFactory;
+    protected final Logger log;
 
     /** Transport layer */
     protected final Transport trans;
@@ -138,6 +125,8 @@ public class SSHClient
 
     /** {@code ssh-connection} service */
     protected final Connection conn;
+
+    private final List<LocalPortForwarder> forwarders = new ArrayList<LocalPortForwarder>();
 
     /** Default constructor. Initializes this object using {@link DefaultConfig}. */
     public SSHClient() {
@@ -151,6 +140,8 @@ public class SSHClient
      */
     public SSHClient(Config config) {
         super(DEFAULT_PORT);
+	loggerFactory = config.getLoggerFactory();
+	log = loggerFactory.getLogger(getClass());
         this.trans = new TransportImpl(config, this);
         this.auth = new UserAuthImpl(trans);
         this.conn = new ConnectionImpl(trans, config.getKeepAliveProvider());
@@ -221,8 +212,9 @@ public class SSHClient
     public void auth(String username, Iterable<AuthMethod> methods)
             throws UserAuthException, TransportException {
         checkConnected();
-        final Deque<UserAuthException> savedEx = new ConcurrentLinkedDeque<>();
+        final Deque<UserAuthException> savedEx = new LinkedList<UserAuthException>();
         for (AuthMethod method: methods) {
+            method.setLoggerFactory(loggerFactory);
             try {
                 if (auth.authenticate(username, (Service) conn, method, trans.getTimeoutMs()))
                     return;
@@ -342,7 +334,7 @@ public class SSHClient
      */
     public void authPublickey(String username, Iterable<KeyProvider> keyProviders)
             throws UserAuthException, TransportException {
-        final List<AuthMethod> am = new ArrayList<>();
+        final List<AuthMethod> am = new LinkedList<AuthMethod>();
         for (KeyProvider kp : keyProviders)
             am.add(new AuthPublickey(kp));
         auth(username, am);
@@ -385,7 +377,7 @@ public class SSHClient
      */
     public void authPublickey(String username, String... locations)
             throws UserAuthException, TransportException {
-        final List<KeyProvider> keyProviders = new ArrayList<>();
+        final List<KeyProvider> keyProviders = new LinkedList<KeyProvider>();
         for (String loc : locations) {
             try {
                 log.debug("Attempting to load key from: {}", loc);
@@ -415,7 +407,7 @@ public class SSHClient
     public void authGssApiWithMic(String username, LoginContext context, Oid supportedOid, Oid... supportedOids)
             throws UserAuthException, TransportException {
         // insert supportedOid to the front of the list since ordering matters
-        List<Oid> oids = new ArrayList<>(Arrays.asList(supportedOids));
+        List<Oid> oids = new ArrayList<Oid>(Arrays.asList(supportedOids));
         oids.add(0, supportedOid);
 
         auth(username, new AuthGssApiWithMic(context, oids));
@@ -431,6 +423,14 @@ public class SSHClient
     @Override
     public void disconnect()
             throws IOException {
+        for (LocalPortForwarder forwarder : forwarders) {
+            try {
+                forwarder.close();
+            } catch (IOException e) {
+                log.warn("Error closing forwarder", e);
+            }
+        }
+        forwarders.clear();
         trans.disconnect();
         super.disconnect();
     }
@@ -630,7 +630,7 @@ public class SSHClient
      */
     public void loadKnownHosts(File location)
             throws IOException {
-        addHostKeyVerifier(new OpenSSHKnownHosts(location));
+        addHostKeyVerifier(new OpenSSHKnownHosts(location, loggerFactory));
     }
 
     /**
@@ -648,7 +648,9 @@ public class SSHClient
      */
     public LocalPortForwarder newLocalPortForwarder(LocalPortForwarder.Parameters parameters,
                                                     ServerSocket serverSocket) {
-        return new LocalPortForwarder(conn, parameters, serverSocket);
+        LocalPortForwarder forwarder = new LocalPortForwarder(conn, parameters, serverSocket, loggerFactory);
+        forwarders.add(forwarder);
+        return forwarder;
     }
 
     /**
@@ -675,7 +677,7 @@ public class SSHClient
     public SCPFileTransfer newSCPFileTransfer() {
         checkConnected();
         checkAuthenticated();
-        return new SCPFileTransfer(this);
+        return new SCPFileTransfer(this, loggerFactory);
     }
 
     /**

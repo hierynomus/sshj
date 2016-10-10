@@ -22,14 +22,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class KeepAlive extends Thread {
-    protected final Logger log = LoggerFactory.getLogger(getClass());
-
+    protected final Logger log;
     protected final ConnectionImpl conn;
 
     protected int keepAliveInterval = 0;
 
     protected KeepAlive(ConnectionImpl conn, String name) {
         this.conn = conn;
+        log = conn.getTransport().getConfig().getLoggerFactory().getLogger(getClass());
         setName(name);
     }
 

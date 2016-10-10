@@ -17,17 +17,17 @@ package net.schmizz.sshj.connection.channel.direct;
 
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
-
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.TimeUnit;
 
 import static com.hierynomus.sshj.backport.Sockets.asCloseable;
@@ -82,10 +82,10 @@ public class LocalPortForwarder {
                 throws IOException {
             socket.setSendBufferSize(getLocalMaxPacketSize());
             socket.setReceiveBufferSize(getRemoteMaxPacketSize());
-            final Event<IOException> soc2chan = new StreamCopier(socket.getInputStream(), getOutputStream())
+            final Event<IOException> soc2chan = new StreamCopier(socket.getInputStream(), getOutputStream(), loggerFactory)
                     .bufSize(getRemoteMaxPacketSize())
                     .spawnDaemon("soc2chan");
-            final Event<IOException> chan2soc = new StreamCopier(getInputStream(), socket.getOutputStream())
+            final Event<IOException> chan2soc = new StreamCopier(getInputStream(), socket.getOutputStream(), loggerFactory)
                     .bufSize(getLocalMaxPacketSize())
                     .spawnDaemon("chan2soc");
             SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, soc2chan, chan2soc, this, socket);
@@ -102,16 +102,18 @@ public class LocalPortForwarder {
 
     }
 
-    private final Logger log = LoggerFactory.getLogger(LocalPortForwarder.class);
-
+    private final LoggerFactory loggerFactory;
+    private final Logger log;
     private final Connection conn;
     private final Parameters parameters;
     private final ServerSocket serverSocket;
 
-    public LocalPortForwarder(Connection conn, Parameters parameters, ServerSocket serverSocket) {
+    public LocalPortForwarder(Connection conn, Parameters parameters, ServerSocket serverSocket, LoggerFactory loggerFactory) {
         this.conn = conn;
         this.parameters = parameters;
         this.serverSocket = serverSocket;
+        this.loggerFactory = loggerFactory;
+        this.log = loggerFactory.getLogger(getClass());
     }
 
     private void startChannel(Socket socket) throws IOException {
@@ -134,11 +136,33 @@ public class LocalPortForwarder {
             throws IOException {
         log.info("Listening on {}", serverSocket.getLocalSocketAddress());
         while (!Thread.currentThread().isInterrupted()) {
-            final Socket socket = serverSocket.accept();
-            log.debug("Got connection from {}", socket.getRemoteSocketAddress());
-            startChannel(socket);
+            try {
+                final Socket socket = serverSocket.accept();
+                log.debug("Got connection from {}", socket.getRemoteSocketAddress());
+                startChannel(socket);
+            } catch (SocketException e) {
+                if (!serverSocket.isClosed()) {
+                    throw e;
+                }
+            }
         }
-        log.debug("Interrupted!");
+        if (serverSocket.isClosed()) {
+            log.debug("LocalPortForwarder closed");
+        } else {
+            log.debug("LocalPortForwarder interrupted!");
+        }
+    }
+
+    /**
+     * Close the ServerSocket that's listening for connections to forward.
+     *
+     * @throws IOException
+     */
+    public void close() throws IOException {
+        if (!serverSocket.isClosed()) {
+            log.info("Closing listener on {}", serverSocket.getLocalSocketAddress());
+            serverSocket.close();
+        }
     }
 
 }

@@ -426,8 +426,7 @@ public class Buffer<T extends Buffer<T>> {
     public PublicKey readPublicKey()
             throws BufferException {
         try {
-            final String type = readString();
-            return KeyType.fromString(type).readPubKeyFromBuffer(type, this);
+            return KeyType.fromString(readString()).readPubKeyFromBuffer(this);
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
         }

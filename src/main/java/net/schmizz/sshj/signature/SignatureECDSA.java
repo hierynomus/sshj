@@ -15,12 +15,12 @@
  */
 package net.schmizz.sshj.signature;
 
-import java.math.BigInteger;
-import java.security.SignatureException;
-
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
+
+import java.math.BigInteger;
+import java.security.SignatureException;
 
 /** ECDSA {@link Signature} */
 public class SignatureECDSA

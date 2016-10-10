@@ -15,12 +15,9 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
-import net.schmizz.sshj.xfer.AbstractFileTransfer;
-import net.schmizz.sshj.xfer.FileSystemFile;
-import net.schmizz.sshj.xfer.FileTransfer;
-import net.schmizz.sshj.xfer.LocalDestFile;
-import net.schmizz.sshj.xfer.LocalSourceFile;
+import net.schmizz.sshj.xfer.*;
 
 import java.io.IOException;
 
@@ -34,7 +31,8 @@ public class SCPFileTransfer
     private final SessionFactory sessionFactory;
     private int bandwidthLimit;
 
-    public SCPFileTransfer(SessionFactory sessionFactory) {
+    public SCPFileTransfer(SessionFactory sessionFactory, LoggerFactory loggerFactory) {
+	super(loggerFactory);
         this.sessionFactory = sessionFactory;
         this.bandwidthLimit = DEFAULT_BANDWIDTH_LIMIT;
     }
@@ -48,7 +46,7 @@ public class SCPFileTransfer
     }
 
     private SCPEngine newSCPEngine() {
-        return new SCPEngine(sessionFactory, getTransferListener());
+        return new SCPEngine(sessionFactory, getTransferListener(), loggerFactory);
     }
 
     @Override

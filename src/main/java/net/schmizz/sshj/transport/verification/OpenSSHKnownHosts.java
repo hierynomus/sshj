@@ -15,25 +15,12 @@
  */
 package net.schmizz.sshj.transport.verification;
 
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.mac.HMACSHA1;
 import net.schmizz.sshj.transport.mac.MAC;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -50,29 +37,38 @@ import java.util.List;
 public class OpenSSHKnownHosts
         implements HostKeyVerifier {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OpenSSHKnownHosts.class);
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final Logger log;
 
     protected final File khFile;
     protected final List<HostEntry> entries = new ArrayList<HostEntry>();
 
     public OpenSSHKnownHosts(File khFile)
             throws IOException {
+        this(khFile, LoggerFactory.DEFAULT);
+    }
+
+    public OpenSSHKnownHosts(File khFile, LoggerFactory loggerFactory)
+            throws IOException {
         this.khFile = khFile;
+        log = loggerFactory.getLogger(getClass());
         if (khFile.exists()) {
+            final EntryFactory entryFactory = new EntryFactory();
             final BufferedReader br = new BufferedReader(new FileReader(khFile));
             try {
                 // Read in the file, storing each line as an entry
                 String line;
-                while ((line = br.readLine()) != null)
+                while ((line = br.readLine()) != null) {
                     try {
-                        HostEntry entry = EntryFactory.parseEntry(line);
+                        HostEntry entry = entryFactory.parseEntry(line);
                         if (entry != null) {
                             entries.add(entry);
                         }
                     } catch (SSHException ignore) {
                         log.debug("Bad line ({}): {} ", ignore.toString(), line);
+                    } catch (SSHRuntimeException ignore) {
+                        log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
                     }
+                }
             } finally {
                 IOUtils.closeQuietly(br);
             }
@@ -185,9 +181,11 @@ public class OpenSSHKnownHosts
      * <p/>
      * Lines starting with `#' and empty lines are ignored as comments.
      */
-    public static class EntryFactory {
+    public class EntryFactory {
+        EntryFactory() {
+        }
 
-        public static HostEntry parseEntry(String line)
+        public HostEntry parseEntry(String line)
                 throws IOException {
             if (isComment(line)) {
                 return new CommentEntry(line);
@@ -201,7 +199,7 @@ public class OpenSSHKnownHosts
                 i++;
             }
             if(split.length < 3) {
-                LOG.error("Error reading entry `{}`", line);
+                log.error("Error reading entry `{}`", line);
                 return null;
             }
             final String hostnames = split[i++];
@@ -212,7 +210,7 @@ public class OpenSSHKnownHosts
 
             if (type != KeyType.UNKNOWN) {
                 final String sKey = split[i++];
-                key = getKey(sKey);
+                key = new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
                 // int bits = Integer.valueOf(sType);
@@ -222,11 +220,11 @@ public class OpenSSHKnownHosts
                     final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
                     key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
                 } catch (Exception ex) {
-                    LOG.error("Error reading entry `{}`, could not create key", line, ex);
+                    log.error("Error reading entry `{}`, could not create key", line, ex);
                     return null;
                 }
             } else {
-                LOG.error("Error reading entry `{}`, could not determine type", line);
+                log.error("Error reading entry `{}`, could not determine type", line);
                 return null;
             }
 
@@ -237,12 +235,7 @@ public class OpenSSHKnownHosts
             }
         }
 
-        private static PublicKey getKey(String sKey)
-                throws IOException {
-            return new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
-        }
-
-        private static boolean isBits(String type) {
+        private boolean isBits(String type) {
             try {
                 Integer.parseInt(type);
                 return true;
@@ -251,17 +244,24 @@ public class OpenSSHKnownHosts
             }
         }
 
-        private static boolean isComment(String line) {
+        private boolean isComment(String line) {
             return line.isEmpty() || line.startsWith("#");
         }
 
-        public static boolean isHashed(String line) {
+        public boolean isHashed(String line) {
             return line.startsWith("|1|");
         }
 
     }
 
     public interface HostEntry {
+        KeyType getType();
+
+        String getFingerprint();
+
+        boolean appliesTo(String host)
+                throws IOException;
+
         boolean appliesTo(KeyType type, String host)
                 throws IOException;
 
@@ -277,6 +277,22 @@ public class OpenSSHKnownHosts
 
         public CommentEntry(String comment) {
             this.comment = comment;
+        }
+
+        @Override
+        public KeyType getType() {
+            return KeyType.UNKNOWN;
+        }
+
+        @Override
+        public String getFingerprint() {
+            return null;
+        }
+
+        @Override
+        public boolean appliesTo(String host)
+                throws IOException {
+            return false;
         }
 
         @Override
@@ -306,6 +322,16 @@ public class OpenSSHKnownHosts
             this.marker = marker;
             this.type = type;
             this.key = key;
+        }
+
+        @Override
+        public KeyType getType() {
+            return type;
+        }
+
+        @Override
+        public String getFingerprint() {
+            return SecurityUtils.getFingerprint(key);
         }
 
         @Override
@@ -350,6 +376,12 @@ public class OpenSSHKnownHosts
         }
 
         @Override
+        public boolean appliesTo(String host)
+                throws IOException {
+            return hosts.contains(host);
+        }
+
+        @Override
         public boolean appliesTo(KeyType type, String host)
                 throws IOException {
             return type == this.type && hosts.contains(host);
@@ -375,6 +407,12 @@ public class OpenSSHKnownHosts
                     throw new SSHException("Unrecognized format for hashed hostname");
                 salt = hostParts[2];
             }
+        }
+
+        @Override
+        public boolean appliesTo(String host)
+                 throws IOException {
+            return hashedHost.equals(hashHost(host));
         }
 
         @Override
@@ -416,14 +454,14 @@ public class OpenSSHKnownHosts
         public String getMarkerString() {
             return sMarker;
         }
-        
+
         public static Marker fromString(String str) {
             for (Marker m: values())
                 if (m.sMarker.equals(str))
                     return m;
             return null;
         }
-        
+
     }
 
 }

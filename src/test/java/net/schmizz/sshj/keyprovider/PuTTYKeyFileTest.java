@@ -15,14 +15,13 @@
  */
 package net.schmizz.sshj.keyprovider;
 
+import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.Resource;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
-
-import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.Resource;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

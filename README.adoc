@@ -1,10 +1,11 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.17.2
+:sshj_version: 0.18.0
 :source-highlighter: pygments
 
 image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
+image:https://api.codacy.com/project/badge/Grade/14a0a316bb9149739b5ea26dbfa8da8a["Codacy code quality", link="https://www.codacy.com/app/jeroen_2/sshj?utm_source=github.com&utm_medium=referral&utm_content=hierynomus/sshj&utm_campaign=Badge_Grade"]
 image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
 image:https://javadoc-emblem.rhcloud.com/doc/com.hierynomus/sshj/badge.svg["Javadoc",link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 
@@ -98,7 +99,14 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.17.3 (????-??-??)::
+SSHJ 0.18.0 (2016-09-30)::
+* Fixed Android compatibility
+* Upgrade to Gradle 3.0
+* Merged https://github.com/hierynomus/sshj/pulls/271[#271]: Load known_hosts without requiring BouncyCastle
+* Merged https://github.com/hierynomus/sshj/pulls/269[#269]: Brought back Java6 support by popular demand
+* Merged https://github.com/hierynomus/sshj/pulls/267[#267]: Added support for per connection logging (Fixes https://github.com/hierynomus/sshj/issues/264[#264])
+* Merged https://github.com/hierynomus/sshj/pulls/262[#262], https://github.com/hierynomus/sshj/pulls/265[#265] and https://github.com/hierynomus/sshj/pulls/266[#266]: Added PKCS5 key file support
+* Fixed toString of sftp FileAttributes (Fixes https://github.com/hierynomus/sshj/pulls/258[#258])
 * Fixed https://github.com/hierynomus/sshj/issues/255[#255]: No longer depending on 'privately marked' classes in `net.i2p.crypto.eddsa.math` package, fixes OSGI dependencies
 SSHJ 0.17.2 (2016-07-07)::
 * Treating SSH Server identification line ending in '\n' instead of '\r\n' leniently.

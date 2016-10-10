@@ -13,30 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.transport.digest;
+package net.schmizz.sshj.common;
 
-public class SHA512 extends BaseDigest {
+import org.slf4j.Logger;
+
+public interface LoggerFactory {
+    Logger getLogger(String name);
+    Logger getLogger(Class<?> clazz);
+
     /**
-     * Named factory for SHA384 digest
+     * Default SLF4J-based implementation of the SSHJ LoggerFactory.
      */
-    public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<Digest> {
-
+    LoggerFactory DEFAULT = new LoggerFactory() {
         @Override
-        public Digest create() {
-            return new SHA512();
+        public Logger getLogger(String name) {
+            return org.slf4j.LoggerFactory.getLogger(name);
         }
 
         @Override
-        public String getName() {
-            return "sha512";
+        public Logger getLogger(Class<?> clazz) {
+            return org.slf4j.LoggerFactory.getLogger(clazz);
         }
-    }
-
-    /**
-     * Create a new instance of a SHA384 digest
-     */
-    public SHA512() {
-        super("SHA-512", 64);
-    }
+    };
 }

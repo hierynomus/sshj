@@ -28,17 +28,12 @@ import org.apache.sshd.common.kex.KeyExchange;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.kex.DHGEXServer;
 import org.apache.sshd.server.kex.DHGServer;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(Parameterized.class)
 public class KeyExchangeTest extends BaseAlgorithmTest {

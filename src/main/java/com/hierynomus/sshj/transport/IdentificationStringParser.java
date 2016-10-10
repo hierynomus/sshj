@@ -17,20 +17,25 @@ package com.hierynomus.sshj.transport;
 
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.ByteArrayUtils;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.transport.TransportException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 public class IdentificationStringParser {
-    private static final Logger logger = LoggerFactory.getLogger(IdentificationStringParser.class);
+    private final Logger log;
     private final Buffer.PlainBuffer buffer;
 
     private byte[] EXPECTED_START_BYTES = new byte[] {'S', 'S', 'H', '-'};
 
     public IdentificationStringParser(Buffer.PlainBuffer buffer) {
+	this(buffer, LoggerFactory.DEFAULT);
+    }
+
+    public IdentificationStringParser(Buffer.PlainBuffer buffer, LoggerFactory loggerFactory) {
+        this.log = loggerFactory.getLogger(IdentificationStringParser.class);
         this.buffer = buffer;
     }
 
@@ -65,16 +70,16 @@ public class IdentificationStringParser {
         byte[] bytes = new byte[lineBuffer.available()];
         lineBuffer.readRawBytes(bytes);
         if (bytes.length > 255) {
-            logger.error("Incorrect identification String received, line was longer than expected: {}", new String(bytes));
-            logger.error("Just for good measure, bytes were: {}", ByteArrayUtils.printHex(bytes, 0, bytes.length));
+            log.error("Incorrect identification String received, line was longer than expected: {}", new String(bytes));
+            log.error("Just for good measure, bytes were: {}", ByteArrayUtils.printHex(bytes, 0, bytes.length));
             throw new TransportException("Incorrect identification: line too long: " + ByteArrayUtils.printHex(bytes, 0, bytes.length));
         }
         if (bytes[bytes.length - 2] != '\r') {
             String ident = new String(bytes, 0, bytes.length - 1);
-            logger.warn("Server identification has bad line ending, was expecting a '\\r\\n' however got: '{}' (hex: {})", (char) (bytes[bytes.length - 2] & 0xFF), Integer.toHexString(bytes[bytes.length - 2] & 0xFF));
-            logger.warn("Will treat the identification of this server '{}' leniently", ident);
+            log.warn("Server identification has bad line ending, was expecting a '\\r\\n' however got: '{}' (hex: {})", (char) (bytes[bytes.length - 2] & 0xFF), Integer.toHexString(bytes[bytes.length - 2] & 0xFF));
+            log.warn("Will treat the identification of this server '{}' leniently", ident);
             return ident;
-            // logger.error("Data received up til here was: {}", new String(bytes));
+            // log.error("Data received up til here was: {}", new String(bytes));
             // throw new TransportException("Incorrect identification: bad line ending: " + ByteArrayUtils.toHex(bytes, 0, bytes.length));
         }
 

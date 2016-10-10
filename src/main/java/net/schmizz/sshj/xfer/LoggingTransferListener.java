@@ -15,31 +15,34 @@
  */
 package net.schmizz.sshj.xfer;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.StreamCopier;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class LoggingTransferListener
         implements TransferListener {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final LoggerFactory loggerFactory;
+    private final Logger log;
 
     private final String relPath;
 
-    public LoggingTransferListener() {
-        this("");
+    public LoggingTransferListener(LoggerFactory loggerFactory) {
+        this("", loggerFactory);
     }
 
-    private LoggingTransferListener(String relPath) {
+    private LoggingTransferListener(String relPath, LoggerFactory loggerFactory) {
         this.relPath = relPath;
+        this.loggerFactory = loggerFactory;
+        log = loggerFactory.getLogger(getClass());
     }
 
     @Override
     public TransferListener directory(String name) {
         log.debug("started transferring directory `{}`", name);
-        return new LoggingTransferListener(relPath + name + "/");
+        return new LoggingTransferListener(relPath + name + "/", loggerFactory);
     }
 
     @Override

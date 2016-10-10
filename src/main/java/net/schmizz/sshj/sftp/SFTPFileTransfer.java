@@ -17,19 +17,12 @@ package net.schmizz.sshj.sftp;
 
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.sftp.Response.StatusCode;
-import net.schmizz.sshj.xfer.AbstractFileTransfer;
-import net.schmizz.sshj.xfer.FileSystemFile;
-import net.schmizz.sshj.xfer.FileTransfer;
-import net.schmizz.sshj.xfer.LocalDestFile;
-import net.schmizz.sshj.xfer.LocalFileFilter;
-import net.schmizz.sshj.xfer.LocalSourceFile;
-import net.schmizz.sshj.xfer.TransferListener;
+import net.schmizz.sshj.xfer.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.EnumSet;
-import java.util.List;
 
 public class SFTPFileTransfer
         extends AbstractFileTransfer
@@ -42,6 +35,7 @@ public class SFTPFileTransfer
     private volatile boolean preserveAttributes = true;
 
     public SFTPFileTransfer(SFTPEngine engine) {
+	super(engine.getLoggerFactory());
         this.engine = engine;
     }
 
@@ -145,7 +139,7 @@ public class SFTPFileTransfer
                 final RemoteFile.ReadAheadRemoteFileInputStream rfis = rf.new ReadAheadRemoteFileInputStream(16);
                 final OutputStream os = adjusted.getOutputStream();
                 try {
-                    new StreamCopier(rfis, os)
+                    new StreamCopier(rfis, os, engine.getLoggerFactory())
                             .bufSize(engine.getSubsystem().getLocalMaxPacketSize())
                             .keepFlushing(false)
                             .listener(listener)
@@ -235,14 +229,36 @@ public class SFTPFileTransfer
                                   final String remote)
                 throws IOException {
             final String adjusted = prepareFile(local, remote);
-            try (RemoteFile rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC))) {
-                try (InputStream fis = local.getInputStream();
-                     RemoteFile.RemoteFileOutputStream rfos = rf.new RemoteFileOutputStream(0, 16)) {
-                    new StreamCopier(fis, rfos)
-                            .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
-                            .keepFlushing(false)
-                            .listener(listener)
-                            .copy();
+            RemoteFile rf = null;
+            InputStream fis = null;
+            RemoteFile.RemoteFileOutputStream rfos = null;
+            try {
+                rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC));
+                fis = local.getInputStream();
+                rfos = rf.new RemoteFileOutputStream(0, 16);
+                new StreamCopier(fis, rfos, engine.getLoggerFactory())
+                        .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
+                        .keepFlushing(false)
+                        .listener(listener)
+                        .copy();
+            } finally {
+                if (rf != null) {
+                    try {
+                        rf.close();
+                    } catch (IOException e) {
+                    }
+                }
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                    }
+                }
+                if (rfos != null) {
+                    try {
+                        rfos.close();
+                    } catch (IOException e) {
+                    }
                 }
             }
             return adjusted;

@@ -16,7 +16,6 @@
 package net.schmizz.sshj.common;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -26,24 +25,32 @@ import java.nio.charset.Charset;
 
 public class IOUtils {
 
-    private static final Logger LOG = LoggerFactory.getLogger(IOUtils.class);
-
     public static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static void closeQuietly(Closeable... closeables) {
-        for (Closeable c : closeables)
-            try {
-                if (c != null)
-                    c.close();
-            } catch (IOException logged) {
-                LOG.warn("Error closing {} - {}", c, logged);
-            }
+        closeQuietly(LoggerFactory.DEFAULT, closeables);
     }
 
     public static ByteArrayOutputStream readFully(InputStream stream)
             throws IOException {
+        return readFully(stream, LoggerFactory.DEFAULT);
+    }
+
+    public static void closeQuietly(LoggerFactory loggerFactory, Closeable... closeables) {
+        for (Closeable c : closeables) {
+            try {
+                if (c != null)
+                    c.close();
+            } catch (IOException logged) {
+		loggerFactory.getLogger(IOUtils.class).warn("Error closing {} - {}", c, logged);
+            }
+        }
+    }
+
+    public static ByteArrayOutputStream readFully(InputStream stream, LoggerFactory loggerFactory)
+            throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        new StreamCopier(stream, baos).copy();
+        new StreamCopier(stream, baos, loggerFactory).copy();
         return baos;
     }
 

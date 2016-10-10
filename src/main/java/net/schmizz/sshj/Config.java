@@ -17,6 +17,7 @@ package net.schmizz.sshj;
 
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;
@@ -175,4 +176,14 @@ public interface Config {
      * @param waitForServerIdentBeforeSendingClientIdent Whether to wait for the server ident.
      */
     void setWaitForServerIdentBeforeSendingClientIdent(boolean waitForServerIdentBeforeSendingClientIdent);
+
+    /**
+     * Sets the LoggerFactory to use.
+     */
+    void setLoggerFactory(LoggerFactory loggerFactory);
+
+    /**
+     * @return The LoggerFactory the SSHClient will use.
+     */
+    LoggerFactory getLoggerFactory();
 }

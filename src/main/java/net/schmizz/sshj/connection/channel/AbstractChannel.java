@@ -15,29 +15,21 @@
  */
 package net.schmizz.sshj.connection.channel;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.ByteArrayUtils;
-import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
+import org.slf4j.Logger;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractChannel
         implements Channel {
@@ -45,7 +37,8 @@ public abstract class AbstractChannel
     private static final int REMOTE_MAX_PACKET_SIZE_CEILING = 1024 * 1024;
 
     /** Logger */
-    protected final Logger log = LoggerFactory.getLogger(getClass());
+    protected final LoggerFactory loggerFactory;
+    protected final Logger log;
 
     /** Transport layer */
     protected final Transport trans;
@@ -59,7 +52,9 @@ public abstract class AbstractChannel
     /** Remote recipient ID */
     private int recipient;
 
-    private final Queue<Event<ConnectionException>> chanReqResponseEvents = new ConcurrentLinkedQueue<Event<ConnectionException>>();
+    private boolean eof = false;
+
+    private final Queue<Event<ConnectionException>> chanReqResponseEvents = new LinkedList<Event<ConnectionException>>();
 
     /* The lock used by to create the open & close events */
     private final ReentrantLock openCloseLock = new ReentrantLock();
@@ -84,21 +79,23 @@ public abstract class AbstractChannel
 
     protected AbstractChannel(Connection conn, String type) {
         this.conn = conn;
+        this.loggerFactory = conn.getTransport().getConfig().getLoggerFactory();
         this.type = type;
+        this.log = loggerFactory.getLogger(getClass());
         this.trans = conn.getTransport();
 
         id = conn.nextID();
 
-        lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize());
+        lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize(), loggerFactory);
         in = new ChannelInputStream(this, trans, lwin);
 
-        openEvent = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, openCloseLock);
-        closeEvent = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, openCloseLock);
+        openEvent = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, openCloseLock, loggerFactory);
+        closeEvent = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, openCloseLock, loggerFactory);
     }
 
     protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
         this.recipient = recipient;
-        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING));
+        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING), loggerFactory);
         out = new ChannelOutputStream(this, trans, rwin);
         log.debug("Initialized - {}", this);
     }
@@ -194,6 +191,16 @@ public abstract class AbstractChannel
                 gotUnknown(msg, buf);
 
         }
+    }
+
+    @Override
+    public boolean isEOF() {
+        return eof;
+    }
+
+    @Override
+    public LoggerFactory getLoggerFactory() {
+        return loggerFactory;
     }
 
     private void gotClose()
@@ -363,7 +370,7 @@ public abstract class AbstractChannel
             Event<ConnectionException> responseEvent = null;
             if (wantReply) {
                 responseEvent = new Event<ConnectionException>("chan#" + id + " / " + "chanreq for " + reqType,
-                                                               ConnectionException.chainer);
+                                                               ConnectionException.chainer, loggerFactory);
                 chanReqResponseEvents.add(responseEvent);
             }
             return responseEvent;
@@ -394,6 +401,7 @@ public abstract class AbstractChannel
     /** Called when EOF has been received. Subclasses can override but must call super. */
     protected void eofInputStreams() {
         in.eof();
+        eof = true;
     }
 
     @Override

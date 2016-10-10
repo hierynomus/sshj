@@ -30,7 +30,7 @@ import net.schmizz.sshj.sftp.Response.StatusCode;
 public class RemoteFile
         extends RemoteResource {
 
-    public RemoteFile(Requester requester, String path, byte[] handle) {
+    public RemoteFile(SFTPEngine requester, String path, byte[] handle) {
         super(requester, path, handle);
     }
 

@@ -15,12 +15,8 @@
  */
 package net.schmizz.sshj.transport;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.ByteArrayUtils;
-import net.schmizz.sshj.common.DisconnectReason;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHPacket;
-import net.schmizz.sshj.common.SSHPacketHandler;
+import net.schmizz.sshj.common.*;
+import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;
 import net.schmizz.sshj.transport.mac.MAC;
@@ -33,7 +29,7 @@ final class Decoder
 
     private static final int MAX_PACKET_LEN = 256 * 1024;
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger log;
 
     /** What we pass decoded packets to */
     private final SSHPacketHandler packetHandler;
@@ -53,8 +49,9 @@ final class Decoder
      */
     private int needed = 8;
 
-    Decoder(SSHPacketHandler packetHandler) {
+    Decoder(Transport packetHandler) {
         this.packetHandler = packetHandler;
+        log = packetHandler.getConfig().getLoggerFactory().getLogger(getClass());
     }
 
     /**

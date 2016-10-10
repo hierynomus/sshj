@@ -20,15 +20,13 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import net.schmizz.sshj.common.LoggerFactory;
+
 import static net.schmizz.sshj.sftp.PathHelper.DEFAULT_PATH_SEPARATOR;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class SFTPClientTest {
     private final SFTPEngine sftpEngine = mock(SFTPEngine.class);
-    private final SFTPClient client = new SFTPClient(sftpEngine);
 
     @Before
     public void setPathHelper() throws Exception {
@@ -42,6 +40,7 @@ public class SFTPClientTest {
             }
         }, DEFAULT_PATH_SEPARATOR);
         when(sftpEngine.getPathHelper()).thenReturn(helper);
+        when(sftpEngine.getLoggerFactory()).thenReturn(LoggerFactory.DEFAULT);
     }
 
     @Before
@@ -52,6 +51,7 @@ public class SFTPClientTest {
 
     @Test
     public void doesNotTryToCreateDirectoryTwiceWhenPathHasTrailingSeparator() throws Exception {
+        SFTPClient client = new SFTPClient(sftpEngine);
         client.mkdirs("/folder/directory/");
         verify(sftpEngine, times(1)).makeDir("/folder/directory");
     }

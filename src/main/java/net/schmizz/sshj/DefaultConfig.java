@@ -15,51 +15,32 @@
  */
 package net.schmizz.sshj;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
 import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureECDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
-import net.schmizz.sshj.transport.cipher.AES128CBC;
-import net.schmizz.sshj.transport.cipher.AES128CTR;
-import net.schmizz.sshj.transport.cipher.AES192CBC;
-import net.schmizz.sshj.transport.cipher.AES192CTR;
-import net.schmizz.sshj.transport.cipher.AES256CBC;
-import net.schmizz.sshj.transport.cipher.AES256CTR;
-import net.schmizz.sshj.transport.cipher.BlowfishCBC;
-import net.schmizz.sshj.transport.cipher.Cipher;
-import net.schmizz.sshj.transport.cipher.TripleDESCBC;
+import net.schmizz.sshj.transport.cipher.*;
 import net.schmizz.sshj.transport.compression.NoneCompression;
-import net.schmizz.sshj.transport.kex.Curve25519SHA256;
-import net.schmizz.sshj.transport.kex.DHG1;
-import net.schmizz.sshj.transport.kex.DHG14;
-import net.schmizz.sshj.transport.kex.DHGexSHA1;
-import net.schmizz.sshj.transport.kex.DHGexSHA256;
-import net.schmizz.sshj.transport.kex.ECDHNistP;
-import net.schmizz.sshj.transport.mac.HMACMD5;
-import net.schmizz.sshj.transport.mac.HMACMD596;
-import net.schmizz.sshj.transport.mac.HMACSHA1;
-import net.schmizz.sshj.transport.mac.HMACSHA196;
-import net.schmizz.sshj.transport.mac.HMACSHA2256;
-import net.schmizz.sshj.transport.mac.HMACSHA2512;
+import net.schmizz.sshj.transport.kex.*;
+import net.schmizz.sshj.transport.mac.*;
 import net.schmizz.sshj.transport.random.BouncyCastleRandom;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
+import org.slf4j.Logger;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A {@link net.schmizz.sshj.Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
@@ -86,11 +67,12 @@ import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 public class DefaultConfig
         extends ConfigImpl {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
     private static final String VERSION = "SSHJ_0_17_2";
 
+    private Logger log;
+
     public DefaultConfig() {
+        setLoggerFactory(LoggerFactory.DEFAULT);
         setVersion(VERSION);
         final boolean bouncyCastleRegistered = SecurityUtils.isBouncyCastleRegistered();
         initKeyExchangeFactories(bouncyCastleRegistered);
@@ -103,8 +85,14 @@ public class DefaultConfig
         setKeepAliveProvider(KeepAliveProvider.HEARTBEAT);
     }
 
+    @Override
+    public void setLoggerFactory(LoggerFactory loggerFactory) {
+	super.setLoggerFactory(loggerFactory);
+	log = loggerFactory.getLogger(getClass());
+    }
+
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
-        if (bouncyCastleRegistered)
+        if (bouncyCastleRegistered) {
             setKeyExchangeFactories(new Curve25519SHA256.Factory(),
                     new DHGexSHA256.Factory(),
                     new ECDHNistP.Factory521(),
@@ -113,8 +101,9 @@ public class DefaultConfig
                     new DHGexSHA1.Factory(),
                     new DHG14.Factory(),
                     new DHG1.Factory());
-        else
+        } else {
             setKeyExchangeFactories(new DHG1.Factory(), new DHGexSHA1.Factory());
+        }
     }
 
     protected void initRandomFactory(boolean bouncyCastleRegistered) {
@@ -130,7 +119,7 @@ public class DefaultConfig
 
 
     protected void initCipherFactories() {
-        List<Factory.Named<Cipher>> avail = new ArrayList<>(Arrays.<Factory.Named<Cipher>>asList(
+        List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
                 new AES128CTR.Factory(),
                 new AES192CTR.Factory(),
                 new AES256CTR.Factory(),
@@ -160,7 +149,8 @@ public class DefaultConfig
                 BlockCiphers.TwofishCBC(),
                 StreamCiphers.Arcfour(),
                 StreamCiphers.Arcfour128(),
-                StreamCiphers.Arcfour256()));
+                StreamCiphers.Arcfour256())
+        );
 
         boolean warn = false;
         // Ref. https://issues.apache.org/jira/browse/SSHD-24
@@ -186,17 +176,26 @@ public class DefaultConfig
     }
 
     protected void initSignatureFactories() {
-        setSignatureFactories(new SignatureECDSA.Factory(), new SignatureRSA.Factory(), new SignatureDSA.Factory(), new SignatureEdDSA.Factory());
+        setSignatureFactories(
+                new SignatureECDSA.Factory(),
+                new SignatureRSA.Factory(),
+                new SignatureDSA.Factory(),
+                new SignatureEdDSA.Factory()
+        );
     }
 
     protected void initMACFactories() {
-        setMACFactories(new HMACSHA1.Factory(), new HMACSHA196.Factory(), new HMACMD5.Factory(),
-                new HMACMD596.Factory(), new HMACSHA2256.Factory(), new HMACSHA2512.Factory());
+        setMACFactories(
+                new HMACSHA1.Factory(),
+                new HMACSHA196.Factory(),
+                new HMACMD5.Factory(),
+                new HMACMD596.Factory(),
+                new HMACSHA2256.Factory(),
+                new HMACSHA2512.Factory()
+        );
     }
 
     protected void initCompressionFactories() {
         setCompressionFactories(new NoneCompression.Factory());
     }
-
-
 }

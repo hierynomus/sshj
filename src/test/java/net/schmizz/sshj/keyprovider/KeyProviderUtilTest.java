@@ -15,15 +15,14 @@
  */
 package net.schmizz.sshj.keyprovider;
 
-import static org.junit.Assert.assertEquals;
+import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
+import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.junit.Test;
-
-import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
-import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+import static org.junit.Assert.assertEquals;
 
 public class KeyProviderUtilTest {
 
@@ -33,6 +32,12 @@ public class KeyProviderUtilTest {
     public void testOpenSsh() throws IOException {
         KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "openssh"));
         assertEquals(KeyFormat.OpenSSH, format);
+    }
+
+    @Test
+    public void testPkcs5() throws IOException {
+        KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "pkcs5"));
+        assertEquals(KeyFormat.PKCS5, format);
     }
 
     @Test
