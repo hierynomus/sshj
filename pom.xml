@@ -64,9 +64,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>net.vrallev.ecc</groupId>
-            <artifactId>ecc-25519-java</artifactId>
-            <version>1.0.1</version>
+            <groupId>net.i2p.crypto</groupId>
+            <artifactId>eddsa</artifactId>
+            <version>0.1.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
