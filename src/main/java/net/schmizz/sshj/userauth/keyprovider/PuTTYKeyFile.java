@@ -56,7 +56,7 @@ import java.util.Map;
  *
  * @version $Id:$
  */
-public class PuTTYKeyFile implements FileKeyProvider {
+public class PuTTYKeyFile extends BaseFileKeyProvider {
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -74,56 +74,6 @@ public class PuTTYKeyFile implements FileKeyProvider {
 
     private byte[] privateKey;
     private byte[] publicKey;
-
-    private KeyPair kp;
-
-    protected PasswordFinder pwdf;
-
-    protected Resource<?> resource;
-
-    @Override
-    public void init(Reader location) {
-        this.resource = new PrivateKeyReaderResource(location);
-    }
-
-    public void init(Reader location, PasswordFinder pwdf) {
-        this.init(location);
-        this.pwdf = pwdf;
-    }
-
-    @Override
-    public void init(File location) {
-        resource = new PrivateKeyFileResource(location.getAbsoluteFile());
-    }
-
-    @Override
-    public void init(File location, PasswordFinder pwdf) {
-        this.init(location);
-        this.pwdf = pwdf;
-    }
-
-    @Override
-    public void init(String privateKey, String publicKey) {
-        resource = new PrivateKeyStringResource(privateKey);
-    }
-
-    @Override
-    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        init(privateKey, publicKey);
-        this.pwdf = pwdf;
-    }
-
-    @Override
-    public PrivateKey getPrivate()
-            throws IOException {
-        return kp != null ? kp.getPrivate() : (kp = this.readKeyPair()).getPrivate();
-    }
-
-    @Override
-    public PublicKey getPublic()
-            throws IOException {
-        return kp != null ? kp.getPublic() : (kp = this.readKeyPair()).getPublic();
-    }
 
     /**
      * Key type. Either "ssh-rsa" for RSA key, or "ssh-dss" for DSA key.
