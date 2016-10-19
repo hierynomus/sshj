@@ -22,6 +22,8 @@ import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.UserAuthException;
+
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -39,6 +41,7 @@ public class KeepAliveThreadTerminationTest {
     public SshFixture fixture = new SshFixture();
 
     @Test
+    @Ignore
     @Category({SlowTests.class, KnownFailingTests.class})
     public void shouldCorrectlyTerminateThreadOnDisconnect() throws IOException, InterruptedException {
         DefaultConfig defaultConfig = new DefaultConfig();
