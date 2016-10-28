@@ -18,6 +18,7 @@ package net.schmizz.sshj.keyprovider;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
+import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
@@ -30,11 +31,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
 import java.util.Scanner;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -142,12 +145,21 @@ public class OpenSSHKeyFileTest {
 
     @Test
     public void shouldHaveCorrectFingerprintForED25519() throws IOException {
-        OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ed25519"));
         String expected = "256 MD5:d3:5e:40:72:db:08:f1:6d:0c:d7:6d:35:0d:ba:7c:32 root@sshj (ED25519)\n";
         PublicKey aPublic = keyFile.getPublic();
         String sshjFingerprintSshjKey = net.schmizz.sshj.common.SecurityUtils.getFingerprint(aPublic);
         assertThat(expected, containsString(sshjFingerprintSshjKey));
+    }
+
+    @Test
+    public void shouldLoadED25519PrivateKey() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/test_ed25519"));
+        String expected = "256 MD5:d3:5e:40:72:db:08:f1:6d:0c:d7:6d:35:0d:ba:7c:32 root@sshj (ED25519)\n";
+        PrivateKey aPrivate = keyFile.getPrivate();
+        assertThat(aPrivate.getAlgorithm(), equalTo("ed-25519"));
     }
 
     @Before
