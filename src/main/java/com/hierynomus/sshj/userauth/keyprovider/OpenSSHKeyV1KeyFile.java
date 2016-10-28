@@ -101,7 +101,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             return readUnencrypted(privateKeyBuffer, publicKey);
         } else {
             logger.info("Keypair is encrypted with: " + cipherName + ", " + kdfName + ", " + kdfOptions);
-            throw new IOException("Cannot read encrypted keypair with " + cipherName + " yet..");
+            throw new IOException("Cannot read encrypted keypair with " + cipherName + " yet.");
         }
     }
 
