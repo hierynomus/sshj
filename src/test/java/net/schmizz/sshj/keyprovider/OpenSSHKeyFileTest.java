@@ -18,7 +18,7 @@ package net.schmizz.sshj.keyprovider;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
-import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
@@ -157,9 +157,8 @@ public class OpenSSHKeyFileTest {
     public void shouldLoadED25519PrivateKey() throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ed25519"));
-        String expected = "256 MD5:d3:5e:40:72:db:08:f1:6d:0c:d7:6d:35:0d:ba:7c:32 root@sshj (ED25519)\n";
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("ed-25519"));
+        assertThat(aPrivate.getAlgorithm(), equalTo("EdDSA"));
     }
 
     @Before

@@ -22,6 +22,7 @@ public enum KeyFormat {
     PKCS5,
     PKCS8,
     OpenSSH,
+    OpenSSHv1,
     PuTTY,
     Unknown
 }
