@@ -15,21 +15,21 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.*;
-import org.bouncycastle.util.encoders.Hex;
-
-import javax.crypto.Cipher;
-import javax.crypto.Mac;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.*;
 import java.util.HashMap;
 import java.util.Map;
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import org.bouncycastle.util.encoders.Hex;
+
+import net.schmizz.sshj.common.Base64;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
 
 /**
  * <h2>Sample PuTTY file format</h2>
@@ -100,7 +100,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
     protected KeyPair readKeyPair() throws IOException {
         this.parseKeyPair();
-        if(KeyType.RSA.equals(this.getType())) {
+        if (KeyType.RSA.equals(this.getType())) {
             final KeyReader publicKeyReader = new KeyReader(publicKey);
             publicKeyReader.skip();   // skip this
             // public key exponent
@@ -115,8 +115,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             final KeyFactory factory;
             try {
                 factory = KeyFactory.getInstance("RSA");
-            }
-            catch(NoSuchAlgorithmException s) {
+            } catch (NoSuchAlgorithmException s) {
                 throw new IOException(s.getMessage(), s);
             }
             try {
@@ -124,12 +123,11 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                         factory.generatePublic(new RSAPublicKeySpec(n, e)),
                         factory.generatePrivate(new RSAPrivateKeySpec(n, d))
                 );
-            }
-            catch(InvalidKeySpecException i) {
+            } catch (InvalidKeySpecException i) {
                 throw new IOException(i.getMessage(), i);
             }
         }
-        if(KeyType.DSA.equals(this.getType())) {
+        if (KeyType.DSA.equals(this.getType())) {
             final KeyReader publicKeyReader = new KeyReader(publicKey);
             publicKeyReader.skip();   // skip this
             BigInteger p = publicKeyReader.readInt();
@@ -144,8 +142,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             final KeyFactory factory;
             try {
                 factory = KeyFactory.getInstance("DSA");
-            }
-            catch(NoSuchAlgorithmException s) {
+            } catch (NoSuchAlgorithmException s) {
                 throw new IOException(s.getMessage(), s);
             }
             try {
@@ -153,12 +150,10 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                         factory.generatePublic(new DSAPublicKeySpec(y, p, q, g)),
                         factory.generatePrivate(new DSAPrivateKeySpec(x, p, q, g))
                 );
-            }
-            catch(InvalidKeySpecException e) {
+            } catch (InvalidKeySpecException e) {
                 throw new IOException(e.getMessage(), e);
             }
-        }
-        else {
+        } else {
             throw new IOException(String.format("Unknown key type %s", this.getType()));
         }
     }
@@ -169,18 +164,16 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         try {
             String headerName = null;
             String line;
-            while((line = r.readLine()) != null) {
+            while ((line = r.readLine()) != null) {
                 int idx = line.indexOf(": ");
-                if(idx > 0) {
+                if (idx > 0) {
                     headerName = line.substring(0, idx);
                     headers.put(headerName, line.substring(idx + 2));
-                }
-                else {
+                } else {
                     String s = payload.get(headerName);
-                    if(s == null) {
+                    if (s == null) {
                         s = line;
-                    }
-                    else {
+                    } else {
                         // Append to previous line
                         s += line;
                     }
@@ -188,29 +181,25 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                     payload.put(headerName, s);
                 }
             }
-        }
-        finally {
+        } finally {
             r.close();
         }
         // Retrieve keys from payload
         publicKey = Base64.decode(payload.get("Public-Lines"));
-        if(this.isEncrypted()) {
+        if (this.isEncrypted()) {
             final char[] passphrase;
-            if(pwdf != null) {
+            if (pwdf != null) {
                 passphrase = pwdf.reqPassword(resource);
-            }
-            else {
+            } else {
                 passphrase = "".toCharArray();
             }
             try {
                 privateKey = this.decrypt(Base64.decode(payload.get("Private-Lines")), new String(passphrase));
                 this.verify(new String(passphrase));
-            }
-            finally {
+            } finally {
                 PasswordUtils.blankOut(passphrase);
             }
-        }
-        else {
+        } else {
             privateKey = Base64.decode(payload.get("Private-Lines"));
         }
     }
@@ -242,8 +231,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             System.arraycopy(key2, 0, r, 20, 12);
 
             return r;
-        }
-        catch(NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
@@ -256,7 +244,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             // The key to the MAC is itself a SHA-1 hash of:
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
             digest.update("putty-private-key-file-mac-key".getBytes());
-            if(passphrase != null) {
+            if (passphrase != null) {
                 digest.update(passphrase.getBytes());
             }
             final byte[] key = digest.digest();
@@ -284,11 +272,10 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
             final String encoded = Hex.toHexString(mac.doFinal(out.toByteArray()));
             final String reference = headers.get("Private-MAC");
-            if(!encoded.equals(reference)) {
+            if (!encoded.equals(reference)) {
                 throw new IOException("Invalid passphrase");
             }
-        }
-        catch(GeneralSecurityException e) {
+        } catch (GeneralSecurityException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
@@ -305,8 +292,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(expanded, 0, 32, "AES"),
                     new IvParameterSpec(new byte[16])); // initial vector=0
             return cipher.doFinal(key);
-        }
-        catch(GeneralSecurityException e) {
+        } catch (GeneralSecurityException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
@@ -327,14 +313,14 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
          */
         public void skip() throws IOException {
             final int read = di.readInt();
-            if(read != di.skipBytes(read)) {
+            if (read != di.skipBytes(read)) {
                 throw new IOException(String.format("Failed to skip %d bytes", read));
             }
         }
 
         private byte[] read() throws IOException {
             int len = di.readInt();
-            if(len <= 0 || len > 513) {
+            if (len <= 0 || len > 513) {
                 throw new IOException(String.format("Invalid length %d", len));
             }
             byte[] r = new byte[len];

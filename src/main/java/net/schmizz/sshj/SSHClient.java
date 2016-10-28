@@ -316,7 +316,7 @@ public class SSHClient
     public void authPublickey(String username)
             throws UserAuthException, TransportException {
         final String base = System.getProperty("user.home") + File.separator + ".ssh" + File.separator;
-        authPublickey(username, base + "id_rsa", base + "id_dsa");
+        authPublickey(username, base + "id_rsa", base + "id_dsa", base + "id_ed25519", base + "id_ecdsa");
     }
 
     /**
@@ -524,8 +524,13 @@ public class SSHClient
     }
 
     /**
-     * Creates a {@link KeyProvider} instance from given location on the file system. Currently only PKCS8 format
-     * private key files are supported (OpenSSH uses this format).
+     * Creates a {@link KeyProvider} instance from given location on the file system. Currently the following private key files are supported:
+     * <ul>
+     *     <li>PKCS8 (OpenSSH uses this format)</li>
+     *     <li>PKCS5</li>
+     *     <li>Putty keyfile</li>
+     *     <li>openssh-key-v1 (New OpenSSH keyfile format)</li>
+     * </ul>
      * <p/>
      *
      * @param location       the location of the key file

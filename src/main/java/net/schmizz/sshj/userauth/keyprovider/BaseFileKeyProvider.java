@@ -25,7 +25,7 @@ import java.security.PublicKey;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.*;
 
-abstract class BaseFileKeyProvider implements FileKeyProvider {
+public abstract class BaseFileKeyProvider implements FileKeyProvider {
     protected Resource<?> resource;
     protected PasswordFinder pwdf;
     protected KeyPair kp;
