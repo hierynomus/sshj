@@ -320,9 +320,6 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
         private byte[] read() throws IOException {
             int len = di.readInt();
-            if (len <= 0 || len > 513) {
-                throw new IOException(String.format("Invalid length %d", len));
-            }
             byte[] r = new byte[len];
             di.readFully(r);
             return r;
