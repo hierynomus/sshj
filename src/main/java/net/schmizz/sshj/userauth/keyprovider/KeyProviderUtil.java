@@ -18,6 +18,7 @@ package net.schmizz.sshj.userauth.keyprovider;
 import net.schmizz.sshj.common.IOUtils;
 
 import java.io.*;
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 
 public class KeyProviderUtil {
 
@@ -88,10 +89,12 @@ public class KeyProviderUtil {
 
     private static KeyFormat keyFormatFromHeader(String header, boolean separatePubKey) {
         if (header.startsWith("-----BEGIN") && header.endsWith("PRIVATE KEY-----")) {
-            if (separatePubKey) {
+            if (separatePubKey && header.contains(OpenSSHKeyV1KeyFile.OPENSSH_PRIVATE_KEY)) {
+                return KeyFormat.OpenSSHv1;
+            } else if (separatePubKey) {
                 // Can delay asking for password since have unencrypted pubkey
                 return KeyFormat.OpenSSH;
-            } else if (header.indexOf("BEGIN PRIVATE KEY") != -1 || header.indexOf("BEGIN ENCRYPTED PRIVATE KEY") != -1) {
+            } else if (header.contains("BEGIN PRIVATE KEY") || header.contains("BEGIN ENCRYPTED PRIVATE KEY")) {
                 return KeyFormat.PKCS8;
 	    } else {
                 return KeyFormat.PKCS5;

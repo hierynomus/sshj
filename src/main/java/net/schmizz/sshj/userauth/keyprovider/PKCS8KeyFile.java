@@ -15,9 +15,8 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.*;
+import java.io.IOException;
+import java.security.KeyPair;
 import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -27,16 +26,11 @@ import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
 
-/** Represents a PKCS8-encoded key file. This is the format used by OpenSSH and OpenSSL. */
-public class PKCS8KeyFile
-        implements FileKeyProvider {
+/** Represents a PKCS8-encoded key file. This is the format used by (old-style) OpenSSH and OpenSSL. */
+public class PKCS8KeyFile extends BaseFileKeyProvider {
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -53,68 +47,9 @@ public class PKCS8KeyFile
     }
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    protected PasswordFinder pwdf;
-    protected Resource<?> resource;
-    protected KeyPair kp;
-
-    protected KeyType type;
 
     protected char[] passphrase; // for blanking out
 
-    @Override
-    public PrivateKey getPrivate()
-            throws IOException {
-        return kp != null ? kp.getPrivate() : (kp = readKeyPair()).getPrivate();
-    }
-
-    @Override
-    public PublicKey getPublic()
-            throws IOException {
-        return kp != null ? kp.getPublic() : (kp = readKeyPair()).getPublic();
-    }
-
-    @Override
-    public KeyType getType()
-            throws IOException {
-        return type != null ? type : (type = KeyType.fromKey(getPublic()));
-    }
-
-    @Override
-    public void init(Reader location) {
-        assert location != null;
-        resource = new PrivateKeyReaderResource(location);
-    }
-
-    @Override
-    public void init(Reader location, PasswordFinder pwdf) {
-        init(location);
-        this.pwdf = pwdf;
-    }
-
-    @Override
-    public void init(File location) {
-        assert location != null;
-        resource = new PrivateKeyFileResource(location.getAbsoluteFile());
-    }
-
-    @Override
-    public void init(File location, PasswordFinder pwdf) {
-        init(location);
-        this.pwdf = pwdf;
-    }
-
-    @Override
-    public void init(String privateKey, String publicKey) {
-        assert privateKey != null;
-        assert publicKey == null;
-        resource = new PrivateKeyStringResource(privateKey);
-    }
-
-    @Override
-    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        init(privateKey, publicKey);
-        this.pwdf = pwdf;
-    }
 
     protected KeyPair readKeyPair()
             throws IOException {
