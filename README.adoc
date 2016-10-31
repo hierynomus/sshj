@@ -99,6 +99,8 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.19.0 (????-??-??)::
+* Fixed https://github.com/hierynomus/sshj/issues/276[#276]: Add support for ed-25519 and new OpenSSH key format
 SSHJ 0.18.0 (2016-09-30)::
 * Fixed Android compatibility
 * Upgrade to Gradle 3.0
