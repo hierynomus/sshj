@@ -38,10 +38,8 @@ import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import org.slf4j.Logger;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * A {@link net.schmizz.sshj.Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
@@ -68,13 +66,11 @@ import java.util.List;
 public class DefaultConfig
         extends ConfigImpl {
 
-    private static final String VERSION = "SSHJ_0_17_2";
-
     private Logger log;
 
     public DefaultConfig() {
         setLoggerFactory(LoggerFactory.DEFAULT);
-        setVersion(VERSION);
+        setVersion(readVersionFromProperties());
         final boolean bouncyCastleRegistered = SecurityUtils.isBouncyCastleRegistered();
         initKeyExchangeFactories(bouncyCastleRegistered);
         initRandomFactory(bouncyCastleRegistered);
@@ -84,6 +80,18 @@ public class DefaultConfig
         initMACFactories();
         initSignatureFactories();
         setKeepAliveProvider(KeepAliveProvider.HEARTBEAT);
+    }
+
+    private String readVersionFromProperties() {
+        try {
+            Properties properties = new Properties();
+            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("sshj.properties"));
+            String property = properties.getProperty("sshj.version");
+            return "SSHJ_" + property.replace('-', '_'); // '-' is a disallowed character, see RFC-4253#section-4.2
+        } catch (IOException e) {
+            log.error("Could not read the sshj.properties file, returning an 'unknown' version as fallback.");
+            return "SSHJ_VERSION_UNKNOWN";
+        }
     }
 
     @Override

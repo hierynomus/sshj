@@ -64,6 +64,15 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
+task writeSshjVersionProperties << {
+  project.file("${project.buildDir}/resources/main").mkdirs()
+  project.file("${project.buildDir}/resources/main/sshj.properties").withWriter { w ->
+    w.append("sshj.version=${version}")
+  }
+}
+
+jar.dependsOn writeSshjVersionProperties
+
 jar {
   manifest {
     instruction "Bundle-Description", "SSHv2 library for Java"
