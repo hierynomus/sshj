@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.18.0
+:sshj_version: 0.19.0
 :source-highlighter: pygments
 
 image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
@@ -99,8 +99,9 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.19.0 (????-??-??)::
+SSHJ 0.19.0 (2016-11-25)::
 * Fixed https://github.com/hierynomus/sshj/issues/276[#276]: Add support for ed-25519 and new OpenSSH key format
+* Fixed https://github.com/hierynomus/sshj/issues/280[#280]: Read version from a generated sshj.properties file to correctly output version during negotiation
 SSHJ 0.18.0 (2016-09-30)::
 * Fixed Android compatibility
 * Upgrade to Gradle 3.0

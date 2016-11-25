@@ -5,6 +5,7 @@ import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
+import net.schmizz.sshj.common.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -42,8 +43,8 @@ public class X11 {
 
             final Command cmd = sess.exec("/usr/X11/bin/xcalc");
 
-            new StreamCopier(cmd.getInputStream(), System.out).spawn("stdout");
-            new StreamCopier(cmd.getErrorStream(), System.err).spawn("stderr");
+            new StreamCopier(cmd.getInputStream(), System.out, LoggerFactory.DEFAULT).spawn("stdout");
+            new StreamCopier(cmd.getErrorStream(), System.err, LoggerFactory.DEFAULT).spawn("stderr");
 
             // Wait for session & X11 channel to get closed
             ssh.getConnection().join();

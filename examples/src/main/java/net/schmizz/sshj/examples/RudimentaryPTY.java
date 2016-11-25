@@ -9,6 +9,7 @@ import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 
 import java.io.File;
 import java.io.IOException;
+import net.schmizz.sshj.common.LoggerFactory;
 
 /** A very rudimentary psuedo-terminal based on console I/O. */
 class RudimentaryPTY {
@@ -33,18 +34,18 @@ class RudimentaryPTY {
 
                 final Shell shell = session.startShell();
 
-                new StreamCopier(shell.getInputStream(), System.out)
+                new StreamCopier(shell.getInputStream(), System.out, LoggerFactory.DEFAULT)
                         .bufSize(shell.getLocalMaxPacketSize())
                         .spawn("stdout");
 
-                new StreamCopier(shell.getErrorStream(), System.err)
+                new StreamCopier(shell.getErrorStream(), System.err, LoggerFactory.DEFAULT)
                         .bufSize(shell.getLocalMaxPacketSize())
                         .spawn("stderr");
 
                 // Now make System.in act as stdin. To exit, hit Ctrl+D (since that results in an EOF on System.in)
                 // This is kinda messy because java only allows console input after you hit return
                 // But this is just an example... a GUI app could implement a proper PTY
-                new StreamCopier(System.in, shell.getOutputStream())
+                new StreamCopier(System.in, shell.getOutputStream(), LoggerFactory.DEFAULT)
                         .bufSize(shell.getRemoteMaxPacketSize())
                         .copy();
 
