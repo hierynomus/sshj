@@ -79,7 +79,7 @@ compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)
 
 private key files::
-   `pkcs8` encoded (what openssh uses)
+   `pkcs5`, `pkcs8`, `openssh-key-v1`
 
 If you need something that is not included, it shouldn't be too hard to add (do contribute it!)
 
