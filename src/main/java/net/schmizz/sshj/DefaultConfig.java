@@ -70,7 +70,6 @@ public class DefaultConfig
 
     public DefaultConfig() {
         setLoggerFactory(LoggerFactory.DEFAULT);
-        setVersion(readVersionFromProperties());
         final boolean bouncyCastleRegistered = SecurityUtils.isBouncyCastleRegistered();
         initKeyExchangeFactories(bouncyCastleRegistered);
         initRandomFactory(bouncyCastleRegistered);
@@ -80,18 +79,6 @@ public class DefaultConfig
         initMACFactories();
         initSignatureFactories();
         setKeepAliveProvider(KeepAliveProvider.HEARTBEAT);
-    }
-
-    private String readVersionFromProperties() {
-        try {
-            Properties properties = new Properties();
-            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("sshj.properties"));
-            String property = properties.getProperty("sshj.version");
-            return "SSHJ_" + property.replace('-', '_'); // '-' is a disallowed character, see RFC-4253#section-4.2
-        } catch (IOException e) {
-            log.error("Could not read the sshj.properties file, returning an 'unknown' version as fallback.");
-            return "SSHJ_VERSION_UNKNOWN";
-        }
     }
 
     @Override
