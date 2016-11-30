@@ -65,6 +65,8 @@ public abstract class KeepAlive extends Thread {
                 }
                 Thread.sleep(hi * 1000);
             }
+        } catch (InterruptedException e) {
+            // Interrupt signal may be catched when sleeping.      
         } catch (Exception e) {
             // If we weren't interrupted, kill the transport, then this exception was unexpected.
             // Else we're in shutdown-mode already, so don't forcibly kill the transport.
