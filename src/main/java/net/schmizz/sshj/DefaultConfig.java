@@ -85,7 +85,7 @@ public class DefaultConfig
     private String readVersionFromProperties() {
         try {
             Properties properties = new Properties();
-            properties.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("sshj.properties"));
+            properties.load(DefaultConfig.class.getClassLoader().getResourceAsStream("sshj.properties"));
             String property = properties.getProperty("sshj.version");
             return "SSHJ_" + property.replace('-', '_'); // '-' is a disallowed character, see RFC-4253#section-4.2
         } catch (IOException e) {
