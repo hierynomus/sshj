@@ -96,7 +96,7 @@ public class KeyProviderUtil {
                 return KeyFormat.OpenSSH;
             } else if (header.contains("BEGIN PRIVATE KEY") || header.contains("BEGIN ENCRYPTED PRIVATE KEY")) {
                 return KeyFormat.PKCS8;
-	    } else {
+            } else {
                 return KeyFormat.PKCS5;
             }
         } else if (header.startsWith("PuTTY-User-Key-File-")) {
