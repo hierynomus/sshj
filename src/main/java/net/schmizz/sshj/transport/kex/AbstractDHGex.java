@@ -103,7 +103,7 @@ public abstract class AbstractDHGex extends AbstractDH {
             throw new GeneralSecurityException("Server generated gex p is out of range (" + bitLength + " bits)");
         }
         log.debug("Received server p bitlength {}", bitLength);
-        dh.init(new DHParameterSpec(p, g));
+        dh.init(new DHParameterSpec(p, g), trans.getConfig().getRandomFactory());
         log.debug("Sending {}", Message.KEX_DH_GEX_INIT);
         trans.write(new SSHPacket(Message.KEX_DH_GEX_INIT).putBytes(dh.getE()));
         return false;

@@ -15,8 +15,10 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.transport.random.Random;
 
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.DHPublicKeySpec;
@@ -38,7 +40,7 @@ public class DH extends DHBase {
     }
 
     @Override
-    protected void init(AlgorithmParameterSpec params) throws GeneralSecurityException {
+    protected void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException {
         if (!(params instanceof DHParameterSpec)) {
             throw new SSHRuntimeException("Wrong algorithm parameters for Diffie Hellman");
         }

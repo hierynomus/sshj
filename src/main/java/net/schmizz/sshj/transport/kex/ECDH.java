@@ -15,7 +15,9 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.transport.random.Random;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -39,7 +41,7 @@ public class ECDH extends DHBase {
         super("EC", "ECDH");
     }
 
-    protected void init(AlgorithmParameterSpec params) throws GeneralSecurityException {
+    protected void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException {
         generator.initialize(params);
         KeyPair keyPair = generator.generateKeyPair();
         agreement.init(keyPair.getPrivate());

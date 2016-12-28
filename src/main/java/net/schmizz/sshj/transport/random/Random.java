@@ -19,6 +19,13 @@ package net.schmizz.sshj.transport.random;
 public interface Random {
 
     /**
+     * Fill the array of bytes with random values.
+     *
+     * @param bytes byte array to be filled.
+     */
+    void fill(byte[] bytes);
+
+    /**
      * Fill part of bytes with random values.
      *
      * @param bytes byte array to be filled.

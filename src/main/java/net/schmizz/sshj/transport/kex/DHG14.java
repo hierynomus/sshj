@@ -51,6 +51,6 @@ public class DHG14
 
     @Override
     protected void initDH(DHBase dh) throws GeneralSecurityException {
-        dh.init(new DHParameterSpec(DHGroupData.P14, DHGroupData.G));
+        dh.init(new DHParameterSpec(DHGroupData.P14, DHGroupData.G), trans.getConfig().getRandomFactory());
     }
 }

@@ -57,4 +57,9 @@ public class BouncyCastleRandom
         random.nextBytes(bytes, start, len);
     }
 
+    @Override
+    public void fill(byte[] bytes) {
+        random.nextBytes(bytes);
+    }
+
 }

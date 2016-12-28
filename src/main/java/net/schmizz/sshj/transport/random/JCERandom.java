@@ -71,4 +71,8 @@ public class JCERandom
         }
     }
 
+    @Override
+    public void fill(final byte[] bytes) {
+        random.nextBytes(bytes);
+    }
 }
