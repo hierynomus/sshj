@@ -29,6 +29,6 @@ public class StreamCipher extends BaseCipher {
 
     @Override
     protected void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv) throws InvalidKeyException, InvalidAlgorithmParameterException {
-        cipher.init(getMode(mode), getKeySpec(key), new SecureRandom());
+        cipher.init(getMode(mode), getKeySpec(key));
     }
 }

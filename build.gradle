@@ -53,8 +53,12 @@ license {
   excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java'])
 }
 
-release {
-  grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
+if (project.file('.git').isDirectory()) {
+  release {
+    grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
+  }
+} else {
+  version = "0.0.0-no.git"
 }
 
 // This disables the pedantic doclint feature of JDK8

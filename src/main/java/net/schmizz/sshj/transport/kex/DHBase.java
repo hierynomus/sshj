@@ -15,8 +15,10 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.transport.random.Random;
 
 import javax.crypto.KeyAgreement;
 import java.math.BigInteger;
@@ -42,7 +44,7 @@ abstract class DHBase {
 
     abstract void computeK(byte[] f) throws GeneralSecurityException;
 
-    protected abstract void init(AlgorithmParameterSpec params) throws GeneralSecurityException;
+    protected abstract void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException;
 
     void setE(byte[] e) {
         this.e = e;

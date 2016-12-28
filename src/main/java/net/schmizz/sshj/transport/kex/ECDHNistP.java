@@ -79,7 +79,7 @@ public class ECDHNistP extends AbstractDHG {
 
     @Override
     protected void initDH(DHBase dh) throws GeneralSecurityException {
-        dh.init(new ECNamedCurveGenParameterSpec(curve));
+        dh.init(new ECNamedCurveGenParameterSpec(curve), trans.getConfig().getRandomFactory());
     }
 
 }

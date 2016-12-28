@@ -37,4 +37,8 @@ public class SingletonRandomFactory
         random.fill(bytes, start, len);
     }
 
+    @Override
+    public void fill(final byte[] bytes) {
+        random.fill(bytes);
+    }
 }

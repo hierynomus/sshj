@@ -34,7 +34,7 @@ public class SSHRuntimeException
     }
 
     public SSHRuntimeException(Throwable cause) {
-        this(null, cause);
+        this(cause.getMessage(), cause);
     }
 
 }
