@@ -11,6 +11,7 @@
 
 # Output dirs
 target/
+classes/
 build/
 docs/
 .gradle/
