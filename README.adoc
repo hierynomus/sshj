@@ -99,10 +99,13 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.19.1 (2016-12-??)::
+SSHJ 0.19.1 (2016-12-30)::
 * Enabled PKCS5 Key files in DefaultConfig
 * Merged https://github.com/hierynomus/sshj/pulls/291[#291]: Fixed sshj.properties loading and chained exception messages
 * Merged https://github.com/hierynomus/sshj/pulls/284[#284]: Correctly catch interrupt in keepalive thread
+* Fixed https://github.com/hierynomus/sshj/issues/292[#292]: Pass the configured RandomFactory to Diffie Hellmann KEX
+* Fixed https://github.com/hierynomus/sshj/issues/256[#256]: SSHJ now builds if no git repository present
+* LocalPortForwarder now correctly interrupts its own thread on close()
 SSHJ 0.19.0 (2016-11-25)::
 * Fixed https://github.com/hierynomus/sshj/issues/276[#276]: Add support for ed-25519 and new OpenSSH key format
 * Fixed https://github.com/hierynomus/sshj/issues/280[#280]: Read version from a generated sshj.properties file to correctly output version during negotiation
