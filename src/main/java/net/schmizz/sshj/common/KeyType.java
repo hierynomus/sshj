@@ -192,7 +192,7 @@ public enum KeyType {
                     );
                 }
 
-                EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("ed25519-sha-512");
+                EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.CURVE_ED25519_SHA512);
                 EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(p, ed25519);
                 return new Ed25519PublicKey(publicSpec);
 
