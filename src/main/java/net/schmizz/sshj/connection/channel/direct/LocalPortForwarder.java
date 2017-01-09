@@ -107,6 +107,7 @@ public class LocalPortForwarder {
     private final Connection conn;
     private final Parameters parameters;
     private final ServerSocket serverSocket;
+    private Thread runningThread;
 
     public LocalPortForwarder(Connection conn, Parameters parameters, ServerSocket serverSocket, LoggerFactory loggerFactory) {
         this.conn = conn;
@@ -132,10 +133,20 @@ public class LocalPortForwarder {
      *
      * @throws IOException
      */
-    public void listen()
-            throws IOException {
+    public void listen() throws IOException {
+        listen(Thread.currentThread());
+    }
+
+    /**
+     * Start listening for incoming connections and forward to remote host as a channel and ensure that the thread is registered.
+     * This is useful if for instance {@link #close() is called from another thread}
+     *
+     * @throws IOException
+     */
+    public void listen(Thread runningThread) throws IOException {
+        this.runningThread = runningThread;
         log.info("Listening on {}", serverSocket.getLocalSocketAddress());
-        while (!Thread.currentThread().isInterrupted()) {
+        while (!runningThread.isInterrupted()) {
             try {
                 final Socket socket = serverSocket.accept();
                 log.debug("Got connection from {}", socket.getRemoteSocketAddress());
@@ -162,6 +173,7 @@ public class LocalPortForwarder {
         if (!serverSocket.isClosed()) {
             log.info("Closing listener on {}", serverSocket.getLocalSocketAddress());
             serverSocket.close();
+            runningThread.interrupt();
         }
     }
 
