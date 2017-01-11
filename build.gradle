@@ -79,17 +79,18 @@ jar.dependsOn writeSshjVersionProperties
 
 jar {
   manifest {
+    // please see http://bnd.bndtools.org/chapters/390-wrapping.html
     instruction "Bundle-Description", "SSHv2 library for Java"
     instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
-    instruction "Import-Package", "!net.schmizz.*"
-    instruction "Import-Package", "javax.crypto*"
-    instruction "Import-Package", "!net.i2p.crypto.eddsa.math"
-    instruction "Import-Package", "net.i2p*"
-    instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
-    instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
-    instruction "Import-Package", "org.bouncycastle*"
-    instruction "Import-Package", "*"
-    instruction "Export-Package", "net.schmizz.*"
+    instruction "Import-Package", \
+      "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional", \
+      "!com.hierynomus.sshj.*", "!net.schmizz.*", \
+      "!net.i2p.crypto.eddsa.math", \
+      "*"
+    instruction "Require-Bundle", \
+      "bcprov;bundle-version=\"$bouncycastleVersion\";resolution:=optional", \
+      "bcprov;bundle-version=\"$bouncycastleVersion\";resolution:=optional"
+    instruction "Export-Package", "com.hierynomus.sshj.*", "net.schmizz.*"
   }
 }
 
