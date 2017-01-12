@@ -91,6 +91,7 @@ jar {
     instruction "Import-Package", "org.bouncycastle*;resolution:=optional"
     instruction "Import-Package", "org.bouncycastle.jce.provider;resolution:=optional"
     instruction "Import-Package", "*"
+    instruction "Export-Package", "com.hierynomus.sshj.*"
     instruction "Export-Package", "net.schmizz.*"
   }
 }
