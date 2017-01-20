@@ -18,6 +18,9 @@ package net.schmizz.sshj;
 import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
+import com.hierynomus.sshj.transport.kex.DHGroups;
+import com.hierynomus.sshj.transport.kex.ExtendedDHGroups;
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.LoggerFactory;
@@ -27,14 +30,15 @@ import net.schmizz.sshj.signature.SignatureECDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 import net.schmizz.sshj.transport.cipher.*;
 import net.schmizz.sshj.transport.compression.NoneCompression;
-import net.schmizz.sshj.transport.kex.*;
+import net.schmizz.sshj.transport.kex.Curve25519SHA256;
+import net.schmizz.sshj.transport.kex.DHGexSHA1;
+import net.schmizz.sshj.transport.kex.DHGexSHA256;
+import net.schmizz.sshj.transport.kex.ECDHNistP;
 import net.schmizz.sshj.transport.mac.*;
 import net.schmizz.sshj.transport.random.BouncyCastleRandom;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
-import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
-
 import net.schmizz.sshj.userauth.keyprovider.PKCS5KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
@@ -110,10 +114,23 @@ public class DefaultConfig
                     new ECDHNistP.Factory384(),
                     new ECDHNistP.Factory256(),
                     new DHGexSHA1.Factory(),
-                    new DHG14.Factory(),
-                    new DHG1.Factory());
+                    DHGroups.Group1SHA1(),
+                    DHGroups.Group14SHA1(),
+                    DHGroups.Group14SHA256(),
+                    DHGroups.Group15SHA512(),
+                    DHGroups.Group16SHA512(),
+                    DHGroups.Group17SHA512(),
+                    DHGroups.Group18SHA512(),
+                    ExtendedDHGroups.Group14SHA256AtSSH(),
+                    ExtendedDHGroups.Group15SHA256(),
+                    ExtendedDHGroups.Group15SHA256AtSSH(),
+                    ExtendedDHGroups.Group15SHA384AtSSH(),
+                    ExtendedDHGroups.Group16SHA256(),
+                    ExtendedDHGroups.Group16SHA384AtSSH(),
+                    ExtendedDHGroups.Group16SHA512AtSSH(),
+                    ExtendedDHGroups.Group18SHA512AtSSH());
         } else {
-            setKeyExchangeFactories(new DHG1.Factory(), new DHGexSHA1.Factory());
+            setKeyExchangeFactories(DHGroups.Group1SHA1(), new DHGexSHA1.Factory());
         }
     }
 

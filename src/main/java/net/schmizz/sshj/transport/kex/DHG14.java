@@ -25,6 +25,8 @@ import java.security.GeneralSecurityException;
  * <p/>
  * DHG14 does not work with the default JCE implementation provided by Sun because it does not support 2048 bits
  * encryption. It requires BouncyCastle to be used.
+ *
+ * @deprecated Replaced by {@link com.hierynomus.sshj.transport.kex.DHG} with {@link com.hierynomus.sshj.transport.kex.DHGroups}
  */
 public class DHG14
         extends AbstractDHG {
