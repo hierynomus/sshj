@@ -15,8 +15,6 @@
  */
 package net.schmizz.sshj.common;
 
-import org.slf4j.Logger;
-
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
