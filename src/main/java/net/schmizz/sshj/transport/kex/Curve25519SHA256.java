@@ -16,14 +16,10 @@
 package net.schmizz.sshj.transport.kex;
 
 import net.schmizz.sshj.transport.digest.SHA256;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.security.GeneralSecurityException;
 
 public class Curve25519SHA256 extends AbstractDHG {
-    private static final Logger logger = LoggerFactory.getLogger(Curve25519SHA256.class);
-
     /** Named factory for Curve25519SHA256 key exchange */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {

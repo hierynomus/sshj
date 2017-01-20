@@ -40,11 +40,6 @@ import static org.junit.Assert.assertThat;
 
 public class RemotePortForwarderTest {
 
-    // Credentials for an remote SSH Server to test against.
-    private static final String REMOTE_HOST = "x.x.x.x";
-    private static final String USER = "xxxx";
-    private static final String PASSWORD = "yyyy";
-
     private static final PortRange RANGE = new PortRange(9000, 9999);
     private static final InetSocketAddress HTTP_SERVER_SOCKET_ADDR = new InetSocketAddress("127.0.0.1", 8080);
 

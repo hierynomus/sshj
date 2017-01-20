@@ -27,9 +27,6 @@ public class HttpServer extends ExternalResource {
 
     private TemporaryFolder docRoot = new TemporaryFolder();
 
-    public HttpServer() {
-    }
-
     @Override
     protected void before() throws Throwable {
         docRoot.create();

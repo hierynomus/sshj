@@ -33,8 +33,6 @@ public class PacketReaderTest {
 
     private DataOutputStream dataout;
     private PacketReader reader;
-    private SFTPEngine engine;
-    private Subsystem subsystem;
 
     @Before
     public void setUp() throws Exception {
@@ -42,8 +40,8 @@ public class PacketReaderTest {
         PipedInputStream pipedin = new PipedInputStream(pipedout);
         dataout = new DataOutputStream(pipedout);
 
-        engine = Mockito.mock(SFTPEngine.class);
-        subsystem = Mockito.mock(Subsystem.class);
+        SFTPEngine engine = Mockito.mock(SFTPEngine.class);
+        Subsystem subsystem = Mockito.mock(Subsystem.class);
         Mockito.when(engine.getLoggerFactory()).thenReturn(LoggerFactory.DEFAULT);
         Mockito.when(engine.getSubsystem()).thenReturn(subsystem);
         Mockito.when(subsystem.getInputStream()).thenReturn(pipedin);
