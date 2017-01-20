@@ -16,18 +16,13 @@
 package com.hierynomus.sshj.transport.kex;
 
 import net.schmizz.sshj.transport.digest.Digest;
-import net.schmizz.sshj.transport.digest.SHA256;
 import net.schmizz.sshj.transport.kex.AbstractDHG;
 import net.schmizz.sshj.transport.kex.DH;
 import net.schmizz.sshj.transport.kex.DHBase;
-import net.schmizz.sshj.transport.kex.KeyExchange;
 
 import javax.crypto.spec.DHParameterSpec;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-
-import static net.schmizz.sshj.transport.kex.DHGroupData.G;
-import static net.schmizz.sshj.transport.kex.DHGroupData.P14;
 
 /**
  *
