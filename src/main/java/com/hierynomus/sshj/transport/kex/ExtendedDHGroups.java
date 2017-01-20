@@ -24,6 +24,7 @@ import static net.schmizz.sshj.transport.kex.DHGroupData.*;
 /**
  * Set of KEX methods that are not in official RFCs but are supported by some SSH servers.
  */
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class ExtendedDHGroups {
     public static DHGroups.Factory Group14SHA256AtSSH() {
         return new DHGroups.Factory("diffie-hellman-group14-sha256@ssh.com", P14, G, new SHA256.Factory());

@@ -30,6 +30,7 @@ import static net.schmizz.sshj.transport.kex.DHGroupData.P18;
  * - https://tools.ietf.org/html/rfc4253
  * - https://tools.ietf.org/html/draft-ietf-curdle-ssh-modp-dh-sha2-01
  */
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class DHGroups {
 
     public static DHGroups.Factory Group1SHA1() {
