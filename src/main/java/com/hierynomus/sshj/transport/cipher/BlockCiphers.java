@@ -28,6 +28,7 @@ import net.schmizz.sshj.transport.cipher.Cipher;
  *
  * Some of the Ciphers are still implemented in net.schmizz.sshj.transport.cipher.*. These are scheduled to be migrated to here.
  */
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class BlockCiphers {
 
     public static final String COUNTER_MODE = "CTR";

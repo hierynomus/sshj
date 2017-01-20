@@ -66,8 +66,13 @@ ciphers::
   SSHJ also supports the following extended (non official) ciphers: `camellia{128,192,256}-{cbc,ctr}`, `camellia{128,192,256}-{cbc,ctr}@openssh.org`
 
 key exchange::
-  `diffie-hellman-group1-sha1`, `diffie-hellman-group14-sha1`, `diffie-hellman-group-exchange-sha1`, `diffie-hellman-group-exchange-sha256`,
+  `diffie-hellman-group1-sha1`, `diffie-hellman-group14-sha1`,
+  `diffie-hellman-group14-sha256`, `diffie-hellman-group15-sha512`, `diffie-hellman-group16-sha512`, `diffie-hellman-group17-sha512`, `diffie-hellman-group18-sha512`
+  `diffie-hellman-group-exchange-sha1`, `diffie-hellman-group-exchange-sha256`,
   `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384`, `ecdh-sha2-nistp521`, `curve25519-sha256@libssh.org`
+  SSHJ also supports the following extended (non official) key exchange algoriths:
+  `diffie-hellman-group14-sha256@ssh.com`, `diffie-hellman-group15-sha256`, `diffie-hellman-group15-sha256@ssh.com`, `diffie-hellman-group15-sha384@ssh.com`,
+  `diffie-hellman-group16-sha256`, `diffie-hellman-group16-sha384@ssh.com`, `diffie-hellman-group16-sha512@ssh.com`, `diffie-hellman-group18-sha512@ssh.com`
 
 signatures::
   `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ssh-ed25519`
