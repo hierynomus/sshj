@@ -40,7 +40,7 @@ public class DH extends DHBase {
     }
 
     @Override
-    protected void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException {
+    public void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException {
         if (!(params instanceof DHParameterSpec)) {
             throw new SSHRuntimeException("Wrong algorithm parameters for Diffie Hellman");
         }

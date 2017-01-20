@@ -26,7 +26,7 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPairGenerator;
 import java.security.spec.AlgorithmParameterSpec;
 
-abstract class DHBase {
+public abstract class DHBase {
     protected final KeyPairGenerator generator;
     protected final KeyAgreement agreement;
 
@@ -44,7 +44,7 @@ abstract class DHBase {
 
     abstract void computeK(byte[] f) throws GeneralSecurityException;
 
-    protected abstract void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException;
+    public abstract void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException;
 
     void setE(byte[] e) {
         this.e = e;

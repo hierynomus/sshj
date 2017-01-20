@@ -23,6 +23,7 @@ import net.schmizz.sshj.transport.cipher.Cipher;
  * - https://tools.ietf.org/html/rfc4253#section-6.3
  * - https://tools.ietf.org/html/rfc4345
  */
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class StreamCiphers {
 
     public static Factory Arcfour() {
