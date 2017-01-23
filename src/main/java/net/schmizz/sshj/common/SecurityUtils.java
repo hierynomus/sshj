@@ -254,7 +254,7 @@ public class SecurityUtils {
                     throw new SSHRuntimeException("Failed to register BouncyCastle as the defaut JCE provider");
                 }
             }
+            registrationDone = true;
         }
-        registrationDone = true;
     }
 }

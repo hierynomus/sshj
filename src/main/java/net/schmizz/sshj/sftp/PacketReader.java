@@ -24,10 +24,11 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PacketReader
-        extends Thread {
+public class PacketReader extends Thread {
 
-    /** Logger */
+    /**
+     * Logger
+     */
     private final Logger log;
 
     private final InputStream in;
@@ -63,7 +64,7 @@ public class PacketReader
                 | lenBuf[3] & 0x000000ffL);
 
         if (len > SFTPPacket.MAX_SIZE) {
-        	throw new SSHException(String.format("Indicated packet length %d too large", len));
+            throw new SSHException(String.format("Indicated packet length %d too large", len));
         }
 
         return (int) len;
@@ -99,7 +100,7 @@ public class PacketReader
         log.debug("Received {} packet", resp.getType());
         if (promise == null)
             throw new SFTPException("Received [" + resp.readType() + "] response for request-id " + resp.getRequestID()
-                                            + ", no such request was made");
+                    + ", no such request was made");
         else
             promise.deliver(resp);
     }

@@ -46,10 +46,12 @@ public class NoneCipher
 
     @Override
     public void init(Mode mode, byte[] bytes, byte[] bytes1) {
+        // Nothing to do
     }
 
     @Override
     public void update(byte[] input, int inputOffset, int inputLen) {
+        // Nothing to do
     }
 
 }

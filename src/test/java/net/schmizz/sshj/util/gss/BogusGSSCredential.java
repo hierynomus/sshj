@@ -34,7 +34,9 @@ public class BogusGSSCredential
     }
 
     @Override
-    public void dispose() throws GSSException {}
+    public void dispose() throws GSSException {
+        // Nothing to do
+    }
 
     @Override
     public GSSName getName() throws GSSException {
