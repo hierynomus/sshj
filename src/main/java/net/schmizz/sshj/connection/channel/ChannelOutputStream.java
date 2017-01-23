@@ -27,9 +27,7 @@ import java.io.OutputStream;
  * {@link OutputStream} for channels. Buffers data upto the remote window's maximum packet size. Data can also be
  * flushed via {@link #flush()} and is also flushed on {@link #close()}.
  */
-public final class ChannelOutputStream
-        extends OutputStream
-        implements ErrorNotifiable {
+public final class ChannelOutputStream extends OutputStream implements ErrorNotifiable {
 
     private final Channel chan;
     private final Transport trans;
@@ -56,8 +54,7 @@ public final class ChannelOutputStream
             dataOffset = packet.wpos();
         }
 
-        int write(byte[] data, int off, int len)
-                throws TransportException, ConnectionException {
+        int write(byte[] data, int off, int len) throws TransportException, ConnectionException {
             final int bufferSize = packet.wpos() - dataOffset;
             if (bufferSize >= win.getMaxPacketSize()) {
                 flush(bufferSize, true);
@@ -69,15 +66,12 @@ public final class ChannelOutputStream
             }
         }
 
-        boolean flush(boolean canAwaitExpansion)
-                throws TransportException, ConnectionException {
+        boolean flush(boolean canAwaitExpansion) throws TransportException, ConnectionException {
             return flush(packet.wpos() - dataOffset, canAwaitExpansion);
         }
 
-        boolean flush(int bufferSize, boolean canAwaitExpansion)
-                throws TransportException, ConnectionException {
+        boolean flush(int bufferSize, boolean canAwaitExpansion) throws TransportException, ConnectionException {
             while (bufferSize > 0) {
-
                 long remoteWindowSize = win.getSize();
                 if (remoteWindowSize == 0) {
                     if (canAwaitExpansion) {
@@ -140,10 +134,12 @@ public final class ChannelOutputStream
     public synchronized void write(final byte[] data, int off, int len)
             throws IOException {
         checkClose();
-        while (len > 0) {
-            final int n = buffer.write(data, off, len);
-            off += n;
-            len -= n;
+        int length = len;
+        int offset = off;
+        while (length > 0) {
+            final int n = buffer.write(data, offset, len);
+            offset += n;
+            length -= n;
         }
     }
 

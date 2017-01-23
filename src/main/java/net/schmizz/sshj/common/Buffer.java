@@ -311,7 +311,7 @@ public class Buffer<T extends Buffer<T>> {
     public T putUInt32(long uint32) {
         ensureCapacity(4);
         if (uint32 < 0 || uint32 > 0xffffffffL)
-            throw new RuntimeException("Invalid value: " + uint32);
+            throw new IllegalArgumentException("Invalid value: " + uint32);
         data[wpos++] = (byte) (uint32 >> 24);
         data[wpos++] = (byte) (uint32 >> 16);
         data[wpos++] = (byte) (uint32 >> 8);
@@ -346,7 +346,7 @@ public class Buffer<T extends Buffer<T>> {
     @SuppressWarnings("unchecked")
     public T putUInt64(long uint64) {
         if (uint64 < 0)
-            throw new RuntimeException("Invalid value: " + uint64);
+            throw new IllegalArgumentException("Invalid value: " + uint64);
         data[wpos++] = (byte) (uint64 >> 56);
         data[wpos++] = (byte) (uint64 >> 48);
         data[wpos++] = (byte) (uint64 >> 40);

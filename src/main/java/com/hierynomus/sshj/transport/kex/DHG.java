@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.transport.kex;
+package com.hierynomus.sshj.transport.kex;
 
-import net.schmizz.sshj.transport.digest.SHA256;
+import net.schmizz.sshj.transport.digest.Digest;
+import net.schmizz.sshj.transport.kex.AbstractDHG;
+import net.schmizz.sshj.transport.kex.DH;
+import net.schmizz.sshj.transport.kex.DHBase;
 
+import javax.crypto.spec.DHParameterSpec;
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 
-public class Curve25519SHA256 extends AbstractDHG {
-    /** Named factory for Curve25519SHA256 key exchange */
-    public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
+/**
+ *
+ */
+public class DHG extends AbstractDHG {
+    private BigInteger group;
+    private BigInteger generator;
 
-        @Override
-        public KeyExchange create() {
-            return new Curve25519SHA256();
-        }
-
-        @Override
-        public String getName() {
-            return "curve25519-sha256@libssh.org";
-        }
-    }
-
-    public Curve25519SHA256() {
-        super(new Curve25519DH(), new SHA256());
+    public DHG(BigInteger group, BigInteger generator, Digest digest) {
+        super(new DH(), digest);
+        this.group = group;
+        this.generator = generator;
     }
 
     @Override
     protected void initDH(DHBase dh) throws GeneralSecurityException {
-        dh.init(Curve25519DH.getCurve25519Params(), trans.getConfig().getRandomFactory());
+        dh.init(new DHParameterSpec(group, generator), trans.getConfig().getRandomFactory());
     }
 }

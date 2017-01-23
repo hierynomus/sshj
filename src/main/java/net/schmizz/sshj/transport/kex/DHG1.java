@@ -26,6 +26,7 @@ import java.security.GeneralSecurityException;
  * @see <a href="http://www.ietf.org/rfc/rfc4253.txt">RFC 4253</a>
  *
  * TODO refactor away the (unneeded) class
+ * @deprecated Replaced by {@link com.hierynomus.sshj.transport.kex.DHG} with {@link com.hierynomus.sshj.transport.kex.DHGroups}
  */
 public class DHG1
         extends AbstractDHG {

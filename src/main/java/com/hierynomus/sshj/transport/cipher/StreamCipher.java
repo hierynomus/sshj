@@ -19,7 +19,6 @@ import net.schmizz.sshj.transport.cipher.BaseCipher;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.SecureRandom;
 
 public class StreamCipher extends BaseCipher {
 

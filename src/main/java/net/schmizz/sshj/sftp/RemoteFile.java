@@ -81,10 +81,10 @@ public class RemoteFile
     protected Promise<Response, SFTPException> asyncWrite(long fileOffset, byte[] data, int off, int len)
             throws IOException {
         return requester.request(newRequest(PacketType.WRITE)
-                        .putUInt64(fileOffset)
-                        // TODO The SFTP spec claims this field is unneeded...? See #187
-                        .putUInt32(len)
-                        .putRawBytes(data, off, len)
+                .putUInt64(fileOffset)
+                // TODO The SFTP spec claims this field is unneeded...? See #187
+                .putUInt32(len)
+                .putRawBytes(data, off, len)
         );
     }
 
@@ -194,10 +194,10 @@ public class RemoteFile
 
         @Override
         public long skip(long n) throws IOException {
-			final long fileLength = length();
-			final Long previousFileOffset = fileOffset;
-			fileOffset = Math.min(fileOffset + n, fileLength);
-			return fileOffset - previousFileOffset;
+            final long fileLength = length();
+            final Long previousFileOffset = fileOffset;
+            fileOffset = Math.min(fileOffset + n, fileLength);
+            return fileOffset - previousFileOffset;
         }
 
         @Override
@@ -341,7 +341,7 @@ public class RemoteFile
         public int available() throws IOException {
             boolean lastRead = true;
             while (!eof && (pending.available() <= 0) && lastRead) {
-              lastRead = retrieveUnconfirmedRead(false /*blocking*/);
+                lastRead = retrieveUnconfirmedRead(false /*blocking*/);
             }
             return pending.available();
         }

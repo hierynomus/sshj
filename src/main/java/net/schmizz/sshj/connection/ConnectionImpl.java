@@ -126,10 +126,9 @@ public class ConnectionImpl
     @Override
     public void handle(Message msg, SSHPacket buf)
             throws SSHException {
-        if (msg.in(91, 100))
+        if (msg.in(91, 100)) {
             getChannel(buf).handle(msg, buf);
-
-        else if (msg.in(80, 90))
+        } else if (msg.in(80, 90)) {
             switch (msg) {
                 case REQUEST_SUCCESS:
                     gotGlobalReqResponse(buf);
@@ -142,10 +141,11 @@ public class ConnectionImpl
                     break;
                 default:
                     super.handle(msg, buf);
+                    break;
             }
-
-        else
+        } else {
             super.handle(msg, buf);
+        }
     }
 
     @Override
@@ -174,11 +174,11 @@ public class ConnectionImpl
     }
 
     @Override
-    public void join()
-            throws InterruptedException {
+    public void join() throws InterruptedException {
         synchronized (internalSynchronizer) {
-            while (!channels.isEmpty())
+            while (!channels.isEmpty()) {
                 internalSynchronizer.wait();
+            }
         }
     }
 

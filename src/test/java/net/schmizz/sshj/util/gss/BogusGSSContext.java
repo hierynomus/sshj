@@ -70,7 +70,9 @@ public class BogusGSSContext
     }
 
     @Override
-    public void dispose() throws GSSException {}
+    public void dispose() throws GSSException {
+        // Nothing to do
+    }
 
     @Override
     public int getWrapSizeLimit(int qop, boolean confReq, int maxTokenSize) throws GSSException {

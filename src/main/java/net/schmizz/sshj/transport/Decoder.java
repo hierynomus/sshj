@@ -16,12 +16,10 @@
 package net.schmizz.sshj.transport;
 
 import net.schmizz.sshj.common.*;
-import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;
 import net.schmizz.sshj.transport.mac.MAC;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** Decodes packets from the SSH binary protocol per the current algorithms. */
 final class Decoder

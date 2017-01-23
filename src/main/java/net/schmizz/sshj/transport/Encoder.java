@@ -39,19 +39,6 @@ final class Encoder
         log = loggerFactory.getLogger(getClass());
     }
 
-    private SSHPacket checkHeaderSpace(SSHPacket buffer) {
-        if (buffer.rpos() < 5) {
-            log.warn("Performance cost: when sending a packet, ensure that "
-                             + "5 bytes are available in front of the buffer");
-            SSHPacket nb = new SSHPacket(buffer.available() + 5);
-            nb.rpos(5);
-            nb.wpos(5);
-            nb.putBuffer(buffer);
-            buffer = nb;
-        }
-        return buffer;
-    }
-
     private void compress(SSHPacket buffer) {
         compression.compress(buffer);
     }

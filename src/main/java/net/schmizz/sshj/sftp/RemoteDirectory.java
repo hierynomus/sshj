@@ -32,6 +32,7 @@ public class RemoteDirectory
     public List<RemoteResourceInfo> scan(RemoteResourceFilter filter)
             throws IOException {
         List<RemoteResourceInfo> rri = new LinkedList<RemoteResourceInfo>();
+        // TODO: Remove GOTO! 
         loop:
         for (; ; ) {
             final Response res = requester.request(newRequest(PacketType.READDIR))
@@ -46,8 +47,9 @@ public class RemoteDirectory
                         final FileAttributes attrs = res.readFileAttributes();
                         final PathComponents comps = requester.getPathHelper().getComponents(path, name);
                         final RemoteResourceInfo inf = new RemoteResourceInfo(comps, attrs);
-                        if (!(name.equals(".") || name.equals("..")) && (filter == null || filter.accept(inf)))
+                        if (!(".".equals(name) || "..".equals(name)) && (filter == null || filter.accept(inf))) {
                             rri.add(inf);
+                        }
                     }
                     break;
 

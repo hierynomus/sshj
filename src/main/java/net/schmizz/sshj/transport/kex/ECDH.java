@@ -41,7 +41,7 @@ public class ECDH extends DHBase {
         super("EC", "ECDH");
     }
 
-    protected void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException {
+    public void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException {
         generator.initialize(params);
         KeyPair keyPair = generator.generateKeyPair();
         agreement.init(keyPair.getPrivate());

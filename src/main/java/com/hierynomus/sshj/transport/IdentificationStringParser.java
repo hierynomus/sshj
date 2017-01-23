@@ -62,8 +62,11 @@ public class IdentificationStringParser {
         }
     }
 
-    private void logHeaderLine(Buffer.PlainBuffer lineBuffer) {
-
+    private void logHeaderLine(Buffer.PlainBuffer lineBuffer) throws Buffer.BufferException {
+        byte[] bytes = new byte[lineBuffer.available()];
+        lineBuffer.readRawBytes(bytes);
+        String header = new String(bytes, 0, bytes.length - 1);
+        log.debug("Received header: {}", header);
     }
 
     private String readIdentification(Buffer.PlainBuffer lineBuffer) throws Buffer.BufferException, TransportException {

@@ -25,6 +25,7 @@ import static com.hierynomus.sshj.transport.cipher.BlockCiphers.COUNTER_MODE;
  *
  * - http://tools.ietf.org/id/draft-kanno-secsh-camellia-01.txt
  */
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class ExtendedBlockCiphers {
     public static BlockCiphers.Factory Camellia128CTR() {
         return new BlockCiphers.Factory(16, 128, "camellia128-ctr", "Camellia", COUNTER_MODE);

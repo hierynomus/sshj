@@ -329,6 +329,8 @@ public abstract class AbstractChannel
 
     protected void gotUnknown(Message msg, SSHPacket buf)
             throws ConnectionException, TransportException {
+        log.warn("Got unknown packet with type {}", msg);
+
     }
 
     protected void handleRequest(String reqType, SSHPacket buf)
