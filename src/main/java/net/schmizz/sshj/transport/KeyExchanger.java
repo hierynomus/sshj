@@ -26,7 +26,6 @@ import net.schmizz.sshj.transport.mac.MAC;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -158,6 +157,7 @@ final class KeyExchanger
                                          "Key exchange packet received when key exchange was not ongoing");
     }
 
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     private static void ensureReceivedMatchesExpected(Message got, Message expected)
             throws TransportException {
         if (got != expected)

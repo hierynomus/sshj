@@ -20,7 +20,7 @@ import net.schmizz.sshj.common.Buffer;
 public final class Response
         extends SFTPPacket<Response> {
 
-    public static enum StatusCode {
+    public enum StatusCode {
         UNKNOWN(-1),
         OK(0),
         EOF(1),
@@ -122,6 +122,7 @@ public final class Response
         return ensurePacketTypeIs(PacketType.STATUS).ensureStatusIs(StatusCode.OK);
     }
 
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     public Response ensureStatusIs(StatusCode acceptable)
             throws SFTPException {
         final StatusCode sc = readStatusCode();

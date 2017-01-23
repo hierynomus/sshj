@@ -68,8 +68,11 @@ public class StreamCopier {
     }
 
     public StreamCopier listener(Listener listener) {
-        if (listener == null) listener = NULL_LISTENER;
-        this.listener = listener;
+        if (listener == null) {
+            this.listener = NULL_LISTENER;
+        } else {
+            this.listener = listener;
+        }
         return this;
     }
 

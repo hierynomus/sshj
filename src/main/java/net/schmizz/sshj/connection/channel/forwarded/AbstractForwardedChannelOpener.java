@@ -21,7 +21,6 @@ import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException;
 import net.schmizz.sshj.transport.TransportException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
