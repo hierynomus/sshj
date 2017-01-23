@@ -50,7 +50,7 @@ public class RemotePortForwarderTest {
     public HttpServer httpServer = new HttpServer();
 
     @Before
-    public void setup() throws IOException {
+    public void setUp() throws IOException {
         fixture.getServer().setTcpipForwardingFilter(new AcceptAllForwardingFilter());
         File file = httpServer.getDocRoot().newFile("index.html");
         FileUtil.writeToFile(file, "<html><head/><body><h1>Hi!</h1></body></html>");
@@ -59,49 +59,49 @@ public class RemotePortForwarderTest {
     @Test
     public void shouldHaveWorkingHttpServer() throws IOException {
         // Just to check that we have a working http server...
-        httpGet("127.0.0.1", 8080);
+        assertThat(httpGet("127.0.0.1", 8080), equalTo(200));
     }
 
     @Test
     public void shouldDynamicallyForwardPortForLocalhost() throws IOException {
         SSHClient sshClient = getFixtureClient();
         RemotePortForwarder.Forward bind = forwardPort(sshClient, "127.0.0.1", new SinglePort(0));
-        httpGet("127.0.0.1", bind.getPort());
+        assertThat(httpGet("127.0.0.1", bind.getPort()), equalTo(200));
     }
 
     @Test
     public void shouldDynamicallyForwardPortForAllIPv4() throws IOException {
         SSHClient sshClient = getFixtureClient();
         RemotePortForwarder.Forward bind = forwardPort(sshClient, "0.0.0.0", new SinglePort(0));
-        httpGet("127.0.0.1", bind.getPort());
+        assertThat(httpGet("127.0.0.1", bind.getPort()), equalTo(200));
     }
 
     @Test
     public void shouldDynamicallyForwardPortForAllProtocols() throws IOException {
         SSHClient sshClient = getFixtureClient();
         RemotePortForwarder.Forward bind = forwardPort(sshClient, "", new SinglePort(0));
-        httpGet("127.0.0.1", bind.getPort());
+        assertThat(httpGet("127.0.0.1", bind.getPort()), equalTo(200));
     }
 
     @Test
     public void shouldForwardPortForLocalhost() throws IOException {
         SSHClient sshClient = getFixtureClient();
         RemotePortForwarder.Forward bind = forwardPort(sshClient, "127.0.0.1", RANGE);
-        httpGet("127.0.0.1", bind.getPort());
+        assertThat(httpGet("127.0.0.1", bind.getPort()), equalTo(200));
     }
 
     @Test
     public void shouldForwardPortForAllIPv4() throws IOException {
         SSHClient sshClient = getFixtureClient();
         RemotePortForwarder.Forward bind = forwardPort(sshClient, "0.0.0.0", RANGE);
-        httpGet("127.0.0.1", bind.getPort());
+        assertThat(httpGet("127.0.0.1", bind.getPort()), equalTo(200));
     }
 
     @Test
     public void shouldForwardPortForAllProtocols() throws IOException {
         SSHClient sshClient = getFixtureClient();
         RemotePortForwarder.Forward bind = forwardPort(sshClient, "", RANGE);
-        httpGet("127.0.0.1", bind.getPort());
+        assertThat(httpGet("127.0.0.1", bind.getPort()), equalTo(200));
     }
 
     private RemotePortForwarder.Forward forwardPort(SSHClient sshClient, String address, PortRange portRange) throws IOException {
@@ -122,12 +122,12 @@ public class RemotePortForwarderTest {
         }
     }
 
-    private void httpGet(String server, int port) throws IOException {
+    private int httpGet(String server, int port) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         String urlString = "http://" + server + ":" + port;
         System.out.println("Trying: GET " + urlString);
         HttpResponse execute = client.execute(new HttpGet(urlString));
-        assertThat(execute.getStatusLine().getStatusCode(), equalTo(200));
+        return execute.getStatusLine().getStatusCode();
     }
 
     private SSHClient getFixtureClient() throws IOException {

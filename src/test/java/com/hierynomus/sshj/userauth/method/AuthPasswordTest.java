@@ -69,7 +69,7 @@ public class AuthPasswordTest {
         fixture.getServer().setPasswordAuthenticator(new PasswordAuthenticator() {
             @Override
             public boolean authenticate(String username, String password, ServerSession session) {
-                if (password.equals("changeme")) {
+                if ("changeme".equals(password)) {
                     throw new PasswordChangeRequiredException("Password was changeme", "Please provide your updated password", "en_US");
                 } else {
                     return password.equals(username);
@@ -84,6 +84,7 @@ public class AuthPasswordTest {
         SSHClient sshClient = fixture.setupConnectedDefaultClient();
         expectedException.expect(UserAuthException.class);
         sshClient.authPassword("jeroen", "changeme");
+        assertThat("Should not have authenticated", !sshClient.isAuthenticated());
     }
 
     @Test
