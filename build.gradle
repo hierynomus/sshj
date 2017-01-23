@@ -83,6 +83,7 @@ jar {
     instruction "Bundle-Description", "SSHv2 library for Java"
     instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
     instruction "Import-Package", "!net.schmizz.*"
+    instruction "Import-Package", "!com.hierynomus.sshj.*"
     instruction "Import-Package", "javax.crypto*"
     instruction "Import-Package", "!net.i2p.crypto.eddsa.math"
     instruction "Import-Package", "net.i2p*"
