@@ -46,8 +46,9 @@ public class RemoteDirectory
                         final FileAttributes attrs = res.readFileAttributes();
                         final PathComponents comps = requester.getPathHelper().getComponents(path, name);
                         final RemoteResourceInfo inf = new RemoteResourceInfo(comps, attrs);
-                        if (!(name.equals(".") || name.equals("..")) && (filter == null || filter.accept(inf)))
+                        if (!(".".equals(name) || "..".equals(name)) && (filter == null || filter.accept(inf))) {
                             rri.add(inf);
+                        }
                     }
                     break;
 

@@ -60,14 +60,12 @@ public class SFTPFileTransfer
     }
 
     @Override
-    public void upload(LocalSourceFile localFile, String remotePath)
-            throws IOException {
+    public void upload(LocalSourceFile localFile, String remotePath) throws IOException {
         new Uploader(localFile, remotePath).upload(getTransferListener());
     }
 
     @Override
-    public void download(String source, LocalDestFile dest)
-            throws IOException {
+    public void download(String source, LocalDestFile dest) throws IOException {
         final PathComponents pathComponents = engine.getPathHelper().getComponents(source);
         final FileAttributes attributes = engine.stat(source);
         new Downloader().download(getTransferListener(), new RemoteResourceInfo(pathComponents, attributes), dest);
@@ -91,10 +89,10 @@ public class SFTPFileTransfer
 
     private class Downloader {
 
+        @SuppressWarnings("PMD.MissingBreakInSwitch")
         private void download(final TransferListener listener,
                               final RemoteResourceInfo remote,
-                              final LocalDestFile local)
-                throws IOException {
+                              final LocalDestFile local) throws IOException {
             final LocalDestFile adjustedFile;
             switch (remote.getAttributes().getType()) {
                 case DIRECTORY:
@@ -104,8 +102,7 @@ public class SFTPFileTransfer
                     log.warn("Server did not supply information about the type of file at `{}` " +
                                      "-- assuming it is a regular file!", remote.getPath());
                 case REGULAR:
-                    adjustedFile = downloadFile(listener.file(remote.getName(), remote.getAttributes().getSize()),
-                                                remote, local);
+                    adjustedFile = downloadFile(listener.file(remote.getName(), remote.getAttributes().getSize()), remote, local);
                     break;
                 default:
                     throw new IOException(remote + " is not a regular file or directory");
