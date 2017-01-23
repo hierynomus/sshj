@@ -32,6 +32,7 @@ public class RemoteDirectory
     public List<RemoteResourceInfo> scan(RemoteResourceFilter filter)
             throws IOException {
         List<RemoteResourceInfo> rri = new LinkedList<RemoteResourceInfo>();
+        // TODO: Remove GOTO! 
         loop:
         for (; ; ) {
             final Response res = requester.request(newRequest(PacketType.READDIR))
