@@ -30,9 +30,9 @@ public class PathHelperTest {
         @Override
         public String canonicalize(String path)
                 throws IOException {
-            if (path.equals("") || path.equals(".") || path.equals("./"))
+            if ("".equals(path) || ".".equals(path) || "./".equals(path))
                 return "/home/me";
-            if (path.equals("..") || path.equals("../"))
+            if ("..".equals(path) || "../".equals(path))
                 return "/home";
             return path;
         }

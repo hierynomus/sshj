@@ -33,7 +33,9 @@ import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-/** A thread-safe {@link Transport} implementation. */
+/**
+ * A thread-safe {@link Transport} implementation.
+ */
 public final class TransportImpl
         implements Transport, DisconnectListener {
 
@@ -49,11 +51,11 @@ public final class TransportImpl
     static final class ConnInfo {
 
         final String host;
-
         final int port;
         final InputStream in;
         final OutputStream out;
-        public ConnInfo(String host, int port, InputStream in, OutputStream out) {
+
+        ConnInfo(String host, int port, InputStream in, OutputStream out) {
             this.host = host;
             this.port = port;
             this.in = in;
@@ -88,24 +90,32 @@ public final class TransportImpl
 
     private final Event<TransportException> close;
 
-    /** Client version identification string */
+    /**
+     * Client version identification string
+     */
     private final String clientID;
 
     private volatile int timeoutMs = 30 * 1000; // Crazy long, but it was the original default
 
     private volatile boolean authed = false;
 
-    /** Currently active service e.g. UserAuthService, ConnectionService */
+    /**
+     * Currently active service e.g. UserAuthService, ConnectionService
+     */
     private volatile Service service;
 
     private DisconnectListener disconnectListener;
 
     private ConnInfo connInfo;
 
-    /** Server version identification string */
+    /**
+     * Server version identification string
+     */
     private String serverID;
 
-    /** Message identifier of last packet received */
+    /**
+     * Message identifier of last packet received
+     */
     private Message msg;
 
     private final ReentrantLock writeLock = new ReentrantLock();
@@ -115,9 +125,9 @@ public final class TransportImpl
         this.loggerFactory = config.getLoggerFactory();
         this.serviceAccept = new Event<TransportException>("service accept", TransportException.chainer, loggerFactory);
         this.close = new Event<TransportException>("transport close", TransportException.chainer, loggerFactory);
-        this.nullService  = new NullService(this);
+        this.nullService = new NullService(this);
         this.service = nullService;
-	this.log = loggerFactory.getLogger(getClass());
+        this.log = loggerFactory.getLogger(getClass());
         this.disconnectListener = this;
         this.reader = new Reader(this);
         this.encoder = new Encoder(config.getRandomFactory().create(), writeLock, loggerFactory);
@@ -138,7 +148,7 @@ public final class TransportImpl
         this.serviceAccept = new Event<TransportException>("service accept", TransportException.chainer, loggerFactory);
         this.close = new Event<TransportException>("transport close", TransportException.chainer, loggerFactory);
         this.log = loggerFactory.getLogger(getClass());
-        this.nullService  = new NullService(this);
+        this.nullService = new NullService(this);
         this.service = nullService;
         this.disconnectListener = this;
         this.reader = new Reader(this);
@@ -194,6 +204,7 @@ public final class TransportImpl
 
     /**
      * Receive the server identification string.
+     *
      * @throws IOException If there was an error writing to the outputstream.
      */
     private void sendClientIdent() throws IOException {
@@ -212,9 +223,7 @@ public final class TransportImpl
      * This is not efficient but is only done once.
      *
      * @param buffer The buffer to read from.
-     *
      * @return empty string if full ident string has not yet been received
-     *
      * @throws IOException
      */
     private String readIdentification(Buffer.PlainBuffer buffer)
@@ -226,7 +235,7 @@ public final class TransportImpl
 
         if (!ident.startsWith("SSH-2.0-") && !ident.startsWith("SSH-1.99-"))
             throw new TransportException(DisconnectReason.PROTOCOL_VERSION_NOT_SUPPORTED,
-                                         "Server does not support SSHv2, identified as: " + ident);
+                    "Server does not support SSHv2, identified as: " + ident);
 
         return ident;
     }
@@ -337,7 +346,6 @@ public final class TransportImpl
      * Sends a service request for the specified service
      *
      * @param serviceName name of the service being requested
-     *
      * @throws TransportException if there is an error while sending the request
      */
     private void sendServiceRequest(String serviceName)
@@ -456,9 +464,9 @@ public final class TransportImpl
         log.debug("Sending SSH_MSG_DISCONNECT: reason=[{}], msg=[{}]", reason, message);
         try {
             write(new SSHPacket(Message.DISCONNECT)
-                          .putUInt32(reason.toInt())
-                          .putString(message)
-                          .putString(""));
+                    .putUInt32(reason.toInt())
+                    .putString(message)
+                    .putString(""));
         } catch (IOException worthless) {
             log.debug("Error writing packet: {}", worthless.toString());
         }
@@ -476,7 +484,6 @@ public final class TransportImpl
      *
      * @param msg the message identifer
      * @param buf buffer containg rest of the packet
-     *
      * @throws SSHException if an error occurs during handling (unrecoverable)
      */
     @Override
@@ -494,32 +501,27 @@ public final class TransportImpl
 
         else
             switch (msg) {
-                case DISCONNECT: {
+                case DISCONNECT:
                     gotDisconnect(buf);
                     break;
-                }
-                case IGNORE: {
+                case IGNORE:
                     log.debug("Received SSH_MSG_IGNORE");
                     break;
-                }
-                case UNIMPLEMENTED: {
+                case UNIMPLEMENTED:
                     gotUnimplemented(buf);
                     break;
-                }
-                case DEBUG: {
+                case DEBUG:
                     gotDebug(buf);
                     break;
-                }
-                case SERVICE_ACCEPT: {
+                case SERVICE_ACCEPT:
                     gotServiceAccept();
                     break;
-                }
-                case USERAUTH_BANNER: {
+                case USERAUTH_BANNER:
                     log.debug("Received USERAUTH_BANNER");
                     break;
-                }
                 default:
                     sendUnimplemented();
+                    break;
             }
     }
 
@@ -552,7 +554,7 @@ public final class TransportImpl
         try {
             if (!serviceAccept.hasWaiters())
                 throw new TransportException(DisconnectReason.PROTOCOL_ERROR,
-                                             "Got a service accept notification when none was awaited");
+                        "Got a service accept notification when none was awaited");
             serviceAccept.set();
         } finally {
             serviceAccept.unlock();
@@ -563,7 +565,6 @@ public final class TransportImpl
      * Got an SSH_MSG_UNIMPLEMENTED, so lets see where we're at and act accordingly.
      *
      * @param packet The 'unimplemented' packet received
-     *
      * @throws TransportException
      */
     private void gotUnimplemented(SSHPacket packet)

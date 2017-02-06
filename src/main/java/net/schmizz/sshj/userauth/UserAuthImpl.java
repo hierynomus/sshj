@@ -15,12 +15,6 @@
  */
 package net.schmizz.sshj.userauth;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Service;
@@ -32,7 +26,15 @@ import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 
-/** {@link UserAuth} implementation. */
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * {@link UserAuth} implementation.
+ */
 public class UserAuthImpl
         extends AbstractService
         implements UserAuth {
@@ -42,7 +44,7 @@ public class UserAuthImpl
     // Externally available
     private volatile String banner = "";
     private volatile boolean partialSuccess = false;
-    private volatile List<String> allowedMethods = new ArrayList<>();
+    private volatile List<String> allowedMethods = new LinkedList<String>();
 
     // Internal state
     private volatile AuthMethod currentMethod;
@@ -111,22 +113,20 @@ public class UserAuthImpl
         try {
             switch (msg) {
 
-                case USERAUTH_BANNER: {
+                case USERAUTH_BANNER:
                     banner = buf.readString();
-                }
-                break;
+                    break;
 
-                case USERAUTH_SUCCESS: {
+                case USERAUTH_SUCCESS:
                     // In order to prevent race conditions, we immediately set the authenticated flag on the transport
                     // And change the service before delivering the authenticated promise.
                     // Should fix https://github.com/hierynomus/sshj/issues/237
                     trans.setAuthenticated(); // So it can put delayed compression into force if applicable
                     trans.setService(nextService); // We aren't in charge anymore, next service is
                     authenticated.deliver(true);
-                }
-                break;
+                    break;
 
-                case USERAUTH_FAILURE: {
+                case USERAUTH_FAILURE:
                     allowedMethods = Arrays.asList(buf.readString().split(","));
                     partialSuccess |= buf.readBoolean();
                     if (allowedMethods.contains(currentMethod.getName()) && currentMethod.shouldRetry()) {
@@ -134,18 +134,16 @@ public class UserAuthImpl
                     } else {
                         authenticated.deliver(false);
                     }
-                }
-                break;
+                    break;
 
-                default: {
+                default:
                     log.debug("Asking `{}` method to handle {} packet", currentMethod.getName(), msg);
                     try {
                         currentMethod.handle(msg, buf);
                     } catch (UserAuthException e) {
                         authenticated.deliverError(e);
                     }
-                }
-
+                    break;
             }
         } finally {
             authenticated.unlock();

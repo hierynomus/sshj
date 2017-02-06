@@ -79,7 +79,7 @@ public class SignatureECDSA
                 throw new SSHRuntimeException(String.format("Signature :: ecdsa-sha2-nistp256 expected, got %s", algo));
             }
             final int rsLen = sigbuf.readUInt32AsInt();
-            if (!(sigbuf.available() == rsLen)) {
+            if (sigbuf.available() != rsLen) {
                 throw new SSHRuntimeException("Invalid key length");
             }
             r = sigbuf.readBytes();

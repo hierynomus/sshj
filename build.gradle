@@ -37,7 +37,7 @@ dependencies {
   testCompile "junit:junit:4.11"
   testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
   testCompile "org.mockito:mockito-core:1.9.5"
-  testCompile "org.apache.sshd:sshd-core:1.1.0"
+  testCompile "org.apache.sshd:sshd-core:1.2.0"
   testRuntime "ch.qos.logback:logback-classic:1.1.2"
   testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
   testCompile 'org.apache.httpcomponents:httpclient:4.5.2'
@@ -82,15 +82,18 @@ jar {
     // please see http://bnd.bndtools.org/chapters/390-wrapping.html
     instruction "Bundle-Description", "SSHv2 library for Java"
     instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
-    instruction "Import-Package", \
-      "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional", \
-      "!com.hierynomus.sshj.*", "!net.schmizz.*", \
-      "!net.i2p.crypto.eddsa.math", \
-      "*"
-    instruction "Require-Bundle", \
-      "bcprov;bundle-version=\"$bouncycastleVersion\";resolution:=optional", \
-      "bcprov;bundle-version=\"$bouncycastleVersion\";resolution:=optional"
-    instruction "Export-Package", "com.hierynomus.sshj.*", "net.schmizz.*"
+    instruction "Import-Package", "!net.schmizz.*"
+    instruction "Import-Package", "!com.hierynomus.sshj.*"
+    instruction "Import-Package", "javax.crypto*"
+    instruction "Import-Package", "!net.i2p.crypto.eddsa.math"
+    instruction "Import-Package", "net.i2p*"
+    instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
+    instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
+    instruction "Import-Package", "org.bouncycastle*;resolution:=optional"
+    instruction "Import-Package", "org.bouncycastle.jce.provider;resolution:=optional"
+    instruction "Import-Package", "*"
+    instruction "Export-Package", "com.hierynomus.sshj.*;version=\"${project.jar.manifest.version}\""
+    instruction "Export-Package", "net.schmizz.*;version=\"${project.jar.manifest.version}\""
   }
 }
 

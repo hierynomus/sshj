@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.common;
 
-import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.concurrent.Event;
 import net.schmizz.concurrent.ExceptionChainer;
 import org.slf4j.Logger;
@@ -68,8 +67,11 @@ public class StreamCopier {
     }
 
     public StreamCopier listener(Listener listener) {
-        if (listener == null) listener = NULL_LISTENER;
-        this.listener = listener;
+        if (listener == null) {
+            this.listener = NULL_LISTENER;
+        } else {
+            this.listener = listener;
+        }
         return this;
     }
 
@@ -126,11 +128,13 @@ public class StreamCopier {
         final long startTime = System.currentTimeMillis();
 
         if (length == -1) {
-            while ((read = in.read(buf)) != -1)
-                count = write(buf, count, read);
+            while ((read = in.read(buf)) != -1) {
+                count += write(buf, count, read);
+            }
         } else {
-            while (count < length && (read = in.read(buf, 0, (int) Math.min(bufSize, length - count))) != -1)
-                count = write(buf, count, read);
+            while (count < length && (read = in.read(buf, 0, (int) Math.min(bufSize, length - count))) != -1) {
+                count += write(buf, count, read);
+            }
         }
 
         if (!keepFlushing)
@@ -146,14 +150,13 @@ public class StreamCopier {
         return count;
     }
 
-    private long write(byte[] buf, long count, int read)
+    private long write(byte[] buf, long curPos, int len)
             throws IOException {
-        out.write(buf, 0, read);
-        count += read;
+        out.write(buf, 0, len);
         if (keepFlushing)
             out.flush();
-        listener.reportProgress(count);
-        return count;
+        listener.reportProgress(curPos + len);
+        return len;
     }
 
 }

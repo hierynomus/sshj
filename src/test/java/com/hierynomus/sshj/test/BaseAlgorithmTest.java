@@ -41,14 +41,18 @@ public abstract class BaseAlgorithmTest {
     }
 
     @Test
-    public void verify() throws IOException {
-        configureServer(fixture.getServer());
-        fixture.start();
-        Config config = getClientConfig(new DefaultConfig());
-        SSHClient sshClient = fixture.connectClient(fixture.setupClient(config));
-        assertThat("should be connected", sshClient.isConnected());
-        sshClient.disconnect();
-        fixture.stopClient();
+    public void shouldVerifyAlgorithm() throws IOException {
+        for (int i = 0; i < 100; i++) {
+            logger.info("--> Attempt {}", i);
+            configureServer(fixture.getServer());
+            fixture.start();
+            Config config = getClientConfig(new DefaultConfig());
+            SSHClient sshClient = fixture.connectClient(fixture.setupClient(config));
+            assertThat("should be connected", sshClient.isConnected());
+            sshClient.disconnect();
+//        fixture.stopServer();
+            fixture.stopClient();
+        }
     }
 
     protected abstract Config getClientConfig(DefaultConfig defaultConfig);

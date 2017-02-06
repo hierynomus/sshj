@@ -73,7 +73,7 @@ public class PathHelper {
         if (path.equals(pathSep))
             return getComponents("", "");
 
-        if (path.isEmpty() || path.equals(".") || path.equals("." + pathSep))
+        if (path.isEmpty() || ".".equals(path) || ("." + pathSep).equals(path))
             return getComponents(getDotDir());
 
         final String withoutTrailSep = trimTrailingSeparator(path);
@@ -81,7 +81,7 @@ public class PathHelper {
         final String parent = (lastSep == -1) ? "" : withoutTrailSep.substring(0, lastSep);
         final String name = (lastSep == -1) ? withoutTrailSep : withoutTrailSep.substring(lastSep + pathSep.length());
 
-        if (name.equals(".") || name.equals("..")) {
+        if (".".equals(name) || "..".equals(name)) {
             return getComponents(canonicalizer.canonicalize(path));
         } else {
             return getComponents(parent, name);

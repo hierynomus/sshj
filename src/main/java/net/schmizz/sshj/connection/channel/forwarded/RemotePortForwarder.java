@@ -130,7 +130,7 @@ public class RemotePortForwarder
                 // Addresses match up
                 return true;
             }
-            if ("localhost".equals(address) && (channelForward.address.equals("127.0.0.1") || channelForward.address.equals("::1"))) {
+            if ("localhost".equals(address) && ("127.0.0.1".equals(channelForward.address) || "::1".equals(channelForward.address))) {
                 // Localhost special case.
                 return true;
             }
