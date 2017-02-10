@@ -30,6 +30,8 @@ import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +41,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class RemotePortForwarderTest {
+    private static final Logger log = LoggerFactory.getLogger(RemotePortForwarderTest.class);
 
     private static final PortRange RANGE = new PortRange(9000, 9999);
     private static final InetSocketAddress HTTP_SERVER_SOCKET_ADDR = new InetSocketAddress("127.0.0.1", 8080);
@@ -125,7 +128,7 @@ public class RemotePortForwarderTest {
     private int httpGet(String server, int port) throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
         String urlString = "http://" + server + ":" + port;
-        System.out.println("Trying: GET " + urlString);
+        log.info("Trying: GET " + urlString);
         HttpResponse execute = client.execute(new HttpGet(urlString));
         return execute.getStatusLine().getStatusCode();
     }

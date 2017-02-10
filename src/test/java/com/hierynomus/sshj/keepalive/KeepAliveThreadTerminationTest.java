@@ -61,8 +61,7 @@ public class KeepAliveThreadTerminationTest {
         for (long l : threadMXBean.getAllThreadIds()) {
             ThreadInfo threadInfo = threadMXBean.getThreadInfo(l);
             if (threadInfo.getThreadName().equals("keep-alive") && threadInfo.getThreadState() != Thread.State.TERMINATED) {
-                System.err.println("Found thread in state " + threadInfo.getThreadState());
-                throw new RuntimeException("Found alive keep-alive thread");
+                fail("Found alive keep-alive thread in state " + threadInfo.getThreadState());
             }
         }
     }
