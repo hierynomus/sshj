@@ -104,6 +104,10 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.20.0 (2017-02-09)::
+* Merged https://github.com/hierynomus/sshj/pulls/294[#294]: Reference ED25519 by constant instead of name
+* Merged https://github.com/hierynomus/sshj/pulls/293[#293], https://github.com/hierynomus/sshj/pulls/295[#295] and https://github.com/hierynomus/sshj/pulls/301[#301]: Fixed OSGi packaging
+* Added new Diffie Hellman groups 15-18 for stronger KeyExchange algorithms
 SSHJ 0.19.1 (2016-12-30)::
 * Enabled PKCS5 Key files in DefaultConfig
 * Merged https://github.com/hierynomus/sshj/pulls/291[#291]: Fixed sshj.properties loading and chained exception messages

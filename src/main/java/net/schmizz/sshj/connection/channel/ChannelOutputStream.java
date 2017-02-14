@@ -71,7 +71,8 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         }
 
         boolean flush(int bufferSize, boolean canAwaitExpansion) throws TransportException, ConnectionException {
-            while (bufferSize > 0) {
+            int dataLeft = bufferSize;
+            while (dataLeft > 0) {
                 long remoteWindowSize = win.getSize();
                 if (remoteWindowSize == 0) {
                     if (canAwaitExpansion) {
@@ -85,7 +86,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
                 // a) how much data we have
                 // b) the max packet size
                 // c) what the current window size will allow
-                final int writeNow = Math.min(bufferSize, (int) Math.min(win.getMaxPacketSize(), remoteWindowSize));
+                final int writeNow = Math.min(dataLeft, (int) Math.min(win.getMaxPacketSize(), remoteWindowSize));
 
                 packet.wpos(headerOffset);
                 packet.putMessageID(Message.CHANNEL_DATA);
@@ -93,7 +94,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
                 packet.putUInt32(writeNow);
                 packet.wpos(dataOffset + writeNow);
 
-                final int leftOverBytes = bufferSize - writeNow;
+                final int leftOverBytes = dataLeft - writeNow;
                 if (leftOverBytes > 0) {
                     leftOvers.putRawBytes(packet.array(), packet.wpos(), leftOverBytes);
                 }
@@ -109,7 +110,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
                     leftOvers.clear();
                 }
 
-                bufferSize = leftOverBytes;
+                dataLeft = leftOverBytes;
             }
 
             return true;
@@ -178,8 +179,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
      * @throws IOException
      */
     @Override
-    public synchronized void flush()
-            throws IOException {
+    public synchronized void flush() throws IOException {
         checkClose();
         buffer.flush(true);
     }

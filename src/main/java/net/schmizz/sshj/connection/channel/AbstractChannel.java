@@ -189,7 +189,7 @@ public abstract class AbstractChannel
 
             default:
                 gotUnknown(msg, buf);
-
+                break;
         }
     }
 
