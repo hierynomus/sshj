@@ -81,9 +81,9 @@ public abstract class AbstractChannel
     private volatile boolean autoExpand = false;
 
     protected AbstractChannel(Connection conn, String type) {
-    	this(conn, type, IOUtils.UTF8);
+        this(conn, type, IOUtils.UTF8);
     }
-	protected AbstractChannel(Connection conn, String type, Charset remoteCharset) {
+    protected AbstractChannel(Connection conn, String type, Charset remoteCharset) {
         this.conn = conn;
         this.loggerFactory = conn.getTransport().getConfig().getLoggerFactory();
         this.type = type;
@@ -143,9 +143,8 @@ public abstract class AbstractChannel
     }
 
     @Override
-    public Charset getRemoteCharset()
-    {
-    	return remoteCharset;
+    public Charset getRemoteCharset() {
+        return remoteCharset;
     }
 
     @Override

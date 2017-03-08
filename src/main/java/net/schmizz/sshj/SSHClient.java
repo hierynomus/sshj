@@ -449,9 +449,8 @@ public class SSHClient
      *
      * @return remote character set or {@code null} for default
      */
-    public Charset getRemoteCharset()
-    {
-    	return remoteCharset;
+    public Charset getRemoteCharset() {
+        return remoteCharset;
     }
 
     /** @return a {@link RemotePortForwarder} that allows requesting remote forwarding over this connection. */
@@ -722,15 +721,14 @@ public class SSHClient
         doKex();
     }
 
-	/**
-	 * Sets the character set used to communicate with the remote machine for certain strings (like paths)
-	 *
-	 * @param remoteCharset
-	 *        remote character set or {@code null} for default
-	 */
-    public void setRemoteCharset(Charset remoteCharset)
-    {
-    	this.remoteCharset = remoteCharset;
+    /**
+     * Sets the character set used to communicate with the remote machine for certain strings (like paths)
+     *
+     * @param remoteCharset
+     *        remote character set or {@code null} for default
+     */
+    public void setRemoteCharset(Charset remoteCharset) {
+        this.remoteCharset = remoteCharset;
     }
 
     @Override

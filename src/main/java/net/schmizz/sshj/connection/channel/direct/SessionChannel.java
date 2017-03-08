@@ -49,7 +49,7 @@ public class SessionChannel
     }
 
     public SessionChannel(Connection conn, Charset remoteCharset) {
-    	super(conn, "session", remoteCharset);
+        super(conn, "session", remoteCharset);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class SessionChannel
             throws ConnectionException, TransportException {
         checkReuse();
         log.debug("Will request to exec `{}`", command);
-        sendChannelRequest("exec", true, new Buffer.PlainBuffer().putString(command.getBytes(getRemoteCharset())))
+        sendChannelRequest("exec", true, new Buffer.PlainBuffer().putString(command, getRemoteCharset()))
                 .await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
         usedUp = true;
         return this;

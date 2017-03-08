@@ -43,12 +43,12 @@ public abstract class AbstractDirectChannel
     }
 
     protected AbstractDirectChannel(Connection conn, String type, Charset remoteCharset) {
-    	super(conn, type, remoteCharset);
-    	
-    	/*
-    	 * We expect to receive channel open confirmation/rejection and want to be able to next this packet.
-    	 */
-    	conn.attach(this);
+        super(conn, type, remoteCharset);
+
+        /*
+         * We expect to receive channel open confirmation/rejection and want to be able to next this packet.
+         */
+        conn.attach(this);
     }
 
     @Override
