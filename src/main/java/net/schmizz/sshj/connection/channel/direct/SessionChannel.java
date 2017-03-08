@@ -22,6 +22,7 @@ import net.schmizz.sshj.connection.channel.ChannelInputStream;
 import net.schmizz.sshj.transport.TransportException;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +46,10 @@ public class SessionChannel
 
     public SessionChannel(Connection conn) {
         super(conn, "session");
+    }
+
+    public SessionChannel(Connection conn, Charset remoteCharset) {
+    	super(conn, "session", remoteCharset);
     }
 
     @Override
@@ -93,7 +98,7 @@ public class SessionChannel
             throws ConnectionException, TransportException {
         checkReuse();
         log.debug("Will request to exec `{}`", command);
-        sendChannelRequest("exec", true, new Buffer.PlainBuffer().putString(command))
+        sendChannelRequest("exec", true, new Buffer.PlainBuffer().putString(command.getBytes(getRemoteCharset())))
                 .await(conn.getTimeoutMs(), TimeUnit.MILLISECONDS);
         usedUp = true;
         return this;

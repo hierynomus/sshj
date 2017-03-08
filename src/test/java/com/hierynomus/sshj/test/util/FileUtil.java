@@ -34,7 +34,7 @@ public class FileUtil {
         FileInputStream fileInputStream = new FileInputStream(f);
         try {
             ByteArrayOutputStream byteArrayOutputStream = IOUtils.readFully(fileInputStream);
-            return byteArrayOutputStream.toString("UTF-8");
+            return byteArrayOutputStream.toString(IOUtils.UTF8.displayName());
         } finally {
             IOUtils.closeQuietly(fileInputStream);
         }

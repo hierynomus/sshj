@@ -24,6 +24,7 @@ import net.schmizz.sshj.transport.TransportException;
 import java.io.Closeable;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -122,6 +123,9 @@ public interface Channel extends Closeable, SSHPacketHandler, ErrorNotifiable {
      * @return the channel ID at the remote end.
      */
     int getRecipient();
+
+    /** @return the character set used to communicate with the remote machine for certain strings (like paths). */
+    Charset getRemoteCharset();
 
     /**
      * @return the maximum packet size as specified by the remote end.

@@ -25,6 +25,7 @@ import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException;
 import net.schmizz.sshj.transport.TransportException;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 /** Base class for direct channels whose open is initated by the client. */
@@ -39,6 +40,15 @@ public abstract class AbstractDirectChannel
         * We expect to receive channel open confirmation/rejection and want to be able to next this packet.
         */
         conn.attach(this);
+    }
+
+    protected AbstractDirectChannel(Connection conn, String type, Charset remoteCharset) {
+    	super(conn, type, remoteCharset);
+    	
+    	/*
+    	 * We expect to receive channel open confirmation/rejection and want to be able to next this packet.
+    	 */
+    	conn.attach(this);
     }
 
     @Override

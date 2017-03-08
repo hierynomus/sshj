@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.common;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
@@ -369,12 +368,7 @@ public class Buffer<T extends Buffer<T>> {
         if (len < 0 || len > 32768)
             throw new BufferException("Bad item length: " + len);
         ensureAvailable(len);
-        String s;
-        try {
-            s = new String(data, rpos, len, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new SSHRuntimeException(e);
-        }
+        String s = new String(data, rpos, len, IOUtils.UTF8);
         rpos += len;
         return s;
     }

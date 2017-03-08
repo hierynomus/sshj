@@ -18,7 +18,8 @@ package com.hierynomus.sshj.backport;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-import java.nio.charset.Charset;
+
+import net.schmizz.sshj.common.IOUtils;
 
 public class Jdk7HttpProxySocket extends Socket {
 
@@ -48,7 +49,7 @@ public class Jdk7HttpProxySocket extends Socket {
         }
         InetSocketAddress isa = (InetSocketAddress) endpoint;
         String httpConnect = "CONNECT " + isa.getHostName() + ":" + isa.getPort() + " HTTP/1.0\n\n";
-        getOutputStream().write(httpConnect.getBytes(Charset.forName("UTF-8")));
+        getOutputStream().write(httpConnect.getBytes(IOUtils.UTF8));
         checkAndFlushProxyResponse();
     }
 
@@ -61,7 +62,7 @@ public class Jdk7HttpProxySocket extends Socket {
             throw new SocketException("Empty response from proxy");
         }
 
-        String proxyResponse = new String(tmpBuffer, 0, len, "UTF-8");
+        String proxyResponse = new String(tmpBuffer, 0, len, IOUtils.UTF8);
 
         // Expecting HTTP/1.x 200 OK
         if (proxyResponse.contains("200")) {
