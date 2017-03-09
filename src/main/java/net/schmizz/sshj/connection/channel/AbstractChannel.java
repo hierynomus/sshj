@@ -81,7 +81,7 @@ public abstract class AbstractChannel
     private volatile boolean autoExpand = false;
 
     protected AbstractChannel(Connection conn, String type) {
-        this(conn, type, IOUtils.UTF8);
+        this(conn, type, null);
     }
     protected AbstractChannel(Connection conn, String type, Charset remoteCharset) {
         this.conn = conn;
@@ -90,7 +90,7 @@ public abstract class AbstractChannel
         this.log = loggerFactory.getLogger(getClass());
         this.trans = conn.getTransport();
 
-        this.remoteCharset = remoteCharset;
+        this.remoteCharset = remoteCharset != null ? remoteCharset : IOUtils.UTF8;
         id = conn.nextID();
 
         lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize(), loggerFactory);

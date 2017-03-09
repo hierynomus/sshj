@@ -16,6 +16,7 @@
 package net.schmizz.sshj;
 
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -130,7 +131,7 @@ public class SSHClient
     private final List<LocalPortForwarder> forwarders = new ArrayList<LocalPortForwarder>();
 
     /** character set of the remote machine */
-    protected Charset remoteCharset;
+    protected Charset remoteCharset = IOUtils.UTF8;
 
     /** Default constructor. Initializes this object using {@link DefaultConfig}. */
     public SSHClient() {
@@ -447,7 +448,7 @@ public class SSHClient
     /**
      * Returns the character set used to communicate with the remote machine for certain strings (like paths).
      *
-     * @return remote character set or {@code null} for default
+     * @return remote character set
      */
     public Charset getRemoteCharset() {
         return remoteCharset;
@@ -728,7 +729,7 @@ public class SSHClient
      *        remote character set or {@code null} for default
      */
     public void setRemoteCharset(Charset remoteCharset) {
-        this.remoteCharset = remoteCharset;
+        this.remoteCharset = remoteCharset != null ? remoteCharset : IOUtils.UTF8;
     }
 
     @Override
@@ -736,7 +737,7 @@ public class SSHClient
             throws ConnectionException, TransportException {
         checkConnected();
         checkAuthenticated();
-        final SessionChannel sess = (remoteCharset != null)? new SessionChannel(conn, remoteCharset) : new SessionChannel(conn);
+        final SessionChannel sess = new SessionChannel(conn, remoteCharset);
         sess.open();
         return sess;
     }
