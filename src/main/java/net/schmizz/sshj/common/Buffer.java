@@ -15,8 +15,8 @@
  */
 package net.schmizz.sshj.common;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -361,22 +361,29 @@ public class Buffer<T extends Buffer<T>> {
     /**
      * Reads an SSH string
      *
+     * @param cs the charset to use for decoding
+     *
      * @return the string as a Java {@code String}
      */
-    public String readString()
+    public String readString(Charset cs)
             throws BufferException {
         int len = readUInt32AsInt();
         if (len < 0 || len > 32768)
             throw new BufferException("Bad item length: " + len);
         ensureAvailable(len);
-        String s;
-        try {
-            s = new String(data, rpos, len, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new SSHRuntimeException(e);
-        }
+        String s = new String(data, rpos, len, cs);
         rpos += len;
         return s;
+    }
+
+    /**
+     * Reads an SSH string using {@code UTF8}
+     *
+     * @return the string as a Java {@code String}
+     */
+    public String readString()
+            throws BufferException {
+        return readString(IOUtils.UTF8);
     }
 
     /**
@@ -397,8 +404,12 @@ public class Buffer<T extends Buffer<T>> {
         return putBytes(str, offset, len);
     }
 
+    public T putString(String string, Charset cs) {
+        return putString(string.getBytes(cs));
+    }
+
     public T putString(String string) {
-        return putString(string.getBytes(IOUtils.UTF8));
+        return putString(string, IOUtils.UTF8);
     }
 
     /**

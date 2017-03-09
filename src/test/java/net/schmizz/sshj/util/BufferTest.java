@@ -31,6 +31,8 @@
 package net.schmizz.sshj.util;
 
 import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.IOUtils;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,7 +53,7 @@ public class BufferTest {
     public void setUp()
             throws UnsupportedEncodingException, GeneralSecurityException {
         // for position test
-        byte[] data = "Hello".getBytes("UTF-8");
+        byte[] data = "Hello".getBytes(IOUtils.UTF8);
         posBuf = new Buffer.PlainBuffer(data);
         handyBuf = new Buffer.PlainBuffer();
     }
