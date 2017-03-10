@@ -86,6 +86,13 @@ public interface Session
         void signal(Signal signal)
                 throws TransportException;
 
+        /**
+         * Set this to true to have error messages from the command merged into the output stream instead of going
+         * into the error stream. This should be set before {@link Session#exec(String)} is called.
+         *
+         * @param combineStdErr
+         */
+        void setCombineStdErr(boolean combineStdErr);
     }
 
     /** Shell API. */
