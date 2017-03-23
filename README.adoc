@@ -37,7 +37,7 @@ If you're building your project using Maven, you can add the following dependenc
 If your project is built using another build tool that uses the Maven Central repository, translate this dependency into the format used by your build tool.
 
 == Building SSHJ
-. Clone the Overthere repository.
+. Clone the SSHJ repository.
 . Ensure you have Java6 installed with the http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html[Unlimited strength Java Cryptography Extensions (JCE)].
 . Run the command `./gradlew clean build`.
 
