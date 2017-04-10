@@ -24,7 +24,7 @@ targetCompatibility = 1.6
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.51"
+def bouncycastleVersion = "1.56"
 
 dependencies {
   compile "org.slf4j:slf4j-api:1.7.7"
