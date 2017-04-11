@@ -15,10 +15,12 @@
  */
 package net.schmizz.sshj.common;
 
+import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-import org.junit.Test;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
 
 public class BufferTest {
 
@@ -43,5 +45,37 @@ public class BufferTest {
         } catch (IllegalArgumentException e) {
             // success
         }
+    }
+
+    @Test
+    public void shouldCorrectlyEncodeAndDecodeUInt64Types() throws BufferException {
+        // This number fits into a unsigned 64 bit integer but not a signed one.
+        long bigUint64 = Long.MAX_VALUE + 2;
+        assertEquals(0x8000000000000001l, bigUint64);
+        assertTrue(bigUint64 < 0);
+
+        Buffer<PlainBuffer> buff = new PlainBuffer();
+        buff.putUInt64(bigUint64);
+        byte[] data = buff.getCompactData();
+        assertEquals(8, data.length);
+        assertEquals((byte) 0x80, data[0]);
+        assertEquals((byte) 0x00, data[1]);
+        assertEquals((byte) 0x00, data[2]);
+        assertEquals((byte) 0x00, data[3]);
+        assertEquals((byte) 0x00, data[4]);
+        assertEquals((byte) 0x00, data[5]);
+        assertEquals((byte) 0x00, data[6]);
+        assertEquals((byte) 0x01, data[7]);
+
+        byte[] asBinary = new byte[] { (byte) 0x80,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x01 };
+        buff = new PlainBuffer(asBinary);
+        assertEquals(bigUint64, buff.readUInt64());
     }
 }

@@ -57,4 +57,10 @@ public class KeyProviderUtilTest {
         KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "pkcs8-blanks"));
         assertEquals(KeyFormat.PKCS8, format);
     }
+
+    @Test
+    public void testOpenSshSigned() throws IOException {
+        KeyFormat format = KeyProviderUtil.detectKeyFileFormat(new File(ROOT, "signed"));
+        assertEquals(KeyFormat.OpenSSH, format);
+    }
 }

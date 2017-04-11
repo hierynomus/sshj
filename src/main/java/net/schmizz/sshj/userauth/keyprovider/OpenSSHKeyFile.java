@@ -57,10 +57,14 @@ public class OpenSSHKeyFile
 
     @Override
     public void init(File location) {
-        final File f = new File(location + ".pub");
-        if (f.exists())
+        // try cert key location first
+        File pubKey = new File(location + "-cert.pub");
+        if (! pubKey.exists()) {
+            pubKey = new File(location + ".pub");
+        }
+        if (pubKey.exists())
             try {
-                initPubKey(new FileReader(f));
+                initPubKey(new FileReader(pubKey));
             } catch (IOException e) {
                 // let super provide both public & private key
                 log.warn("Error reading public key file: {}", e.toString());

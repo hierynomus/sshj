@@ -34,7 +34,7 @@ public class KeyProviderUtil {
     public static KeyFormat detectKeyFileFormat(File location)
             throws IOException {
         return detectKeyFileFormat(new FileReader(location),
-                new File(location + ".pub").exists());
+                new File(location + ".pub").exists() || new File(location + "-cert.pub").exists());
     }
 
     /**

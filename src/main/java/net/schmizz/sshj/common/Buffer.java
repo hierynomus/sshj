@@ -338,15 +338,11 @@ public class Buffer<T extends Buffer<T>> {
     public long readUInt64()
             throws BufferException {
         long uint64 = (readUInt32() << 32) + (readUInt32() & 0xffffffffL);
-        if (uint64 < 0)
-            throw new BufferException("Cannot handle values > Long.MAX_VALUE");
         return uint64;
     }
 
     @SuppressWarnings("unchecked")
     public T putUInt64(long uint64) {
-        if (uint64 < 0)
-            throw new IllegalArgumentException("Invalid value: " + uint64);
         data[wpos++] = (byte) (uint64 >> 56);
         data[wpos++] = (byte) (uint64 >> 48);
         data[wpos++] = (byte) (uint64 >> 40);
