@@ -329,7 +329,7 @@ public enum KeyType {
         static <T extends PublicKey> Certificate<T> readPubKey(Buffer<?> buf, KeyType innerKeyType) throws GeneralSecurityException {
             final byte[] nonce;
             final T key;
-            final long serial;
+            final BigInteger serial;
             long type;
             String id;
             List<String> validPrincipals;
@@ -343,7 +343,7 @@ public enum KeyType {
             try {
                 nonce = buf.readStringAsBytes();
                 key = (T) innerKeyType.readPubKeyFromBuffer(buf);
-                serial = buf.readUInt64();
+                serial = buf.readUInt64AsBigInteger();
                 type = buf.readUInt32();
                 id = buf.readString();
                 validPrincipals = unpackList(buf.readStringAsBytes());
@@ -357,9 +357,21 @@ public enum KeyType {
             } catch (Buffer.BufferException be) {
                 throw new GeneralSecurityException(be);
             }
-            return new Certificate<T>(key, nonce, serial, type, id, validPrincipals, validAfter,
-                                      validBefore, critOptions, extensions, signatureKey,
-                                      signature);
+
+            Certificate.Builder<T> builder = Certificate.getBuilder();
+            builder.publicKey(key)
+                .nonce(nonce)
+                .serial(serial)
+                .type(type)
+                .id(id)
+                .validPrincipals(validPrincipals)
+                .validAfter(validAfter)
+                .validBefore(validBefore)
+                .critOptions(critOptions)
+                .extensions(extensions)
+                .signatureKey(signatureKey)
+                .signature(signature);
+            return builder.build();
         }
 
         static void writePubKeyContentsIntoBuffer(PublicKey publicKey, KeyType innerKeyType, Buffer<?> buf) {
@@ -367,16 +379,16 @@ public enum KeyType {
             buf.putString(certificate.getNonce());
             innerKeyType.writePubKeyContentsIntoBuffer(certificate.getKey(), buf);
             buf.putUInt64(certificate.getSerial())
-              .putUInt32(certificate.getType())
-              .putString(certificate.getId())
-              .putString(packList(certificate.getValidPrincipals()))
-              .putUInt64(epochFromDate(certificate.getValidAfter()))
-              .putUInt64(epochFromDate(certificate.getValidBefore()))
-              .putString(packMap(certificate.getCritOptions()))
-              .putString(packMap(certificate.getExtensions()))
-              .putString("") // reserved
-              .putString(certificate.getSignatureKey())
-              .putString(certificate.getSignature());
+                .putUInt32(certificate.getType())
+                .putString(certificate.getId())
+                .putString(packList(certificate.getValidPrincipals()))
+                .putUInt64(epochFromDate(certificate.getValidAfter()))
+                .putUInt64(epochFromDate(certificate.getValidBefore()))
+                .putString(packMap(certificate.getCritOptions()))
+                .putString(packMap(certificate.getExtensions()))
+                .putString("") // reserved
+                .putString(certificate.getSignatureKey())
+                .putString(certificate.getSignature());
         }
 
         static boolean isCertificateOfType(Key key, KeyType innerKeyType) {

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -184,7 +185,7 @@ public class OpenSSHKeyFileTest {
         @SuppressWarnings("unchecked")
         Certificate<RSAPublicKey> certificate = (Certificate<RSAPublicKey>) pubKey;
 
-        assertEquals(Long.MAX_VALUE + 2, certificate.getSerial());
+        assertEquals(new BigInteger("9223372036854775809"), certificate.getSerial());
         assertEquals("testrsa", certificate.getId());
 
         assertEquals(2, certificate.getValidPrincipals().size());
@@ -218,7 +219,7 @@ public class OpenSSHKeyFileTest {
         @SuppressWarnings("unchecked")
         Certificate<RSAPublicKey> certificate = (Certificate<RSAPublicKey>) pubKey;
 
-        assertEquals(123, certificate.getSerial());
+        assertEquals(new BigInteger("123"), certificate.getSerial());
         assertEquals("testdsa", certificate.getId());
 
         assertEquals(1, certificate.getValidPrincipals().size());
