@@ -327,68 +327,44 @@ public enum KeyType {
 
         @SuppressWarnings("unchecked")
         static <T extends PublicKey> Certificate<T> readPubKey(Buffer<?> buf, KeyType innerKeyType) throws GeneralSecurityException {
-            final byte[] nonce;
-            final T key;
-            final BigInteger serial;
-            long type;
-            String id;
-            List<String> validPrincipals;
-            Date validAfter;
-            Date validBefore;
-            Map<String, String> critOptions;
-            Map<String, String> extensions;
-            byte[] signatureKey;
-            byte[] signature;
+            Certificate.Builder<T> builder = Certificate.getBuilder();
 
             try {
-                nonce = buf.readStringAsBytes();
-                key = (T) innerKeyType.readPubKeyFromBuffer(buf);
-                serial = buf.readUInt64AsBigInteger();
-                type = buf.readUInt32();
-                id = buf.readString();
-                validPrincipals = unpackList(buf.readStringAsBytes());
-                validAfter = dateFromEpoch(buf.readUInt64());
-                validBefore = dateFromEpoch(buf.readUInt64());
-                critOptions = unpackMap(buf.readStringAsBytes());
-                extensions = unpackMap(buf.readStringAsBytes());
+                builder.nonce(buf.readBytes());
+                builder.publicKey((T) innerKeyType.readPubKeyFromBuffer(buf));
+                builder.serial(buf.readUInt64AsBigInteger());
+                builder.type(buf.readUInt32());
+                builder.id(buf.readString());
+                builder.validPrincipals(unpackList(buf.readBytes()));
+                builder.validAfter(dateFromEpoch(buf.readUInt64()));
+                builder.validBefore(dateFromEpoch(buf.readUInt64()));
+                builder.critOptions(unpackMap(buf.readBytes()));
+                builder.extensions(unpackMap(buf.readBytes()));
                 buf.readString(); // reserved
-                signatureKey = buf.readStringAsBytes();
-                signature = buf.readStringAsBytes();
+                builder.signatureKey(buf.readBytes());
+                builder.signature(buf.readBytes());
             } catch (Buffer.BufferException be) {
                 throw new GeneralSecurityException(be);
             }
 
-            Certificate.Builder<T> builder = Certificate.getBuilder();
-            builder.publicKey(key)
-                .nonce(nonce)
-                .serial(serial)
-                .type(type)
-                .id(id)
-                .validPrincipals(validPrincipals)
-                .validAfter(validAfter)
-                .validBefore(validBefore)
-                .critOptions(critOptions)
-                .extensions(extensions)
-                .signatureKey(signatureKey)
-                .signature(signature);
             return builder.build();
         }
 
         static void writePubKeyContentsIntoBuffer(PublicKey publicKey, KeyType innerKeyType, Buffer<?> buf) {
             Certificate<PublicKey> certificate = toCertificate(publicKey);
-            buf.putString(certificate.getNonce());
+            buf.putBytes(certificate.getNonce());
             innerKeyType.writePubKeyContentsIntoBuffer(certificate.getKey(), buf);
             buf.putUInt64(certificate.getSerial())
                 .putUInt32(certificate.getType())
                 .putString(certificate.getId())
-                .putString(packList(certificate.getValidPrincipals()))
+                .putBytes(packList(certificate.getValidPrincipals()))
                 .putUInt64(epochFromDate(certificate.getValidAfter()))
                 .putUInt64(epochFromDate(certificate.getValidBefore()))
-                .putString(packMap(certificate.getCritOptions()))
-                .putString(packMap(certificate.getExtensions()))
+                .putBytes(packMap(certificate.getCritOptions()))
+                .putBytes(packMap(certificate.getExtensions()))
                 .putString("") // reserved
-                .putString(certificate.getSignatureKey())
-                .putString(certificate.getSignature());
+                .putBytes(certificate.getSignatureKey())
+                .putBytes(certificate.getSignature());
         }
 
         static boolean isCertificateOfType(Key key, KeyType innerKeyType) {

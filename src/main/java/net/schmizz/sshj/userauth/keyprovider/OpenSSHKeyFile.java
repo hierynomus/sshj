@@ -59,7 +59,7 @@ public class OpenSSHKeyFile
     public void init(File location) {
         // try cert key location first
         File pubKey = new File(location + "-cert.pub");
-        if (! pubKey.exists()) {
+        if (!pubKey.exists()) {
             pubKey = new File(location + ".pub");
         }
         if (pubKey.exists())
