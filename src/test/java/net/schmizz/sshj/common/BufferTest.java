@@ -15,10 +15,14 @@
  */
 package net.schmizz.sshj.common;
 
+import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-import org.junit.Test;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+
+import java.math.BigInteger;
+
+import org.junit.Test;
 
 public class BufferTest {
 
@@ -42,6 +46,105 @@ public class BufferTest {
             fail("Allegedly created buffer with size " + Integer.MAX_VALUE);
         } catch (IllegalArgumentException e) {
             // success
+        }
+    }
+
+    @Test
+    public void shouldThrowOnPutNegativeLongUInt64() {
+        try {
+            new PlainBuffer().putUInt64(-1l);
+            fail("Added negative uint64 to buffer?");
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    @Test
+    public void shouldThrowOnReadNegativeLongUInt64() {
+        byte[] negativeLong = new byte[] { (byte) 0x80,
+                                           (byte) 0x00,
+                                           (byte) 0x00,
+                                           (byte) 0x00,
+                                           (byte) 0x00,
+                                           (byte) 0x00,
+                                           (byte) 0x00,
+                                           (byte) 0x01 };
+        Buffer<?> buff = new PlainBuffer(negativeLong);
+
+        try {
+            buff.readUInt64();
+            fail("Read negative uint64 from buffer?");
+        } catch (BufferException e) {
+            // success
+        }
+    }
+
+    @Test
+    public void shouldThrowOnPutNegativeBigIntegerUInt64() {
+        try {
+            new PlainBuffer().putUInt64(new BigInteger("-1"));
+            fail("Added negative uint64 to buffer?");
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    @Test
+    public void shouldHaveCorrectValueForMaxUInt64() {
+        byte[] maxUInt64InBytes = new byte[] { (byte) 0xFF, (byte) 0xFF,
+                                               (byte) 0xFF, (byte) 0xFF,
+                                               (byte) 0xFF, (byte) 0xFF,
+                                               (byte) 0xFF, (byte) 0xFF };
+        BigInteger maxUInt64 = new BigInteger(1, maxUInt64InBytes);
+        new PlainBuffer().putUInt64(maxUInt64); // no exception
+
+        BigInteger tooBig = maxUInt64.add(BigInteger.ONE);
+        try {
+            new PlainBuffer().putUInt64(tooBig);
+            fail("Added 2^64 (too big) as uint64 to buffer?");
+        } catch (IllegalArgumentException e) {
+            // success
+        }
+    }
+
+    @Test
+    public void shouldCorrectlyEncodeAndDecodeUInt64Types() throws BufferException {
+        // This number fits into a unsigned 64 bit integer but not a signed one.
+        BigInteger bigUint64 = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE).add(BigInteger.ONE);
+        assertEquals(0x8000000000000001l, bigUint64.longValue());
+
+        Buffer<PlainBuffer> buff = new PlainBuffer();
+        buff.putUInt64(bigUint64);
+        byte[] data = buff.getCompactData();
+        assertEquals(8, data.length);
+        assertEquals((byte) 0x80, data[0]);
+        assertEquals((byte) 0x00, data[1]);
+        assertEquals((byte) 0x00, data[2]);
+        assertEquals((byte) 0x00, data[3]);
+        assertEquals((byte) 0x00, data[4]);
+        assertEquals((byte) 0x00, data[5]);
+        assertEquals((byte) 0x00, data[6]);
+        assertEquals((byte) 0x01, data[7]);
+
+        byte[] asBinary = new byte[] { (byte) 0x80,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x00,
+                                       (byte) 0x01 };
+        buff = new PlainBuffer(asBinary);
+        assertEquals(bigUint64, buff.readUInt64AsBigInteger());
+    }
+
+    @Test
+    public void shouldHaveSameUInt64EncodingForBigIntegerAndLong() {
+        long[] values = { 0l, 1l, 232634978082517765l, Long.MAX_VALUE - 1, Long.MAX_VALUE };
+        for (long value : values) {
+            byte[] bytesBigInt = new PlainBuffer().putUInt64(BigInteger.valueOf(value)).getCompactData();
+            byte[] bytesLong = new PlainBuffer().putUInt64(value).getCompactData();
+            assertArrayEquals("Value: " + value, bytesLong, bytesBigInt);
         }
     }
 }

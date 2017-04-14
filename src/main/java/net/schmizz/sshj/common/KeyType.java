@@ -15,12 +15,26 @@
  */
 package net.schmizz.sshj.common;
 
-import com.hierynomus.sshj.secg.SecgUtils;
-import com.hierynomus.sshj.signature.Ed25519PublicKey;
-import net.i2p.crypto.eddsa.EdDSAPublicKey;
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.interfaces.DSAPrivateKey;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.DSAPublicKeySpec;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECParameterSpec;
@@ -29,19 +43,18 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.PublicKey;
-import java.security.interfaces.*;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.RSAPublicKeySpec;
-import java.util.Arrays;
+import com.hierynomus.sshj.secg.SecgUtils;
+import com.hierynomus.sshj.signature.Ed25519PublicKey;
+import com.hierynomus.sshj.userauth.certificate.Certificate;
+
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
+import net.schmizz.sshj.common.Buffer.BufferException;
 
 /** Type of key e.g. rsa, dsa */
 public enum KeyType {
-
 
     /** SSH identifier for RSA keys */
     RSA("ssh-rsa") {
@@ -60,18 +73,16 @@ public enum KeyType {
         }
 
         @Override
-        public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final RSAPublicKey rsaKey = (RSAPublicKey) pk;
-            buf.putString(sType)
-                    .putMPInt(rsaKey.getPublicExponent()) // e
-                    .putMPInt(rsaKey.getModulus()); // n
+            buf.putMPInt(rsaKey.getPublicExponent()) // e
+                .putMPInt(rsaKey.getModulus()); // n
         }
 
         @Override
         protected boolean isMyType(Key key) {
             return (key instanceof RSAPublicKey || key instanceof RSAPrivateKey);
         }
-
     },
 
     /** SSH identifier for DSA keys */
@@ -93,10 +104,9 @@ public enum KeyType {
         }
 
         @Override
-        public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final DSAPublicKey dsaKey = (DSAPublicKey) pk;
-            buf.putString(sType)
-                    .putMPInt(dsaKey.getParams().getP()) // p
+            buf.putMPInt(dsaKey.getParams().getP()) // p
                     .putMPInt(dsaKey.getParams().getQ()) // q
                     .putMPInt(dsaKey.getParams().getG()) // g
                     .putMPInt(dsaKey.getY()); // y
@@ -161,12 +171,11 @@ public enum KeyType {
 
 
         @Override
-        public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final ECPublicKey ecdsa = (ECPublicKey) pk;
             byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
 
-            buf.putString(sType)
-                .putString(NISTP_CURVE)
+            buf.putString(NISTP_CURVE)
                 .putBytes(encoded);
         }
 
@@ -202,14 +211,52 @@ public enum KeyType {
         }
 
         @Override
-        public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             EdDSAPublicKey key = (EdDSAPublicKey) pk;
-            buf.putString(sType).putBytes(key.getAbyte());
+            buf.putBytes(key.getAbyte());
         }
 
         @Override
         protected boolean isMyType(Key key) {
             return "EdDSA".equals(key.getAlgorithm());
+        }
+    },
+
+    /** Signed rsa certificate */
+    RSA_CERT("ssh-rsa-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, RSA);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, RSA, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, RSA);
+        }
+    },
+
+    /** Signed dsa certificate */
+    DSA_CERT("ssh-dss-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, DSA);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, DSA, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, DSA);
         }
     },
 
@@ -223,6 +270,11 @@ public enum KeyType {
 
         @Override
         public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            throw new UnsupportedOperationException("Don't know how to encode key: " + pk);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             throw new UnsupportedOperationException("Don't know how to encode key: " + pk);
         }
 
@@ -244,7 +296,11 @@ public enum KeyType {
     public abstract PublicKey readPubKeyFromBuffer(Buffer<?> buf)
             throws GeneralSecurityException;
 
-    public abstract void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf);
+    protected abstract void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf);
+
+    public void putPubKeyIntoBuffer(PublicKey pk, Buffer<?> buf) {
+        writePubKeyContentsIntoBuffer(pk, buf.putString(sType));
+    }
 
     protected abstract boolean isMyType(Key key);
 
@@ -265,5 +321,130 @@ public enum KeyType {
     @Override
     public String toString() {
         return sType;
+    }
+
+    static class CertUtils {
+
+        @SuppressWarnings("unchecked")
+        static <T extends PublicKey> Certificate<T> readPubKey(Buffer<?> buf, KeyType innerKeyType) throws GeneralSecurityException {
+            Certificate.Builder<T> builder = Certificate.getBuilder();
+
+            try {
+                builder.nonce(buf.readBytes());
+                builder.publicKey((T) innerKeyType.readPubKeyFromBuffer(buf));
+                builder.serial(buf.readUInt64AsBigInteger());
+                builder.type(buf.readUInt32());
+                builder.id(buf.readString());
+                builder.validPrincipals(unpackList(buf.readBytes()));
+                builder.validAfter(dateFromEpoch(buf.readUInt64()));
+                builder.validBefore(dateFromEpoch(buf.readUInt64()));
+                builder.critOptions(unpackMap(buf.readBytes()));
+                builder.extensions(unpackMap(buf.readBytes()));
+                buf.readString(); // reserved
+                builder.signatureKey(buf.readBytes());
+                builder.signature(buf.readBytes());
+            } catch (Buffer.BufferException be) {
+                throw new GeneralSecurityException(be);
+            }
+
+            return builder.build();
+        }
+
+        static void writePubKeyContentsIntoBuffer(PublicKey publicKey, KeyType innerKeyType, Buffer<?> buf) {
+            Certificate<PublicKey> certificate = toCertificate(publicKey);
+            buf.putBytes(certificate.getNonce());
+            innerKeyType.writePubKeyContentsIntoBuffer(certificate.getKey(), buf);
+            buf.putUInt64(certificate.getSerial())
+                .putUInt32(certificate.getType())
+                .putString(certificate.getId())
+                .putBytes(packList(certificate.getValidPrincipals()))
+                .putUInt64(epochFromDate(certificate.getValidAfter()))
+                .putUInt64(epochFromDate(certificate.getValidBefore()))
+                .putBytes(packMap(certificate.getCritOptions()))
+                .putBytes(packMap(certificate.getExtensions()))
+                .putString("") // reserved
+                .putBytes(certificate.getSignatureKey())
+                .putBytes(certificate.getSignature());
+        }
+
+        static boolean isCertificateOfType(Key key, KeyType innerKeyType) {
+            if (!(key instanceof Certificate)) {
+                return false;
+            }
+            @SuppressWarnings("unchecked")
+            Key innerKey = ((Certificate<PublicKey>) key).getKey();
+            return innerKeyType.isMyType(innerKey);
+        }
+
+        @SuppressWarnings("unchecked")
+        static Certificate<PublicKey> toCertificate(PublicKey key) {
+            if (!(key instanceof Certificate)) {
+                throw new UnsupportedOperationException("Can't convert non-certificate key " +
+                                                        key.getAlgorithm() + " to certificate");
+            }
+            return ((Certificate<PublicKey>) key);
+        }
+
+        private static Date dateFromEpoch(long seconds) {
+            return new Date(seconds * 1000);
+        }
+
+        private static long epochFromDate(Date date) {
+            return date.getTime() / 1000;
+        }
+
+        private static String unpackString(byte[] packedString) throws BufferException {
+            if (packedString.length == 0) {
+                return "";
+            }
+            return new Buffer.PlainBuffer(packedString).readString();
+        }
+
+        private static List<String> unpackList(byte[] packedString) throws BufferException {
+            List<String> list = new ArrayList<String>();
+            Buffer<?> buf = new Buffer.PlainBuffer(packedString);
+            while (buf.available() > 0) {
+                list.add(buf.readString());
+            }
+            return list;
+        }
+
+        private static Map<String, String> unpackMap(byte[] packedString) throws BufferException {
+            Map<String, String> map = new LinkedHashMap<String, String>();
+            Buffer<?> buf = new Buffer.PlainBuffer(packedString);
+            while (buf.available() > 0) {
+                String name = buf.readString();
+                String data = unpackString(buf.readStringAsBytes());
+                map.put(name, data);
+            }
+            return map;
+        }
+
+        private static byte[] packString(String data) {
+            if (data == null || data.isEmpty()) {
+                return "".getBytes();
+            }
+            return new Buffer.PlainBuffer().putString(data).getCompactData();
+        }
+
+        private static byte[] packList(Iterable<String> strings) {
+            Buffer<?> buf = new Buffer.PlainBuffer();
+            for (String string : strings) {
+                buf.putString(string);
+            }
+            return buf.getCompactData();
+        }
+
+        private static byte[] packMap(Map<String, String> map) {
+            Buffer<?> buf = new Buffer.PlainBuffer();
+            List<String> keys = new ArrayList<String>(map.keySet());
+            Collections.sort(keys);
+            for (String key : keys) {
+                buf.putString(key);
+                String value = map.get(key);
+                buf.putString(packString(value));
+            }
+            return buf.getCompactData();
+        }
     }
 }
