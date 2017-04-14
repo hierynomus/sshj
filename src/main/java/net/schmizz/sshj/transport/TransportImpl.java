@@ -196,8 +196,11 @@ public final class TransportImpl
         final Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
         while ((serverID = readIdentification(buf)).isEmpty()) {
             int b = connInfo.in.read();
-            if (b == -1)
+            if (b == -1) {
+                log.error("Received end of connection, but no identification received. ");
                 throw new TransportException("Server closed connection during identification exchange");
+
+            }
             buf.putByte((byte) b);
         }
     }
