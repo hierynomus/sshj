@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.19.0
+:sshj_version: 0.21.0
 :source-highlighter: pygments
 
 image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
@@ -84,7 +84,7 @@ compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)
 
 private key files::
-   `pkcs5`, `pkcs8`, `openssh-key-v1`
+   `pkcs5`, `pkcs8`, `openssh-key-v1`, `ssh-rsa-cert-v01@openssh.com`, `ssh-dsa-cert-v01@openssh.com`
 
 If you need something that is not included, it shouldn't be too hard to add (do contribute it!)
 
@@ -104,7 +104,8 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ ?.??.? (2017-??-??)::
+SSHJ 0.21.0 (2017-04-14)::
+* Merged https://github.com/hierynomus/sshj/pulls/319[#319]: Added support for `ssh-rsa-cert-v01@openssh.com` and `ssh-dsa-cert-v01@openssh.com` certificate key files
 * Upgraded Gradle to 3.4.1
 * Merged https://github.com/hierynomus/sshj/pulls/305[#305]: Added support for custom string encoding
 * Fixed https://github.com/hierynomus/sshj/issues/312[#312]: Upgraded BouncyCastle to 1.56
