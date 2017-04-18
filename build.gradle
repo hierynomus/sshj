@@ -24,7 +24,7 @@ targetCompatibility = 1.6
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.51"
+def bouncycastleVersion = "1.56"
 
 dependencies {
   compile "org.slf4j:slf4j-api:1.7.7"
@@ -68,10 +68,12 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
-task writeSshjVersionProperties << {
-  project.file("${project.buildDir}/resources/main").mkdirs()
-  project.file("${project.buildDir}/resources/main/sshj.properties").withWriter { w ->
-    w.append("sshj.version=${version}")
+task writeSshjVersionProperties {
+  doLast {
+    project.file("${project.buildDir}/resources/main").mkdirs()
+    project.file("${project.buildDir}/resources/main/sshj.properties").withWriter { w ->
+      w.append("sshj.version=${version}")
+    }
   }
 }
 

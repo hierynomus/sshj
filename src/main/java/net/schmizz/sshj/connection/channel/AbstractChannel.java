@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +52,8 @@ public abstract class AbstractChannel
     private final int id;
     /** Remote recipient ID */
     private int recipient;
+    /** Remote character set */
+    private final Charset remoteCharset;
 
     private boolean eof = false;
 
@@ -78,12 +81,16 @@ public abstract class AbstractChannel
     private volatile boolean autoExpand = false;
 
     protected AbstractChannel(Connection conn, String type) {
+        this(conn, type, null);
+    }
+    protected AbstractChannel(Connection conn, String type, Charset remoteCharset) {
         this.conn = conn;
         this.loggerFactory = conn.getTransport().getConfig().getLoggerFactory();
         this.type = type;
         this.log = loggerFactory.getLogger(getClass());
         this.trans = conn.getTransport();
 
+        this.remoteCharset = remoteCharset != null ? remoteCharset : IOUtils.UTF8;
         id = conn.nextID();
 
         lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize(), loggerFactory);
@@ -133,6 +140,11 @@ public abstract class AbstractChannel
     @Override
     public int getRecipient() {
         return recipient;
+    }
+
+    @Override
+    public Charset getRemoteCharset() {
+        return remoteCharset;
     }
 
     @Override

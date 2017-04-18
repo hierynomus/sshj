@@ -16,6 +16,7 @@
 package net.schmizz.sshj;
 
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -61,6 +62,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.*;
@@ -127,6 +129,9 @@ public class SSHClient
     protected final Connection conn;
 
     private final List<LocalPortForwarder> forwarders = new ArrayList<LocalPortForwarder>();
+
+    /** character set of the remote machine */
+    protected Charset remoteCharset = IOUtils.UTF8;
 
     /** Default constructor. Initializes this object using {@link DefaultConfig}. */
     public SSHClient() {
@@ -440,6 +445,15 @@ public class SSHClient
         return conn;
     }
 
+    /**
+     * Returns the character set used to communicate with the remote machine for certain strings (like paths).
+     *
+     * @return remote character set
+     */
+    public Charset getRemoteCharset() {
+        return remoteCharset;
+    }
+
     /** @return a {@link RemotePortForwarder} that allows requesting remote forwarding over this connection. */
     public RemotePortForwarder getRemotePortForwarder() {
         synchronized (conn) {
@@ -708,12 +722,22 @@ public class SSHClient
         doKex();
     }
 
+    /**
+     * Sets the character set used to communicate with the remote machine for certain strings (like paths)
+     *
+     * @param remoteCharset
+     *        remote character set or {@code null} for default
+     */
+    public void setRemoteCharset(Charset remoteCharset) {
+        this.remoteCharset = remoteCharset != null ? remoteCharset : IOUtils.UTF8;
+    }
+
     @Override
     public Session startSession()
             throws ConnectionException, TransportException {
         checkConnected();
         checkAuthenticated();
-        final SessionChannel sess = new SessionChannel(conn);
+        final SessionChannel sess = new SessionChannel(conn, remoteCharset);
         sess.open();
         return sess;
     }

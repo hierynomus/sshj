@@ -16,6 +16,7 @@
 package net.schmizz.sshj.sftp;
 
 import net.schmizz.concurrent.Promise;
+import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -137,7 +139,7 @@ public class SFTPEngine
     public RemoteFile open(String path, Set<OpenMode> modes, FileAttributes fa)
             throws IOException {
         final byte[] handle = doRequest(
-                newRequest(PacketType.OPEN).putString(path).putUInt32(OpenMode.toMask(modes)).putFileAttributes(fa)
+                newRequest(PacketType.OPEN).putString(path, sub.getRemoteCharset()).putUInt32(OpenMode.toMask(modes)).putFileAttributes(fa)
         ).ensurePacketTypeIs(PacketType.HANDLE).readBytes();
         return new RemoteFile(this, path, handle);
     }
@@ -155,7 +157,7 @@ public class SFTPEngine
     public RemoteDirectory openDir(String path)
             throws IOException {
         final byte[] handle = doRequest(
-                newRequest(PacketType.OPENDIR).putString(path)
+                newRequest(PacketType.OPENDIR).putString(path, sub.getRemoteCharset())
         ).ensurePacketTypeIs(PacketType.HANDLE).readBytes();
         return new RemoteDirectory(this, path, handle);
     }
@@ -163,7 +165,7 @@ public class SFTPEngine
     public void setAttributes(String path, FileAttributes attrs)
             throws IOException {
         doRequest(
-                newRequest(PacketType.SETSTAT).putString(path).putFileAttributes(attrs)
+                newRequest(PacketType.SETSTAT).putString(path, sub.getRemoteCharset()).putFileAttributes(attrs)
         ).ensureStatusPacketIsOK();
     }
 
@@ -173,13 +175,13 @@ public class SFTPEngine
             throw new SFTPException("READLINK is not supported in SFTPv" + operativeVersion);
         return readSingleName(
                 doRequest(
-                        newRequest(PacketType.READLINK).putString(path)
-                ));
+                        newRequest(PacketType.READLINK).putString(path, sub.getRemoteCharset())
+                ), sub.getRemoteCharset());
     }
 
     public void makeDir(String path, FileAttributes attrs)
             throws IOException {
-        doRequest(newRequest(PacketType.MKDIR).putString(path).putFileAttributes(attrs)).ensureStatusPacketIsOK();
+        doRequest(newRequest(PacketType.MKDIR).putString(path, sub.getRemoteCharset()).putFileAttributes(attrs)).ensureStatusPacketIsOK();
     }
 
     public void makeDir(String path)
@@ -192,21 +194,21 @@ public class SFTPEngine
         if (operativeVersion < 3)
             throw new SFTPException("SYMLINK is not supported in SFTPv" + operativeVersion);
         doRequest(
-                newRequest(PacketType.SYMLINK).putString(linkpath).putString(targetpath)
+                newRequest(PacketType.SYMLINK).putString(linkpath, sub.getRemoteCharset()).putString(targetpath, sub.getRemoteCharset())
         ).ensureStatusPacketIsOK();
     }
 
     public void remove(String filename)
             throws IOException {
         doRequest(
-                newRequest(PacketType.REMOVE).putString(filename)
+                newRequest(PacketType.REMOVE).putString(filename, sub.getRemoteCharset())
         ).ensureStatusPacketIsOK();
     }
 
     public void removeDir(String path)
             throws IOException {
         doRequest(
-                newRequest(PacketType.RMDIR).putString(path)
+                newRequest(PacketType.RMDIR).putString(path, sub.getRemoteCharset())
         ).ensureStatusIs(Response.StatusCode.OK);
     }
 
@@ -225,7 +227,7 @@ public class SFTPEngine
         if (operativeVersion < 1)
             throw new SFTPException("RENAME is not supported in SFTPv" + operativeVersion);
         doRequest(
-                newRequest(PacketType.RENAME).putString(oldPath).putString(newPath)
+                newRequest(PacketType.RENAME).putString(oldPath, sub.getRemoteCharset()).putString(newPath, sub.getRemoteCharset())
         ).ensureStatusPacketIsOK();
     }
 
@@ -233,8 +235,8 @@ public class SFTPEngine
             throws IOException {
         return readSingleName(
                 doRequest(
-                        newRequest(PacketType.REALPATH).putString(path)
-                ));
+                        newRequest(PacketType.REALPATH).putString(path, sub.getRemoteCharset())
+                ), sub.getRemoteCharset());
     }
 
     public void setTimeoutMs(int timeoutMs) {
@@ -258,18 +260,30 @@ public class SFTPEngine
 
     protected FileAttributes stat(PacketType pt, String path)
             throws IOException {
-        return doRequest(newRequest(pt).putString(path))
+        return doRequest(newRequest(pt).putString(path, sub.getRemoteCharset()))
                 .ensurePacketTypeIs(PacketType.ATTRS)
                 .readFileAttributes();
     }
 
-    protected static String readSingleName(Response res)
+    private static byte[] readSingleNameAsBytes(Response res)
             throws IOException {
         res.ensurePacketTypeIs(PacketType.NAME);
         if (res.readUInt32AsInt() == 1)
-            return res.readString();
+            return res.readStringAsBytes();
         else
             throw new SFTPException("Unexpected data in " + res.getType() + " packet");
+    }
+
+    /** Using UTF-8 */
+    protected static String readSingleName(Response res)
+        throws IOException {
+        return readSingleName(res, IOUtils.UTF8);
+    }
+
+    /** Using any character set */
+    protected static String readSingleName(Response res, Charset charset)
+        throws IOException {
+        return new String(readSingleNameAsBytes(res), charset);
     }
 
     protected synchronized void transmit(SFTPPacket<Request> payload)

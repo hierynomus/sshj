@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/** @see <a href="http://blogs.sun.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
+/** @see <a href="https://blogs.oracle.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
 class SCPEngine {
 
 
@@ -128,7 +128,7 @@ class SCPEngine {
 
     void sendMessage(String msg) throws IOException {
         log.debug("Sending message: {}", msg);
-        scp.getOutputStream().write((msg + LF).getBytes(IOUtils.UTF8));
+        scp.getOutputStream().write((msg + LF).getBytes(scp.getRemoteCharset()));
         scp.getOutputStream().flush();
         check("Message ACK received");
     }

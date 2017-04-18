@@ -15,32 +15,44 @@
  */
 package net.schmizz.sshj.keyprovider;
 
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
-import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
-import net.schmizz.sshj.userauth.password.Resource;
-import net.schmizz.sshj.util.KeyUtil;
-import org.apache.sshd.common.util.SecurityUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.Scanner;
-
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
+import java.util.Scanner;
+
+import org.apache.sshd.common.util.SecurityUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.hierynomus.sshj.userauth.certificate.Certificate;
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
+
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
+import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
+import net.schmizz.sshj.userauth.password.Resource;
+import net.schmizz.sshj.util.KeyUtil;
 
 public class OpenSSHKeyFileTest {
 
@@ -161,6 +173,68 @@ public class OpenSSHKeyFileTest {
         assertThat(aPrivate.getAlgorithm(), equalTo("EdDSA"));
     }
 
+    @Test
+    public void shouldSuccessfullyLoadSignedRSAPublicKey() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa"),
+                     PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        PublicKey pubKey = keyFile.getPublic();
+        assertEquals("RSA", pubKey.getAlgorithm());
+
+        @SuppressWarnings("unchecked")
+        Certificate<RSAPublicKey> certificate = (Certificate<RSAPublicKey>) pubKey;
+
+        assertEquals(new BigInteger("9223372036854775809"), certificate.getSerial());
+        assertEquals("testrsa", certificate.getId());
+
+        assertEquals(2, certificate.getValidPrincipals().size());
+        assertTrue(certificate.getValidPrincipals().contains("jeroen"));
+        assertTrue(certificate.getValidPrincipals().contains("nobody"));
+
+        assertEquals(parseDate("2017-04-11 17:38:00 -0400"), certificate.getValidAfter());
+        assertEquals(parseDate("2017-04-11 18:09:27 -0400"), certificate.getValidBefore());
+
+        assertEquals(0, certificate.getCritOptions().size());
+
+        Map<String, String> extensions = certificate.getExtensions();
+        assertEquals(5, extensions.size());
+        assertEquals("", extensions.get("permit-X11-forwarding"));
+        assertEquals("", extensions.get("permit-agent-forwarding"));
+        assertEquals("", extensions.get("permit-port-forwarding"));
+        assertEquals("", extensions.get("permit-pty"));
+        assertEquals("", extensions.get("permit-user-rc"));
+
+    }
+
+    @Test
+    public void shouldSuccessfullyLoadSignedDSAPublicKey() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_dsa"),
+                     PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        PublicKey pubKey = keyFile.getPublic();
+        assertEquals("DSA", pubKey.getAlgorithm());
+
+        @SuppressWarnings("unchecked")
+        Certificate<RSAPublicKey> certificate = (Certificate<RSAPublicKey>) pubKey;
+
+        assertEquals(new BigInteger("123"), certificate.getSerial());
+        assertEquals("testdsa", certificate.getId());
+
+        assertEquals(1, certificate.getValidPrincipals().size());
+        assertTrue(certificate.getValidPrincipals().contains("jeroen"));
+
+        assertEquals(parseDate("2017-04-11 17:37:00 -0400"), certificate.getValidAfter());
+        assertEquals(parseDate("2017-04-12 03:38:49 -0400"), certificate.getValidBefore());
+
+        assertEquals(1, certificate.getCritOptions().size());
+        assertEquals("10.0.0.0/8", certificate.getCritOptions().get("source-address"));
+
+        assertEquals(1, certificate.getExtensions().size());
+        assertEquals("", certificate.getExtensions().get("permit-pty"));
+    }
+
     @Before
     public void setup()
             throws UnsupportedEncodingException, GeneralSecurityException {
@@ -180,6 +254,15 @@ public class OpenSSHKeyFileTest {
             return fileContents.toString();
         } finally {
             scanner.close();
+        }
+    }
+
+    private Date parseDate(String date) {
+        DateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
+        try {
+            return f.parse(date);
+        } catch (ParseException e) {
+            return null;
         }
     }
 }

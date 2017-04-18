@@ -15,8 +15,8 @@
  */
 package net.schmizz.sshj.common;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -56,6 +56,11 @@ public class Buffer<T extends Buffer<T>> {
 
     /** The maximum valid size of buffer (i.e. biggest power of two that can be represented as an int - 2^30) */
     public static final int MAX_SIZE = (1 << 30); 
+
+    /** Maximum size of a uint64 */
+    private static final BigInteger MAX_UINT64_VALUE = BigInteger.ONE
+                                                            .shiftLeft(64)
+                                                            .subtract(BigInteger.ONE);
 
     protected static int getNextPowerOf2(int i) {
         int j = 1;
@@ -343,10 +348,29 @@ public class Buffer<T extends Buffer<T>> {
         return uint64;
     }
 
-    @SuppressWarnings("unchecked")
+    public BigInteger readUInt64AsBigInteger()
+            throws BufferException {
+        byte[] magnitude = new byte[8];
+        readRawBytes(magnitude);
+        return new BigInteger(1, magnitude);
+    }
+
     public T putUInt64(long uint64) {
         if (uint64 < 0)
             throw new IllegalArgumentException("Invalid value: " + uint64);
+        return putUInt64Unchecked(uint64);
+    }
+
+    public T putUInt64(BigInteger uint64) {
+        if (uint64.compareTo(MAX_UINT64_VALUE) > 0 ||
+                uint64.compareTo(BigInteger.ZERO) < 0) {
+            throw new IllegalArgumentException("Invalid value: " + uint64);
+        }
+        return putUInt64Unchecked(uint64.longValue());
+    }
+
+    @SuppressWarnings("unchecked")
+    private T putUInt64Unchecked(long uint64) {
         data[wpos++] = (byte) (uint64 >> 56);
         data[wpos++] = (byte) (uint64 >> 48);
         data[wpos++] = (byte) (uint64 >> 40);
@@ -361,22 +385,29 @@ public class Buffer<T extends Buffer<T>> {
     /**
      * Reads an SSH string
      *
+     * @param cs the charset to use for decoding
+     *
      * @return the string as a Java {@code String}
      */
-    public String readString()
+    public String readString(Charset cs)
             throws BufferException {
         int len = readUInt32AsInt();
         if (len < 0 || len > 32768)
             throw new BufferException("Bad item length: " + len);
         ensureAvailable(len);
-        String s;
-        try {
-            s = new String(data, rpos, len, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new SSHRuntimeException(e);
-        }
+        String s = new String(data, rpos, len, cs);
         rpos += len;
         return s;
+    }
+
+    /**
+     * Reads an SSH string using {@code UTF8}
+     *
+     * @return the string as a Java {@code String}
+     */
+    public String readString()
+            throws BufferException {
+        return readString(IOUtils.UTF8);
     }
 
     /**
@@ -397,8 +428,12 @@ public class Buffer<T extends Buffer<T>> {
         return putBytes(str, offset, len);
     }
 
+    public T putString(String string, Charset cs) {
+        return putString(string.getBytes(cs));
+    }
+
     public T putString(String string) {
-        return putString(string.getBytes(IOUtils.UTF8));
+        return putString(string, IOUtils.UTF8);
     }
 
     /**

@@ -42,7 +42,7 @@ public class RemoteDirectory
                 case NAME:
                     final int count = res.readUInt32AsInt();
                     for (int i = 0; i < count; i++) {
-                        final String name = res.readString();
+                        final String name = res.readString(requester.sub.getRemoteCharset());
                         res.readString(); // long name - IGNORED - shdve never been in the protocol
                         final FileAttributes attrs = res.readFileAttributes();
                         final PathComponents comps = requester.getPathHelper().getComponents(path, name);
