@@ -138,7 +138,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         int length = len;
         int offset = off;
         while (length > 0) {
-            final int n = buffer.write(data, offset, len);
+            final int n = buffer.write(data, offset, length);
             offset += n;
             length -= n;
         }
