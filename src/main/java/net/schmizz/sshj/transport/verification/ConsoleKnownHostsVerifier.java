@@ -48,7 +48,7 @@ public class ConsoleKnownHostsVerifier
         }
         if (response.equalsIgnoreCase(YES)) {
             try {
-                entries().add(new SimpleEntry(null, hostname, KeyType.fromKey(key), key));
+                entries().add(new HostEntry(null, hostname, KeyType.fromKey(key), key));
                 write();
                 console.printf("Warning: Permanently added '%s' (%s) to the list of known hosts.\n", hostname, type);
             } catch (IOException e) {
@@ -60,7 +60,7 @@ public class ConsoleKnownHostsVerifier
     }
 
     @Override
-    protected boolean hostKeyChangedAction(HostEntry entry, String hostname, PublicKey key) {
+    protected boolean hostKeyChangedAction(KnownHostEntry entry, String hostname, PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
         final String fp = SecurityUtils.getFingerprint(key);
         final String path = getFile().getAbsolutePath();
