@@ -149,8 +149,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         this.error = error;
     }
 
-    private void checkClose()
-            throws SSHException {
+    private void checkClose() throws SSHException {
         if (closed) {
             if (error != null)
                 throw error;
@@ -160,8 +159,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     }
 
     @Override
-    public synchronized void close()
-            throws IOException {
+    public synchronized void close() throws IOException {
         if (!closed) {
             try {
                 buffer.flush(false);
