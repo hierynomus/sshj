@@ -27,8 +27,8 @@
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <logger name="org.apache.sshd.server" level="debug" />
-    <logger name="net.schmizz.sshj" level="debug"/>
-    <logger name="net.schmizz.sshj.transport" level="trace" />
+    <!--<logger name="org.apache.sshd.server" level="debug" />-->
+    <!--<logger name="net.schmizz.sshj" level="debug"/>-->
+    <!--<logger name="net.schmizz.sshj.transport" level="trace" />-->
 
 </configuration>
