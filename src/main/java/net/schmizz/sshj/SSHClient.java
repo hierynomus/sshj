@@ -139,12 +139,31 @@ public class SSHClient
     }
 
     /**
+     * Constructor that allows specifying port to be used.
+     *
+     * @param port ssh client port
+     */
+    public SSHClient(int port) {
+        this(port, new DefaultConfig());
+    }
+
+    /**
      * Constructor that allows specifying a {@code config} to be used.
      *
      * @param config {@link Config} instance
      */
     public SSHClient(Config config) {
-        super(DEFAULT_PORT);
+        this(DEFAULT_PORT, config);
+    }
+
+    /**
+     * Constructor that allows specifying port and a {@code config} to be used.
+     *
+     * @param port ssh client port
+     * @param config {@link Config} instance
+     */
+    public SSHClient(int port, Config config) {
+        super(port);
 	loggerFactory = config.getLoggerFactory();
 	log = loggerFactory.getLogger(getClass());
         this.trans = new TransportImpl(config, this);
