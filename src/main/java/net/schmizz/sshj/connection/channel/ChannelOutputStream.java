@@ -165,7 +165,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         if (!closed) {
             try {
                 buffer.flush(false);
-//                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
+                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
             } finally {
                 closed = true;
             }
