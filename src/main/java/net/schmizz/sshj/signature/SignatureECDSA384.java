@@ -23,7 +23,7 @@ import java.math.BigInteger;
 import java.security.SignatureException;
 
 /** ECDSA {@link Signature} */
-public class SignatureECDSA
+public class SignatureECDSA384
         extends AbstractSignature {
 
     /** A named factory for ECDSA signature */
@@ -32,18 +32,18 @@ public class SignatureECDSA
 
         @Override
         public Signature create() {
-            return new SignatureECDSA();
+            return new SignatureECDSA384();
         }
 
         @Override
         public String getName() {
-            return KeyType.ECDSA256.toString();
+            return KeyType.ECDSA384.toString();
         }
 
     }
 
-    public SignatureECDSA() {
-        super("SHA256withECDSA");
+    public SignatureECDSA384() {
+        super("SHA384withECDSA");
     }
 
     @Override
@@ -75,8 +75,8 @@ public class SignatureECDSA
         try {
             Buffer sigbuf = new Buffer.PlainBuffer(sig);
             final String algo = new String(sigbuf.readBytes());
-            if (!"ecdsa-sha2-nistp256".equals(algo)) {
-                throw new SSHRuntimeException(String.format("Signature :: ecdsa-sha2-nistp256 expected, got %s", algo));
+            if (!"ecdsa-sha2-nistp384".equals(algo)) {
+                throw new SSHRuntimeException(String.format("Signature :: ecdsa-sha2-nistp384 expected, got %s", algo));
             }
             final int rsLen = sigbuf.readUInt32AsInt();
             if (sigbuf.available() != rsLen) {
