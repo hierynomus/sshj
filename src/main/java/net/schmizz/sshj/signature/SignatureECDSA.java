@@ -15,24 +15,24 @@
  */
 package net.schmizz.sshj.signature;
 
+import java.math.BigInteger;
+import java.security.SignatureException;
+
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
-
-import java.math.BigInteger;
-import java.security.SignatureException;
 
 /** ECDSA {@link Signature} */
 public class SignatureECDSA
         extends AbstractSignature {
 
-    /** A named factory for ECDSA signature */
-    public static class Factory
+    /** A named factory for ECDSA-256 signature */
+    public static class Factory256
             implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         @Override
         public Signature create() {
-            return new SignatureECDSA();
+            return new SignatureECDSA("SHA256withECDSA", KeyType.ECDSA256.toString());
         }
 
         @Override
@@ -42,10 +42,29 @@ public class SignatureECDSA
 
     }
 
-    public SignatureECDSA() {
-        super("SHA256withECDSA");
+    /** A named factory for ECDSA-384 signature */
+    public static class Factory384
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureECDSA("SHA384withECDSA", KeyType.ECDSA384.toString());
+        }
+
+        @Override
+        public String getName() {
+            return KeyType.ECDSA384.toString();
+        }
+
     }
 
+	private String keyTypeName;
+
+    public SignatureECDSA(String algorithm, String keyTypeName) {
+        super(algorithm);
+        this.keyTypeName = keyTypeName;
+    }
+    
     @Override
     public byte[] encode(byte[] sig) {
         int rIndex = 3;
@@ -75,8 +94,8 @@ public class SignatureECDSA
         try {
             Buffer sigbuf = new Buffer.PlainBuffer(sig);
             final String algo = new String(sigbuf.readBytes());
-            if (!"ecdsa-sha2-nistp256".equals(algo)) {
-                throw new SSHRuntimeException(String.format("Signature :: ecdsa-sha2-nistp256 expected, got %s", algo));
+            if (!keyTypeName.equals(algo)) {
+                throw new SSHRuntimeException(String.format("Signature :: " + keyTypeName + " expected, got %s", algo));
             }
             final int rsLen = sigbuf.readUInt32AsInt();
             if (sigbuf.available() != rsLen) {

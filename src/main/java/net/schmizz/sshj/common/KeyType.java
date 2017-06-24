@@ -35,15 +35,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bouncycastle.asn1.nist.NISTNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hierynomus.sshj.secg.SecgUtils;
 import com.hierynomus.sshj.signature.Ed25519PublicKey;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 
@@ -121,133 +115,43 @@ public enum KeyType {
 
     /** SSH identifier for ECDSA-256 keys */
     ECDSA256("ecdsa-sha2-nistp256") {
-        private final Logger log = LoggerFactory.getLogger(getClass());
 
         @Override
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
-            if (!SecurityUtils.isBouncyCastleRegistered()) {
-                throw new GeneralSecurityException("BouncyCastle is required to read a key of type " + sType);
-            }
-            try {
-                // final String algo = buf.readString();  it has been already read
-                final String curveName = buf.readString();
-                final int keyLen = buf.readUInt32AsInt();
-                final byte x04 = buf.readByte();  // it must be 0x04, but don't think we need that check
-                final byte[] x = new byte[(keyLen - 1) / 2];
-                final byte[] y = new byte[(keyLen - 1) / 2];
-                buf.readRawBytes(x);
-                buf.readRawBytes(y);
-                if(log.isDebugEnabled()) {
-                    log.debug(String.format("Key algo: %s, Key curve: %s, Key Len: %s, 0x04: %s\nx: %s\ny: %s",
-                            sType,
-                            curveName,
-                            keyLen,
-                            x04,
-                            Arrays.toString(x),
-                            Arrays.toString(y))
-                    );
-                }
-
-                if (!NISTP_CURVE_256.equals(curveName)) {
-                    throw new GeneralSecurityException(String.format("Unknown curve %s", curveName));
-                }
-
-                BigInteger bigX = new BigInteger(1, x);
-                BigInteger bigY = new BigInteger(1, y);
-
-                X9ECParameters ecParams = NISTNamedCurves.getByName("p-256");
-                ECPoint pPublicPoint = ecParams.getCurve().createPoint(bigX, bigY);
-                ECParameterSpec spec = new ECParameterSpec(ecParams.getCurve(),
-                        ecParams.getG(), ecParams.getN());
-                ECPublicKeySpec publicSpec = new ECPublicKeySpec(pPublicPoint, spec);
-
-                KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
-                return keyFactory.generatePublic(publicSpec);
-            } catch (Exception ex) {
-                throw new GeneralSecurityException(ex);
-            }
+        	return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "256");
         }
 
 
         @Override
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
-            final ECPublicKey ecdsa = (ECPublicKey) pk;
-            byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
-
-            buf.putString(NISTP_CURVE_256)
-                .putBytes(encoded);
+            ECDSAVariationsAdapter.writePubKeyContentsIntoBuffer(pk, buf);
         }
 
         @Override
         protected boolean isMyType(Key key) {
-            return ("ECDSA".equals(key.getAlgorithm()) && ((ECPublicKey) key).getParams().getCurve().getField().getFieldSize() == 256);
+            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 256);
         }
     },
 
     /** SSH identifier for ECDSA-384 keys */
     ECDSA384("ecdsa-sha2-nistp384") {
-        private final Logger log = LoggerFactory.getLogger(getClass());
-
-        @Override
+    
+    	@Override
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
-            if (!SecurityUtils.isBouncyCastleRegistered()) {
-                throw new GeneralSecurityException("BouncyCastle is required to read a key of type " + sType);
-            }
-            try {
-                // final String algo = buf.readString();  it has been already read
-                final String curveName = buf.readString();
-                final int keyLen = buf.readUInt32AsInt();
-                final byte x04 = buf.readByte();  // it must be 0x04, but don't think we need that check
-                final byte[] x = new byte[(keyLen - 1) / 2];
-                final byte[] y = new byte[(keyLen - 1) / 2];
-                buf.readRawBytes(x);
-                buf.readRawBytes(y);
-                if(log.isDebugEnabled()) {
-                    log.debug(String.format("Key algo: %s, Key curve: %s, Key Len: %s, 0x04: %s\nx: %s\ny: %s",
-                            sType,
-                            curveName,
-                            keyLen,
-                            x04,
-                            Arrays.toString(x),
-                            Arrays.toString(y))
-                    );
-                }
-
-                if (!NISTP_CURVE_384.equals(curveName)) {
-                    throw new GeneralSecurityException(String.format("Unknown curve %s", curveName));
-                }
-
-                BigInteger bigX = new BigInteger(1, x);
-                BigInteger bigY = new BigInteger(1, y);
-
-                X9ECParameters ecParams = NISTNamedCurves.getByName("p-384");
-                ECPoint pPublicPoint = ecParams.getCurve().createPoint(bigX, bigY);
-                ECParameterSpec spec = new ECParameterSpec(ecParams.getCurve(),
-                        ecParams.getG(), ecParams.getN());
-                ECPublicKeySpec publicSpec = new ECPublicKeySpec(pPublicPoint, spec);
-
-                KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
-                return keyFactory.generatePublic(publicSpec);
-            } catch (Exception ex) {
-                throw new GeneralSecurityException(ex);
-            }
+        	return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "384");
         }
 
 
         @Override
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
-            final ECPublicKey ecdsa = (ECPublicKey) pk;
-            byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
-
-            buf.putString(NISTP_CURVE_384)
-                .putBytes(encoded);
+            ECDSAVariationsAdapter.writePubKeyContentsIntoBuffer(pk, buf);
         }
 
         @Override
         protected boolean isMyType(Key key) {
-            return ("ECDSA".equals(key.getAlgorithm()) && ((ECPublicKey) key).getParams().getCurve().getField().getFieldSize() == 384);
+            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 384);
         }
     },
     
@@ -350,10 +254,8 @@ public enum KeyType {
         }
     };
 
-
-    private static final String NISTP_CURVE_256 = "nistp256";
-    private static final String NISTP_CURVE_384 = "nistp384";
-
+	private static String NISTP_CURVE_256 = "qqq";
+	private static String NISTP_CURVE_384 = "qqq";
     protected final String sType;
 
     private KeyType(String type) {
