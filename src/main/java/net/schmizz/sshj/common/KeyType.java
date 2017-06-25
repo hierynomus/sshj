@@ -154,6 +154,27 @@ public enum KeyType {
             return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 384);
         }
     },
+
+    /** SSH identifier for ECDSA-521 keys */
+    ECDSA521("ecdsa-sha2-nistp521") {
+    
+    	@Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+        	return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "521");
+        }
+
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            ECDSAVariationsAdapter.writePubKeyContentsIntoBuffer(pk, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 521);
+        }
+    },
     
     ED25519("ssh-ed25519") {
         private final Logger log = LoggerFactory.getLogger(KeyType.class);

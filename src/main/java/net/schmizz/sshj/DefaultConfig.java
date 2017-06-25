@@ -48,7 +48,9 @@ import net.schmizz.sshj.transport.cipher.BlowfishCBC;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.cipher.TripleDESCBC;
 import net.schmizz.sshj.transport.compression.NoneCompression;
+import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
+import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
 import net.schmizz.sshj.transport.mac.HMACMD5;
 import net.schmizz.sshj.transport.mac.HMACMD596;
@@ -125,8 +127,8 @@ public class DefaultConfig
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
         if (bouncyCastleRegistered) {
-            setKeyExchangeFactories(/*new Curve25519SHA256.Factory(),
-                    new DHGexSHA256.Factory(),*/
+            setKeyExchangeFactories(new Curve25519SHA256.Factory(),
+                    new DHGexSHA256.Factory(),
                     new ECDHNistP.Factory521(),
                     new ECDHNistP.Factory384(),
                     new ECDHNistP.Factory256(),
@@ -229,6 +231,7 @@ public class DefaultConfig
         setSignatureFactories(
                 new SignatureECDSA.Factory256(),
                 new SignatureECDSA.Factory384(),
+                new SignatureECDSA.Factory521(),
                 new SignatureRSA.Factory(),
                 new SignatureDSA.Factory(),
                 new SignatureEdDSA.Factory()
