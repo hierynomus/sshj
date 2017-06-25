@@ -96,7 +96,7 @@ public class ECDSAVariationsAdapter {
         final ECPublicKey ecdsa = (ECPublicKey) pk;
         byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
 
-        buf.putString(Integer.toString(fieldSizeFromKey(ecdsa)))
+        buf.putString("nistp" + Integer.toString(fieldSizeFromKey(ecdsa)))
             .putBytes(encoded);
     }
 
