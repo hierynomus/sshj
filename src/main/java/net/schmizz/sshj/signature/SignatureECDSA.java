@@ -30,12 +30,10 @@ import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
 
 /** ECDSA {@link Signature} */
-public class SignatureECDSA
-        extends AbstractSignature {
+public class SignatureECDSA extends AbstractSignature {
 
     /** A named factory for ECDSA-256 signature */
-    public static class Factory256
-            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+    public static class Factory256 implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         @Override
         public Signature create() {
@@ -50,8 +48,7 @@ public class SignatureECDSA
     }
 
     /** A named factory for ECDSA-384 signature */
-    public static class Factory384
-            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+    public static class Factory384 implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         @Override
         public Signature create() {
@@ -66,8 +63,7 @@ public class SignatureECDSA
     }
 
     /** A named factory for ECDSA-521 signature */
-    public static class Factory521
-            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+    public static class Factory521 implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         @Override
         public Signature create() {
@@ -80,14 +76,14 @@ public class SignatureECDSA
         }
 
     }
-    
-	private String keyTypeName;
+
+    private String keyTypeName;
 
     public SignatureECDSA(String algorithm, String keyTypeName) {
         super(algorithm);
         this.keyTypeName = keyTypeName;
     }
-    
+
     @Override
     public byte[] encode(byte[] sig) {
         int rIndex = 3;
@@ -135,15 +131,18 @@ public class SignatureECDSA
         } catch (SignatureException e) {
             throw new SSHRuntimeException(e);
         } catch (IOException e) {
-        	throw new SSHRuntimeException(e);
+            throw new SSHRuntimeException(e);
         }
     }
-    
+
     private byte[] asnEncode(byte[] r, byte[] s) throws IOException {
         int rLen = r.length;
         int sLen = s.length;
 
-        /* We can't have the high bit set, so add an extra zero at the beginning if so. */
+        /*
+         * We can't have the high bit set, so add an extra zero at the beginning
+         * if so.
+         */
         if ((r[0] & 0x80) != 0) {
             rLen++;
         }
@@ -153,17 +152,17 @@ public class SignatureECDSA
 
         /* Calculate total output length */
         int length = 6 + rLen + sLen;
-    	
-    	ASN1EncodableVector vector = new ASN1EncodableVector();
-    	vector.add(new ASN1Integer(r));
-    	vector.add(new ASN1Integer(s));
-		
-    	ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
-    	ASN1OutputStream asnOS = new ASN1OutputStream(baos);
 
-    	asnOS.writeObject(new DERSequence(vector));
-		asnOS.flush();
+        ASN1EncodableVector vector = new ASN1EncodableVector();
+        vector.add(new ASN1Integer(r));
+        vector.add(new ASN1Integer(s));
 
-		return baos.toByteArray();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
+        ASN1OutputStream asnOS = new ASN1OutputStream(baos);
+
+        asnOS.writeObject(new DERSequence(vector));
+        asnOS.flush();
+
+        return baos.toByteArray();
     }
 }
