@@ -70,7 +70,7 @@ public enum KeyType {
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final RSAPublicKey rsaKey = (RSAPublicKey) pk;
             buf.putMPInt(rsaKey.getPublicExponent()) // e
-            .putMPInt(rsaKey.getModulus()); // n
+                .putMPInt(rsaKey.getModulus()); // n
         }
 
         @Override
@@ -101,9 +101,9 @@ public enum KeyType {
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final DSAPublicKey dsaKey = (DSAPublicKey) pk;
             buf.putMPInt(dsaKey.getParams().getP()) // p
-            .putMPInt(dsaKey.getParams().getQ()) // q
-            .putMPInt(dsaKey.getParams().getG()) // g
-            .putMPInt(dsaKey.getY()); // y
+                .putMPInt(dsaKey.getParams().getQ()) // q
+                .putMPInt(dsaKey.getParams().getG()) // g
+                .putMPInt(dsaKey.getY()); // y
         }
 
         @Override
@@ -189,7 +189,7 @@ public enum KeyType {
                             sType,
                             keyLen,
                             Arrays.toString(p))
-                            );
+                    );
                 }
 
                 EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.CURVE_ED25519_SHA512);
@@ -343,16 +343,16 @@ public enum KeyType {
             buf.putBytes(certificate.getNonce());
             innerKeyType.writePubKeyContentsIntoBuffer(certificate.getKey(), buf);
             buf.putUInt64(certificate.getSerial())
-            .putUInt32(certificate.getType())
-            .putString(certificate.getId())
-            .putBytes(packList(certificate.getValidPrincipals()))
-            .putUInt64(epochFromDate(certificate.getValidAfter()))
-            .putUInt64(epochFromDate(certificate.getValidBefore()))
-            .putBytes(packMap(certificate.getCritOptions()))
-            .putBytes(packMap(certificate.getExtensions()))
-            .putString("") // reserved
-            .putBytes(certificate.getSignatureKey())
-            .putBytes(certificate.getSignature());
+                .putUInt32(certificate.getType())
+                .putString(certificate.getId())
+                .putBytes(packList(certificate.getValidPrincipals()))
+                .putUInt64(epochFromDate(certificate.getValidAfter()))
+                .putUInt64(epochFromDate(certificate.getValidBefore()))
+                .putBytes(packMap(certificate.getCritOptions()))
+                .putBytes(packMap(certificate.getExtensions()))
+                .putString("") // reserved
+                .putBytes(certificate.getSignatureKey())
+                .putBytes(certificate.getSignature());
         }
 
         static boolean isCertificateOfType(Key key, KeyType innerKeyType) {
