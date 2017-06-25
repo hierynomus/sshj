@@ -275,8 +275,6 @@ public enum KeyType {
         }
     };
 
-	private static String NISTP_CURVE_256 = "qqq";
-	private static String NISTP_CURVE_384 = "qqq";
     protected final String sType;
 
     private KeyType(String type) {
