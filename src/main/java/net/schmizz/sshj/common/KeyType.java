@@ -70,7 +70,7 @@ public enum KeyType {
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final RSAPublicKey rsaKey = (RSAPublicKey) pk;
             buf.putMPInt(rsaKey.getPublicExponent()) // e
-                .putMPInt(rsaKey.getModulus()); // n
+            .putMPInt(rsaKey.getModulus()); // n
         }
 
         @Override
@@ -101,9 +101,9 @@ public enum KeyType {
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final DSAPublicKey dsaKey = (DSAPublicKey) pk;
             buf.putMPInt(dsaKey.getParams().getP()) // p
-                    .putMPInt(dsaKey.getParams().getQ()) // q
-                    .putMPInt(dsaKey.getParams().getG()) // g
-                    .putMPInt(dsaKey.getY()); // y
+            .putMPInt(dsaKey.getParams().getQ()) // q
+            .putMPInt(dsaKey.getParams().getG()) // g
+            .putMPInt(dsaKey.getY()); // y
         }
 
         @Override
@@ -119,7 +119,7 @@ public enum KeyType {
         @Override
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
-        	return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "256");
+            return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "256");
         }
 
 
@@ -136,11 +136,11 @@ public enum KeyType {
 
     /** SSH identifier for ECDSA-384 keys */
     ECDSA384("ecdsa-sha2-nistp384") {
-    
-    	@Override
+
+        @Override
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
-        	return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "384");
+            return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "384");
         }
 
 
@@ -157,11 +157,11 @@ public enum KeyType {
 
     /** SSH identifier for ECDSA-521 keys */
     ECDSA521("ecdsa-sha2-nistp521") {
-    
-    	@Override
+
+        @Override
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
-        	return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "521");
+            return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "521");
         }
 
 
@@ -175,7 +175,7 @@ public enum KeyType {
             return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 521);
         }
     },
-    
+
     ED25519("ssh-ed25519") {
         private final Logger log = LoggerFactory.getLogger(KeyType.class);
         @Override
@@ -189,7 +189,7 @@ public enum KeyType {
                             sType,
                             keyLen,
                             Arrays.toString(p))
-                    );
+                            );
                 }
 
                 EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.CURVE_ED25519_SHA512);
@@ -343,16 +343,16 @@ public enum KeyType {
             buf.putBytes(certificate.getNonce());
             innerKeyType.writePubKeyContentsIntoBuffer(certificate.getKey(), buf);
             buf.putUInt64(certificate.getSerial())
-                .putUInt32(certificate.getType())
-                .putString(certificate.getId())
-                .putBytes(packList(certificate.getValidPrincipals()))
-                .putUInt64(epochFromDate(certificate.getValidAfter()))
-                .putUInt64(epochFromDate(certificate.getValidBefore()))
-                .putBytes(packMap(certificate.getCritOptions()))
-                .putBytes(packMap(certificate.getExtensions()))
-                .putString("") // reserved
-                .putBytes(certificate.getSignatureKey())
-                .putBytes(certificate.getSignature());
+            .putUInt32(certificate.getType())
+            .putString(certificate.getId())
+            .putBytes(packList(certificate.getValidPrincipals()))
+            .putUInt64(epochFromDate(certificate.getValidAfter()))
+            .putUInt64(epochFromDate(certificate.getValidBefore()))
+            .putBytes(packMap(certificate.getCritOptions()))
+            .putBytes(packMap(certificate.getExtensions()))
+            .putString("") // reserved
+            .putBytes(certificate.getSignatureKey())
+            .putBytes(certificate.getSignature());
         }
 
         static boolean isCertificateOfType(Key key, KeyType innerKeyType) {
@@ -368,11 +368,11 @@ public enum KeyType {
         static Certificate<PublicKey> toCertificate(PublicKey key) {
             if (!(key instanceof Certificate)) {
                 throw new UnsupportedOperationException("Can't convert non-certificate key " +
-                                                        key.getAlgorithm() + " to certificate");
+                        key.getAlgorithm() + " to certificate");
             }
             return ((Certificate<PublicKey>) key);
         }
-        
+
         private static Date dateFromEpoch(long seconds) {
             return new Date(seconds * 1000);
         }
