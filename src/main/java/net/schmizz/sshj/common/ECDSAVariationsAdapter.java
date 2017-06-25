@@ -82,7 +82,7 @@ public class ECDSAVariationsAdapter {
         byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
 
         buf.putString(Integer.toString(fieldSizeFromKey(ecdsa)))
-        .putBytes(encoded);
+            .putBytes(encoded);
     }
 
     public static int fieldSizeFromKey(ECPublicKey ecPublicKey) {
