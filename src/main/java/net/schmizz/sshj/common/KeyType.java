@@ -372,7 +372,7 @@ public enum KeyType {
             }
             return ((Certificate<PublicKey>) key);
         }
-
+        
         private static Date dateFromEpoch(long seconds) {
             return new Date(seconds * 1000);
         }
