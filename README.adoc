@@ -104,6 +104,8 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.22.0 (2017-??-??)::
+* Fixed https://github.com/hierynomus/sshj/issues/331[#331]: Added support for wildcards in known_hosts file
 SSHJ 0.21.1 (2017-04-25)::
 * Merged https://github.com/hierynomus/sshj/pulls/322[#322]: Fix regression from 40f956b (invalid length parameter on outputstream)
 SSHJ 0.21.0 (2017-04-14)::
