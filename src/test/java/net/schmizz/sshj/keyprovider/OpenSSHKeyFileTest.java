@@ -146,10 +146,30 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
-    public void shouldHaveCorrectFingerprintForECDSA() throws IOException, GeneralSecurityException {
+    public void shouldHaveCorrectFingerprintForECDSA256() throws IOException, GeneralSecurityException {
         OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ecdsa_nistp256"));
         String expected = "256 MD5:53:ae:db:ed:8f:2d:02:d4:d5:6c:24:bc:a4:66:88:79 root@itgcpkerberosstack-cbgateway-0-20151117031915 (ECDSA)\n";
+        PublicKey aPublic = keyFile.getPublic();
+        String sshjFingerprintSshjKey = net.schmizz.sshj.common.SecurityUtils.getFingerprint(aPublic);
+        assertThat(expected, containsString(sshjFingerprintSshjKey));
+    }
+
+    @Test
+    public void shouldHaveCorrectFingerprintForECDSA384() throws IOException, GeneralSecurityException {
+        OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/test_ecdsa_nistp384"));
+        String expected = "384 MD5:ee:9b:82:d1:47:01:16:1b:27:da:f5:27:fd:b2:eb:e2";
+        PublicKey aPublic = keyFile.getPublic();
+        String sshjFingerprintSshjKey = net.schmizz.sshj.common.SecurityUtils.getFingerprint(aPublic);
+        assertThat(expected, containsString(sshjFingerprintSshjKey));
+    }
+
+    @Test
+    public void shouldHaveCorrectFingerprintForECDSA521() throws IOException, GeneralSecurityException {
+        OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/test_ecdsa_nistp521"));
+        String expected = "521 MD5:22:e2:f4:3c:61:ae:e9:85:a1:4d:d9:6c:13:aa:eb:00";
         PublicKey aPublic = keyFile.getPublic();
         String sshjFingerprintSshjKey = net.schmizz.sshj.common.SecurityUtils.getFingerprint(aPublic);
         assertThat(expected, containsString(sshjFingerprintSshjKey));
