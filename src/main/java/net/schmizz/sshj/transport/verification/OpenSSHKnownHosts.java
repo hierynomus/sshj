@@ -304,13 +304,14 @@ public class OpenSSHKnownHosts
 
     public static class HostEntry implements KnownHostEntry {
 
-        final OpenSSHKnownHosts.Marker marker;
+        private final OpenSSHKnownHosts.Marker marker;
+        private final KnownHostMatchers.HostMatcher matcher;
         private final String hostPart;
+
         protected final KeyType type;
         protected final PublicKey key;
-        private final KnownHostMatchers.HostMatcher matcher;
 
-        HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
+        public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
             this.marker = marker;
             this.hostPart = hostPart;
             this.type = type;
