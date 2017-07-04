@@ -77,8 +77,7 @@ public abstract class Window {
             super(initialWinSize, maxPacketSize, loggerFactory);
         }
 
-        public long awaitExpansion(long was)
-                throws ConnectionException {
+        public long awaitExpansion(long was) throws ConnectionException {
             synchronized (lock) {
                 while (size <= was) {
                     log.debug("Waiting, need size to grow from {} bytes", was);

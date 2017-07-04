@@ -15,8 +15,10 @@
  */
 package net.schmizz.sshj.transport.compression;
 
+import com.jcraft.jzlib.Deflater;
+import com.jcraft.jzlib.GZIPException;
+import com.jcraft.jzlib.Inflater;
 import com.jcraft.jzlib.JZlib;
-import com.jcraft.jzlib.ZStream;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.SSHRuntimeException;
@@ -45,20 +47,24 @@ public class ZlibCompression
 
     private final byte[] tempBuf = new byte[BUF_SIZE];
 
-    private ZStream stream;
+    private Deflater deflater;
+    private Inflater inflater;
 
     @Override
     public void init(Mode mode) {
-        stream = new ZStream();
-        switch (mode) {
-            case DEFLATE:
-                stream.deflateInit(JZlib.Z_DEFAULT_COMPRESSION);
-                break;
-            case INFLATE:
-                stream.inflateInit();
-                break;
-            default:
-                assert false;
+        try {
+            switch (mode) {
+                case DEFLATE:
+                    deflater = new Deflater(JZlib.Z_DEFAULT_COMPRESSION);
+                    break;
+                case INFLATE:
+                    inflater = new Inflater();
+                    break;
+                default:
+                    assert false;
+            }
+        } catch (GZIPException gze) {
+
         }
     }
 
@@ -69,44 +75,43 @@ public class ZlibCompression
 
     @Override
     public void compress(Buffer buffer) {
-        stream.next_in = buffer.array();
-        stream.next_in_index = buffer.rpos();
-        stream.avail_in = buffer.available();
+        deflater.setNextIn(buffer.array());
+        deflater.setNextInIndex(buffer.rpos());
+        deflater.setAvailIn(buffer.available());
         buffer.wpos(buffer.rpos());
         do {
-            stream.next_out = tempBuf;
-            stream.next_out_index = 0;
-            stream.avail_out = BUF_SIZE;
-            final int status = stream.deflate(JZlib.Z_PARTIAL_FLUSH);
+            deflater.setNextOut(tempBuf);
+            deflater.setNextOutIndex(0);
+            deflater.setAvailOut(BUF_SIZE);
+            final int status = deflater.deflate(JZlib.Z_PARTIAL_FLUSH);
             if (status == JZlib.Z_OK) {
-                buffer.putRawBytes(tempBuf, 0, BUF_SIZE - stream.avail_out);
+                buffer.putRawBytes(tempBuf, 0, BUF_SIZE - deflater.getAvailOut());
             } else {
                 throw new SSHRuntimeException("compress: deflate returned " + status);
             }
-        } while (stream.avail_out == 0);
+        } while (deflater.getAvailOut() == 0);
     }
 
 
     @Override
     public void uncompress(Buffer from, Buffer to)
             throws TransportException {
-        stream.next_in = from.array();
-        stream.next_in_index = from.rpos();
-        stream.avail_in = from.available();
+        inflater.setNextIn(from.array());
+        inflater.setNextInIndex(from.rpos());
+        inflater.setAvailIn(from.available());
         while (true) {
-            stream.next_out = tempBuf;
-            stream.next_out_index = 0;
-            stream.avail_out = BUF_SIZE;
-            final int status = stream.inflate(JZlib.Z_PARTIAL_FLUSH);
+            inflater.setNextOut(tempBuf);
+            inflater.setNextOutIndex(0);
+            inflater.setAvailOut(BUF_SIZE);
+            final int status = inflater.inflate(JZlib.Z_PARTIAL_FLUSH);
             switch (status) {
                 case JZlib.Z_OK:
-                    to.putRawBytes(tempBuf, 0, BUF_SIZE - stream.avail_out);
+                    to.putRawBytes(tempBuf, 0, BUF_SIZE - inflater.getAvailOut());
                     break;
                 case JZlib.Z_BUF_ERROR:
                     return;
                 default:
-                    throw new TransportException(DisconnectReason.COMPRESSION_ERROR, "uncompress: inflate returned "
-                            + status);
+                    throw new TransportException(DisconnectReason.COMPRESSION_ERROR, "uncompress: inflate returned " + status);
             }
         }
     }
