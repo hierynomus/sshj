@@ -590,7 +590,7 @@ public final class TransportImpl
         try {
             if (!close.isSet()) {
 
-                log.error("Dying because - {}", ex);
+                log.error("Dying because - {}", ex.getMessage(), ex);
 
                 final SSHException causeOfDeath = SSHException.chainer.chain(ex);
 

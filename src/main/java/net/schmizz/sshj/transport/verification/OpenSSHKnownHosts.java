@@ -15,9 +15,8 @@
  */
 package net.schmizz.sshj.transport.verification;
 
+import com.hierynomus.sshj.transport.verification.KnownHostMatchers;
 import net.schmizz.sshj.common.*;
-import net.schmizz.sshj.transport.mac.HMACSHA1;
-import net.schmizz.sshj.transport.mac.MAC;
 import org.slf4j.Logger;
 
 import java.io.*;
@@ -26,7 +25,6 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -40,7 +38,7 @@ public class OpenSSHKnownHosts
     protected final Logger log;
 
     protected final File khFile;
-    protected final List<HostEntry> entries = new ArrayList<HostEntry>();
+    protected final List<KnownHostEntry> entries = new ArrayList<KnownHostEntry>();
 
     public OpenSSHKnownHosts(File khFile)
             throws IOException {
@@ -59,7 +57,7 @@ public class OpenSSHKnownHosts
                 String line;
                 while ((line = br.readLine()) != null) {
                     try {
-                        HostEntry entry = entryFactory.parseEntry(line);
+                        KnownHostEntry entry = entryFactory.parseEntry(line);
                         if (entry != null) {
                             entries.add(entry);
                         }
@@ -83,12 +81,13 @@ public class OpenSSHKnownHosts
     public boolean verify(final String hostname, final int port, final PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
 
-        if (type == KeyType.UNKNOWN)
+        if (type == KeyType.UNKNOWN) {
             return false;
+        }
 
         final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
 
-        for (HostEntry e : entries) {
+        for (KnownHostEntry e : entries) {
             try {
                 if (e.appliesTo(type, adjustedHostname))
                     return e.verify(key) || hostKeyChangedAction(e, adjustedHostname, key);
@@ -105,12 +104,12 @@ public class OpenSSHKnownHosts
         return false;
     }
 
-    protected boolean hostKeyChangedAction(HostEntry entry, String hostname, PublicKey key) {
+    protected boolean hostKeyChangedAction(KnownHostEntry entry, String hostname, PublicKey key) {
         log.warn("Host key for `{}` has changed!", hostname);
         return false;
     }
 
-    public List<HostEntry> entries() {
+    public List<KnownHostEntry> entries() {
         return entries;
     }
 
@@ -120,7 +119,7 @@ public class OpenSSHKnownHosts
             throws IOException {
         final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile));
         try {
-            for (HostEntry entry : entries)
+            for (KnownHostEntry entry : entries)
                 bos.write((entry.getLine() + LS).getBytes(IOUtils.UTF8));
         } finally {
             bos.close();
@@ -130,7 +129,7 @@ public class OpenSSHKnownHosts
     /**
      * Append a single entry
      */
-    public void write(HostEntry entry)
+    public void write(KnownHostEntry entry)
             throws IOException {
         final BufferedWriter writer = new BufferedWriter(new FileWriter(khFile, true));
         try {
@@ -185,7 +184,7 @@ public class OpenSSHKnownHosts
         EntryFactory() {
         }
 
-        public HostEntry parseEntry(String line)
+        public KnownHostEntry parseEntry(String line)
                 throws IOException {
             if (isComment(line)) {
                 return new CommentEntry(line);
@@ -228,11 +227,7 @@ public class OpenSSHKnownHosts
                 return null;
             }
 
-            if (isHashed(hostnames)) {
-                return new HashedEntry(marker, hostnames, type, key);
-            } else {
-                return new SimpleEntry(marker, hostnames, type, key);
-            }
+            return new HostEntry(marker, hostnames, type, key);
         }
 
         private boolean isBits(String type) {
@@ -254,25 +249,22 @@ public class OpenSSHKnownHosts
 
     }
 
-    public interface HostEntry {
+    public interface KnownHostEntry {
         KeyType getType();
 
         String getFingerprint();
 
-        boolean appliesTo(String host)
-                throws IOException;
+        boolean appliesTo(String host) throws IOException;
 
-        boolean appliesTo(KeyType type, String host)
-                throws IOException;
+        boolean appliesTo(KeyType type, String host) throws IOException;
 
-        boolean verify(PublicKey key)
-                throws IOException;
+        boolean verify(PublicKey key) throws IOException;
 
         String getLine();
     }
 
     public static class CommentEntry
-            implements HostEntry {
+            implements KnownHostEntry {
         private final String comment;
 
         public CommentEntry(String comment) {
@@ -290,8 +282,7 @@ public class OpenSSHKnownHosts
         }
 
         @Override
-        public boolean appliesTo(String host)
-                throws IOException {
+        public boolean appliesTo(String host) throws IOException {
             return false;
         }
 
@@ -311,17 +302,20 @@ public class OpenSSHKnownHosts
         }
     }
 
-    public static abstract class AbstractEntry
-            implements HostEntry {
+    public static class HostEntry implements KnownHostEntry {
 
-        protected final OpenSSHKnownHosts.Marker marker;
+        final OpenSSHKnownHosts.Marker marker;
+        private final String hostPart;
         protected final KeyType type;
         protected final PublicKey key;
+        private final KnownHostMatchers.HostMatcher matcher;
 
-        public AbstractEntry(Marker marker, KeyType type, PublicKey key) {
+        HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
             this.marker = marker;
+            this.hostPart = hostPart;
             this.type = type;
             this.key = key;
+            this.matcher = KnownHostMatchers.createMatcher(hostPart);
         }
 
         @Override
@@ -335,8 +329,17 @@ public class OpenSSHKnownHosts
         }
 
         @Override
-        public boolean verify(PublicKey key)
-                throws IOException {
+        public boolean appliesTo(String host) throws IOException {
+            return matcher.match(host);
+        }
+
+        @Override
+        public boolean appliesTo(KeyType type, String host) throws IOException {
+            return this.type == type && matcher.match(host);
+        }
+
+        @Override
+        public boolean verify(PublicKey key) throws IOException {
             return key.equals(this.key) && marker != Marker.REVOKED;
         }
 
@@ -356,88 +359,8 @@ public class OpenSSHKnownHosts
             return Base64.encodeBytes(buf.array(), buf.rpos(), buf.available());
         }
 
-        protected abstract String getHostPart();
-    }
-
-    public static class SimpleEntry
-            extends AbstractEntry {
-        private final List<String> hosts;
-        private final String hostnames;
-
-        public SimpleEntry(Marker marker, String hostnames, KeyType type, PublicKey key) {
-            super(marker, type, key);
-            this.hostnames = hostnames;
-            hosts = Arrays.asList(hostnames.split(","));
-        }
-
-        @Override
         protected String getHostPart() {
-            return hostnames;
-        }
-
-        @Override
-        public boolean appliesTo(String host)
-                throws IOException {
-            return hosts.contains(host);
-        }
-
-        @Override
-        public boolean appliesTo(KeyType type, String host)
-                throws IOException {
-            return type == this.type && hosts.contains(host);
-        }
-    }
-
-    public static class HashedEntry
-            extends AbstractEntry {
-        private final MAC sha1 = new HMACSHA1();
-
-        private final String hashedHost;
-        private final String salt;
-
-        private byte[] saltyBytes;
-
-        public HashedEntry(Marker marker, String hash, KeyType type, PublicKey key)
-                throws SSHException {
-            super(marker, type, key);
-            this.hashedHost = hash;
-            {
-                final String[] hostParts = hashedHost.split("\\|");
-                if (hostParts.length != 4)
-                    throw new SSHException("Unrecognized format for hashed hostname");
-                salt = hostParts[2];
-            }
-        }
-
-        @Override
-        public boolean appliesTo(String host)
-                 throws IOException {
-            return hashedHost.equals(hashHost(host));
-        }
-
-        @Override
-        public boolean appliesTo(KeyType type, String host)
-                throws IOException {
-            return this.type == type && hashedHost.equals(hashHost(host));
-        }
-
-        private String hashHost(String host)
-                throws IOException {
-            sha1.init(getSaltyBytes());
-            return "|1|" + salt + "|" + Base64.encodeBytes(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
-        }
-
-        private byte[] getSaltyBytes()
-                throws IOException {
-            if (saltyBytes == null) {
-                saltyBytes = Base64.decode(salt);
-            }
-            return saltyBytes;
-        }
-
-        @Override
-        protected String getHostPart() {
-            return hashedHost;
+            return  hostPart;
         }
     }
 
@@ -456,12 +379,12 @@ public class OpenSSHKnownHosts
         }
 
         public static Marker fromString(String str) {
-            for (Marker m: values())
-                if (m.sMarker.equals(str))
+            for (Marker m: values()) {
+                if (m.sMarker.equals(str)) {
                     return m;
+                }
+            }
             return null;
         }
-
     }
-
 }

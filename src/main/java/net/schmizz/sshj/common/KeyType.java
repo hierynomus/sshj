@@ -35,15 +35,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bouncycastle.asn1.nist.NISTNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hierynomus.sshj.secg.SecgUtils;
 import com.hierynomus.sshj.signature.Ed25519PublicKey;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 
@@ -107,9 +101,9 @@ public enum KeyType {
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
             final DSAPublicKey dsaKey = (DSAPublicKey) pk;
             buf.putMPInt(dsaKey.getParams().getP()) // p
-                    .putMPInt(dsaKey.getParams().getQ()) // q
-                    .putMPInt(dsaKey.getParams().getG()) // g
-                    .putMPInt(dsaKey.getY()); // y
+                .putMPInt(dsaKey.getParams().getQ()) // q
+                .putMPInt(dsaKey.getParams().getG()) // g
+                .putMPInt(dsaKey.getY()); // y
         }
 
         @Override
@@ -119,69 +113,66 @@ public enum KeyType {
 
     },
 
-    /** SSH identifier for ECDSA keys */
-    ECDSA("ecdsa-sha2-nistp256") {
-        private final Logger log = LoggerFactory.getLogger(getClass());
+    /** SSH identifier for ECDSA-256 keys */
+    ECDSA256("ecdsa-sha2-nistp256") {
 
         @Override
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
                 throws GeneralSecurityException {
-            if (!SecurityUtils.isBouncyCastleRegistered()) {
-                throw new GeneralSecurityException("BouncyCastle is required to read a key of type " + sType);
-            }
-            try {
-                // final String algo = buf.readString();  it has been already read
-                final String curveName = buf.readString();
-                final int keyLen = buf.readUInt32AsInt();
-                final byte x04 = buf.readByte();  // it must be 0x04, but don't think we need that check
-                final byte[] x = new byte[(keyLen - 1) / 2];
-                final byte[] y = new byte[(keyLen - 1) / 2];
-                buf.readRawBytes(x);
-                buf.readRawBytes(y);
-                if(log.isDebugEnabled()) {
-                    log.debug(String.format("Key algo: %s, Key curve: %s, Key Len: %s, 0x04: %s\nx: %s\ny: %s",
-                            sType,
-                            curveName,
-                            keyLen,
-                            x04,
-                            Arrays.toString(x),
-                            Arrays.toString(y))
-                    );
-                }
-
-                if (!NISTP_CURVE.equals(curveName)) {
-                    throw new GeneralSecurityException(String.format("Unknown curve %s", curveName));
-                }
-
-                BigInteger bigX = new BigInteger(1, x);
-                BigInteger bigY = new BigInteger(1, y);
-
-                X9ECParameters ecParams = NISTNamedCurves.getByName("p-256");
-                ECPoint pPublicPoint = ecParams.getCurve().createPoint(bigX, bigY);
-                ECParameterSpec spec = new ECParameterSpec(ecParams.getCurve(),
-                        ecParams.getG(), ecParams.getN());
-                ECPublicKeySpec publicSpec = new ECPublicKeySpec(pPublicPoint, spec);
-
-                KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
-                return keyFactory.generatePublic(publicSpec);
-            } catch (Exception ex) {
-                throw new GeneralSecurityException(ex);
-            }
+            return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "256");
         }
 
 
         @Override
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
-            final ECPublicKey ecdsa = (ECPublicKey) pk;
-            byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
-
-            buf.putString(NISTP_CURVE)
-                .putBytes(encoded);
+            ECDSAVariationsAdapter.writePubKeyContentsIntoBuffer(pk, buf);
         }
 
         @Override
         protected boolean isMyType(Key key) {
-            return ("ECDSA".equals(key.getAlgorithm()));
+            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 256);
+        }
+    },
+
+    /** SSH identifier for ECDSA-384 keys */
+    ECDSA384("ecdsa-sha2-nistp384") {
+
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "384");
+        }
+
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            ECDSAVariationsAdapter.writePubKeyContentsIntoBuffer(pk, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 384);
+        }
+    },
+
+    /** SSH identifier for ECDSA-521 keys */
+    ECDSA521("ecdsa-sha2-nistp521") {
+
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "521");
+        }
+
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            ECDSAVariationsAdapter.writePubKeyContentsIntoBuffer(pk, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 521);
         }
     },
 
@@ -284,9 +275,6 @@ public enum KeyType {
         }
     };
 
-
-    private static final String NISTP_CURVE = "nistp256";
-
     protected final String sType;
 
     private KeyType(String type) {
@@ -380,7 +368,7 @@ public enum KeyType {
         static Certificate<PublicKey> toCertificate(PublicKey key) {
             if (!(key instanceof Certificate)) {
                 throw new UnsupportedOperationException("Can't convert non-certificate key " +
-                                                        key.getAlgorithm() + " to certificate");
+                        key.getAlgorithm() + " to certificate");
             }
             return ((Certificate<PublicKey>) key);
         }
