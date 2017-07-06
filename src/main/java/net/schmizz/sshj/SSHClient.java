@@ -23,6 +23,7 @@ import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.ConnectionImpl;
+import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.SessionChannel;
@@ -670,6 +671,20 @@ public class SSHClient
         LocalPortForwarder forwarder = new LocalPortForwarder(conn, parameters, serverSocket, loggerFactory);
         forwarders.add(forwarder);
         return forwarder;
+    }
+
+    /** Create a {@link DirectConnection} channel that connects to a remote address from the server.
+     *
+     * This can be used to open a tunnel to, for example, an HTTP server that is only
+     * accessible from the SSH server, or opening an SSH connection via a 'jump' server.
+     *
+     * @param hostname name of the host to connect to from the server.
+     * @param port remote port number.
+     */
+    public DirectConnection newDirectConnection(String hostname, int port) throws IOException {
+        DirectConnection tunnel = new DirectConnection(conn, hostname, port);
+        tunnel.open();
+        return tunnel;
     }
 
     /**
