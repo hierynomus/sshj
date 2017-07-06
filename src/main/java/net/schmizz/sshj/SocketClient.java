@@ -259,9 +259,9 @@ public abstract class SocketClient {
 
     void onConnect() throws IOException {
         if (socket != null) {
-          socket.setSoTimeout(timeout);
-          input = socket.getInputStream();
-          output = socket.getOutputStream();
+            socket.setSoTimeout(timeout);
+            input = socket.getInputStream();
+            output = socket.getOutputStream();
         }
     }
 
