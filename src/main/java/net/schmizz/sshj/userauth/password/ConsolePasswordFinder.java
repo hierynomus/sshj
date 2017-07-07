@@ -16,37 +16,96 @@
 package net.schmizz.sshj.userauth.password;
 
 import java.io.Console;
+import java.util.IllegalFormatException;
 
 /** A PasswordFinder that reads a password from a console */
 public class ConsolePasswordFinder implements PasswordFinder {
 
     private final Console console;
+    private final String promptFormat;
+    private final int maxTries;
 
-    /**
-     * Initializes with the System Console, which will be null if not run from an interactive shell.
-     */
-    public ConsolePasswordFinder() {
-        this(System.console());
+    private int numTries;
+
+    public static ConsolePasswordFinderBuilder builder() {
+        return new ConsolePasswordFinderBuilder();
     }
 
-    /**
-     * @param console the console to read the password from.  May be null.
-     */
-    public ConsolePasswordFinder(Console console) {
+    public ConsolePasswordFinder(Console console, String promptFormat, int maxTries) {
         this.console = console;
+        this.promptFormat = promptFormat;
+        this.maxTries = maxTries;
+        this.numTries = 0;
     }
 
     @Override
     public char[] reqPassword(Resource<?> resource) {
+        numTries++;
         if (console == null) {
             // the request cannot be serviced
             return null;
         }
-        return console.readPassword("Enter passphrase for %s:", resource.toString());
+        return console.readPassword(promptFormat, resource.toString());
     }
 
     @Override
     public boolean shouldRetry(Resource<?> resource) {
-        return true;
+        return numTries < maxTries;
+    }
+
+    public static class ConsolePasswordFinderBuilder {
+        private Console console;
+        private String promptFormat;
+        private int maxTries;
+
+        /** Builder constructor should only be called from parent class */
+        private ConsolePasswordFinderBuilder() {
+            console = System.console();
+            promptFormat = "Enter passphrase for %s:";
+            maxTries = 3;
+        }
+
+        public ConsolePasswordFinder build() {
+            return new ConsolePasswordFinder(console, promptFormat, maxTries);
+        }
+
+        public ConsolePasswordFinderBuilder setConsole(Console console) {
+            this.console = console;
+            return this;
+        }
+
+        public Console getConsole() {
+            return console;
+        }
+
+        /**
+         * @param promptFormat a StringFormatter string that may contain up to one "%s"
+         */
+        public ConsolePasswordFinderBuilder setPromptFormat(String promptFormat) {
+            checkFormatString(promptFormat);
+            this.promptFormat = promptFormat;
+            return this;
+        }
+
+        public String getPromptFormat() {
+            return promptFormat;
+        }
+
+        public ConsolePasswordFinderBuilder setMaxTries(int maxTries) {
+            this.maxTries = maxTries;
+            return this;
+        }
+
+        public int getMaxTries() {
+            return maxTries;
+        }
+
+        private static void checkFormatString(String promptFormat) {
+            try {
+                String.format(promptFormat, "");
+            } catch (IllegalFormatException e) {
+                throw new IllegalArgumentException("promptFormat must have no more than one %s and no other markers", e);
+            }
+        }
     }
 }

@@ -19,18 +19,69 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.io.Console;
+
 public class TestConsolePasswordFinder {
 
-    /*
-     * Note that Mockito 1.9 cannot mock Console because it is a final class,
-     * so there are no other tests.
-     */
+    @Test
+    public void testReqPassword() {
+        char[] expectedPassword = "password".toCharArray();
+
+        Console console = Mockito.mock(Console.class);
+        Mockito.when(console.readPassword(Mockito.anyString(), Mockito.any()))
+                .thenReturn(expectedPassword);
+
+        Resource resource = Mockito.mock(Resource.class);
+        char[] password = ConsolePasswordFinder.builder()
+                .setConsole(console)
+                .build()
+                .reqPassword(resource);
+
+        Assert.assertArrayEquals("Password should match mocked return value",
+                expectedPassword, password);
+        Mockito.verifyNoMoreInteractions(resource);
+    }
 
     @Test
     public void testReqPasswordNullConsole() {
-        char[] password = new ConsolePasswordFinder(null)
-            .reqPassword(Mockito.mock(Resource.class));
+        Resource<?> resource = Mockito.mock(Resource.class);
+        char[] password = ConsolePasswordFinder.builder()
+                .setConsole(null)
+                .build()
+                .reqPassword(resource);
+
         Assert.assertNull("Password should be null with null console", password);
+        Mockito.verifyNoMoreInteractions(resource);
+    }
+
+    @Test
+    public void testShouldRetry() {
+        Resource<String> resource = new PrivateKeyStringResource("");
+        ConsolePasswordFinder finder = ConsolePasswordFinder.builder()
+                .setConsole(null)
+                .setMaxTries(1)
+                .build();
+        Assert.assertTrue("Should allow a retry at first", finder.shouldRetry(resource));
+
+        finder.reqPassword(resource);
+        Assert.assertFalse("Should stop allowing retries after one interaction", finder.shouldRetry(resource));
+    }
+
+    @Test
+    public void testPromptFormat() {
+        // expecting no Exceptions
+        ConsolePasswordFinder.builder().setPromptFormat("");
+        ConsolePasswordFinder.builder().setPromptFormat("%s");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPromptFormatTooManyMarkers() {
+        ConsolePasswordFinder.builder().setPromptFormat("%s%s");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPromptFormatWrongMarkerType() {
+        ConsolePasswordFinder.builder().setPromptFormat("%d");
     }
 
 }
