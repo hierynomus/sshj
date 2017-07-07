@@ -69,9 +69,12 @@ public class TestConsolePasswordFinder {
 
     @Test
     public void testPromptFormat() {
-        // expecting no Exceptions
-        ConsolePasswordFinder.builder().setPromptFormat("");
-        ConsolePasswordFinder.builder().setPromptFormat("%s");
+        Assert.assertNotNull(
+                "Empty format should create valid ConsolePasswordFinder",
+                ConsolePasswordFinder.builder().setPromptFormat("").build());
+        Assert.assertNotNull(
+                "Single-string format should create valid ConsolePasswordFinder",
+                ConsolePasswordFinder.builder().setPromptFormat("%s").build());
     }
 
     @Test(expected = IllegalArgumentException.class)
