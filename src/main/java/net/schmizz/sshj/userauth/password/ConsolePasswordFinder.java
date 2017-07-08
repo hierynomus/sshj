@@ -21,17 +21,24 @@ import java.util.IllegalFormatException;
 /** A PasswordFinder that reads a password from a console */
 public class ConsolePasswordFinder implements PasswordFinder {
 
+    public static final String DEFAULT_FORMAT = "Enter passphrase for %s:";
+
     private final Console console;
     private final String promptFormat;
     private final int maxTries;
 
     private int numTries;
 
-    public static ConsolePasswordFinderBuilder builder() {
-        return new ConsolePasswordFinderBuilder();
+    public ConsolePasswordFinder() {
+        this(System.console());
+    }
+
+    public ConsolePasswordFinder(Console console) {
+        this(console, DEFAULT_FORMAT, 3);
     }
 
     public ConsolePasswordFinder(Console console, String promptFormat, int maxTries) {
+        checkFormatString(promptFormat);
         this.console = console;
         this.promptFormat = promptFormat;
         this.maxTries = maxTries;
@@ -53,59 +60,12 @@ public class ConsolePasswordFinder implements PasswordFinder {
         return numTries < maxTries;
     }
 
-    public static class ConsolePasswordFinderBuilder {
-        private Console console;
-        private String promptFormat;
-        private int maxTries;
-
-        /** Builder constructor should only be called from parent class */
-        private ConsolePasswordFinderBuilder() {
-            console = System.console();
-            promptFormat = "Enter passphrase for %s:";
-            maxTries = 3;
-        }
-
-        public ConsolePasswordFinder build() {
-            return new ConsolePasswordFinder(console, promptFormat, maxTries);
-        }
-
-        public ConsolePasswordFinderBuilder setConsole(Console console) {
-            this.console = console;
-            return this;
-        }
-
-        public Console getConsole() {
-            return console;
-        }
-
-        /**
-         * @param promptFormat a StringFormatter string that may contain up to one "%s"
-         */
-        public ConsolePasswordFinderBuilder setPromptFormat(String promptFormat) {
-            checkFormatString(promptFormat);
-            this.promptFormat = promptFormat;
-            return this;
-        }
-
-        public String getPromptFormat() {
-            return promptFormat;
-        }
-
-        public ConsolePasswordFinderBuilder setMaxTries(int maxTries) {
-            this.maxTries = maxTries;
-            return this;
-        }
-
-        public int getMaxTries() {
-            return maxTries;
-        }
-
-        private static void checkFormatString(String promptFormat) {
-            try {
-                String.format(promptFormat, "");
-            } catch (IllegalFormatException e) {
-                throw new IllegalArgumentException("promptFormat must have no more than one %s and no other markers", e);
-            }
+    private static void checkFormatString(String promptFormat) {
+        try {
+            String.format(promptFormat, "");
+        } catch (IllegalFormatException e) {
+            throw new IllegalArgumentException("promptFormat must have no more than one %s and no other markers", e);
         }
     }
+
 }
