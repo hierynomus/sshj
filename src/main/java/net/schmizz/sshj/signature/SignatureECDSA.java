@@ -15,35 +15,73 @@
  */
 package net.schmizz.sshj.signature;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SignatureException;
+
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.DERSequence;
+
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
 
-import java.math.BigInteger;
-import java.security.SignatureException;
-
 /** ECDSA {@link Signature} */
-public class SignatureECDSA
-        extends AbstractSignature {
+public class SignatureECDSA extends AbstractSignature {
 
-    /** A named factory for ECDSA signature */
-    public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+    /** A named factory for ECDSA-256 signature */
+    public static class Factory256 implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         @Override
         public Signature create() {
-            return new SignatureECDSA();
+            return new SignatureECDSA("SHA256withECDSA", KeyType.ECDSA256.toString());
         }
 
         @Override
         public String getName() {
-            return KeyType.ECDSA.toString();
+            return KeyType.ECDSA256.toString();
         }
 
     }
 
-    public SignatureECDSA() {
-        super("SHA256withECDSA");
+    /** A named factory for ECDSA-384 signature */
+    public static class Factory384 implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureECDSA("SHA384withECDSA", KeyType.ECDSA384.toString());
+        }
+
+        @Override
+        public String getName() {
+            return KeyType.ECDSA384.toString();
+        }
+
+    }
+
+    /** A named factory for ECDSA-521 signature */
+    public static class Factory521 implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureECDSA("SHA512withECDSA", KeyType.ECDSA521.toString());
+        }
+
+        @Override
+        public String getName() {
+            return KeyType.ECDSA521.toString();
+        }
+
+    }
+
+    private String keyTypeName;
+
+    public SignatureECDSA(String algorithm, String keyTypeName) {
+        super(algorithm);
+        this.keyTypeName = keyTypeName;
     }
 
     @Override
@@ -75,8 +113,8 @@ public class SignatureECDSA
         try {
             Buffer sigbuf = new Buffer.PlainBuffer(sig);
             final String algo = new String(sigbuf.readBytes());
-            if (!"ecdsa-sha2-nistp256".equals(algo)) {
-                throw new SSHRuntimeException(String.format("Signature :: ecdsa-sha2-nistp256 expected, got %s", algo));
+            if (!keyTypeName.equals(algo)) {
+                throw new SSHRuntimeException(String.format("Signature :: " + keyTypeName + " expected, got %s", algo));
             }
             final int rsLen = sigbuf.readUInt32AsInt();
             if (sigbuf.available() != rsLen) {
@@ -88,10 +126,23 @@ public class SignatureECDSA
             throw new SSHRuntimeException(e);
         }
 
+        try {
+            return signature.verify(asnEncode(r, s));
+        } catch (SignatureException e) {
+            throw new SSHRuntimeException(e);
+        } catch (IOException e) {
+            throw new SSHRuntimeException(e);
+        }
+    }
+
+    private byte[] asnEncode(byte[] r, byte[] s) throws IOException {
         int rLen = r.length;
         int sLen = s.length;
 
-        /* We can't have the high bit set, so add an extra zero at the beginning if so. */
+        /*
+         * We can't have the high bit set, so add an extra zero at the beginning
+         * if so.
+         */
         if ((r[0] & 0x80) != 0) {
             rLen++;
         }
@@ -101,37 +152,17 @@ public class SignatureECDSA
 
         /* Calculate total output length */
         int length = 6 + rLen + sLen;
-        byte[] asn1 = new byte[length];
 
-        /* ASN.1 SEQUENCE tag */
-        asn1[0] = (byte) 0x30;
+        ASN1EncodableVector vector = new ASN1EncodableVector();
+        vector.add(new ASN1Integer(r));
+        vector.add(new ASN1Integer(s));
 
-        /* Size of SEQUENCE */
-        asn1[1] = (byte) (4 + rLen + sLen);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(length);
+        ASN1OutputStream asnOS = new ASN1OutputStream(baos);
 
-        /* ASN.1 INTEGER tag */
-        asn1[2] = (byte) 0x02;
+        asnOS.writeObject(new DERSequence(vector));
+        asnOS.flush();
 
-        /* "r" INTEGER length */
-        asn1[3] = (byte) rLen;
-
-        /* Copy in the "r" INTEGER */
-        System.arraycopy(r, 0, asn1, 4, rLen);
-
-        /* ASN.1 INTEGER tag */
-        asn1[rLen + 4] = (byte) 0x02;
-
-        /* "s" INTEGER length */
-        asn1[rLen + 5] = (byte) sLen;
-
-        /* Copy in the "s" INTEGER */
-        System.arraycopy(s, 0, asn1, (6 + rLen), sLen);
-
-
-        try {
-            return signature.verify(asn1);
-        } catch (SignatureException e) {
-            throw new SSHRuntimeException(e);
-        }
+        return baos.toByteArray();
     }
 }
