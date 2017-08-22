@@ -162,12 +162,12 @@ public class FileSystemFile
         String[] split = name.split("/");
         Stack<String> s = new Stack<String>();
         for (String component : split) {
-            if (component == null || component.isEmpty() || component.equals(".")) {
+            if (component == null || component.isEmpty() || ".".equals(component)) {
                 continue;
-            } else if (component.equals("..") && !s.isEmpty()) {
+            } else if ("..".equals(component) && !s.isEmpty()) {
                 s.pop();
                 continue;
-            } else if (component.equals("..")) {
+            } else if ("..".equals(component)) {
                 throw new IllegalArgumentException("Cannot traverse higher than " + file + " to get child " + name);
             }
             s.push(component);
