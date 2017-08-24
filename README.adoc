@@ -75,7 +75,7 @@ key exchange::
   `diffie-hellman-group16-sha256`, `diffie-hellman-group16-sha384@ssh.com`, `diffie-hellman-group16-sha512@ssh.com`, `diffie-hellman-group18-sha512@ssh.com`
 
 signatures::
-  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ssh-ed25519`
+  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`
 
 mac::
   `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`
@@ -104,7 +104,10 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
-SSHJ 0.22.0 (2017-??-??)::
+SSHJ 0.22.0 (2017-08-24)::
+* Fixed https://github.com/hierynomus/sshj/pulls/341[#341]: Fixed path walking during recursive copy
+* Merged https://github.com/hierynomus/sshj/pulls/338[#338]: Added ConsolePasswordFinder to read password from stdin
+* Merged https://github.com/hierynomus/sshj/pulls/336[#336]: Added support for ecdsa-sha2-nistp384 and ecdsa-sha2-nistp521 signatures
 * Fixed https://github.com/hierynomus/sshj/issues/331[#331]: Added support for wildcards in known_hosts file
 SSHJ 0.21.1 (2017-04-25)::
 * Merged https://github.com/hierynomus/sshj/pulls/322[#322]: Fix regression from 40f956b (invalid length parameter on outputstream)
