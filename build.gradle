@@ -10,6 +10,7 @@ plugins {
   id "com.jfrog.bintray" version "1.7"
   id 'ru.vyarus.pom' version '1.0.3'
   id 'ru.vyarus.github-info' version '1.1.0'
+  id 'ru.vyarus.animalsniffer' version '1.4.2'
 }
 
 group = "com.hierynomus"
@@ -27,6 +28,8 @@ configurations.compile.transitive = false
 def bouncycastleVersion = "1.56"
 
 dependencies {
+  signature 'org.codehaus.mojo.signature:java16:1.1@signature'
+
   compile "org.slf4j:slf4j-api:1.7.7"
   compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
   compile "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
