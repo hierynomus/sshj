@@ -19,6 +19,9 @@ import com.hierynomus.sshj.test.SshFixture
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder
 import org.junit.Rule
 import spock.lang.Specification
+import spock.util.concurrent.PollingConditions
+
+import java.util.concurrent.CountDownLatch
 
 class LocalPortForwarderSpec extends Specification {
   @Rule
@@ -44,6 +47,9 @@ class LocalPortForwarderSpec extends Specification {
     thread.start()
 
     then:
+    new PollingConditions().eventually {
+      lpf.isRunning()
+    }
     thread.isAlive()
 
     when:
