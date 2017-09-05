@@ -48,6 +48,26 @@ public abstract class AbstractSignature
     }
 
     @Override
+    public void initVerify(PublicKey publicKey) {
+        try {
+            signature = SecurityUtils.getSignature(algorithm);
+            signature.initVerify(publicKey);
+        } catch (GeneralSecurityException e) {
+            throw new SSHRuntimeException(e);
+        }
+    }
+
+    @Override
+    public void initSign(PrivateKey privateKey) {
+        try {
+            signature = SecurityUtils.getSignature(algorithm);
+            signature.initSign(privateKey);
+        } catch (GeneralSecurityException e) {
+            throw new SSHRuntimeException(e);
+        }
+    }
+
+    @Override
     public void update(byte[] foo) {
         update(foo, 0, foo.length);
     }
