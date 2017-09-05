@@ -20,11 +20,7 @@ import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.interfaces.DSAPrivateKey;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+import java.security.interfaces.*;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
@@ -130,7 +126,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 256);
+            return ECDSAVariationsAdapter.isECKeyWithFieldSize(key, 256);
         }
     },
 
@@ -151,7 +147,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 384);
+            return ECDSAVariationsAdapter.isECKeyWithFieldSize(key, 384);
         }
     },
 
@@ -172,7 +168,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return ("ECDSA".equals(key.getAlgorithm()) && ECDSAVariationsAdapter.fieldSizeFromKey((ECPublicKey) key) == 521);
+            return ECDSAVariationsAdapter.isECKeyWithFieldSize(key, 521);
         }
     },
 

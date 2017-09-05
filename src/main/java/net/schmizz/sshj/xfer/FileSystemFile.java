@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class FileSystemFile
         implements LocalSourceFile, LocalDestFile {
@@ -83,8 +84,9 @@ public class FileSystemFile
             }
         });
 
-        if (childFiles == null)
+        if (childFiles == null) {
             throw new IOException("Error listing files in directory: " + this);
+        }
 
         final List<FileSystemFile> children = new ArrayList<FileSystemFile>();
         for (File f : childFiles) {
@@ -113,12 +115,13 @@ public class FileSystemFile
     @Override
     public int getPermissions()
             throws IOException {
-        if (isDirectory())
+        if (isDirectory()) {
             return 0755;
-        else if (isFile())
+        } else if (isFile()) {
             return 0644;
-        else
+        } else {
             throw new IOException("Unsupported file type");
+        }
     }
 
     @Override
@@ -130,8 +133,9 @@ public class FileSystemFile
     @Override
     public void setLastModifiedTime(long t)
             throws IOException {
-        if (!file.setLastModified(t * 1000))
+        if (!file.setLastModified(t * 1000)) {
             log.warn("Could not set last modified time for {} to {}", file, t);
+        }
     }
 
     @Override
@@ -143,13 +147,31 @@ public class FileSystemFile
                                            !(FilePermission.OTH_W.isIn(perms) || FilePermission.GRP_W.isIn(perms)));
         final boolean x = file.setExecutable(FilePermission.USR_X.isIn(perms),
                                              !(FilePermission.OTH_X.isIn(perms) || FilePermission.GRP_X.isIn(perms)));
-        if (!(r && w && x))
+        if (!(r && w && x)) {
             log.warn("Could not set permissions for {} to {}", file, Integer.toString(perms, 16));
+        }
     }
 
     @Override
     public FileSystemFile getChild(String name) {
+        validateIsChildPath(name);
         return new FileSystemFile(new File(file, name));
+    }
+
+    private void validateIsChildPath(String name) {
+        String[] split = name.split("/");
+        Stack<String> s = new Stack<String>();
+        for (String component : split) {
+            if (component == null || component.isEmpty() || ".".equals(component)) {
+                continue;
+            } else if ("..".equals(component) && !s.isEmpty()) {
+                s.pop();
+                continue;
+            } else if ("..".equals(component)) {
+                throw new IllegalArgumentException("Cannot traverse higher than " + file + " to get child " + name);
+            }
+            s.push(component);
+        }
     }
 
     @Override
@@ -157,8 +179,9 @@ public class FileSystemFile
             throws IOException {
         FileSystemFile f = this;
 
-        if (f.isDirectory())
+        if (f.isDirectory()) {
             f = f.getChild(filename);
+        }
 
         if (!f.getFile().exists()) {
             if (!f.getFile().createNewFile())
@@ -174,12 +197,15 @@ public class FileSystemFile
             throws IOException {
         FileSystemFile f = this;
 
-        if (f.getFile().exists())
+        if (f.getFile().exists()) {
             if (f.isDirectory()) {
-                if (!f.getName().equals(dirname))
+                if (!f.getName().equals(dirname)) {
                     f = f.getChild(dirname);
-            } else
+                }
+            } else {
                 throw new IOException(f + " - already exists as a file; directory required");
+            }
+        }
 
         if (!f.getFile().exists() && !f.getFile().mkdir())
             throw new IOException("Failed to create directory: " + f);

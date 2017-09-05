@@ -24,9 +24,9 @@ import java.nio.CharBuffer;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
-import javax.xml.bind.DatatypeConverter;
 
 import net.schmizz.sshj.common.Base64;
+import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.transport.cipher.*;
@@ -126,7 +126,7 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
                             } else {
                                 throw new FormatException("Not a supported algorithm: " + algorithm);
                             }
-                            iv = Arrays.copyOfRange(DatatypeConverter.parseHexBinary(line.substring(ptr + 1)), 0, cipher.getIVSize());
+                            iv = Arrays.copyOfRange(ByteArrayUtils.parseHex(line.substring(ptr + 1)), 0, cipher.getIVSize());
                         }
                     } else if (line.length() > 0) {
                         sb.append(line);

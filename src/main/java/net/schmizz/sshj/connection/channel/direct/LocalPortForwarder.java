@@ -138,6 +138,15 @@ public class LocalPortForwarder {
     }
 
     /**
+     * Returns whether this listener is running (ie. whether a thread is attached to it).
+     *
+     * @return
+     */
+    public boolean isRunning() {
+        return this.runningThread != null && !serverSocket.isClosed();
+    }
+
+    /**
      * Start listening for incoming connections and forward to remote host as a channel and ensure that the thread is registered.
      * This is useful if for instance {@link #close() is called from another thread}
      *
