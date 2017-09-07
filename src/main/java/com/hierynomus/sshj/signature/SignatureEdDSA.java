@@ -48,21 +48,6 @@ public class SignatureEdDSA implements Signature {
     }
 
     @Override
-    public void init(PublicKey pubkey, PrivateKey prvkey) {
-        try {
-            if (pubkey != null) {
-                engine.initVerify(pubkey);
-            }
-
-            if (prvkey != null) {
-                engine.initSign(prvkey);
-            }
-        } catch (InvalidKeyException e) {
-            throw new SSHRuntimeException(e);
-        }
-    }
-
-    @Override
     public void initVerify(PublicKey pubkey) {
         try {
             engine.initVerify(pubkey);

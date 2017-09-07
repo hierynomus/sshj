@@ -22,17 +22,6 @@ import java.security.PublicKey;
 public interface Signature {
 
     /**
-     * Initialize this signature with the given public key and private key. If the private key is null, only signature
-     * verification can be performed.
-     *
-     * @param pubkey (null-ok) specify in case verification is needed
-     * @param prvkey (null-ok) specify in case signing is needed
-     * @deprecated Use {@link #initVerify(PublicKey)} or {@link #initSign(PrivateKey)} instead.
-     */
-    @Deprecated
-    void init(PublicKey pubkey, PrivateKey prvkey);
-
-    /**
      * Initialize this signature with the given public key for signature verification.
      *
      * Note that subsequent calls to either {@link #initVerify(PublicKey)} or {@link #initSign(PrivateKey)} will
