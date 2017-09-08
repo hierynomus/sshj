@@ -22,13 +22,24 @@ import java.security.PublicKey;
 public interface Signature {
 
     /**
-     * Initialize this signature with the given public key and private key. If the private key is null, only signature
-     * verification can be performed.
+     * Initialize this signature with the given public key for signature verification.
      *
-     * @param pubkey (null-ok) specify in case verification is needed
-     * @param prvkey (null-ok) specify in case signing is needed
+     * Note that subsequent calls to either {@link #initVerify(PublicKey)} or {@link #initSign(PrivateKey)} will
+     * overwrite prior initialization.
+     *
+     * @param pubkey the public key to use for signature verification
      */
-    void init(PublicKey pubkey, PrivateKey prvkey);
+    void initVerify(PublicKey pubkey);
+
+    /**
+     * Initialize this signature with the given private key for signing.
+     *
+     * Note that subsequent calls to either {@link #initVerify(PublicKey)} or {@link #initSign(PrivateKey)} will
+     * overwrite prior initialization.
+     *
+     * @param prvkey the private key to use for signing
+     */
+    void initSign(PrivateKey prvkey);
 
     /**
      * Convenience method, same as calling {@link #update(byte[], int, int)} with offset as {@code 0} and {@code

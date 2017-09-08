@@ -66,7 +66,7 @@ public abstract class KeyedAuthMethod
         if (signature == null)
             throw new UserAuthException("Could not create signature instance for " + kt + " key");
 
-        signature.init(null, key);
+        signature.initSign(key);
         signature.update(new Buffer.PlainBuffer()
                 .putString(params.getTransport().getSessionID())
                 .putBuffer(reqBuf) // & rest of the data for sig

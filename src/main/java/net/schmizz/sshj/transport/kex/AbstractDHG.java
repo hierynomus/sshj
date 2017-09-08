@@ -80,7 +80,7 @@ public abstract class AbstractDHG extends AbstractDH
 
         Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(),
                                                         KeyType.fromKey(hostKey).toString());
-        signature.init(hostKey, null);
+        signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
