@@ -46,18 +46,33 @@ public class SignatureDSA
 
     @Override
     public byte[] encode(byte[] sig) {
+        return fromASN1toMPINT(sig);
+    }
+
+    @Override
+    public boolean verify(byte[] sig) {
+        sig = extractSig(sig);
+        try {
+            return signature.verify(fromMPINTtoASN1(sig));
+        } catch (SignatureException e) {
+            throw new SSHRuntimeException(e);
+        }
+    }
+
+    /**
+     * Converts from ASN.1 (JCA) to mpint (SSH).
+     *
+     * @param sig
+     *            - signature encoded in ASN.1
+     * @return signature encoded in mpint
+     * @see <a href="https://www.ietf.org/rfc/rfc4251.txt">RFC 4251</a>
+     */
+    byte[] fromASN1toMPINT(final byte[] sig) {
         // sig is in ASN.1
         // SEQUENCE::={ r INTEGER, s INTEGER }
 
-        int rIndex = 3;
-        int rLen = sig[rIndex++] & 0xff;
-        byte[] r = new byte[rLen];
-        System.arraycopy(sig, rIndex, r, 0, r.length);
-
-        int sIndex = rIndex + rLen + 1;
-        int sLen = sig[sIndex++] & 0xff;
-        byte[] s = new byte[sLen];
-        System.arraycopy(sig, sIndex, s, 0, s.length);
+        byte[] r = computeMPINT(sig, 3);
+        byte[] s = computeMPINT(sig, 4 + r.length + 1);
 
         byte[] result = new byte[40];
 
@@ -72,35 +87,56 @@ public class SignatureDSA
         return result;
     }
 
-    @Override
-    public boolean verify(byte[] sig) {
-        sig = extractSig(sig);
+    private byte[] computeMPINT(final byte[] sig, final int index) {
+        int len = sig[index] & 0xff;
+        byte[] result = new byte[len];
+        System.arraycopy(sig, index + 1, result, 0, result.length);
+        return result;
+    }
 
-        // ASN.1
-        int frst = (sig[0] & 0x80) != 0 ? 1 : 0;
-        int scnd = (sig[20] & 0x80) != 0 ? 1 : 0;
+    /**
+     * Converts from mpint (SSH) to ASN.1 (JCA).
+     *
+     * @param sig
+     *            - signature encoded in mpint
+     * @return signature encoded in ASN.1
+     * @author Jurrie Overgoor &lt;jsch@jurr.org&gt;
+     * @see <a href="https://www.ietf.org/rfc/rfc4251.txt">RFC 4251</a>
+     */
+    byte[] fromMPINTtoASN1(final byte[] sig) {
 
-        int length = sig.length + 6 + frst + scnd;
-        byte[] tmp = new byte[length];
-        tmp[0] = (byte) 0x30;
-        tmp[1] = (byte) 0x2c;
-        tmp[1] += frst;
-        tmp[1] += scnd;
-        tmp[2] = (byte) 0x02;
-        tmp[3] = (byte) 0x14;
-        tmp[3] += frst;
-        System.arraycopy(sig, 0, tmp, 4 + frst, 20);
-        tmp[4 + tmp[3]] = (byte) 0x02;
-        tmp[5 + tmp[3]] = (byte) 0x14;
-        tmp[5 + tmp[3]] += scnd;
-        System.arraycopy(sig, 20, tmp, 6 + tmp[3] + scnd, 20);
-        sig = tmp;
+        int lenFirst = computeASN1Length(sig, 0);
+        int lenSecond = computeASN1Length(sig, 20);
 
-        try {
-            return signature.verify(sig);
-        } catch (SignatureException e) {
-            throw new SSHRuntimeException(e);
+        int maxLenFirst = Math.min(lenFirst, 20);
+        int maxLenSecond = Math.min(lenSecond, 20);
+
+        int length = 6 + lenFirst + lenSecond;
+        byte[] result = new byte[length];
+        result[0] = (byte) 0x30; // ASN.1 SEQUENCE
+        result[1] = (byte) (lenFirst + lenSecond + 4); // ASN.1 length of sequence
+        result[2] = (byte) 0x02; // ASN.1 INTEGER
+        result[3] = (byte) lenFirst; // ASN.1 length of integer
+        System.arraycopy(sig, 20 - maxLenFirst, result, 4 + (lenFirst > 20 ? 1 : 0), maxLenFirst);
+        result[4 + result[3]] = (byte) 0x02; // ASN.1 INTEGER
+        result[5 + result[3]] = (byte) lenSecond; // ASN.1 length of integer
+        System.arraycopy(sig, 20 + 20 - maxLenSecond, result, 6 + result[3] + (lenSecond > 20 ? 1 : 0), maxLenSecond);
+
+        return result;
+    }
+
+    private int computeASN1Length(final byte[] sig, final int index) {
+        int length = 20;
+        if ((sig[index] & 0x80) != 0) {
+            // ASN.1 would see this as negative INTEGER, so we add a leading 0x00 byte.
+            length++;
+        } else {
+            while (sig[index + 20 - length] == 0 && (sig[index + 20 - length + 1] & 0x80) != 0x80) {
+                // The mpint starts with redundant 0x00 bytes.
+                length--;
+            }
         }
+        return length;
     }
 
 }
