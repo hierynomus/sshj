@@ -15,8 +15,8 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import java.io.IOException;
-import java.security.KeyPair;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -26,8 +26,8 @@ import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
+import java.io.IOException;
+import java.security.KeyPair;
 
 /** Represents a PKCS8-encoded key file. This is the format used by (old-style) OpenSSH and OpenSSL. */
 public class PKCS8KeyFile extends BaseFileKeyProvider {

@@ -15,19 +15,18 @@
  */
 package net.schmizz.sshj.signature;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.SignatureException;
-
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.SSHRuntimeException;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERSequence;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SSHRuntimeException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.SignatureException;
 
 /** ECDSA {@link Signature} */
 public class SignatureECDSA extends AbstractSignature {

@@ -15,21 +15,21 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import net.schmizz.sshj.common.Base64;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
+import org.bouncycastle.util.encoders.Hex;
+
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.*;
 import java.util.HashMap;
 import java.util.Map;
-import javax.crypto.Cipher;
-import javax.crypto.Mac;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import org.bouncycastle.util.encoders.Hex;
-
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
 
 /**
  * <h2>Sample PuTTY file format</h2>

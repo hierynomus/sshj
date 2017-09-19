@@ -15,7 +15,6 @@
  */
 package com.hierynomus.sshj.transport.verification
 
-import com.hierynomus.sshj.transport.verification.KnownHostMatchers
 import spock.lang.Specification
 import spock.lang.Unroll
 

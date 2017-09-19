@@ -15,11 +15,11 @@
  */
 package com.hierynomus.sshj.backport;
 
+import net.schmizz.sshj.common.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
-
-import net.schmizz.sshj.common.IOUtils;
 
 public class Jdk7HttpProxySocket extends Socket {
 

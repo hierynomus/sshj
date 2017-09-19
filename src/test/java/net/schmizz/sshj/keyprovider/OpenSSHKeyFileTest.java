@@ -15,13 +15,18 @@
  */
 package net.schmizz.sshj.keyprovider;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.hierynomus.sshj.userauth.certificate.Certificate;
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
+import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
+import net.schmizz.sshj.userauth.password.Resource;
+import net.schmizz.sshj.util.KeyUtil;
+import org.apache.sshd.common.util.SecurityUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,20 +44,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Scanner;
 
-import org.apache.sshd.common.util.SecurityUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.hierynomus.sshj.userauth.certificate.Certificate;
-import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
-
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
-import net.schmizz.sshj.userauth.password.Resource;
-import net.schmizz.sshj.util.KeyUtil;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.*;
 
 public class OpenSSHKeyFileTest {
 

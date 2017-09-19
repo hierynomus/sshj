@@ -15,12 +15,11 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-
-import net.schmizz.sshj.common.LoggerFactory;
 
 import static net.schmizz.sshj.sftp.PathHelper.DEFAULT_PATH_SEPARATOR;
 import static org.mockito.Mockito.*;

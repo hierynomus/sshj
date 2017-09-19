@@ -15,14 +15,13 @@
  */
 package net.schmizz.concurrent;
 
+import net.schmizz.sshj.common.LoggerFactory;
 import org.slf4j.Logger;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
-import net.schmizz.sshj.common.LoggerFactory;
 
 /**
  * Represents promised data of the parameterized type {@code V} and allows waiting on it. An exception may also be

@@ -21,8 +21,6 @@ import org.junit.Rule
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
-import java.util.concurrent.CountDownLatch
-
 class LocalPortForwarderSpec extends Specification {
   @Rule
   SshFixture tunnelFixture = new SshFixture()

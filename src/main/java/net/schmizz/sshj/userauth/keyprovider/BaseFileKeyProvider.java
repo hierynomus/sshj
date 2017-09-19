@@ -15,15 +15,15 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.userauth.password.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.*;
 
 public abstract class BaseFileKeyProvider implements FileKeyProvider {
     protected Resource<?> resource;
