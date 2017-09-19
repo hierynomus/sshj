@@ -10,6 +10,7 @@
 .settings/
 
 # Output dirs
+out/
 target/
 classes/
 build/
