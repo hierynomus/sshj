@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.signature;
 
+import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
 
@@ -29,6 +30,8 @@ public abstract class AbstractSignature
 
     protected final String algorithm;
     protected java.security.Signature signature;
+
+    private static final byte[] SIG_START_BYTES = new byte[] {0, 0, 0, 0x07, 0x73, 0x73, 0x68, 0x2d};
 
     protected AbstractSignature(String algorithm) {
         this.algorithm = algorithm;
@@ -78,7 +81,7 @@ public abstract class AbstractSignature
     }
 
     protected byte[] extractSig(byte[] sig) {
-        if (sig[0] == 0 && sig[1] == 0 && sig[2] == 0) {
+        if (ByteArrayUtils.equals(sig, 0, SIG_START_BYTES, 0, SIG_START_BYTES.length)) {
             int i = 0;
             int j = sig[i++] << 24 & 0xff000000
                     | sig[i++] << 16 & 0x00ff0000
