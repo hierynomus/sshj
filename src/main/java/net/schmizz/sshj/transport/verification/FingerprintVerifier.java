@@ -20,6 +20,7 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
@@ -28,7 +29,7 @@ import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 public class FingerprintVerifier implements HostKeyVerifier {
-
+    private static final Pattern MD5_FINGERPRINT_PATTERN = Pattern.compile("[0-9a-f]{2}+(:[0-9a-f]{2}+){15}+");
     /**
      * Valid examples:
      *
@@ -50,21 +51,21 @@ public class FingerprintVerifier implements HostKeyVerifier {
 
         try {
             if (fingerprint.startsWith("SHA1:")) {
-                fingerprint = fingerprint.substring(5);
-                return new FingerprintVerifier("SHA-1", fingerprint);
+                return new FingerprintVerifier("SHA-1", fingerprint.substring(5));
             }
+
             if (fingerprint.startsWith("SHA256:")) {
-                fingerprint = fingerprint.substring(7);
-                return new FingerprintVerifier("SHA-256", fingerprint);
+                return new FingerprintVerifier("SHA-256", fingerprint.substring(7));
             }
 
+            final String md5;
             if (fingerprint.startsWith("MD5:")) {
-                fingerprint = fingerprint.substring(4); // remove the MD5: prefix
+                md5 = fingerprint.substring(4); // remove the MD5: prefix
+            } else {
+                md5 = fingerprint;
             }
-            final String md5 = fingerprint;
 
-            String md5FingerprintRegex = "[0-9a-f]{2}+(:[0-9a-f]{2}+){15}+";
-            if (!fingerprint.matches(md5FingerprintRegex)) {
+            if (!MD5_FINGERPRINT_PATTERN.matcher(md5).matches()) {
                 throw new SSHRuntimeException("Invalid MD5 fingerprint: " + fingerprint);
             }
 
@@ -103,8 +104,7 @@ public class FingerprintVerifier implements HostKeyVerifier {
         while (base64FingerprintBuilder.length() % 4 != 0) {
             base64FingerprintBuilder.append("=");
         }
-        base64Fingerprint = base64FingerprintBuilder.toString();
-        fingerprintData = Base64.decode(base64Fingerprint);
+        fingerprintData = Base64.decode(base64FingerprintBuilder.toString());
     }
 
     @Override
