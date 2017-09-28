@@ -27,6 +27,7 @@ import java.security.*;
 public abstract class AbstractSignature
         implements Signature {
 
+    @SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
     protected final java.security.Signature signature;
 
     protected AbstractSignature(String algorithm) {
@@ -37,7 +38,8 @@ public abstract class AbstractSignature
         }
     }
 
-    protected AbstractSignature(java.security.Signature signatureEngine) {
+    protected AbstractSignature(@SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
+                                        java.security.Signature signatureEngine) {
         this.signature = signatureEngine;
     }
 
