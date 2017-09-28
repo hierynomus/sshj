@@ -51,7 +51,7 @@ public class SignatureRSA
 
     @Override
     public boolean verify(byte[] sig) {
-        sig = extractSig(sig);
+        sig = extractSig(sig, "ssh-rsa");
         try {
             return signature.verify(sig);
         } catch (SignatureException e) {

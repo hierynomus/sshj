@@ -83,7 +83,7 @@ public class SignatureDSA
 
     @Override
     public boolean verify(byte[] incomingSig) {
-        byte[] extractSig = extractSig(incomingSig);
+        byte[] extractSig = extractSig(incomingSig, "ssh-dss");
         try {
             // ASN.1
             ByteArrayOutputStream os = new ByteArrayOutputStream();
