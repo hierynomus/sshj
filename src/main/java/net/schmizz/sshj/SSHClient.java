@@ -38,6 +38,7 @@ import net.schmizz.sshj.transport.compression.DelayedZlibCompression;
 import net.schmizz.sshj.transport.compression.NoneCompression;
 import net.schmizz.sshj.transport.compression.ZlibCompression;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
+import net.schmizz.sshj.transport.verification.FingerprintVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.userauth.UserAuth;
@@ -169,19 +170,23 @@ public class SSHClient
 
     /**
      * Add a {@link HostKeyVerifier} that will verify any host that's able to claim a host key with the given {@code
-     * fingerprint}, e.g. {@code "4b:69:6c:72:6f:79:20:77:61:73:20:68:65:72:65:21"}
+     * fingerprint}.
+     *
+     * The fingerprint can be specified in either an MD5 colon-delimited format (16 hexadecimal octets, delimited by a colon),
+     * or in a Base64 encoded format for SHA-1 or SHA-256 fingerprints.
+     * Valid examples are:
+     *
+     * <ul><li>"SHA1:2Fo8c/96zv32xc8GZWbOGYOlRak="</li>
+     * <li>"SHA256:oQGbQTujGeNIgh0ONthcEpA/BHxtt3rcYY+NxXTxQjs="</li>
+     * <li>"MD5:d3:5e:40:72:db:08:f1:6d:0c:d7:6d:35:0d:ba:7c:32"</li>
+     * <li>"d3:5e:40:72:db:08:f1:6d:0c:d7:6d:35:0d:ba:7c:32"</li></ul>
      *
      * @param fingerprint expected fingerprint in colon-delimited format (16 octets in hex delimited by a colon)
      *
      * @see SecurityUtils#getFingerprint
      */
     public void addHostKeyVerifier(final String fingerprint) {
-        addHostKeyVerifier(new HostKeyVerifier() {
-            @Override
-            public boolean verify(String h, int p, PublicKey k) {
-                return SecurityUtils.getFingerprint(k).equals(fingerprint);
-            }
-        });
+        addHostKeyVerifier(FingerprintVerifier.getInstance(fingerprint));
     }
 
     // FIXME: there are way too many auth... overrides. Better API needed.
