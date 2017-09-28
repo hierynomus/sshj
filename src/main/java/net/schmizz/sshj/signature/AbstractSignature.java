@@ -16,7 +16,6 @@
 package net.schmizz.sshj.signature;
 
 import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
 
