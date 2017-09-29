@@ -85,12 +85,11 @@ public abstract class AbstractSignature
     }
 
     /**
-     * Only used by ssh-dsa and ssh-rsa signatures.
-     * It will check whether the signature is of the expected type
-     * and return the signature blob
+     * Check whether the signature is generated using the expected algorithm, and if so, return the signature blob
      *
-     * @param sig
-     * @return
+     * @param sig                  The full signature
+     * @param expectedKeyAlgorithm The expected key algorithm
+     * @return The blob part of the signature
      */
     protected byte[] extractSig(byte[] sig, String expectedKeyAlgorithm) {
         Buffer.PlainBuffer buffer = new Buffer.PlainBuffer(sig);
