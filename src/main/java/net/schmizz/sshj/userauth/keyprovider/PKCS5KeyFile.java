@@ -15,6 +15,14 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import net.schmizz.sshj.common.Base64;
+import net.schmizz.sshj.common.ByteArrayUtils;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.transport.cipher.*;
+import net.schmizz.sshj.transport.digest.Digest;
+import net.schmizz.sshj.transport.digest.MD5;
+
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
@@ -24,14 +32,6 @@ import java.nio.CharBuffer;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
-
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.ByteArrayUtils;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.transport.cipher.*;
-import net.schmizz.sshj.transport.digest.Digest;
-import net.schmizz.sshj.transport.digest.MD5;
 
 /**
  * Represents a PKCS5-encoded key file. This is the format typically used by OpenSSH, OpenSSL, Amazon, etc.

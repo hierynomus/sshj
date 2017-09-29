@@ -17,12 +17,11 @@ package net.schmizz.sshj.common;
 
 import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.math.BigInteger;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class BufferTest {
 

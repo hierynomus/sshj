@@ -15,13 +15,14 @@
  */
 package net.schmizz.sshj.common;
 
-import java.security.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.security.*;
 
 import static java.lang.String.format;
 

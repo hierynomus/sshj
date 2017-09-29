@@ -15,9 +15,10 @@
  */
 package net.schmizz.sshj.transport.random;
 
-import java.security.SecureRandom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.security.SecureRandom;
 
 /** A {@link Random} implementation using the built-in {@link SecureRandom} PRNG. */
 public class JCERandom

@@ -15,14 +15,14 @@
  */
 package com.hierynomus.sshj;
 
-import java.io.File;
-import java.io.IOException;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 

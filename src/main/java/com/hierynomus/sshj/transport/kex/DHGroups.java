@@ -15,14 +15,15 @@
  */
 package com.hierynomus.sshj.transport.kex;
 
-import net.schmizz.sshj.transport.digest.*;
+import net.schmizz.sshj.transport.digest.Digest;
+import net.schmizz.sshj.transport.digest.SHA1;
+import net.schmizz.sshj.transport.digest.SHA256;
+import net.schmizz.sshj.transport.digest.SHA512;
 import net.schmizz.sshj.transport.kex.KeyExchange;
 
 import java.math.BigInteger;
 
 import static net.schmizz.sshj.transport.kex.DHGroupData.*;
-import static net.schmizz.sshj.transport.kex.DHGroupData.P16;
-import static net.schmizz.sshj.transport.kex.DHGroupData.P18;
 
 /**
  * Factory methods for Diffie Hellmann KEX algorithms based on MODP groups / Oakley Groups

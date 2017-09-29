@@ -15,13 +15,12 @@
  */
 package net.schmizz.sshj.signature;
 
-import java.security.PublicKey;
-
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.Buffer.BufferException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.Buffer.BufferException;
+import java.security.PublicKey;
 
 public class VerificationTest {
 

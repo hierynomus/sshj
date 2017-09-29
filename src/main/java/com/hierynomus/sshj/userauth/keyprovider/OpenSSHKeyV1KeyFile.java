@@ -15,14 +15,6 @@
  */
 package com.hierynomus.sshj.userauth.keyprovider;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
@@ -31,6 +23,14 @@ import net.schmizz.sshj.common.Buffer.PlainBuffer;
 import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.PublicKey;
 
 import static net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable.CURVE_ED25519_SHA512;
 

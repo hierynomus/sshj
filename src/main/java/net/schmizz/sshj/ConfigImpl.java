@@ -16,8 +16,8 @@
 package net.schmizz.sshj;
 
 import net.schmizz.keepalive.KeepAliveProvider;
-import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;

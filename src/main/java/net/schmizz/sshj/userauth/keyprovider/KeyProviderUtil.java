@@ -15,10 +15,10 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.common.IOUtils;
 
 import java.io.*;
-import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 
 public class KeyProviderUtil {
 
