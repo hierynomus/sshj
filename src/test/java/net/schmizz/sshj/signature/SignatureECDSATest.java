@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import java.security.PublicKey;
 
-public class VerificationTest {
+public class SignatureECDSATest {
 
     @Test
     public void testECDSA256Verifies() throws BufferException {
