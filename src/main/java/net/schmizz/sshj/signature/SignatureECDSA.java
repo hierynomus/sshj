@@ -98,7 +98,7 @@ public class SignatureECDSA extends AbstractSignature {
         System.arraycopy(sig, 4, r, 0, rLen);
         System.arraycopy(sig, 6 + rLen, s, 0, sLen);
 
-        Buffer buf = new Buffer.PlainBuffer();
+        Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
         buf.putMPInt(new BigInteger(r));
         buf.putMPInt(new BigInteger(s));
 
@@ -107,18 +107,9 @@ public class SignatureECDSA extends AbstractSignature {
 
     @Override
     public boolean verify(byte[] sig) {
-        byte[] r;
-        byte[] s;
         try {
-            Buffer sigbuf = new Buffer.PlainBuffer(extractSig(sig, keyTypeName));
-            r = sigbuf.readBytes();
-            s = sigbuf.readBytes();
-        } catch (Exception e) {
-            throw new SSHRuntimeException(e);
-        }
-
-        try {
-            return signature.verify(asnEncode(r, s));
+            byte[] sigBlob = extractSig(sig, keyTypeName);
+            return signature.verify(asnEncode(sigBlob));
         } catch (SignatureException e) {
             throw new SSHRuntimeException(e);
         } catch (IOException e) {
@@ -126,7 +117,14 @@ public class SignatureECDSA extends AbstractSignature {
         }
     }
 
-    private byte[] asnEncode(byte[] r, byte[] s) throws IOException {
+    /**
+     * Encodes the signature as a DER sequence (ASN.1 format).
+     */
+    private byte[] asnEncode(byte[] sigBlob) throws IOException {
+        Buffer.PlainBuffer sigbuf = new Buffer.PlainBuffer(sigBlob);
+        byte[] r = sigbuf.readBytes();
+        byte[] s = sigbuf.readBytes();
+
         ASN1EncodableVector vector = new ASN1EncodableVector();
         vector.add(new ASN1Integer(r));
         vector.add(new ASN1Integer(s));

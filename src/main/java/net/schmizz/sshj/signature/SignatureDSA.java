@@ -82,21 +82,10 @@ public class SignatureDSA
     }
 
     @Override
-    public boolean verify(byte[] incomingSig) {
-        byte[] extractSig = extractSig(incomingSig, "ssh-dss");
+    public boolean verify(byte[] sig) {
         try {
-            // ASN.1
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            ASN1OutputStream asn1OutputStream = new ASN1OutputStream(os);
-            ASN1EncodableVector vector = new ASN1EncodableVector();
-            BigInteger bigInteger = new BigInteger(1, Arrays.copyOfRange(extractSig, 0, 20));
-            vector.add(new ASN1Integer(bigInteger));
-            BigInteger bigInteger2 = new BigInteger(1, Arrays.copyOfRange(extractSig, 20, 40));
-            vector.add(new ASN1Integer(bigInteger2));
-            asn1OutputStream.writeObject(new DERSequence(vector));
-            asn1OutputStream.close();
-            byte[] finalSig = os.toByteArray();
-            return signature.verify(finalSig);
+            byte[] sigBlob = extractSig(sig, "ssh-dss");
+            return signature.verify(asnEncode(sigBlob));
         } catch (SignatureException e) {
             throw new SSHRuntimeException(e);
         } catch (IOException e) {
@@ -104,4 +93,23 @@ public class SignatureDSA
         }
     }
 
+    /**
+     * Encodes the signature as a DER sequence (ASN.1 format).
+     */
+    private byte[] asnEncode(byte[] sigBlob) throws IOException {
+        byte[] r = new BigInteger(1, Arrays.copyOfRange(sigBlob, 0, 20)).toByteArray();
+        byte[] s = new BigInteger(1, Arrays.copyOfRange(sigBlob, 20, 40)).toByteArray();
+
+        ASN1EncodableVector vector = new ASN1EncodableVector();
+        vector.add(new ASN1Integer(r));
+        vector.add(new ASN1Integer(s));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ASN1OutputStream asnOS = new ASN1OutputStream(baos);
+
+        asnOS.writeObject(new DERSequence(vector));
+        asnOS.flush();
+
+        return baos.toByteArray();
+    }
 }
