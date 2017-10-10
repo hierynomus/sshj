@@ -21,7 +21,6 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.keyprovider.ClassLoadableResourceKeyPairProvider;
-import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.CommandFactory;
 import org.apache.sshd.server.SshServer;
