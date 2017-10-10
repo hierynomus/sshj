@@ -53,9 +53,7 @@ import java.util.*;
  * <p/>
  * <ul>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setKeyExchangeFactories Key exchange}: {@link net.schmizz.sshj.transport.kex.DHG14}*, {@link net.schmizz.sshj.transport.kex.DHG1}</li>
- * <li>{@link net.schmizz.sshj.ConfigImpl#setCipherFactories Ciphers} [1]: {@link net.schmizz.sshj.transport.cipher.AES128CTR}, {@link net.schmizz.sshj.transport.cipher.AES192CTR}, {@link net.schmizz.sshj.transport.cipher.AES256CTR},
- * {@link
- * net.schmizz.sshj.transport.cipher.AES128CBC}, {@link net.schmizz.sshj.transport.cipher.AES192CBC}, {@link net.schmizz.sshj.transport.cipher.AES256CBC}, {@link net.schmizz.sshj.transport.cipher.AES192CBC}, {@link net.schmizz.sshj.transport.cipher.TripleDESCBC}, {@link net.schmizz.sshj.transport.cipher.BlowfishCBC}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setCipherFactories Ciphers}: {@link BlockCiphers}, {@link StreamCiphers} [1]</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setMACFactories MAC}: {@link net.schmizz.sshj.transport.mac.HMACSHA1}, {@link net.schmizz.sshj.transport.mac.HMACSHA196}, {@link net.schmizz.sshj.transport.mac.HMACMD5}, {@link
  * net.schmizz.sshj.transport.mac.HMACMD596}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setCompressionFactories Compression}: {@link net.schmizz.sshj.transport.compression.NoneCompression}</li>
@@ -153,14 +151,13 @@ public class DefaultConfig
 
     protected void initCipherFactories() {
         List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
-                new AES128CTR.Factory(),
-                new AES192CTR.Factory(),
-                new AES256CTR.Factory(),
-                new AES128CBC.Factory(),
-                new AES192CBC.Factory(),
-                new AES256CBC.Factory(),
-                new TripleDESCBC.Factory(),
-                new BlowfishCBC.Factory(),
+                BlockCiphers.AES128CBC(),
+                BlockCiphers.AES128CTR(),
+                BlockCiphers.AES192CBC(),
+                BlockCiphers.AES192CTR(),
+                BlockCiphers.AES256CBC(),
+                BlockCiphers.AES256CTR(),
+                BlockCiphers.BlowfishCBC(),
                 BlockCiphers.BlowfishCTR(),
                 BlockCiphers.Cast128CBC(),
                 BlockCiphers.Cast128CTR(),
@@ -172,6 +169,7 @@ public class DefaultConfig
                 BlockCiphers.Serpent192CTR(),
                 BlockCiphers.Serpent256CBC(),
                 BlockCiphers.Serpent256CTR(),
+                BlockCiphers.TripleDESCBC(),
                 BlockCiphers.TripleDESCTR(),
                 BlockCiphers.Twofish128CBC(),
                 BlockCiphers.Twofish128CTR(),

@@ -15,7 +15,14 @@
  */
 package net.schmizz.sshj.transport.cipher;
 
-/** {@code 3des-cbc} cipher */
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+
+/**
+ * {@code 3des-cbc} cipher
+ *
+ * @deprecated Use {@link BlockCiphers#TripleDESCBC()}
+ */
+@Deprecated
 public class TripleDESCBC
         extends BlockCipher {
 
@@ -31,6 +38,11 @@ public class TripleDESCBC
         @Override
         public String getName() {
             return "3des-cbc";
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 

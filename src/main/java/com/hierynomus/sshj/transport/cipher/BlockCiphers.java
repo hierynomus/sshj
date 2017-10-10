@@ -19,14 +19,15 @@ import net.schmizz.sshj.transport.cipher.BlockCipher;
 import net.schmizz.sshj.transport.cipher.Cipher;
 
 /**
- * All BlockCiphers supported by SSH according to the following RFCs
+ * All BlockCiphers supported by SSH according to the following RFCs:
  *
- * - https://tools.ietf.org/html/rfc4344#section-3.1
- * - https://tools.ietf.org/html/rfc4253#section-6.3
+ * <ul>
+ *   <li>https://tools.ietf.org/html/rfc4344#section-3.1</li>
+ *   <li>https://tools.ietf.org/html/rfc4253#section-6.3</li>
+ *   <li>TODO: https://tools.ietf.org/html/rfc5647</li>
+ * </ul>
  *
- * TODO: https://tools.ietf.org/html/rfc5647
- *
- * Some of the Ciphers are still implemented in net.schmizz.sshj.transport.cipher.*. These are scheduled to be migrated to here.
+ * Some of the Ciphers are still implemented in net.schmizz.sshj.transport.cipher.*. These are deprecated and scheduled to be removed.
  */
 @SuppressWarnings("PMD.MethodNamingConventions")
 public class BlockCiphers {
@@ -34,8 +35,29 @@ public class BlockCiphers {
     public static final String COUNTER_MODE = "CTR";
     public static final String CIPHER_BLOCK_CHAINING_MODE = "CBC";
 
+    public static Factory AES128CTR() {
+        return new Factory(16, 128, "aes128-ctr", "AES", COUNTER_MODE);
+    }
+    public static Factory AES192CTR() {
+        return new Factory(16, 192, "aes192-ctr", "AES", COUNTER_MODE);
+    }
+    public static Factory AES256CTR() {
+        return new Factory(16, 256, "aes256-ctr", "AES", COUNTER_MODE);
+    }
+    public static Factory AES128CBC() {
+        return new Factory(16, 128, "aes128-cbc", "AES", CIPHER_BLOCK_CHAINING_MODE);
+    }
+    public static Factory AES192CBC() {
+        return new Factory(16, 192, "aes192-cbc", "AES", CIPHER_BLOCK_CHAINING_MODE);
+    }
+    public static Factory AES256CBC() {
+        return new Factory(16, 256, "aes256-cbc", "AES", CIPHER_BLOCK_CHAINING_MODE);
+    }
     public static Factory BlowfishCTR() {
         return new Factory(8, 256, "blowfish-ctr", "Blowfish", COUNTER_MODE);
+    }
+    public static Factory BlowfishCBC() {
+        return new Factory(8, 128, "blowfish-cbc", "Blowfish", CIPHER_BLOCK_CHAINING_MODE);
     }
     public static Factory Twofish128CTR() {
         return new Factory(16, 128, "twofish128-ctr", "Twofish", COUNTER_MODE);
@@ -90,6 +112,9 @@ public class BlockCiphers {
     }
     public static Factory TripleDESCTR() {
         return new Factory(8, 192, "3des-ctr", "DESede", COUNTER_MODE);
+    }
+    public static Factory TripleDESCBC() {
+        return new Factory(8, 192, "3des-cbc", "DESede", CIPHER_BLOCK_CHAINING_MODE);
     }
 
     /** Named factory for BlockCipher */

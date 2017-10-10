@@ -15,11 +15,18 @@
  */
 package net.schmizz.sshj.transport.cipher;
 
-/** {@code aes128-ctr} cipher */
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+
+/**
+ * {@code aes128-ctr} cipher
+ *
+ * @deprecated Use {@link BlockCiphers#AES128CTR()}
+ */
+@Deprecated
 public class AES128CTR
         extends BlockCipher {
 
-    /** Named factory for AES128CBC Cipher */
+    /** Named factory for AES128CTR Cipher */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
 
@@ -31,6 +38,11 @@ public class AES128CTR
         @Override
         public String getName() {
             return "aes128-ctr";
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 
