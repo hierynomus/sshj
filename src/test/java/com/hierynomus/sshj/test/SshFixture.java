@@ -108,9 +108,7 @@ public class SshFixture extends ExternalResource {
     private SshServer defaultSshServer() {
         SshServer sshServer = SshServer.setUpDefaultServer();
         sshServer.setPort(randomPort());
-        ClassLoadableResourceKeyPairProvider fileKeyPairProvider = SecurityUtils.createClassLoadableResourceKeyPairProvider();
-        fileKeyPairProvider.setResources(Collections.singletonList(hostkey));
-        sshServer.setKeyPairProvider(fileKeyPairProvider);
+        sshServer.setKeyPairProvider(new ClassLoadableResourceKeyPairProvider(hostkey));
         sshServer.setPasswordAuthenticator(new PasswordAuthenticator() {
             @Override
             public boolean authenticate(String username, String password, ServerSession session) {
