@@ -20,8 +20,7 @@ import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
 import org.apache.sshd.common.NamedFactory;
-import org.apache.sshd.common.keyprovider.AbstractClassLoadableResourceKeyPairProvider;
-import org.apache.sshd.common.util.SecurityUtils;
+import org.apache.sshd.common.keyprovider.ClassLoadableResourceKeyPairProvider;
 import org.apache.sshd.server.Command;
 import org.apache.sshd.server.CommandFactory;
 import org.apache.sshd.server.SshServer;
@@ -108,9 +107,7 @@ public class SshFixture extends ExternalResource {
     private SshServer defaultSshServer() {
         SshServer sshServer = SshServer.setUpDefaultServer();
         sshServer.setPort(randomPort());
-        AbstractClassLoadableResourceKeyPairProvider fileKeyPairProvider = SecurityUtils.createClassLoadableResourceKeyPairProvider();
-        fileKeyPairProvider.setResources(Collections.singletonList(hostkey));
-        sshServer.setKeyPairProvider(fileKeyPairProvider);
+        sshServer.setKeyPairProvider(new ClassLoadableResourceKeyPairProvider(hostkey));
         sshServer.setPasswordAuthenticator(new PasswordAuthenticator() {
             @Override
             public boolean authenticate(String username, String password, ServerSession session) {

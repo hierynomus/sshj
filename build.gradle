@@ -23,8 +23,8 @@ repositories {
   }
 }
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 configurations.compile.transitive = false
 
@@ -43,7 +43,7 @@ dependencies {
   testCompile "junit:junit:4.11"
   testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
   testCompile "org.mockito:mockito-core:2.9.2"
-  testCompile "org.apache.sshd:sshd-core:1.2.0"
+  testCompile "org.apache.sshd:sshd-core:1.6.0"
   testRuntime "ch.qos.logback:logback-classic:1.1.2"
   testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
   testCompile 'org.apache.httpcomponents:httpclient:4.5.2'
