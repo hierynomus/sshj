@@ -32,8 +32,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 
-import static net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable.CURVE_ED25519_SHA512;
-
 /**
  * Reads a key file in the new OpenSSH format.
  * The format is described in the following document: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key
@@ -155,6 +153,6 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 throw new IOException("Padding of key format contained wrong byte at position: " + i);
             }
         }
-        return new KeyPair(publicKey, new EdDSAPrivateKey(new EdDSAPrivateKeySpec(privKey, EdDSANamedCurveTable.getByName(CURVE_ED25519_SHA512))));
+        return new KeyPair(publicKey, new EdDSAPrivateKey(new EdDSAPrivateKeySpec(privKey, EdDSANamedCurveTable.getByName("Ed25519"))));
     }
 }
