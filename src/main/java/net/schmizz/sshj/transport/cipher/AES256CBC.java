@@ -15,7 +15,14 @@
  */
 package net.schmizz.sshj.transport.cipher;
 
-/** {@code aes256-ctr} cipher */
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+
+/**
+ * {@code aes256-cbc} cipher
+ *
+ * @deprecated Use {@link BlockCiphers#AES256CBC()}
+ */
+@Deprecated
 public class AES256CBC
         extends BlockCipher {
 
@@ -31,6 +38,11 @@ public class AES256CBC
         @Override
         public String getName() {
             return "aes256-cbc";
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 

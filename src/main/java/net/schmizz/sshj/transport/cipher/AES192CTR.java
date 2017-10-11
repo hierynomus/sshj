@@ -15,7 +15,14 @@
  */
 package net.schmizz.sshj.transport.cipher;
 
-/** {@code aes192-ctr} cipher */
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+
+/**
+ * {@code aes192-ctr} cipher
+ *
+ * @deprecated Use {@link BlockCiphers#AES192CTR()}
+ */
+@Deprecated
 public class AES192CTR
         extends BlockCipher {
 
@@ -31,6 +38,11 @@ public class AES192CTR
         @Override
         public String getName() {
             return "aes192-ctr";
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 

@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.IOUtils;
@@ -116,13 +117,13 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
                         } else {
                             String algorithm = line.substring(10, ptr);
                             if ("DES-EDE3-CBC".equals(algorithm)) {
-                                cipher = new TripleDESCBC();
+                                cipher = BlockCiphers.TripleDESCBC().create();
                             } else if ("AES-128-CBC".equals(algorithm)) {
-                                cipher = new AES128CBC();
+                                cipher = BlockCiphers.AES128CBC().create();
                             } else if ("AES-192-CBC".equals(algorithm)) {
-                                cipher = new AES192CBC();
+                                cipher = BlockCiphers.AES192CBC().create();
                             } else if ("AES-256-CBC".equals(algorithm)) {
-                                cipher = new AES256CBC();
+                                cipher = BlockCiphers.AES256CBC().create();
                             } else {
                                 throw new FormatException("Not a supported algorithm: " + algorithm);
                             }
