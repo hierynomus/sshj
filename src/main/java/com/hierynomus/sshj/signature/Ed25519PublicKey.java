@@ -23,8 +23,6 @@ import net.schmizz.sshj.common.SSHRuntimeException;
 
 import java.util.Arrays;
 
-import static net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable.CURVE_ED25519_SHA512;
-
 /**
  * Our own extension of the EdDSAPublicKey that comes from ECC-25519, as that class does not implement equality.
  * The code uses the equality of the keys as an indicator whether they're the same during host key verification.
@@ -34,7 +32,7 @@ public class Ed25519PublicKey extends EdDSAPublicKey {
     public Ed25519PublicKey(EdDSAPublicKeySpec spec) {
         super(spec);
 
-        EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName(CURVE_ED25519_SHA512);
+        EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("Ed25519");
         if (!spec.getParams().getCurve().equals(ed25519.getCurve())) {
             throw new SSHRuntimeException("Cannot create Ed25519 Public Key from wrong spec");
         }
