@@ -5,7 +5,7 @@ plugins {
   id "groovy"
   id "osgi"
   id "maven-publish"
-  id "org.ajoberstar.release-opinion" version "1.4.2"
+  id 'pl.allegro.tech.build.axion-release' version '1.8.1'
   id "com.github.hierynomus.license" version "0.12.1"
   id "com.jfrog.bintray" version "1.7"
   id 'ru.vyarus.pom' version '1.0.3'
@@ -59,13 +59,14 @@ license {
   excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java'])
 }
 
-if (project.file('.git').isDirectory()) {
-  release {
-    grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
+scmVersion {
+  tag {
+    prefix = 'v'
+    versionSeparator = ''
   }
-} else {
-  version = "0.0.0-no.git"
 }
+
+project.version = scmVersion.version
 
 // This disables the pedantic doclint feature of JDK8
 if (JavaVersion.current().isJava8Compatible()) {
