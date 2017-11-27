@@ -135,7 +135,7 @@ public class KnownHostMatchers {
         private final Pattern pattern;
 
         public WildcardHostMatcher(String hostEntry) {
-            this.pattern = Pattern.compile(hostEntry.replace(".", "\\.").replace("*", ".*").replace("?", "."));
+            this.pattern = Pattern.compile("^" + hostEntry.replace("[", "\\[").replace("]", "\\]").replace(".", "\\.").replace("*", ".*").replace("?", ".") + "$");
         }
 
         @Override

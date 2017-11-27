@@ -49,6 +49,11 @@ class KnownHostMatchersSpec extends Specification {
         "aaa.b??.com" | "aaa.bccd.com" | false
         "|1|F1E1KeoE/eEWhi10WpGv4OdiO6Y=|3988QV0VE8wmZL7suNrYQLITLCg=" | "192.168.1.61" | true
         "|1|F1E1KeoE/eEWhi10WpGv4OdiO6Y=|3988QV0VE8wmZL7suNrYQLITLCg=" | "192.168.2.61" | false
+        "[aaa.bbb.com]:2222" | "aaa.bbb.com" | false
+        "[aaa.bbb.com]:2222" | "[aaa.bbb.com]:2222" | true
+        "[aaa.?bb.com]:2222" | "[aaa.dbb.com]:2222" | true
+        "[aaa.?xb.com]:2222" | "[aaa.dbb.com]:2222" | false
+        "[*.bbb.com]:2222" | "[aaa.bbb.com]:2222" | true
         yesno = match ? "" : "no"
     }
 }

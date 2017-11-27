@@ -361,7 +361,7 @@ public class OpenSSHKnownHosts
         }
 
         protected String getHostPart() {
-            return  hostPart;
+            return hostPart;
         }
     }
 

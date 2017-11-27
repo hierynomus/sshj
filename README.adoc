@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.21.1
+:sshj_version: 0.23.0
 :source-highlighter: pygments
 
 image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
@@ -104,6 +104,12 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.23.0 (2017-10-13)::
+* Merged https://github.com/hierynomus/sshj/pulls/372[#372]: Upgrade to 'net.i2p.crypto:eddsa:0.2.0'
+* Fixed https://github.com/hierynomus/sshj/issues/355[#355] and https://github.com/hierynomus/sshj/issues/354[#354]: Correctly decode signature bytes
+* Fixed https://github.com/hierynomus/sshj/issues/365[#365]: Added support for new-style OpenSSH fingerprints of server keys
+* Fixed https://github.com/hierynomus/sshj/issues/356[#356]: Fixed key type detection for ECDSA public keys
+* Made SSHJ Java9 compatible
 SSHJ 0.22.0 (2017-08-24)::
 * Fixed https://github.com/hierynomus/sshj/pulls/341[#341]: Fixed path walking during recursive copy
 * Merged https://github.com/hierynomus/sshj/pulls/338[#338]: Added ConsolePasswordFinder to read password from stdin
