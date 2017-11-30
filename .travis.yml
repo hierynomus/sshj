@@ -1,13 +1,22 @@
 language: java
+dist: trusty
+sudo: false
+
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+
 cache:
   directories:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
-sudo: false
-dist: trusty
+
 jdk:
   - oraclejdk8
   - openjdk8
   - oraclejdk9
+
+before_install:
+  - pip install --user codecov
+
+after_success:
+- codecov

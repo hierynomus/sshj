@@ -3,6 +3,7 @@ import java.text.SimpleDateFormat
 plugins {
   id "java"
   id "groovy"
+  id "jacoco"
   id "osgi"
   id "maven-publish"
   id 'pl.allegro.tech.build.axion-release' version '1.8.1'
@@ -30,7 +31,7 @@ targetCompatibility = 1.6
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.56"
+def bouncycastleVersion = "1.57"
 
 dependencies {
   signature 'org.codehaus.mojo.signature:java16:1.1@signature'
@@ -111,7 +112,7 @@ jar {
   }
 }
 
-sourcesJar{
+sourcesJar {
   manifest {
     attributes(
       // Add the needed OSGI attributes
@@ -222,5 +223,15 @@ if (project.hasProperty("bintrayUsername") && project.hasProperty("bintrayApiKey
   }
 }
 
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}
+
+
 project.tasks.release.dependsOn(project.tasks.build)
 project.tasks.release.finalizedBy(project.tasks.bintrayUpload)
+project.tasks.jacocoTestReport.dependsOn(project.tasks.test)
+project.tasks.check.dependsOn(project.tasks.jacocoTestReport)
