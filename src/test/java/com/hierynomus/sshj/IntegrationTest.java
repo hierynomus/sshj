@@ -15,29 +15,35 @@
  */
 package com.hierynomus.sshj;
 
-import net.schmizz.sshj.DefaultConfig;
-import net.schmizz.sshj.SSHClient;
-import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
-
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import net.schmizz.sshj.DefaultConfig;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 
 public class IntegrationTest {
 
+    @Test @Ignore // Should only be enabled for testing against VM
+    public void shouldConnectVM() throws IOException {
+        SSHClient sshClient = new SSHClient(new DefaultConfig());
+        sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(new File("/Users/ajvanerp/.ssh/known_hosts")));
+        sshClient.connect("172.16.37.147");
+        sshClient.authPublickey("jeroen");
+        assertThat("Is connected", sshClient.isAuthenticated());
+    }
+    
     @Test // Should only be enabled for testing against VM
     public void shouldConnect() throws IOException {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
-        sshClient.addHostKeyVerifier(new PromiscuousVerifier());
-        sshClient.connect("127.0.0.1", 2222);
-        sshClient.authPublickey("sickp", "src/test/resources/id_rsa");
+        sshClient.addHostKeyVerifier("d3:6a:a9:52:05:ab:b5:48:dd:73:60:18:0c:3a:f0:a3"); // test-containers/ssh_host_ecdsa_key's fingerprint
+        sshClient.connect("192.168.99.100", 2222);
+        sshClient.authPublickey("sshj", "src/test/resources/id_rsa");
         assertThat("Is connected", sshClient.isAuthenticated());
     }
 }

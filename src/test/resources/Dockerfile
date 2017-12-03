@@ -1,8 +1,14 @@
 FROM sickp/alpine-sshd:7.5
-ADD https://raw.githubusercontent.com/Igerly/sshj/master/src/test/resources/id_rsa.pub /home/sickp/.ssh/authorized_keys
+ADD id_rsa.pub /home/sshj/.ssh/authorized_keys
+
+ADD test-container/ssh_host_ecdsa_key     /etc/ssh/ssh_host_ecdsa_key
+ADD test-container/ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_ecdsa_key.pub
+
 RUN \
-  echo "root:sunshine" | chpasswd && \
-  adduser -D -s /bin/ash sickp && \
-  passwd -u sickp && \
-  chown -R sickp:sickp /home/sickp
+  echo "root:smile" | chpasswd && \
+  adduser -D -s /bin/ash sshj && \
+  passwd -u sshj && \
+  chmod 600 /etc/ssh/ssh_host_ecdsa_key && \
+  chmod 644 /etc/ssh/ssh_host_ecdsa_key.pub && \
+  chown -R sshj:sshj /home/sshj
   
