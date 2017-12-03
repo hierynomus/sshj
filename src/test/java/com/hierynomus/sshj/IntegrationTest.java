@@ -18,6 +18,10 @@ package com.hierynomus.sshj;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
+import net.schmizz.sshj.userauth.keyprovider.KeyProviderUtil;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -28,12 +32,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class IntegrationTest {
 
-    @Test @Ignore // Should only be enabled for testing against VM
+    @Test // Should only be enabled for testing against VM
     public void shouldConnect() throws IOException {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
-        sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(new File("/Users/ajvanerp/.ssh/known_hosts")));
-        sshClient.connect("172.16.37.147");
-        sshClient.authPublickey("jeroen");
+        sshClient.addHostKeyVerifier(new PromiscuousVerifier());
+        sshClient.connect("192.168.99.100", 2222);
+        sshClient.authPublickey("sickp", "src/test/resources/id_rsa.ppk");
         assertThat("Is connected", sshClient.isAuthenticated());
     }
 }
