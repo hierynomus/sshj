@@ -33,7 +33,7 @@ import net.schmizz.sshj.userauth.UserAuthException;
 public class IntegrationTest {
 
     private static final int DOCKER_PORT = 2222;
-    private static final String USERNAME = "sickp";
+    private static final String USERNAME = "sshj";
     private final static String SERVER_IP = System.getProperty("serverIP", "127.0.0.1");
     
     @Test @Ignore // Should only be enabled for testing against VM
