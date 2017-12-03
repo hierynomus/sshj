@@ -9,6 +9,7 @@ RUN \
   echo "root:smile" | chpasswd && \
   adduser -D -s /bin/ash sshj && \
   passwd -u sshj && \
+  chmod 600 /home/sshj/.ssh/authorized_keys && \
   chmod 600 /etc/ssh/ssh_host_ecdsa_key && \
   chmod 644 /etc/ssh/ssh_host_ecdsa_key.pub && \
   chown -R sshj:sshj /home/sshj
