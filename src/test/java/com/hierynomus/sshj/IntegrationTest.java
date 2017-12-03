@@ -26,9 +26,14 @@ import org.junit.Test;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import net.schmizz.sshj.userauth.UserAuthException;
 
 public class IntegrationTest {
 
+    private static final int DOCKER_PORT = 2222;
+    private static final String USERNAME = "sshj";
+    private final static String SERVER_IP = System.getProperty("serverIP", "127.0.0.1");
+    
     @Test @Ignore // Should only be enabled for testing against VM
     public void shouldConnectVM() throws IOException {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
@@ -38,12 +43,21 @@ public class IntegrationTest {
         assertThat("Is connected", sshClient.isAuthenticated());
     }
     
-    @Test // Should only be enabled for testing against VM
+    @Test
     public void shouldConnect() throws IOException {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
         sshClient.addHostKeyVerifier("d3:6a:a9:52:05:ab:b5:48:dd:73:60:18:0c:3a:f0:a3"); // test-containers/ssh_host_ecdsa_key's fingerprint
-        sshClient.connect("127.0.0.1", 2222);
-        sshClient.authPublickey("sshj", "src/test/resources/id_rsa");
+        sshClient.connect(SERVER_IP, DOCKER_PORT);
+        sshClient.authPublickey(USERNAME, "src/test/resources/id_rsa");
         assertThat("Is connected", sshClient.isAuthenticated());
     }
+    
+    @Test(expected = UserAuthException.class)
+    public void shouldFailWithWrongKey() throws IOException {
+        SSHClient sshClient = new SSHClient(new DefaultConfig());
+        sshClient.addHostKeyVerifier("d3:6a:a9:52:05:ab:b5:48:dd:73:60:18:0c:3a:f0:a3"); // test-containers/ssh_host_ecdsa_key's fingerprint
+        sshClient.connect(SERVER_IP, DOCKER_PORT);
+        sshClient.authPublickey(USERNAME, "src/test/resources/id_dsa");
+    }
+    
 }

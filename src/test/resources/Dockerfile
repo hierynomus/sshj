@@ -1,4 +1,5 @@
 FROM sickp/alpine-sshd:7.5
+
 ADD id_rsa.pub /home/sshj/.ssh/authorized_keys
 
 ADD test-container/ssh_host_ecdsa_key     /etc/ssh/ssh_host_ecdsa_key
