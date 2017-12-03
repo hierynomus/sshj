@@ -37,7 +37,7 @@ public class IntegrationTest {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
         sshClient.connect("127.0.0.1", 2222);
-        sshClient.authPublickey("sickp", "src/test/resources/id_rsa.ppk");
+        sshClient.authPublickey("sickp", "src/test/resources/id_rsa");
         assertThat("Is connected", sshClient.isAuthenticated());
     }
 }
