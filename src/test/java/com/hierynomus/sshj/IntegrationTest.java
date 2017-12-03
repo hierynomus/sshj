@@ -36,7 +36,7 @@ public class IntegrationTest {
     public void shouldConnect() throws IOException {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
         sshClient.addHostKeyVerifier(new PromiscuousVerifier());
-        sshClient.connect("192.168.99.100", 2222);
+        sshClient.connect("127.0.0.1", 2222);
         sshClient.authPublickey("sickp", "src/test/resources/id_rsa.ppk");
         assertThat("Is connected", sshClient.isAuthenticated());
     }
