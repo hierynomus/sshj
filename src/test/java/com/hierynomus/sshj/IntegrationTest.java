@@ -42,7 +42,7 @@ public class IntegrationTest {
     public void shouldConnect() throws IOException {
         SSHClient sshClient = new SSHClient(new DefaultConfig());
         sshClient.addHostKeyVerifier("d3:6a:a9:52:05:ab:b5:48:dd:73:60:18:0c:3a:f0:a3"); // test-containers/ssh_host_ecdsa_key's fingerprint
-        sshClient.connect("192.168.99.100", 2222);
+        sshClient.connect("127.0.0.1", 2222);
         sshClient.authPublickey("sshj", "src/test/resources/id_rsa");
         assertThat("Is connected", sshClient.isAuthenticated());
     }
