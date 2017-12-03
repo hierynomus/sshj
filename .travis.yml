@@ -6,9 +6,9 @@ services:
   - docker
   
 before_install:
-- docker build -t sshj/test-sshd ./src/test/resources/
-- docker run -d -p 127.0.0.1:2222:22 sshj/test-sshd
-- docker ps -a
+  - docker build -t sshj/test-sshd ./src/test/resources/
+  - docker run -d -p 127.0.0.1:2222:22 sshj/test-sshd
+  - docker ps -a
    
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
