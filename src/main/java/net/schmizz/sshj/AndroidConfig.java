@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.signature.SignatureEdDSA;
+
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
@@ -30,7 +32,9 @@ public class AndroidConfig
 
     // don't add ECDSA
     protected void initSignatureFactories() {
-        setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory());
+        setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory(),
+                // but add EdDSA
+                new SignatureEdDSA.Factory());
     }
 
     @Override
