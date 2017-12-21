@@ -30,6 +30,13 @@ public class AndroidConfig
         SecurityUtils.registerSecurityProvider("org.spongycastle.jce.provider.BouncyCastleProvider");
     }
 
+    public AndroidConfig(){
+        super();
+        initKeyExchangeFactories(true);
+        initRandomFactory(true);
+        initFileKeyProviderFactories(true);
+    }
+
     // don't add ECDSA
     protected void initSignatureFactories() {
         setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory(),
