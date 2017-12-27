@@ -246,7 +246,7 @@ public class Buffer<T extends Buffer<T>> {
      * @return this
      */
     public T putBytes(byte[] b, int off, int len) {
-        return putUInt32(len - off).putRawBytes(b, off, len);
+        return putUInt32(len).putRawBytes(b, off, len);
     }
 
     public void readRawBytes(byte[] buf)

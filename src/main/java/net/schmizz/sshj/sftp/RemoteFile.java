@@ -82,9 +82,7 @@ public class RemoteFile
             throws IOException {
         return requester.request(newRequest(PacketType.WRITE)
                 .putUInt64(fileOffset)
-                // TODO The SFTP spec claims this field is unneeded...? See #187
-                .putUInt32(len)
-                .putRawBytes(data, off, len)
+                .putString(data, off, len)
         );
     }
 
