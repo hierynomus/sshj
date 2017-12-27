@@ -1,4 +1,6 @@
 import java.text.SimpleDateFormat
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.image.*
 
 plugins {
   id "java"
@@ -6,6 +8,7 @@ plugins {
   id "jacoco"
   id "osgi"
   id "maven-publish"
+  id "com.bmuschko.docker-remote-api" version "3.2.1"
   id 'pl.allegro.tech.build.axion-release' version '1.8.1'
   id "com.github.hierynomus.license" version "0.12.1"
   id "com.jfrog.bintray" version "1.7"
@@ -125,6 +128,27 @@ sourcesJar {
   }
 }
 
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+  integrationTest {
+    groovy {
+      compileClasspath += sourceSets.main.output + sourceSets.test.output
+      runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+      srcDir file('src/itest/groovy')
+    }
+    resources.srcDir file('src/itest/resources')
+  }
+}
+
+task integrationTest(type: Test) {
+  testClassesDirs = sourceSets.integrationTest.output.classesDirs
+  classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
 tasks.withType(Test) {
   testLogging {
     exceptionFormat = 'full'
@@ -231,7 +255,30 @@ jacocoTestReport {
 }
 
 
-project.tasks.release.dependsOn(project.tasks.build)
+task buildItestImage(type: DockerBuildImage) {
+    inputDir = file('src/itest/docker-image')
+    tag = 'sshj/sshd-itest'
+}
+
+task createItestContainer(type: DockerCreateContainer) {
+    dependsOn buildItestImage
+    targetImageId { buildItestImage.getImageId() }
+    portBindings = ['2222:22']
+}
+
+task startItestContainer(type: DockerStartContainer) {
+    dependsOn createItestContainer
+    targetContainerId { createItestContainer.getContainerId() }
+}
+
+task stopItestContainer(type: DockerStopContainer) {
+    targetContainerId { createItestContainer.getContainerId() }
+}
+
+project.tasks.integrationTest.dependsOn(startItestContainer)
+project.tasks.integrationTest.finalizedBy(stopItestContainer)
+
+project.tasks.release.dependsOn([project.tasks.integrationTest, project.tasks.build])
 project.tasks.release.finalizedBy(project.tasks.bintrayUpload)
 project.tasks.jacocoTestReport.dependsOn(project.tasks.test)
 project.tasks.check.dependsOn(project.tasks.jacocoTestReport)
