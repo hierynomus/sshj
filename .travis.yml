@@ -5,6 +5,11 @@ sudo: required
 services:
   - docker
 
+jdk:
+  - oraclejdk8
+  - openjdk8
+  - oraclejdk9
+
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -14,13 +19,12 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
 
-jdk:
-  - oraclejdk8
-  - openjdk8
-  - oraclejdk9
-
 before_install:
   - pip install --user codecov
+
+script:
+  - ./gradlew check
+  - ./gradlew integrationTest
 
 after_success:
 - codecov
