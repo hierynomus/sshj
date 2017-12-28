@@ -4,24 +4,27 @@ sudo: required
 
 services:
   - docker
-  
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-
-cache:
-  directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
 
 jdk:
   - oraclejdk8
   - openjdk8
   - oraclejdk9
 
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
+
 before_install:
   - pip install --user codecov
-  - docker build -t sshj/test-sshd ./src/test/resources/
-  - docker run -d -p 127.0.0.1:2222:22 sshj/test-sshd
+
+script:
+  - ./gradlew check
+  - ./gradlew integrationTest
 
 after_success:
 - codecov
