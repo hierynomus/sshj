@@ -18,14 +18,9 @@ package com.hierynomus.sshj
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.TransportException
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier
 import net.schmizz.sshj.userauth.UserAuthException
-import spock.lang.Specification
 
-class IntegrationSpec extends Specification {
-    private static final int DOCKER_PORT = 2222;
-    private static final String USERNAME = "sshj";
-    private final static String SERVER_IP = System.getProperty("serverIP", "127.0.0.1");
+class IntegrationSpec extends IntegrationBaseSpec {
 
     def "should accept correct key"() {
         given:
@@ -73,14 +68,4 @@ class IntegrationSpec extends Specification {
         thrown(UserAuthException.class)
         !client.isAuthenticated()
     }
-
-    private static SSHClient getConnectedClient() throws IOException {
-        SSHClient sshClient = new SSHClient(new DefaultConfig());
-        sshClient.addHostKeyVerifier(new PromiscuousVerifier());
-        sshClient.connect(SERVER_IP, DOCKER_PORT);
-
-        return sshClient;
-    }
-
-
 }
