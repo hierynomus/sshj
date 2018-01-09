@@ -37,16 +37,21 @@ public class SecurityUtils {
      */
     public static final String BOUNCY_CASTLE = "BC";
 
+    /**
+     * Identifier for the BouncyCastle JCE provider
+     */
+    public static final String SPONGY_CASTLE = "SC";
+
     /*
     * Security provider identifier. null = default JCE
     */
     private static String securityProvider = null;
 
-    // relate to BC registration
+    // relate to BC registration (or SpongyCastle on Android)
     private static Boolean registerBouncyCastle;
     private static boolean registrationDone;
 
-    public static boolean registerSecurityProvider(String providerClassName) {
+    public static boolean registerSecurityProvider(String providerIdentifier, String providerClassName) {
         Provider provider = null;
         try {
             Class<?> name = Class.forName(providerClassName);
@@ -222,11 +227,11 @@ public class SecurityUtils {
      * Attempts registering BouncyCastle as security provider if it has not been previously attempted and returns
      * whether the registration succeeded.
      *
-     * @return whether BC registered
+     * @return whether BC (or SC on Android) registered
      */
     public static synchronized boolean isBouncyCastleRegistered() {
         register();
-        return BOUNCY_CASTLE.equals(securityProvider);
+        return BOUNCY_CASTLE.equals(securityProvider) || SPONGY_CASTLE.equals(securityProvider);
     }
 
     public static synchronized void setRegisterBouncyCastle(boolean registerBouncyCastle) {
@@ -247,7 +252,7 @@ public class SecurityUtils {
     private static void register() {
         if (!registrationDone) {
             if (securityProvider == null && (registerBouncyCastle == null || registerBouncyCastle)) {
-                registerSecurityProvider("org.bouncycastle.jce.provider.BouncyCastleProvider");
+                registerSecurityProvider(BOUNCY_CASTLE, "org.bouncycastle.jce.provider.BouncyCastleProvider");
                 if (securityProvider == null && registerBouncyCastle == null) {
                     LOG.info("BouncyCastle not registered, using the default JCE provider");
                 } else if (securityProvider == null) {
