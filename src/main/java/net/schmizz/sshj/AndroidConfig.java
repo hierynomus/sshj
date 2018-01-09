@@ -19,7 +19,6 @@ import com.hierynomus.sshj.signature.SignatureEdDSA;
 
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
-import net.schmizz.sshj.signature.SignatureECDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
@@ -31,7 +30,7 @@ public class AndroidConfig
         extends DefaultConfig {
 
     static {
-        SecurityUtils.registerSecurityProvider(SecurityUtils.SPONGY_CASTLE, "org.spongycastle.jce.provider.BouncyCastleProvider");
+        SecurityUtils.registerSecurityProvider("org.spongycastle.jce.provider.BouncyCastleProvider");
     }
 
     // don't add ECDSA
