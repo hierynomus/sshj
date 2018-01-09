@@ -51,7 +51,7 @@ public class SecurityUtils {
     private static Boolean registerBouncyCastle;
     private static boolean registrationDone;
 
-    public static boolean registerSecurityProvider(String providerIdentifier, String providerClassName) {
+    public static boolean registerSecurityProvider(String providerClassName) {
         Provider provider = null;
         try {
             Class<?> name = Class.forName(providerClassName);
@@ -86,6 +86,8 @@ public class SecurityUtils {
         }
         return false;
     }
+
+
 
     public static synchronized Cipher getCipher(String transformation)
             throws NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException {
@@ -252,7 +254,7 @@ public class SecurityUtils {
     private static void register() {
         if (!registrationDone) {
             if (securityProvider == null && (registerBouncyCastle == null || registerBouncyCastle)) {
-                registerSecurityProvider(BOUNCY_CASTLE, "org.bouncycastle.jce.provider.BouncyCastleProvider");
+                registerSecurityProvider("org.bouncycastle.jce.provider.BouncyCastleProvider");
                 if (securityProvider == null && registerBouncyCastle == null) {
                     LOG.info("BouncyCastle not registered, using the default JCE provider");
                 } else if (securityProvider == null) {
