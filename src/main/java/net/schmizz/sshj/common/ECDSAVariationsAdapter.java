@@ -18,9 +18,7 @@ package net.schmizz.sshj.common;
 import com.hierynomus.sshj.secg.SecgUtils;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +29,8 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.interfaces.ECKey;
 import java.security.interfaces.ECPublicKey;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,13 +81,14 @@ class ECDSAVariationsAdapter {
             BigInteger bigX = new BigInteger(1, x);
             BigInteger bigY = new BigInteger(1, y);
 
-            X9ECParameters ecParams = NISTNamedCurves.getByName(NIST_CURVES_NAMES.get(variation));
-            ECPoint pPublicPoint = ecParams.getCurve().createPoint(bigX, bigY);
-            ECParameterSpec spec = new ECParameterSpec(ecParams.getCurve(), ecParams.getG(), ecParams.getN());
-            ECPublicKeySpec publicSpec = new ECPublicKeySpec(pPublicPoint, spec);
+            String name = NIST_CURVES_NAMES.get(variation);
+            X9ECParameters ecParams = NISTNamedCurves.getByName(name);
+            ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
+            ECPoint p = new ECPoint(bigX, bigY);
+            ECPublicKeySpec publicKeySpec = new java.security.spec.ECPublicKeySpec(p, ecCurveSpec);
 
             KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
-            return keyFactory.generatePublic(publicSpec);
+            return keyFactory.generatePublic(publicKeySpec);
         } catch (Exception ex) {
             throw new GeneralSecurityException(ex);
         }
