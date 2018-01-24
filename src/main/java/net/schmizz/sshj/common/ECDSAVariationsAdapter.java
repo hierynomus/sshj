@@ -85,7 +85,7 @@ class ECDSAVariationsAdapter {
             X9ECParameters ecParams = NISTNamedCurves.getByName(name);
             ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
             ECPoint p = new ECPoint(bigX, bigY);
-            ECPublicKeySpec publicKeySpec = new java.security.spec.ECPublicKeySpec(p, ecCurveSpec);
+            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(p, ecCurveSpec);
 
             KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
             return keyFactory.generatePublic(publicKeySpec);
