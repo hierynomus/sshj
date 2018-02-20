@@ -310,7 +310,7 @@ public class OpenSSHKnownHosts
         protected final PublicKey key;
         private final KnownHostMatchers.HostMatcher matcher;
 
-        HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
+        public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
             this.marker = marker;
             this.hostPart = hostPart;
             this.type = type;
