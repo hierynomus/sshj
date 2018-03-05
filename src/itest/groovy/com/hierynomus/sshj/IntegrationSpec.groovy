@@ -51,7 +51,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
         SSHClient client = getConnectedClient()
 
         when:
-        client.authPublickey("sshj", "src/test/resources/id_rsa")
+        client.authPublickey(USERNAME, KEYFILE)
 
         then:
         client.isAuthenticated()
