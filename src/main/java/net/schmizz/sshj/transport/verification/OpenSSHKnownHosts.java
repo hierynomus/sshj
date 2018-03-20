@@ -61,9 +61,9 @@ public class OpenSSHKnownHosts
                         if (entry != null) {
                             entries.add(entry);
                         }
-                    } catch (SSHException ignore) {
+                    } catch (IOException ignore) {
                         log.debug("Bad line ({}): {} ", ignore.toString(), line);
-                    } catch (SSHRuntimeException ignore) {
+                    } catch (Exception ignore) {
                         log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
                     }
                 }
@@ -87,14 +87,23 @@ public class OpenSSHKnownHosts
 
         final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
 
+        KnownHostEntry lastApplicableEntry = null;
         for (KnownHostEntry e : entries) {
             try {
-                if (e.appliesTo(type, adjustedHostname))
-                    return e.verify(key) || hostKeyChangedAction(e, adjustedHostname, key);
+                if (e.appliesTo(type, adjustedHostname)) {
+                    lastApplicableEntry = e;
+                    if (e.verify(key)) {
+                        return true;
+                    }
+                }
             } catch (IOException ioe) {
-                log.error("Error with {}: {}", e, ioe);
-                return false;
+                // continue trying other host keys
+                log.warn("Error with known host entry {}: {}", e, ioe);
             }
+        }
+
+        if (lastApplicableEntry != null) {
+            return hostKeyChangedAction(lastApplicableEntry, adjustedHostname, key);
         }
 
         return hostKeyUnverifiableAction(adjustedHostname, key);
