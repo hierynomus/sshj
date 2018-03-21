@@ -460,10 +460,13 @@ public class Buffer<T extends Buffer<T>> {
 
     public PublicKey readPublicKey()
             throws BufferException {
+        KeyType keyType = KeyType.fromString(readString());
         try {
-            return KeyType.fromString(readString()).readPubKeyFromBuffer(this);
+            return keyType.readPubKeyFromBuffer(this);
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
+        } catch (UnsupportedOperationException uoe) {
+            throw new BufferException("Could not decode keytype " + keyType);
         }
     }
 
