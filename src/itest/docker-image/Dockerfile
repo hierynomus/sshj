@@ -4,6 +4,7 @@ ADD id_rsa.pub /home/sshj/.ssh/authorized_keys
 
 ADD test-container/ssh_host_ecdsa_key     /etc/ssh/ssh_host_ecdsa_key
 ADD test-container/ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_ecdsa_key.pub
+ADD test-container/sshd_config /etc/ssh/sshd_config
 
 RUN \
   echo "root:smile" | chpasswd && \

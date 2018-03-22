@@ -23,18 +23,14 @@ import net.schmizz.sshj.signature.SignatureRSA;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 
+/**
+ * Registers SpongyCastle as JCE provider.
+ */
 public class AndroidConfig
         extends DefaultConfig {
 
     static {
         SecurityUtils.registerSecurityProvider("org.spongycastle.jce.provider.BouncyCastleProvider");
-    }
-
-    public AndroidConfig(){
-        super();
-        initKeyExchangeFactories(true);
-        initRandomFactory(true);
-        initFileKeyProviderFactories(true);
     }
 
     // don't add ECDSA

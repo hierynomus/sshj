@@ -81,7 +81,7 @@ signatures::
   `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`
 
 mac::
-  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`
+  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`, `hmac-ripemd160`
 
 compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)
@@ -107,6 +107,9 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.24.0 (2018-??-??)::
+* Added support for hmac-ripemd160
+
 SSHJ 0.23.0 (2017-10-13)::
 * Merged https://github.com/hierynomus/sshj/pulls/372[#372]: Upgrade to 'net.i2p.crypto:eddsa:0.2.0'
 * Fixed https://github.com/hierynomus/sshj/issues/355[#355] and https://github.com/hierynomus/sshj/issues/354[#354]: Correctly decode signature bytes
