@@ -355,7 +355,7 @@ public class OpenSSHKnownHosts
 
         @Override
         public boolean verify(PublicKey key) throws IOException {
-            return key.equals(this.key) && marker != Marker.REVOKED;
+            return getKeyString(key).equals(getKeyString(this.key)) && marker != Marker.REVOKED;
         }
 
         public String getLine() {
@@ -365,12 +365,12 @@ public class OpenSSHKnownHosts
 
             line.append(getHostPart());
             line.append(" ").append(type.toString());
-            line.append(" ").append(getKeyString());
+            line.append(" ").append(getKeyString(key));
             return line.toString();
         }
 
-        private String getKeyString() {
-            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(key);
+        private String getKeyString(PublicKey pk) {
+            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(pk);
             return Base64.encodeBytes(buf.array(), buf.rpos(), buf.available());
         }
 
