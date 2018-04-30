@@ -27,6 +27,6 @@ public class PrivateKeyFileResource
     @Override
     public Reader getReader()
             throws IOException {
-        return new InputStreamReader(new FileInputStream(getDetail()));
+        return new InputStreamReader(new FileInputStream(getDetail()), "UTF-8");
     }
 }
