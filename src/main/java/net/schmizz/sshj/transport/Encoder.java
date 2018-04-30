@@ -62,8 +62,10 @@ final class Encoder
     long encode(SSHPacket buffer) {
         encodeLock.lock();
         try {
-            if (log.isTraceEnabled())
-                log.trace("Encoding packet #{}: {}", seq, buffer.printHex());
+            if (log.isTraceEnabled()) {
+                // Add +1 to seq as we log before actually incrementing the sequence.
+                log.trace("Encoding packet #{}: {}", seq + 1, buffer.printHex());
+            }
 
             if (usingCompression())
                 compress(buffer);
