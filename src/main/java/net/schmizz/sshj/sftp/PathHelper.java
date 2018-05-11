@@ -70,16 +70,25 @@ public class PathHelper {
      */
     public PathComponents getComponents(final String path)
             throws IOException {
-        if (path.equals(pathSep))
-            return getComponents("", "");
+        if (path.equals(pathSep)) {
+            return getComponents("", "/");
+        }
 
-        if (path.isEmpty() || ".".equals(path) || ("." + pathSep).equals(path))
+        if (path.isEmpty() || ".".equals(path) || ("." + pathSep).equals(path)) {
             return getComponents(getDotDir());
+        }
 
         final String withoutTrailSep = trimTrailingSeparator(path);
         final int lastSep = withoutTrailSep.lastIndexOf(pathSep);
-        final String parent = (lastSep == -1) ? "" : withoutTrailSep.substring(0, lastSep);
-        final String name = (lastSep == -1) ? withoutTrailSep : withoutTrailSep.substring(lastSep + pathSep.length());
+        String parent;
+        String name;
+        if (lastSep == -1) {
+            parent = "";
+            name = withoutTrailSep;
+        } else {
+            parent = lastSep == 0 ? "/" : withoutTrailSep.substring(0, lastSep);
+            name = withoutTrailSep.substring(lastSep + pathSep.length());
+        }
 
         if (".".equals(name) || "..".equals(name)) {
             return getComponents(canonicalizer.canonicalize(path));
@@ -87,5 +96,4 @@ public class PathHelper {
             return getComponents(parent, name);
         }
     }
-
 }

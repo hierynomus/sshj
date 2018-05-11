@@ -18,6 +18,7 @@ package com.hierynomus.sshj.sftp
 import com.hierynomus.sshj.test.SshFixture
 import com.hierynomus.sshj.test.util.FileUtil
 import net.schmizz.sshj.SSHClient
+import net.schmizz.sshj.sftp.FileMode
 import net.schmizz.sshj.sftp.SFTPClient
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
@@ -165,6 +166,40 @@ class SFTPClientSpec extends Specification {
         new File(dest, "toto").exists()
         new File(dest, "toto/totototo.txt").exists()
         !new File(dest, "totototo.txt").exists()
+    }
+
+    def "should mkdirs with existing parent path"() {
+        given:
+        SSHClient sshClient = fixture.setupConnectedDefaultClient()
+        sshClient.authPassword("test", "test")
+        SFTPClient ftp = sshClient.newSFTPClient()
+        ftp.mkdir("dir1")
+
+        when:
+        ftp.mkdirs("dir1/dir2/dir3/dir4")
+
+        then:
+        ftp.statExistence("dir1/dir2/dir3/dir4") != null
+
+        cleanup:
+        ["dir1/dir2/dir3/dir4", "dir1/dir2/dir3", "dir1/dir2", "dir1"].each {
+            ftp.rmdir(it)
+        }
+        ftp.close()
+        sshClient.disconnect()
+    }
+
+    def "should stat root"() {
+        given:
+        SSHClient sshClient = fixture.setupConnectedDefaultClient()
+        sshClient.authPassword("test", "test")
+        SFTPClient ftp = sshClient.newSFTPClient()
+
+        when:
+        def attrs = ftp.statExistence("/")
+
+        then:
+        attrs.type == FileMode.Type.DIRECTORY
     }
 
     private void doUpload(File src, File dest) throws IOException {

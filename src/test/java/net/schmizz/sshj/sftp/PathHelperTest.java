@@ -50,7 +50,7 @@ public class PathHelperTest {
     public void root()
             throws IOException {
         final PathComponents comp = helper.getComponents("/");
-        assertEquals("", comp.getName());
+        assertEquals("/", comp.getName());
         assertEquals("", comp.getParent());
     }
 
@@ -67,7 +67,7 @@ public class PathHelperTest {
             throws IOException {
         final PathComponents comp = helper.getComponents("..");
         assertEquals("home", comp.getName());
-        assertEquals("", comp.getParent());
+        assertEquals("/", comp.getParent());
     }
 
     @Test
@@ -75,7 +75,16 @@ public class PathHelperTest {
             throws IOException {
         final PathComponents comp = helper.getComponents("somefile");
         assertEquals("somefile", comp.getName());
+        assertEquals("somefile", comp.getPath());
         assertEquals("", comp.getParent());
+    }
+
+    @Test
+    public void pathInHomeDir() throws IOException {
+        final PathComponents comp = helper.getComponents("dir1/dir2");
+        assertEquals("dir2", comp.getName());
+        assertEquals("dir1/dir2", comp.getPath());
+        assertEquals("dir1", comp.getParent());
     }
 
     @Test
