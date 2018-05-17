@@ -25,7 +25,12 @@ public class Exec {
             cmd.join(5, TimeUnit.SECONDS);
             System.out.println("\n** exit status: " + cmd.getExitStatus());
         } finally {
-            session.close();
+            try {
+                session.close();
+            } catch (IOException e) {
+                // Do Nothing   
+            }
+            
             ssh.disconnect();
         }
     }
