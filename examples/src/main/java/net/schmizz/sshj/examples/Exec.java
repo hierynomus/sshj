@@ -20,15 +20,17 @@ public class Exec {
         try {
             ssh.authPublickey(System.getProperty("user.name"));
             final Session session = ssh.startSession();
-            try {
-                final Command cmd = session.exec("ping -c 1 google.com");
-                System.out.println(IOUtils.readFully(cmd.getInputStream()).toString());
-                cmd.join(5, TimeUnit.SECONDS);
-                System.out.println("\n** exit status: " + cmd.getExitStatus());
-            } finally {
-                session.close();
-            }
+            final Command cmd = session.exec("ping -c 1 google.com");
+            System.out.println(IOUtils.readFully(cmd.getInputStream()).toString());
+            cmd.join(5, TimeUnit.SECONDS);
+            System.out.println("\n** exit status: " + cmd.getExitStatus());
         } finally {
+            try {
+                session.close();
+            } catch (IOException e) {
+                // Do Nothing   
+            }
+            
             ssh.disconnect();
         }
     }
