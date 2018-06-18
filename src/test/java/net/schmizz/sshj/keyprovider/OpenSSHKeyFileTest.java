@@ -269,10 +269,10 @@ public class OpenSSHKeyFileTest {
     }
 
     @Before
-    public void setup()
-            throws UnsupportedEncodingException, GeneralSecurityException {
-        if (!SecurityUtils.isBouncyCastleRegistered())
+    public void checkBCRegistration() {
+        if (!SecurityUtils.isBouncyCastleRegistered()) {
             throw new AssertionError("bouncy castle needed");
+        }
     }
 
     private String readFile(String pathname)
