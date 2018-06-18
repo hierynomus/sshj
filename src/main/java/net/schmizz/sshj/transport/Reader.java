@@ -60,10 +60,8 @@ public final class Reader
                 }
             }
         } catch (Exception e) {
-            //noinspection StatementWithEmptyBody
-            if (isInterrupted()) {
-                // We are meant to shut up and draw to a close if interrupted
-            } else {
+            // We are meant to shut up and draw to a close if interrupted
+            if (!isInterrupted()) {
                 trans.die(e);
             }
         }
