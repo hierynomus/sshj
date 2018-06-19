@@ -71,9 +71,7 @@ public class RemoteFileTest {
             n += rs.read(test, n, 3072 - n);
         }
 
-        if (test[3072] != 0) {
-            System.err.println("buffer overrun!");
-        }
+        assertThat("buffer overrun", test[3072] == 0);
 
         n += rs.read(test, n, test.length - n); // --> ArrayIndexOutOfBoundsException
 

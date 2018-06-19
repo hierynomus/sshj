@@ -1,11 +1,14 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.23.0
+:sshj_version: 0.25.0
 :source-highlighter: pygments
 
+image:https://api.bintray.com/packages/hierynomus/maven/sshj/images/download.svg[link="https://bintray.com/hierynomus/maven/sshj/_latestVersion"]
 image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
 image:https://api.codacy.com/project/badge/Grade/14a0a316bb9149739b5ea26dbfa8da8a["Codacy code quality", link="https://www.codacy.com/app/jeroen_2/sshj?utm_source=github.com&utm_medium=referral&utm_content=hierynomus/sshj&utm_campaign=Badge_Grade"]
+image:https://codecov.io/gh/hierynomus/sshj/branch/master/graph/badge.svg["codecov", link="https://codecov.io/gh/hierynomus/sshj"]
+image:http://www.javadoc.io/badge/com.hierynomus/sshj.svg?color=blue["JavaDocs", link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
 image:https://javadoc-emblem.rhcloud.com/doc/com.hierynomus/sshj/badge.svg["Javadoc",link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 
@@ -78,7 +81,7 @@ signatures::
   `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`
 
 mac::
-  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`
+  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`, `hmac-ripemd160`
 
 compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)
@@ -104,6 +107,9 @@ Google Group: http://groups.google.com/group/sshj-users
 Fork away!
 
 == Release history
+SSHJ 0.24.0 (2018-??-??)::
+* Added support for hmac-ripemd160
+
 SSHJ 0.23.0 (2017-10-13)::
 * Merged https://github.com/hierynomus/sshj/pulls/372[#372]: Upgrade to 'net.i2p.crypto:eddsa:0.2.0'
 * Fixed https://github.com/hierynomus/sshj/issues/355[#355] and https://github.com/hierynomus/sshj/issues/354[#354]: Correctly decode signature bytes

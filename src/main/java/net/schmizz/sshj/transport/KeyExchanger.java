@@ -197,6 +197,12 @@ final class KeyExchanger
             if (hkv.verify(transport.getRemoteHost(), transport.getRemotePort(), key))
                 return;
         }
+        log.error("Disconnecting because none of the configured Host key verifiers ({}) could verify '{}' host key with fingerprint {} for {}:{}",
+                hostVerifiers,
+                KeyType.fromKey(key),
+                SecurityUtils.getFingerprint(key),
+                transport.getRemoteHost(),
+                transport.getRemotePort());
 
         throw new TransportException(DisconnectReason.HOST_KEY_NOT_VERIFIABLE,
                                      "Could not verify `" + KeyType.fromKey(key)

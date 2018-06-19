@@ -189,6 +189,24 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldLoadProtectedED25519PrivateKey() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/ed25519_protected"), new PasswordFinder() {
+            @Override
+            public char[] reqPassword(Resource<?> resource) {
+                return "sshjtest".toCharArray();
+            }
+
+            @Override
+            public boolean shouldRetry(Resource<?> resource) {
+                return false;
+            }
+        });
+        PrivateKey aPrivate = keyFile.getPrivate();
+        assertThat(aPrivate.getAlgorithm(), equalTo("EdDSA"));
+    }
+
+    @Test
     public void shouldSuccessfullyLoadSignedRSAPublicKey() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa"),
@@ -251,10 +269,10 @@ public class OpenSSHKeyFileTest {
     }
 
     @Before
-    public void setup()
-            throws UnsupportedEncodingException, GeneralSecurityException {
-        if (!SecurityUtils.isBouncyCastleRegistered())
+    public void checkBCRegistration() {
+        if (!SecurityUtils.isBouncyCastleRegistered()) {
             throw new AssertionError("bouncy castle needed");
+        }
     }
 
     private String readFile(String pathname)

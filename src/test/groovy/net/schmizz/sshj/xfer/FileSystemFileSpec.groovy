@@ -49,6 +49,6 @@ class FileSystemFileSpec extends Specification {
         def child = file.getChild("bar//etc/passwd")
 
         then:
-        child.getFile().getPath() endsWith "foo/bar/etc/passwd"
+        child.getFile().getPath().replace('\\', '/') endsWith "foo/bar/etc/passwd"
     }
 }

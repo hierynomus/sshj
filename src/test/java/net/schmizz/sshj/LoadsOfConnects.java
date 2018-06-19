@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import static org.junit.Assert.fail;
+
 public class LoadsOfConnects {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -29,15 +31,19 @@ public class LoadsOfConnects {
     private final SshFixture fixture = new SshFixture();
 
     @Test
-    public void loadsOfConnects()
-            throws IOException, InterruptedException {
-        for (int i = 0; i < 1000; i++) {
-            System.out.println("Try " + i);
-            fixture.start();
-            fixture.setupConnectedDefaultClient();
-            fixture.stopClient();
-            fixture.stopServer();
+    public void loadsOfConnects() {
+        try {
+            for (int i = 0; i < 1000; i++) {
+                log.info("Try " + i);
+                fixture.start();
+                fixture.setupConnectedDefaultClient();
+                fixture.stopClient();
+                fixture.stopServer();
+            }
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
+
     }
 
 }

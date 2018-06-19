@@ -13,20 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.userauth.password;
+package net.schmizz.sshj.transport.mac;
 
-import java.io.*;
+public class HMACRIPEMD160 extends BaseMAC {
+    /** Named factory for the HMAC-SHA1 <code>MAC</code> */
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<MAC> {
 
-public class PrivateKeyFileResource
-        extends Resource<File> {
+        @Override
+        public MAC create() {
+            return new HMACRIPEMD160();
+        }
 
-    public PrivateKeyFileResource(File privateKeyFile) {
-        super(privateKeyFile);
+        @Override
+        public String getName() {
+            return "hmac-ripemd160";
+        }
     }
 
-    @Override
-    public Reader getReader()
-            throws IOException {
-        return new InputStreamReader(new FileInputStream(getDetail()), "UTF-8");
+
+    public HMACRIPEMD160() {
+        super("HMACRIPEMD160", 20, 20);
     }
 }

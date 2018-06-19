@@ -55,7 +55,7 @@
         <dependency>
             <groupId>com.hierynomus</groupId>
             <artifactId>sshj</artifactId>
-            <version>0.19.0</version>
+            <version>0.24.0</version>
         </dependency>
     </dependencies>
 

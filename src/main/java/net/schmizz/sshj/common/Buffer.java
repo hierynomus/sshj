@@ -147,7 +147,6 @@ public class Buffer<T extends Buffer<T>> {
 
     /** Compact this {@link SSHPacket} */
     public void compact() {
-        System.err.println("COMPACTING");
         if (available() > 0)
             System.arraycopy(data, rpos, data, 0, wpos - rpos);
         wpos -= rpos;
@@ -246,7 +245,7 @@ public class Buffer<T extends Buffer<T>> {
      * @return this
      */
     public T putBytes(byte[] b, int off, int len) {
-        return putUInt32(len - off).putRawBytes(b, off, len);
+        return putUInt32(len).putRawBytes(b, off, len);
     }
 
     public void readRawBytes(byte[] buf)
@@ -356,8 +355,9 @@ public class Buffer<T extends Buffer<T>> {
     }
 
     public T putUInt64(long uint64) {
-        if (uint64 < 0)
+        if (uint64 < 0) {
             throw new IllegalArgumentException("Invalid value: " + uint64);
+        }
         return putUInt64Unchecked(uint64);
     }
 
@@ -460,10 +460,13 @@ public class Buffer<T extends Buffer<T>> {
 
     public PublicKey readPublicKey()
             throws BufferException {
+        KeyType keyType = KeyType.fromString(readString());
         try {
-            return KeyType.fromString(readString()).readPubKeyFromBuffer(this);
+            return keyType.readPubKeyFromBuffer(this);
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
+        } catch (UnsupportedOperationException uoe) {
+            throw new BufferException("Could not decode keytype " + keyType);
         }
     }
 

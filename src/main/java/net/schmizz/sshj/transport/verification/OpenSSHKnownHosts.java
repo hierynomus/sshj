@@ -87,14 +87,23 @@ public class OpenSSHKnownHosts
 
         final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
 
+        boolean foundApplicableHostEntry = false;
         for (KnownHostEntry e : entries) {
             try {
-                if (e.appliesTo(type, adjustedHostname))
-                    return e.verify(key) || hostKeyChangedAction(e, adjustedHostname, key);
+                if (e.appliesTo(type, adjustedHostname)) {
+                    foundApplicableHostEntry = true;
+                    if (e.verify(key)) {
+                        return true;
+                    }
+                }
             } catch (IOException ioe) {
                 log.error("Error with {}: {}", e, ioe);
                 return false;
             }
+
+        }
+        if (foundApplicableHostEntry) {
+            return hostKeyChangedAction(adjustedHostname, key);
         }
 
         return hostKeyUnverifiableAction(adjustedHostname, key);
@@ -104,7 +113,7 @@ public class OpenSSHKnownHosts
         return false;
     }
 
-    protected boolean hostKeyChangedAction(KnownHostEntry entry, String hostname, PublicKey key) {
+    protected boolean hostKeyChangedAction(String hostname, PublicKey key) {
         log.warn("Host key for `{}` has changed!", hostname);
         return false;
     }
@@ -199,7 +208,7 @@ public class OpenSSHKnownHosts
             }
             if(split.length < 3) {
                 log.error("Error reading entry `{}`", line);
-                return null;
+                return new BadHostEntry(line);
             }
             final String hostnames = split[i++];
             final String sType = split[i++];
@@ -209,7 +218,13 @@ public class OpenSSHKnownHosts
 
             if (type != KeyType.UNKNOWN) {
                 final String sKey = split[i++];
-                key = new Buffer.PlainBuffer(Base64.decode(sKey)).readPublicKey();
+                try {
+                    byte[] keyBytes = Base64.decode(sKey);
+                    key = new Buffer.PlainBuffer(keyBytes).readPublicKey();
+                } catch (IOException ioe) {
+                    log.warn("Error decoding Base64 key bytes", ioe);
+                    return new BadHostEntry(line);
+                }
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
                 // int bits = Integer.valueOf(sType);
@@ -220,11 +235,11 @@ public class OpenSSHKnownHosts
                     key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
                 } catch (Exception ex) {
                     log.error("Error reading entry `{}`, could not create key", line, ex);
-                    return null;
+                    return new BadHostEntry(line);
                 }
             } else {
                 log.error("Error reading entry `{}`, could not determine type", line);
-                return null;
+                return new BadHostEntry(line);
             }
 
             return new HostEntry(marker, hostnames, type, key);
@@ -341,7 +356,7 @@ public class OpenSSHKnownHosts
 
         @Override
         public boolean verify(PublicKey key) throws IOException {
-            return key.equals(this.key) && marker != Marker.REVOKED;
+            return getKeyString(key).equals(getKeyString(this.key)) && marker != Marker.REVOKED;
         }
 
         public String getLine() {
@@ -351,17 +366,55 @@ public class OpenSSHKnownHosts
 
             line.append(getHostPart());
             line.append(" ").append(type.toString());
-            line.append(" ").append(getKeyString());
+            line.append(" ").append(getKeyString(key));
             return line.toString();
         }
 
-        private String getKeyString() {
-            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(key);
+        private String getKeyString(PublicKey pk) {
+            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(pk);
             return Base64.encodeBytes(buf.array(), buf.rpos(), buf.available());
         }
 
         protected String getHostPart() {
             return hostPart;
+        }
+    }
+
+    public static class BadHostEntry implements KnownHostEntry {
+        private String line;
+
+        public BadHostEntry(String line) {
+            this.line = line;
+        }
+
+        @Override
+        public KeyType getType() {
+            return KeyType.UNKNOWN;
+        }
+
+        @Override
+        public String getFingerprint() {
+            return null;
+        }
+
+        @Override
+        public boolean appliesTo(String host) throws IOException {
+            return false;
+        }
+
+        @Override
+        public boolean appliesTo(KeyType type, String host) throws IOException {
+            return false;
+        }
+
+        @Override
+        public boolean verify(PublicKey key) throws IOException {
+            return false;
+        }
+
+        @Override
+        public String getLine() {
+            return line;
         }
     }
 
