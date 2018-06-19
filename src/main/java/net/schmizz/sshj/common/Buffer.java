@@ -147,7 +147,6 @@ public class Buffer<T extends Buffer<T>> {
 
     /** Compact this {@link SSHPacket} */
     public void compact() {
-        System.err.println("COMPACTING");
         if (available() > 0)
             System.arraycopy(data, rpos, data, 0, wpos - rpos);
         wpos -= rpos;
@@ -356,8 +355,9 @@ public class Buffer<T extends Buffer<T>> {
     }
 
     public T putUInt64(long uint64) {
-        if (uint64 < 0)
+        if (uint64 < 0) {
             throw new IllegalArgumentException("Invalid value: " + uint64);
+        }
         return putUInt64Unchecked(uint64);
     }
 
