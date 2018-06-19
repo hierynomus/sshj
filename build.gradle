@@ -75,7 +75,7 @@ license {
   mapping {
     java = 'SLASHSTAR_STYLE'
   }
-  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java'])
+  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java', '**/org/mindrot/jbcrypt/*.java'])
 }
 
 // This disables the pedantic doclint feature of JDK8
