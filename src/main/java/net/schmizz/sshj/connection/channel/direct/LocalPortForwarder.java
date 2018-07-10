@@ -181,8 +181,8 @@ public class LocalPortForwarder {
     public void close() throws IOException {
         if (!serverSocket.isClosed()) {
             log.info("Closing listener on {}", serverSocket.getLocalSocketAddress());
-            serverSocket.close();
             runningThread.interrupt();
+            serverSocket.close();
         }
     }
 
