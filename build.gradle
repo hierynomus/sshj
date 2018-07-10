@@ -47,7 +47,7 @@ targetCompatibility = 1.6
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.57"
+def bouncycastleVersion = "1.60"
 
 dependencies {
   signature 'org.codehaus.mojo.signature:java16:1.1@signature'
