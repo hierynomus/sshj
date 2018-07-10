@@ -127,7 +127,7 @@ public class SshFixture extends ExternalResource {
             }
         });
         sshServer.setCommandFactory(commandFactory);
-
+        sshServer.setShellFactory(new ProcessShellFactory("ls"));
         return sshServer;
     }
 
