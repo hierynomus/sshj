@@ -15,7 +15,12 @@
  */
 package net.schmizz.sshj.transport.mac;
 
-/** HMAC-SHA1 <code>MAC</code> */
+import com.hierynomus.sshj.transport.mac.Macs;
+
+/** HMAC-SHA1 <code>MAC</code>
+ *
+ * @deprecated Use {@link Macs#HMACSHA1()}
+ */
 public class HMACSHA1
         extends BaseMAC {
 

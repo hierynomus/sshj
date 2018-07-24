@@ -15,7 +15,12 @@
  */
 package net.schmizz.sshj.transport.mac;
 
-/** HMAC-MD5-96 <code>MAC</code> */
+import com.hierynomus.sshj.transport.mac.Macs;
+
+/** HMAC-MD5-96 <code>MAC</code>
+ *
+ * @deprecated Use {@link Macs#HMACMD596()}
+ */
 public class HMACMD596
         extends BaseMAC {
 

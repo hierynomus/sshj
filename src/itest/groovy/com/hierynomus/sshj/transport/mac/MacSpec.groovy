@@ -37,7 +37,7 @@ class MacSpec extends IntegrationBaseSpec {
         client.authenticated
 
         where:
-        macFactory << [new HMACSHA2256.Factory(), new HMACRIPEMD160.Factory()]
+        macFactory << [Macs.HMACRIPEMD160(), Macs.HMACRIPEMD160OpenSsh(), Macs.HMACSHA2256(), Macs.HMACSHA2512()]
         mac = macFactory.name
     }
 }
