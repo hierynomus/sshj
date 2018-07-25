@@ -44,6 +44,7 @@ abstract class Converter {
     protected int cipherSize = 8;
     protected long seq = -1;
     protected boolean authed;
+    protected boolean etm;
 
     long getSequenceNumber() {
         return seq;
@@ -56,6 +57,7 @@ abstract class Converter {
         if (compression != null)
             compression.init(getCompressionType());
         this.cipherSize = cipher.getIVSize();
+        this.etm = mac.isEtm();
     }
 
     void setAuthenticated() {
