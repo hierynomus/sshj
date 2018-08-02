@@ -59,8 +59,9 @@ public abstract class Window {
         synchronized (lock) {
             size -= dec;
             log.debug("Consuming by {} down to {}", dec, size);
-            if (size < 0)
+            if (size < 0) {
                 throw new ConnectionException("Window consumed to below 0");
+            }
         }
     }
 

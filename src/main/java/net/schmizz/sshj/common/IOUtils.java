@@ -40,7 +40,7 @@ public class IOUtils {
                 if (c != null)
                     c.close();
             } catch (IOException logged) {
-		loggerFactory.getLogger(IOUtils.class).warn("Error closing {} - {}", c, logged);
+                loggerFactory.getLogger(IOUtils.class).warn("Error closing {} - {}", c, logged);
             }
         }
     }

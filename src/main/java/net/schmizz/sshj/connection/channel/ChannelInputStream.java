@@ -92,36 +92,43 @@ public final class ChannelInputStream
             throws IOException {
         synchronized (buf) {
             for (; ; ) {
-                if (buf.available() > 0)
+                if (buf.available() > 0) {
                     break;
-                if (eof)
-                    if (error != null)
+                }
+                if (eof) {
+                    if (error != null) {
                         throw error;
-                    else
+                    } else {
                         return -1;
+                    }
+                }
                 try {
                     buf.wait();
                 } catch (InterruptedException e) {
                     throw (IOException) new InterruptedIOException().initCause(e);
                 }
             }
-            if (len > buf.available())
+            if (len > buf.available()) {
                 len = buf.available();
+            }
             buf.readRawBytes(b, off, len);
-            if (buf.rpos() > win.getMaxPacketSize() && buf.available() == 0)
+            if (buf.rpos() > win.getMaxPacketSize() && buf.available() == 0) {
                 buf.clear();
+            }
         }
 
-        if (!chan.getAutoExpand())
+        if (!chan.getAutoExpand()) {
             checkWindow();
+        }
 
         return len;
     }
 
     public void receive(byte[] data, int offset, int len)
             throws ConnectionException, TransportException {
-        if (eof)
+        if (eof) {
             throw new ConnectionException("Getting data on EOF'ed stream");
+        }
         synchronized (buf) {
             buf.putRawBytes(data, offset, len);
             buf.notifyAll();
@@ -132,8 +139,9 @@ public final class ChannelInputStream
         synchronized (win) {
             win.consume(len);
         }
-        if (chan.getAutoExpand())
+        if (chan.getAutoExpand()) {
             checkWindow();
+        }
     }
 
     private void checkWindow()
@@ -143,7 +151,7 @@ public final class ChannelInputStream
             if (adjustment > 0) {
                 log.debug("Sending SSH_MSG_CHANNEL_WINDOW_ADJUST to #{} for {} bytes", chan.getRecipient(), adjustment);
                 trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST)
-                                    .putUInt32(chan.getRecipient()).putUInt32(adjustment));
+                        .putUInt32(chan.getRecipient()).putUInt32(adjustment));
                 win.expand(adjustment);
             }
         }

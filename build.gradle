@@ -8,7 +8,7 @@ plugins {
   id "jacoco"
   id "osgi"
   id "maven-publish"
-  id 'pl.allegro.tech.build.axion-release' version '1.9.0'
+  id 'pl.allegro.tech.build.axion-release' version '1.9.2'
   id "com.bmuschko.docker-remote-api" version "3.2.1"
   id "com.github.hierynomus.license" version "0.12.1"
   id "com.jfrog.bintray" version "1.7"
@@ -47,7 +47,7 @@ targetCompatibility = 1.6
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.57"
+def bouncycastleVersion = "1.60"
 
 dependencies {
   signature 'org.codehaus.mojo.signature:java16:1.1@signature'
