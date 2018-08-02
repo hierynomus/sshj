@@ -18,8 +18,14 @@ package net.schmizz.sshj.sftp;
 public class PathComponents {
 
     static String adjustForParent(String parent, String path, String pathSep) {
-        return (path.startsWith(pathSep)) ? path // Absolute path, nothing to adjust
-                : (parent + (parent.endsWith(pathSep) ? "" : pathSep) + path); // Relative path
+        if (path.startsWith(pathSep)) {
+            return path; // Absolute path, nothing to adjust
+        } else if (parent.endsWith(pathSep)) {
+            return parent + path; // Relative path, parent endsWith '/'
+        } else if (parent.isEmpty()) {
+            return path;
+        }
+        return parent + pathSep + path; // Relative path
     }
 
     static String trimTrailingSeparator(String somePath, String pathSep) {
@@ -33,7 +39,8 @@ public class PathComponents {
     public PathComponents(String parent, String name, String pathSep) {
         this.parent = parent;
         this.name = name;
-        this.path = trimTrailingSeparator(adjustForParent(parent, name, pathSep), pathSep);
+        String adjusted = adjustForParent(parent, name, pathSep);
+        this.path = !pathSep.equals(adjusted) ? trimTrailingSeparator(adjusted, pathSep) : adjusted;
     }
 
     public String getParent() {

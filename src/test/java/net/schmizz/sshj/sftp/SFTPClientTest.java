@@ -30,15 +30,21 @@ public class SFTPClientTest {
     @Before
     public void setPathHelper() throws Exception {
         PathHelper helper = new PathHelper(new PathHelper.Canonicalizer() {
+            /**
+             * Very basic, it does not try to canonicalize relative bits in the middle of a path.
+             */
             @Override
             public String canonicalize(String path)
                     throws IOException {
-                if (path.equals("."))
-                    return "/workingdirectory";
+                if ("".equals(path) || ".".equals(path) || "./".equals(path))
+                    return "/home/me";
+                if ("..".equals(path) || "../".equals(path))
+                    return "/home";
                 return path;
             }
         }, DEFAULT_PATH_SEPARATOR);
         when(sftpEngine.getPathHelper()).thenReturn(helper);
+        when(sftpEngine.stat("/")).thenReturn(new FileAttributes.Builder().withType(FileMode.Type.DIRECTORY).build());
         when(sftpEngine.getLoggerFactory()).thenReturn(LoggerFactory.DEFAULT);
     }
 
