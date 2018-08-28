@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class BaseMacTest {
     private static final Charset CHARSET = Charset.forName("US-ASCII");
@@ -40,11 +41,9 @@ public class BaseMacTest {
 
     @Test(expected = SSHRuntimeException.class)
     public void testUnknownAlgorithm() {
-        // hopefully a algorithm with that name won't be created :-)
-        BaseMAC hmac = new BaseMAC("AlgorithmThatDoesNotExist", 20, 20);
+        BaseMAC hmac = new BaseMAC("AlgorithmThatDoesNotExist", 20, 20, false);
         hmac.init((KEY + "foo").getBytes(CHARSET));
-        hmac.update(PLAIN_TEXT);
-        assertThat(Hex.toHexString(hmac.doFinal()),  is(EXPECTED_HMAC));
+        fail("Should not initialize a non-existent MAC");
     }
 
     @Test
