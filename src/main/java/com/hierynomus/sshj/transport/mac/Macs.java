@@ -18,6 +18,7 @@ package com.hierynomus.sshj.transport.mac;
 import net.schmizz.sshj.transport.mac.BaseMAC;
 import net.schmizz.sshj.transport.mac.MAC;
 
+@SuppressWarnings("PMD.MethodNamingConventions")
 public class Macs {
     public static Factory HMACMD5() {
         return new Factory("hmac-md5", "HmacMD5", 16, 16, false);
