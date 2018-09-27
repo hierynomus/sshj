@@ -372,6 +372,7 @@ public class Buffer<T extends Buffer<T>> {
 
     @SuppressWarnings("unchecked")
     private T putUInt64Unchecked(long uint64) {
+        ensureCapacity(8);
         data[wpos++] = (byte) (uint64 >> 56);
         data[wpos++] = (byte) (uint64 >> 48);
         data[wpos++] = (byte) (uint64 >> 40);
