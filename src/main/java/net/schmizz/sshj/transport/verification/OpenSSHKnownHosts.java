@@ -440,4 +440,17 @@ public class OpenSSHKnownHosts
             return null;
         }
     }
+
+    @Override
+    public String toString() {
+        final List<String> entriesList = new ArrayList<String>();
+        for (KnownHostEntry entry : entries) {
+            entriesList.add(entry.getLine());
+        }
+        return "OpenSSHKnownHosts{" +
+                "khFile=" + khFile +
+                ", entries=" + entriesList +
+                '}';
+    }
+
 }
