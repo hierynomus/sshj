@@ -443,14 +443,7 @@ public class OpenSSHKnownHosts
 
     @Override
     public String toString() {
-        final List<String> entriesList = new ArrayList<String>();
-        for (KnownHostEntry entry : entries) {
-            entriesList.add(entry.getLine());
-        }
-        return "OpenSSHKnownHosts{" +
-                "khFile=" + khFile +
-                ", entries=" + entriesList +
-                '}';
+        return "OpenSSHKnownHosts{khFile='" + khFile + "'}";
     }
 
 }

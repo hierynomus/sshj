@@ -40,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 final class KeyExchanger
         implements SSHPacketHandler, ErrorNotifiable {
 
-    private static enum Expected {
+    private enum Expected {
         /** we have sent or are sending KEXINIT, and expect the server's KEXINIT */
         KEXINIT,
         /** we are expecting some followup data as part of the exchange */

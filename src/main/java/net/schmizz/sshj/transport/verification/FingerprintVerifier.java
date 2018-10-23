@@ -26,7 +26,6 @@ import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
-import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 public class FingerprintVerifier implements HostKeyVerifier {
     private static final Pattern MD5_FINGERPRINT_PATTERN = Pattern.compile("[0-9a-f]{2}+(:[0-9a-f]{2}+){15}+");
@@ -121,4 +120,8 @@ public class FingerprintVerifier implements HostKeyVerifier {
         return Arrays.equals(fingerprintData, digestData);
     }
 
+    @Override
+    public String toString() {
+        return "FingerprintVerifier{digestAlgorithm='" + digestAlgorithm + "'}";
+    }
 }
