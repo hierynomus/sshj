@@ -49,6 +49,16 @@ class FingerprintVerifierSpec extends Specification {
 
     }
 
+    def "should produce meaningful toString()"() {
+        given:
+        def verifier = FingerprintVerifier.getInstance("SHA1:2Fo8c/96zv32xc8GZWbOGYOlRak")
+
+        when:
+        def toStringValue = verifier.toString()
+
+        then:
+        toStringValue == "FingerprintVerifier{digestAlgorithm='SHA-1'}"
+    }
 
     def getPublicKey() {
         def lines = new File("src/test/resources/keytypes/test_ed25519.pub").readLines()
