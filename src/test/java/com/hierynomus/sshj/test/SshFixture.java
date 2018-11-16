@@ -20,12 +20,11 @@ import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
 import org.apache.sshd.common.NamedFactory;
-import org.apache.sshd.common.keyprovider.AbstractClassLoadableResourceKeyPairProvider;
-import org.apache.sshd.common.util.SecurityUtils;
-import org.apache.sshd.server.Command;
-import org.apache.sshd.server.CommandFactory;
+import org.apache.sshd.common.keyprovider.ClassLoadableResourceKeyPairProvider;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
+import org.apache.sshd.server.command.Command;
+import org.apache.sshd.server.command.CommandFactory;
 import org.apache.sshd.server.scp.ScpCommandFactory;
 import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.shell.ProcessShellFactory;
@@ -35,7 +34,6 @@ import org.junit.rules.ExternalResource;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -108,8 +106,7 @@ public class SshFixture extends ExternalResource {
     private SshServer defaultSshServer() {
         SshServer sshServer = SshServer.setUpDefaultServer();
         sshServer.setPort(randomPort());
-        AbstractClassLoadableResourceKeyPairProvider fileKeyPairProvider = SecurityUtils.createClassLoadableResourceKeyPairProvider();
-        fileKeyPairProvider.setResources(Collections.singletonList(hostkey));
+        ClassLoadableResourceKeyPairProvider fileKeyPairProvider = new ClassLoadableResourceKeyPairProvider(hostkey);
         sshServer.setKeyPairProvider(fileKeyPairProvider);
         sshServer.setPasswordAuthenticator(new PasswordAuthenticator() {
             @Override

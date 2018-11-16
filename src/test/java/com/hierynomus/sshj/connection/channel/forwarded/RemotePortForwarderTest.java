@@ -54,7 +54,7 @@ public class RemotePortForwarderTest {
 
     @Before
     public void setUp() throws IOException {
-        fixture.getServer().setTcpipForwardingFilter(new AcceptAllForwardingFilter());
+        fixture.getServer().setForwardingFilter(new AcceptAllForwardingFilter());
         File file = httpServer.getDocRoot().newFile("index.html");
         FileUtil.writeToFile(file, "<html><head/><body><h1>Hi!</h1></body></html>");
     }
