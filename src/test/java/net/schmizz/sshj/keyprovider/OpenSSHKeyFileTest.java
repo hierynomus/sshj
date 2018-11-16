@@ -197,7 +197,7 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar");
     }
 
-    private void checkOpenSSHKeyV1(String key, String password) throws IOException {
+    private void checkOpenSSHKeyV1(final String key, final String password) throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File(key), new PasswordFinder() {
             @Override
