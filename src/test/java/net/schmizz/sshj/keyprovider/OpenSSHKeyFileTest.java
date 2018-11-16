@@ -18,13 +18,13 @@ package net.schmizz.sshj.keyprovider;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.KeyUtil;
-import org.apache.sshd.common.util.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -197,7 +197,7 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar");
     }
 
-    private void checkOpenSSHKeyV1(final String key, final String password) throws IOException {
+    private void checkOpenSSHKeyV1(String key, final String password) throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File(key), new PasswordFinder() {
             @Override
