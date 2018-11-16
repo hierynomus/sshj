@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
@@ -189,12 +188,21 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
-    public void shouldLoadProtectedED25519PrivateKey() throws IOException {
+    public void shouldLoadProtectedED25519PrivateKeyAes256CTR() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest");
+    }
+
+    @Test
+    public void shouldLoadProtectedED25519PrivateKeyAes256CBC() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar");
+    }
+
+    private void checkOpenSSHKeyV1(String key, String password) throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
-        keyFile.init(new File("src/test/resources/keytypes/ed25519_protected"), new PasswordFinder() {
+        keyFile.init(new File(key), new PasswordFinder() {
             @Override
             public char[] reqPassword(Resource<?> resource) {
-                return "sshjtest".toCharArray();
+                return password.toCharArray();
             }
 
             @Override
