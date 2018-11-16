@@ -102,7 +102,8 @@ public abstract class AbstractChannel
 
     protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
         this.recipient = recipient;
-        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING), loggerFactory);
+        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING),
+            conn.getTimeoutMs(), loggerFactory);
         out = new ChannelOutputStream(this, trans, rwin);
         log.debug("Initialized - {}", this);
     }
@@ -362,10 +363,12 @@ public abstract class AbstractChannel
         } catch (Buffer.BufferException be) {
             throw new ConnectionException(be);
         }
-        if (len < 0 || len > getLocalMaxPacketSize() || len > buf.available())
+        if (len < 0 || len > getLocalMaxPacketSize() || len > buf.available()) {
             throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR, "Bad item length: " + len);
-        if (log.isTraceEnabled())
+        }
+        if (log.isTraceEnabled()) {
             log.trace("IN #{}: {}", id, ByteArrayUtils.printHex(buf.array(), buf.rpos(), len));
+        }
         stream.receive(buf.array(), buf.rpos(), len);
     }
 

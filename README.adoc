@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.25.0
+:sshj_version: 0.26.0
 :source-highlighter: pygments
 
 image:https://api.bintray.com/packages/hierynomus/maven/sshj/images/download.svg[link="https://bintray.com/hierynomus/maven/sshj/_latestVersion"]
@@ -73,6 +73,7 @@ key exchange::
   `diffie-hellman-group14-sha256`, `diffie-hellman-group15-sha512`, `diffie-hellman-group16-sha512`, `diffie-hellman-group17-sha512`, `diffie-hellman-group18-sha512`
   `diffie-hellman-group-exchange-sha1`, `diffie-hellman-group-exchange-sha256`,
   `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384`, `ecdh-sha2-nistp521`, `curve25519-sha256@libssh.org`
+
   SSHJ also supports the following extended (non official) key exchange algoriths:
   `diffie-hellman-group14-sha256@ssh.com`, `diffie-hellman-group15-sha256`, `diffie-hellman-group15-sha256@ssh.com`, `diffie-hellman-group15-sha384@ssh.com`,
   `diffie-hellman-group16-sha256`, `diffie-hellman-group16-sha384@ssh.com`, `diffie-hellman-group16-sha512@ssh.com`, `diffie-hellman-group18-sha512@ssh.com`
@@ -81,7 +82,8 @@ signatures::
   `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`
 
 mac::
-  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`, `hmac-ripemd160`
+  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`, `hmac-ripemd160`, `hmac-ripemd160@openssh.com`
+  `hmac-md5-etm@openssh.com`, `hmac-md5-96-etm@openssh.com`, `hmac-sha1-etm@openssh.com`, `hmac-sha1-96-etm@openssh.com`, `hmac-sha2-256-etm@openssh.com`, `hmac-sha2-512-etm@openssh.com`, `hmac-ripemd160-etm@openssh.com`
 
 compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)

@@ -441,4 +441,10 @@ public class OpenSSHKnownHosts
             return null;
         }
     }
+
+    @Override
+    public String toString() {
+        return "OpenSSHKnownHosts{khFile='" + khFile + "'}";
+    }
+
 }

@@ -132,8 +132,9 @@ public class Buffer<T extends Buffer<T>> {
 
     protected void ensureAvailable(int a)
             throws BufferException {
-        if (available() < a)
+        if (available() < a) {
             throw new BufferException("Underflow");
+        }
     }
 
     public void ensureCapacity(int capacity) {
@@ -371,6 +372,7 @@ public class Buffer<T extends Buffer<T>> {
 
     @SuppressWarnings("unchecked")
     private T putUInt64Unchecked(long uint64) {
+        ensureCapacity(8);
         data[wpos++] = (byte) (uint64 >> 56);
         data[wpos++] = (byte) (uint64 >> 48);
         data[wpos++] = (byte) (uint64 >> 40);
@@ -392,8 +394,9 @@ public class Buffer<T extends Buffer<T>> {
     public String readString(Charset cs)
             throws BufferException {
         int len = readUInt32AsInt();
-        if (len < 0 || len > 32768)
+        if (len < 0 || len > 32768) {
             throw new BufferException("Bad item length: " + len);
+        }
         ensureAvailable(len);
         String s = new String(data, rpos, len, cs);
         rpos += len;

@@ -20,6 +20,7 @@ import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import com.hierynomus.sshj.transport.kex.DHGroups;
 import com.hierynomus.sshj.transport.kex.ExtendedDHGroups;
+import com.hierynomus.sshj.transport.mac.Macs;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
@@ -93,7 +94,8 @@ public class DefaultConfig
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
         if (bouncyCastleRegistered) {
-            setKeyExchangeFactories(new Curve25519SHA256.Factory(),
+            setKeyExchangeFactories(
+                    new Curve25519SHA256.Factory(),
                     new DHGexSHA256.Factory(),
                     new ECDHNistP.Factory521(),
                     new ECDHNistP.Factory384(),
@@ -195,23 +197,33 @@ public class DefaultConfig
 
     protected void initSignatureFactories() {
         setSignatureFactories(
+                new SignatureEdDSA.Factory(),
                 new SignatureECDSA.Factory256(),
                 new SignatureECDSA.Factory384(),
                 new SignatureECDSA.Factory521(),
                 new SignatureRSA.Factory(),
-                new SignatureDSA.Factory(),
-                new SignatureEdDSA.Factory()
+                new SignatureDSA.Factory()
         );
     }
 
     protected void initMACFactories() {
         setMACFactories(
-                new HMACSHA1.Factory(),
-                new HMACSHA196.Factory(),
-                new HMACMD5.Factory(),
-                new HMACMD596.Factory(),
-                new HMACSHA2256.Factory(),
-                new HMACSHA2512.Factory()
+                Macs.HMACSHA1(),
+                Macs.HMACSHA1Etm(),
+                Macs.HMACSHA196(),
+                Macs.HMACSHA196Etm(),
+                Macs.HMACMD5(),
+                Macs.HMACMD5Etm(),
+                Macs.HMACMD596(),
+                Macs.HMACMD596Etm(),
+                Macs.HMACSHA2256(),
+                Macs.HMACSHA2256Etm(),
+                Macs.HMACSHA2512(),
+                Macs.HMACSHA2512Etm(),
+                Macs.HMACRIPEMD160(),
+                Macs.HMACRIPEMD160Etm(),
+                Macs.HMACRIPEMD16096(),
+                Macs.HMACRIPEMD160OpenSsh()
         );
     }
 

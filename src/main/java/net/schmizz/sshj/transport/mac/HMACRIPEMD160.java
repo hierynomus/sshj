@@ -15,8 +15,13 @@
  */
 package net.schmizz.sshj.transport.mac;
 
+import com.hierynomus.sshj.transport.mac.Macs;
+
+/**
+ * @deprecated Use {@link Macs#HMACRIPEMD160()}
+ */
 public class HMACRIPEMD160 extends BaseMAC {
-    /** Named factory for the HMAC-SHA1 <code>MAC</code> */
+    /** Named factory for the HMAC-RIPEMD160 <code>MAC</code> */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<MAC> {
 

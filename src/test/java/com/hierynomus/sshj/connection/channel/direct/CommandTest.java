@@ -18,6 +18,7 @@ package com.hierynomus.sshj.connection.channel.direct;
 import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
+import net.schmizz.sshj.sftp.SFTPClient;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -46,6 +47,10 @@ public class CommandTest {
         exec.join();
         assertThat("File should exist", file.exists());
         assertThat("File should be directory", file.isDirectory());
-        
+        SFTPClient sftpClient = sshClient.newSFTPClient();
+        if (sftpClient.statExistence("&") != null) {
+            sftpClient.rmdir("&");
+            // TODO fail here when this is fixed
+        }
     }
 }

@@ -30,12 +30,18 @@ public class BaseMAC
     private final int defbsize;
     private final int bsize;
     private final byte[] tmp;
+    private final boolean etm;
     private javax.crypto.Mac mac;
 
     public BaseMAC(String algorithm, int bsize, int defbsize) {
+        this(algorithm, bsize, defbsize, false);
+    }
+
+    public BaseMAC(String algorithm, int bsize, int defbsize, boolean isEtm) {
         this.algorithm = algorithm;
         this.bsize = bsize;
         this.defbsize = defbsize;
+        this.etm = isEtm;
         tmp = new byte[defbsize];
     }
 
@@ -112,4 +118,8 @@ public class BaseMAC
         update(tmp, 0, 4);
     }
 
+    @Override
+    public boolean isEtm() {
+        return etm;
+    }
 }
