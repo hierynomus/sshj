@@ -107,7 +107,8 @@ public class DefaultConfig
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
         if (bouncyCastleRegistered) {
-            setKeyExchangeFactories(new Curve25519SHA256.Factory(),
+            setKeyExchangeFactories(
+                    new Curve25519SHA256.Factory(),
                     new DHGexSHA256.Factory(),
                     new ECDHNistP.Factory521(),
                     new ECDHNistP.Factory384(),
@@ -209,12 +210,12 @@ public class DefaultConfig
 
     protected void initSignatureFactories() {
         setSignatureFactories(
+                new SignatureEdDSA.Factory(),
                 new SignatureECDSA.Factory256(),
                 new SignatureECDSA.Factory384(),
                 new SignatureECDSA.Factory521(),
                 new SignatureRSA.Factory(),
-                new SignatureDSA.Factory(),
-                new SignatureEdDSA.Factory()
+                new SignatureDSA.Factory()
         );
     }
 
