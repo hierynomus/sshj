@@ -21,6 +21,7 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
+import net.schmizz.sshj.transport.cipher.BlockCipher;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
@@ -106,7 +107,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             logger.debug("Reading unencrypted keypair");
             return readUnencrypted(privateKeyBuffer, publicKey);
         } else {
-            logger.info("Keypair is encrypted with: " + cipherName + ", " + kdfName + ", " + kdfOptions);
+            logger.info("Keypair is encrypted with: " + cipherName + ", " + kdfName + ", " + Arrays.toString(kdfOptions));
             PlainBuffer decrypted = decryptBuffer(privateKeyBuffer, cipherName, kdfName, kdfOptions);
             return readUnencrypted(decrypted, publicKey);
 //            throw new IOException("Cannot read encrypted keypair with " + cipherName + " yet.");
@@ -141,6 +142,8 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     private Cipher createCipher(String cipherName) {
         if (cipherName.equals(BlockCiphers.AES256CTR().getName())) {
             return BlockCiphers.AES256CTR().create();
+        } else if (cipherName.equals(BlockCiphers.AES256CBC().getName())) {
+            return BlockCiphers.AES256CBC().create();
         }
         throw new IllegalStateException("Cipher '" + cipherName + "' not currently implemented for openssh-key-v1 format");
     }
