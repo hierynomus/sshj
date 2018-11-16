@@ -102,7 +102,8 @@ public abstract class AbstractChannel
 
     protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
         this.recipient = recipient;
-        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING), loggerFactory);
+        rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING),
+            conn.getTimeoutMs(), loggerFactory);
         out = new ChannelOutputStream(this, trans, rwin);
         log.debug("Initialized - {}", this);
     }
