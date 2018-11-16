@@ -109,6 +109,7 @@ public class DefaultConfig
         if (bouncyCastleRegistered) {
             setKeyExchangeFactories(
                     new Curve25519SHA256.Factory(),
+                    new Curve25519SHA256.FactoryLibSsh(),
                     new DHGexSHA256.Factory(),
                     new ECDHNistP.Factory521(),
                     new ECDHNistP.Factory384(),

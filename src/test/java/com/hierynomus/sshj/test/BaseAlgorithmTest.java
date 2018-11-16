@@ -18,6 +18,8 @@ package com.hierynomus.sshj.test;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.transport.random.JCERandom;
+import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import org.apache.sshd.server.SshServer;
 import org.junit.After;
 import org.junit.Rule;
@@ -32,6 +34,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public abstract class BaseAlgorithmTest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private SingletonRandomFactory randomFactory = new SingletonRandomFactory(new JCERandom.Factory());
+    private DefaultConfig config = new DefaultConfig();
     @Rule
     public SshFixture fixture = new SshFixture(false);
 
@@ -42,11 +46,12 @@ public abstract class BaseAlgorithmTest {
 
     @Test
     public void shouldVerifyAlgorithm() throws IOException {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             logger.info("--> Attempt {}", i);
             configureServer(fixture.getServer());
             fixture.start();
-            Config config = getClientConfig(new DefaultConfig());
+            config.setRandomFactory(randomFactory);
+            Config config = getClientConfig(this.config);
             SSHClient sshClient = fixture.connectClient(fixture.setupClient(config));
             assertThat("should be connected", sshClient.isConnected());
             sshClient.disconnect();

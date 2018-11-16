@@ -19,6 +19,7 @@ import com.hierynomus.sshj.test.BaseAlgorithmTest;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
@@ -38,15 +39,21 @@ import java.util.Collections;
 @RunWith(Parameterized.class)
 public class KeyExchangeTest extends BaseAlgorithmTest {
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "algorithm={0}")
     public static Collection<Object[]> getParameters() {
         return Arrays.asList(new Object[][]{
                 {DHGEXServer.newFactory(BuiltinDHFactories.dhgex), new DHGexSHA1.Factory()},
                 {DHGEXServer.newFactory(BuiltinDHFactories.dhgex256), new DHGexSHA256.Factory()},
                 {DHGServer.newFactory(BuiltinDHFactories.ecdhp256), new ECDHNistP.Factory256()},
                 {DHGServer.newFactory(BuiltinDHFactories.ecdhp384), new ECDHNistP.Factory384()},
-                {DHGServer.newFactory(BuiltinDHFactories.ecdhp521), new ECDHNistP.Factory521()}
-                // Not supported yet by MINA {null, new Curve25519SHA256.Factory()}
+                {DHGServer.newFactory(BuiltinDHFactories.ecdhp521), new ECDHNistP.Factory521()},
+                {DHGServer.newFactory(BuiltinDHFactories.dhg1), DHGroups.Group1SHA1()},
+                {DHGServer.newFactory(BuiltinDHFactories.dhg14), DHGroups.Group14SHA1()},
+                {DHGServer.newFactory(BuiltinDHFactories.dhg14_256), DHGroups.Group14SHA256()},
+                {DHGServer.newFactory(BuiltinDHFactories.dhg15_512), DHGroups.Group15SHA512()},
+                {DHGServer.newFactory(BuiltinDHFactories.dhg16_512), DHGroups.Group16SHA512()},
+                {DHGServer.newFactory(BuiltinDHFactories.dhg17_512), DHGroups.Group17SHA512()},
+                {DHGServer.newFactory(BuiltinDHFactories.dhg18_512), DHGroups.Group18SHA512()},
         });
     }
 

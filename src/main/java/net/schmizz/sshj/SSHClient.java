@@ -61,7 +61,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.util.*;
 
 /**
@@ -360,8 +359,7 @@ public class SSHClient
      * @throws TransportException if there was a transport-layer error
      */
     public void authPublickey(String username, KeyProvider... keyProviders)
-            throws UserAuthException,
-                   TransportException {
+            throws UserAuthException, TransportException {
         authPublickey(username, Arrays.<KeyProvider>asList(keyProviders));
     }
 
