@@ -263,7 +263,7 @@ public class ConnectionImpl
     }
 
     private void gotGlobalRequest(SSHPacket buf)
-    throws ConnectionException, TransportException {
+            throws ConnectionException, TransportException {
         try {
             final String requestName = buf.readString();
             boolean wantReply = buf.readBoolean();
