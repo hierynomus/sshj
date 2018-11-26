@@ -130,6 +130,9 @@ public class ConnectionImpl
             getChannel(buf).handle(msg, buf);
         } else if (msg.in(80, 90)) {
             switch (msg) {
+                case GLOBAL_REQUEST:
+                    gotGlobalRequest(buf);
+                    break;
                 case REQUEST_SUCCESS:
                     gotGlobalReqResponse(buf);
                     break;
@@ -257,6 +260,20 @@ public class ConnectionImpl
         keepAlive.interrupt();
         ErrorNotifiable.Util.alertAll(error, channels.values());
         channels.clear();
+    }
+
+    private void gotGlobalRequest(SSHPacket buf)
+    throws ConnectionException, TransportException {
+        try {
+            final String requestName = buf.readString();
+            boolean wantReply = buf.readBoolean();
+            log.debug("Received GLOBAL_REQUEST `{}`; want reply: {}", requestName, wantReply);
+            if (wantReply) {
+                trans.write(new SSHPacket(Message.REQUEST_FAILURE));
+            }
+        } catch (Buffer.BufferException be) {
+            throw new ConnectionException(be);
+        }
     }
 
     @Override
