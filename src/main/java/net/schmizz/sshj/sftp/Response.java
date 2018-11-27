@@ -68,6 +68,9 @@ public final class Response
             this.code = code;
         }
 
+        public int getCode() {
+            return code;
+        }
     }
 
     private final int protocolVersion;
