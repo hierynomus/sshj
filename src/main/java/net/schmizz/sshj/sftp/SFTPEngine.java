@@ -113,10 +113,6 @@ public class SFTPEngine
     }
 
     public String getServerExtensionData(final String extension, final String domain) {
-        if (!supportsServerExtension(extension, domain)) {
-            return null;
-        }
-
         return serverExtensions.get(extension + "@" + domain);
     }
 
