@@ -56,7 +56,6 @@ public class ResponseStatusCodeTest {
         assertEquals(29, Response.StatusCode.OWNER_INVALID.getCode());
         assertEquals(30, Response.StatusCode.GROUP_INVALID.getCode());
         assertEquals(31, Response.StatusCode.NO_MATCHING_BYTE_RANGE_LOCK.getCode());
-
     }
 
 }
