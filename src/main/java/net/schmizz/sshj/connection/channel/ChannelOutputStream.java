@@ -19,6 +19,7 @@ import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,6 +39,8 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
 
     private boolean closed;
     private SSHException error;
+
+    private final Logger log;
 
     private final class DataBuffer {
 
@@ -122,6 +125,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         this.chan = chan;
         this.trans = trans;
         this.win = win;
+        log = LoggerFactory.DEFAULT.getLogger(getClass());
     }
 
     @Override
@@ -150,7 +154,14 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     }
 
     private void checkClose() throws SSHException {
-        if (closed) {
+        if (log.isTraceEnabled()) { // need to be removed later
+            log.trace("SSHJ===> checkClose()-> closed: {}, chan.isEof: {}, isOpen: {}, local channel_id#{}, remote channel_id#{}, Thread_id: {}",
+                    closed, chan.isEOF(), chan.isOpen(), chan.getID(), chan.getRecipient(), Thread.currentThread().getId());
+        }
+
+        // From the debug logs of "nonexist channel x", the logic is not complete.
+        // The channal is not closed, not means it can be write or flush data, isOpen() should be true.
+        if (closed || !chan.isOpen()) {
             if (error != null)
                 throw error;
             else
@@ -162,7 +173,14 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     public synchronized void close() throws IOException {
         if (!closed) {
             try {
-                buffer.flush(false);
+                if (log.isTraceEnabled()) { // need to be removed later
+                    log.trace("SSHJ===>close()->channel_id#{}, remote channel_id#{}, isEOF: {}, isOpen: {} ",
+                            chan.getID(), chan.getRecipient(), chan.isEOF(), chan.isOpen());
+                }
+                // The same reason of checkClose() method, need to add isOpen()
+                if (chan.isOpen()) {
+                    buffer.flush(false);
+                }
 //                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
             } finally {
                 closed = true;
