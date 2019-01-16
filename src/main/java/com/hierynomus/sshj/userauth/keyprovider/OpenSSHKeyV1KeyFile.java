@@ -130,11 +130,11 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         if (kdfName.equals(BCRYPT)) {
             PlainBuffer opts = new PlainBuffer(kdfOptions);
             byte[] passphrase = new byte[0];
-            // if (pwdf != null) {
+            if (pwdf != null) {
                 CharBuffer charBuffer = CharBuffer.wrap(pwdf.reqPassword(null));
                 ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
                 passphrase = Arrays.copyOfRange(byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
-            // }
+            }
             byte[] keyiv = new byte[48];
             new BCrypt().pbkdf(passphrase, opts.readBytes(), opts.readUInt32AsInt(), keyiv);
             byte[] key = Arrays.copyOfRange(keyiv, 0, 32);
@@ -192,7 +192,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         KeyType kt = KeyType.fromString(keyType);
         logger.info("Read key type: {}", keyType, kt);
         KeyPair kp;
-        switch(kt) {
+        switch (kt) {
             case ED25519:
                 byte[] pubKey = keyBuffer.readBytes(); // string publickey (again...)
                 keyBuffer.readUInt32(); // length of privatekey+publickey
@@ -210,8 +210,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 keyBuffer.readMPInt(); // q (Prime 2)
                 kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory("RSA").generatePrivate(new RSAPrivateKeySpec(n, d)));
                 break;
+            case ECDSA256:
+            case ECDSA384:
+            case ECDSA521:
+
             default:
-                throw new RuntimeException();
+                throw new IOException("Cannot decode keytype " + keyType + " in openssh-key-v1 files (yet).");
         }
         String comment = keyBuffer.readString(); // string comment
         byte[] padding = new byte[keyBuffer.available()];
