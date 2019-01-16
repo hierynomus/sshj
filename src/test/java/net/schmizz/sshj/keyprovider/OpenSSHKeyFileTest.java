@@ -203,7 +203,14 @@ public class OpenSSHKeyFileTest {
         keyFile.init(new File("src/test/resources/keyformats/rsa_opensshv1"));
         PrivateKey aPrivate = keyFile.getPrivate();
         assertThat(aPrivate.getAlgorithm(), equalTo("RSA"));
+    }
 
+    @Test
+    public void shouldLoadECDSAPrivateKeyAsOpenSSHV1() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keyformats/ecdsa_opensshv1"));
+        PrivateKey aPrivate = keyFile.getPrivate();
+        assertThat(aPrivate.getAlgorithm(), equalTo("ECDSA"));
     }
 
     private void checkOpenSSHKeyV1(String key, final String password) throws IOException {

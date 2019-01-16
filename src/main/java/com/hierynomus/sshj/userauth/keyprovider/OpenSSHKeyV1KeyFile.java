@@ -20,13 +20,14 @@ import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.schmizz.sshj.common.*;
-import net.schmizz.sshj.common.KeyType.*;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-import net.schmizz.sshj.transport.cipher.BlockCipher;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
+import org.bouncycastle.asn1.nist.NISTNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +38,9 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PublicKey;
+import java.security.*;
+import java.security.spec.ECPrivateKeySpec;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.util.Arrays;
 
@@ -211,8 +211,14 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory("RSA").generatePrivate(new RSAPrivateKeySpec(n, d)));
                 break;
             case ECDSA256:
+                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-256"));
+                break;
             case ECDSA384:
+                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-384"));
+                break;
             case ECDSA521:
+                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-521"));
+                break;
 
             default:
                 throw new IOException("Cannot decode keytype " + keyType + " in openssh-key-v1 files (yet).");
@@ -226,5 +232,15 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             }
         }
         return kp;
+    }
+
+    private PrivateKey createECDSAPrivateKey(KeyType kt, PlainBuffer buffer, String name) throws GeneralSecurityException, Buffer.BufferException {
+        PublicKey pk = kt.readPubKeyFromBuffer(buffer); // Public key
+        BigInteger s = new BigInteger(1, buffer.readBytes());
+        X9ECParameters ecParams = NISTNamedCurves.getByName(name);
+        ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
+        ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
+        return SecurityUtils.getKeyFactory("ECDSA").generatePrivate(pks);
+
     }
 }
