@@ -20,6 +20,7 @@ import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.schmizz.sshj.common.*;
+import net.schmizz.sshj.common.KeyType.*;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
 import net.schmizz.sshj.transport.cipher.BlockCipher;
 import net.schmizz.sshj.transport.cipher.Cipher;
@@ -32,12 +33,15 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PublicKey;
+import java.security.spec.RSAPrivateKeySpec;
 import java.util.Arrays;
 
 /**
@@ -125,10 +129,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     private void initializeCipher(String kdfName, byte[] kdfOptions, Cipher cipher) throws Buffer.BufferException {
         if (kdfName.equals(BCRYPT)) {
             PlainBuffer opts = new PlainBuffer(kdfOptions);
-            CharBuffer charBuffer = CharBuffer.wrap(pwdf.reqPassword(null));
-            ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
-            byte[] passphrase = Arrays.copyOfRange(byteBuffer.array(),
-                    byteBuffer.position(), byteBuffer.limit());
+            byte[] passphrase = new byte[0];
+            // if (pwdf != null) {
+                CharBuffer charBuffer = CharBuffer.wrap(pwdf.reqPassword(null));
+                ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
+                passphrase = Arrays.copyOfRange(byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
+            // }
             byte[] keyiv = new byte[48];
             new BCrypt().pbkdf(passphrase, opts.readBytes(), opts.readUInt32AsInt(), keyiv);
             byte[] key = Arrays.copyOfRange(keyiv, 0, 32);
@@ -183,13 +189,30 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         }
         // The private key section contains both the public key and the private key
         String keyType = keyBuffer.readString(); // string keytype
-        logger.info("Read key type: {}", keyType);
-
-        byte[] pubKey = keyBuffer.readBytes(); // string publickey (again...)
-        keyBuffer.readUInt32();
-        byte[] privKey = new byte[32];
-        keyBuffer.readRawBytes(privKey); // string privatekey
-        keyBuffer.readRawBytes(new byte[32]); // string publickey (again...)
+        KeyType kt = KeyType.fromString(keyType);
+        logger.info("Read key type: {}", keyType, kt);
+        KeyPair kp;
+        switch(kt) {
+            case ED25519:
+                byte[] pubKey = keyBuffer.readBytes(); // string publickey (again...)
+                keyBuffer.readUInt32(); // length of privatekey+publickey
+                byte[] privKey = new byte[32];
+                keyBuffer.readRawBytes(privKey); // string privatekey
+                keyBuffer.readRawBytes(new byte[32]); // string publickey (again...)
+                kp = new KeyPair(publicKey, new EdDSAPrivateKey(new EdDSAPrivateKeySpec(privKey, EdDSANamedCurveTable.getByName("Ed25519"))));
+                break;
+            case RSA:
+                BigInteger n = keyBuffer.readMPInt(); // Modulus
+                BigInteger e = keyBuffer.readMPInt(); // Public Exponent
+                BigInteger d = keyBuffer.readMPInt(); // Private Exponent
+                keyBuffer.readMPInt(); // iqmp (q^-1 mod p)
+                keyBuffer.readMPInt(); // p (Prime 1)
+                keyBuffer.readMPInt(); // q (Prime 2)
+                kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory("RSA").generatePrivate(new RSAPrivateKeySpec(n, d)));
+                break;
+            default:
+                throw new RuntimeException();
+        }
         String comment = keyBuffer.readString(); // string comment
         byte[] padding = new byte[keyBuffer.available()];
         keyBuffer.readRawBytes(padding); // char[] padding
@@ -198,6 +221,6 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 throw new IOException("Padding of key format contained wrong byte at position: " + i);
             }
         }
-        return new KeyPair(publicKey, new EdDSAPrivateKey(new EdDSAPrivateKeySpec(privKey, EdDSANamedCurveTable.getByName("Ed25519"))));
+        return kp;
     }
 }

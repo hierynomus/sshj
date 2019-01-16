@@ -197,6 +197,15 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar");
     }
 
+    @Test
+    public void shouldLoadRSAPrivateKeyAsOpenSSHV1() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keyformats/rsa_opensshv1"));
+        PrivateKey aPrivate = keyFile.getPrivate();
+        assertThat(aPrivate.getAlgorithm(), equalTo("RSA"));
+
+    }
+
     private void checkOpenSSHKeyV1(String key, final String password) throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File(key), new PasswordFinder() {
