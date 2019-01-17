@@ -89,7 +89,7 @@ public class KeyProviderUtil {
 
     private static KeyFormat keyFormatFromHeader(String header, boolean separatePubKey) {
         if (header.startsWith("-----BEGIN") && header.endsWith("PRIVATE KEY-----")) {
-            if (separatePubKey && header.contains(OpenSSHKeyV1KeyFile.OPENSSH_PRIVATE_KEY)) {
+            if (header.contains(OpenSSHKeyV1KeyFile.OPENSSH_PRIVATE_KEY)) {
                 return KeyFormat.OpenSSHv1;
             } else if (separatePubKey) {
                 // Can delay asking for password since have unencrypted pubkey
