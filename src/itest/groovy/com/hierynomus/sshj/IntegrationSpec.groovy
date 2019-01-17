@@ -57,15 +57,27 @@ class IntegrationSpec extends IntegrationBaseSpec {
         thrown(TransportException.class)
     }
 
-    def "should authenticate"() {
+    @Unroll
+    def "should authenticate with key #key"() {
         given:
         SSHClient client = getConnectedClient()
 
         when:
-        client.authPublickey(USERNAME, KEYFILE)
+        def keyProvider = passphrase != null ? client.loadKeys("src/itest/resources/keyfiles/$key", passphrase) : client.loadKeys("src/itest/resources/keyfiles/$key")
+        client.authPublickey(USERNAME, keyProvider)
 
         then:
         client.isAuthenticated()
+
+        where:
+        key | passphrase
+//        "id_ecdsa_nistp256" | null // TODO: Need to improve PKCS8 key support.
+        "id_ecdsa_opensshv1" | null
+        "id_ed25519_opensshv1" | null
+        "id_ed25519_opensshv1_aes256cbc.pem" | "foobar"
+        "id_ed25519_opensshv1_protected" | "sshjtest"
+        "id_rsa" | null
+        "id_rsa_opensshv1" | null
     }
 
    def "should not authenticate with wrong key"() {
@@ -73,7 +85,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
         SSHClient client = getConnectedClient()
 
         when:
-        client.authPublickey("sshj", "src/test/resources/id_dsa")
+        client.authPublickey("sshj", "src/itest/resources/keyfiles/id_unknown_key")
 
         then:
         thrown(UserAuthException.class)
