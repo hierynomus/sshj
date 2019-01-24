@@ -18,13 +18,14 @@ package com.hierynomus.sshj.transport.verification;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.transport.mac.HMACSHA1;
 import net.schmizz.sshj.transport.mac.MAC;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import com.hierynomus.sshj.transport.mac.Macs;
 
 public class KnownHostMatchers {
 
@@ -63,7 +64,7 @@ public class KnownHostMatchers {
     }
 
     private static class HashedHostMatcher implements HostMatcher {
-        private final MAC sha1 = new HMACSHA1();
+        private final MAC sha1 = Macs.HMACSHA1().create();
         private final String hash;
         private final String salt;
         private byte[] saltyBytes;

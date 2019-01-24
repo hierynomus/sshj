@@ -40,7 +40,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.*;
 import java.security.spec.ECPrivateKeySpec;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateKeySpec;
 import java.util.Arrays;
 
@@ -194,7 +193,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         KeyPair kp;
         switch (kt) {
             case ED25519:
-                byte[] pubKey = keyBuffer.readBytes(); // string publickey (again...)
+                keyBuffer.readBytes(); // string publickey (again...)
                 keyBuffer.readUInt32(); // length of privatekey+publickey
                 byte[] privKey = new byte[32];
                 keyBuffer.readRawBytes(privKey); // string privatekey
@@ -203,7 +202,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 break;
             case RSA:
                 BigInteger n = keyBuffer.readMPInt(); // Modulus
-                BigInteger e = keyBuffer.readMPInt(); // Public Exponent
+                keyBuffer.readMPInt(); // Public Exponent
                 BigInteger d = keyBuffer.readMPInt(); // Private Exponent
                 keyBuffer.readMPInt(); // iqmp (q^-1 mod p)
                 keyBuffer.readMPInt(); // p (Prime 1)
@@ -223,7 +222,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             default:
                 throw new IOException("Cannot decode keytype " + keyType + " in openssh-key-v1 files (yet).");
         }
-        String comment = keyBuffer.readString(); // string comment
+        keyBuffer.readString(); // string comment
         byte[] padding = new byte[keyBuffer.available()];
         keyBuffer.readRawBytes(padding); // char[] padding
         for (int i = 0; i < padding.length; i++) {
@@ -235,7 +234,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     }
 
     private PrivateKey createECDSAPrivateKey(KeyType kt, PlainBuffer buffer, String name) throws GeneralSecurityException, Buffer.BufferException {
-        PublicKey pk = kt.readPubKeyFromBuffer(buffer); // Public key
+        kt.readPubKeyFromBuffer(buffer); // Public key
         BigInteger s = new BigInteger(1, buffer.readBytes());
         X9ECParameters ecParams = NISTNamedCurves.getByName(name);
         ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
