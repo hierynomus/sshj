@@ -123,6 +123,11 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return ECDSAVariationsAdapter.isECKeyWithFieldSize(key, 256);
         }
+
+        @Override
+        protected boolean available() {
+            return SecurityUtils.isBouncyCastleRegistered();
+        }
     },
 
     /** SSH identifier for ECDSA-384 keys */
@@ -144,6 +149,11 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return ECDSAVariationsAdapter.isECKeyWithFieldSize(key, 384);
         }
+
+        @Override
+        protected boolean available() {
+            return SecurityUtils.isBouncyCastleRegistered();
+        }
     },
 
     /** SSH identifier for ECDSA-521 keys */
@@ -164,6 +174,11 @@ public enum KeyType {
         @Override
         protected boolean isMyType(Key key) {
             return ECDSAVariationsAdapter.isECKeyWithFieldSize(key, 521);
+        }
+
+        @Override
+        protected boolean available() {
+            return SecurityUtils.isBouncyCastleRegistered();
         }
     },
 
@@ -283,9 +298,13 @@ public enum KeyType {
 
     protected abstract boolean isMyType(Key key);
 
+    protected boolean available() {
+        return true;
+    }
+
     public static KeyType fromKey(Key key) {
         for (KeyType kt : values())
-            if (kt.isMyType((key)))
+            if (kt.available() && kt.isMyType((key)))
                 return kt;
         return UNKNOWN;
     }
