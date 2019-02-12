@@ -69,7 +69,7 @@ public class Macs {
         return new Factory("hmac-sha2-512-etm@openssh.com", "HmacSHA512", 64, 64, true);
     }
 
-    private static class Factory implements net.schmizz.sshj.common.Factory.Named<MAC> {
+    public static class Factory implements net.schmizz.sshj.common.Factory.Named<MAC> {
 
         private String name;
         private String algorithm;

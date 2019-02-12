@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.26.0
+:sshj_version: 0.27.0
 :source-highlighter: pygments
 
 image:https://api.bintray.com/packages/hierynomus/maven/sshj/images/download.svg[link="https://bintray.com/hierynomus/maven/sshj/_latestVersion"]
@@ -10,7 +10,6 @@ image:https://api.codacy.com/project/badge/Grade/14a0a316bb9149739b5ea26dbfa8da8
 image:https://codecov.io/gh/hierynomus/sshj/branch/master/graph/badge.svg["codecov", link="https://codecov.io/gh/hierynomus/sshj"]
 image:http://www.javadoc.io/badge/com.hierynomus/sshj.svg?color=blue["JavaDocs", link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
-image:https://javadoc-emblem.rhcloud.com/doc/com.hierynomus/sshj/badge.svg["Javadoc",link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
 
@@ -102,16 +101,31 @@ Java 6+. http://www.slf4j.org/download.html[slf4j] is required. http://www.bounc
 == Reporting bugs
 Issue tracker: https://github.com/hierynomus/sshj/issues
 
-== Discussion
-Google Group: http://groups.google.com/group/sshj-users
-
 == Contributing
 Fork away!
 
 == Release history
-SSHJ 0.24.0 (2018-??-??)::
+SSHJ 0.27.0 (2019-01-24)::
+* Fixed https://github.com/hierynomus/sshj/issues/415[#415]: Fixed wrongly prefixed '/' to path in SFTPClient.mkdirs
+* Added support for ETM (Encrypt-then-Mac) MAC algorithms.
+* Fixed https://github.com/hierynomus/sshj/issues/454[#454]: Added missing capacity check for Buffer.putUint64
+* Fixed https://github.com/hierynomus/sshj/issues/466[#466]: Added lock timeout for remote action to prevent hanging
+* Fixed https://github.com/hierynomus/sshj/issues/470[#470]: Made EdDSA the default (first) signature factory
+* Fixed https://github.com/hierynomus/sshj/issues/467[#467]: Added AES256-CBC as cipher mode in openssh-key-v1 support
+* Fixed https://github.com/hierynomus/sshj/issues/464[#464]: Enabled curve25519-sha256@openssh.org in DefaultConfig
+* Fixed https://github.com/hierynomus/sshj/issues/472[#472]: Handle server initiated global requests
+* Fixed https://github.com/hierynomus/sshj/issues/485[#485]: Added support for all keytypes to openssh-key-v1 keyfiles.
+SSHJ 0.26.0 (2018-07-24)::
+* Fixed https://github.com/hierynomus/sshj/issues/413[#413]: Use UTF-8 for PrivateKeyFileResource
+* Fixed https://github.com/hierynomus/sshj/issues/427[#427]: Support encrypted ed25519 openssh-key-v1 files
+* Upgraded BouncyCastle to 1.60
+* Added support for hmac-ripemd160@openssh.com MAC
+SSHJ 0.24.0 (2018-04-04)::
 * Added support for hmac-ripemd160
-
+* Fixed https://github.com/hierynomus/sshj/issues/382[#382]: Fixed escaping in WildcardHostmatcher
+* Added integration testsuite using Docker against OpenSSH
+* Fixed https://github.com/hierynomus/sshj/issues/187[#187]: Fixed length bug in Buffer.putString
+* Fixed https://github.com/hierynomus/sshj/issues/405[#405]: Continue host verification if first hostkey does not match.
 SSHJ 0.23.0 (2017-10-13)::
 * Merged https://github.com/hierynomus/sshj/pulls/372[#372]: Upgrade to 'net.i2p.crypto:eddsa:0.2.0'
 * Fixed https://github.com/hierynomus/sshj/issues/355[#355] and https://github.com/hierynomus/sshj/issues/354[#354]: Correctly decode signature bytes
