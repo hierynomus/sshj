@@ -21,7 +21,7 @@ import java.security.GeneralSecurityException;
 
 public class Curve25519SHA256 extends AbstractDHG {
     /** Named factory for Curve25519SHA256 key exchange */
-    public static class Factory
+    public static class FactoryLibSsh
             implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
 
         @Override
@@ -32,6 +32,21 @@ public class Curve25519SHA256 extends AbstractDHG {
         @Override
         public String getName() {
             return "curve25519-sha256@libssh.org";
+        }
+    }
+
+    /** Named factory for Curve25519SHA256 key exchange */
+    public static class Factory
+            implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
+
+        @Override
+        public KeyExchange create() {
+            return new Curve25519SHA256();
+        }
+
+        @Override
+        public String getName() {
+            return "curve25519-sha256";
         }
     }
 

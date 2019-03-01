@@ -1,22 +1,45 @@
 import java.text.SimpleDateFormat
+import com.bmuschko.gradle.docker.tasks.container.*
+import com.bmuschko.gradle.docker.tasks.image.*
 
 plugins {
   id "java"
   id "groovy"
+  id "jacoco"
   id "osgi"
   id "maven-publish"
-  id "org.ajoberstar.release-opinion" version "1.4.2"
+  id 'pl.allegro.tech.build.axion-release' version '1.9.2'
+  id "com.bmuschko.docker-remote-api" version "3.2.1"
   id "com.github.hierynomus.license" version "0.12.1"
   id "com.jfrog.bintray" version "1.7"
-  id 'ru.vyarus.pom' version '1.0.3'
+  id 'ru.vyarus.java-lib' version '1.0.5'
+  // id 'ru.vyarus.pom' version '1.0.3'
   id 'ru.vyarus.github-info' version '1.1.0'
+  id 'ru.vyarus.animalsniffer' version '1.4.2'
 }
 
 group = "com.hierynomus"
+
+scmVersion {
+  tag {
+    prefix = 'v'
+    versionSeparator = ''
+  }
+  hooks {
+    pre 'fileUpdate', [file: 'README.adoc', pattern: { v, c -> /:sshj_version: .*/}, replacement: { v, c -> ":sshj_version: $v" }]
+    pre 'commit'
+  }
+}
+
+project.version = scmVersion.version
+
 defaultTasks "build"
 
 repositories {
   mavenCentral()
+  maven {
+    url "https://dl.bintray.com/mockito/maven/"
+  }
 }
 
 sourceCompatibility = 1.6
@@ -24,20 +47,25 @@ targetCompatibility = 1.6
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.56"
+def bouncycastleVersion = "1.60"
+def sshdVersion = "2.1.0"
 
 dependencies {
+  signature 'org.codehaus.mojo.signature:java16:1.1@signature'
+
   compile "org.slf4j:slf4j-api:1.7.7"
   compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
   compile "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
   compile "com.jcraft:jzlib:1.1.3"
 
-  compile "net.i2p.crypto:eddsa:0.1.0"
+  compile "net.i2p.crypto:eddsa:0.3.0"
 
   testCompile "junit:junit:4.11"
   testCompile 'org.spockframework:spock-core:1.0-groovy-2.4'
-  testCompile "org.mockito:mockito-core:2.8.47"
-  testCompile "org.apache.sshd:sshd-core:1.2.0"
+  testCompile "org.mockito:mockito-core:2.9.2"
+  testCompile "org.apache.sshd:sshd-core:$sshdVersion"
+  testCompile "org.apache.sshd:sshd-sftp:$sshdVersion"
+  testCompile "org.apache.sshd:sshd-scp:$sshdVersion"
   testRuntime "ch.qos.logback:logback-classic:1.1.2"
   testCompile 'org.glassfish.grizzly:grizzly-http-server:2.3.17'
   testCompile 'org.apache.httpcomponents:httpclient:4.5.2'
@@ -50,15 +78,7 @@ license {
   mapping {
     java = 'SLASHSTAR_STYLE'
   }
-  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java'])
-}
-
-if (project.file('.git').isDirectory()) {
-  release {
-    grgit = org.ajoberstar.grgit.Grgit.open(project.projectDir)
-  }
-} else {
-  version = "0.0.0-no.git"
+  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java', '**/org/mindrot/jbcrypt/*.java'])
 }
 
 // This disables the pedantic doclint feature of JDK8
@@ -78,7 +98,6 @@ task writeSshjVersionProperties {
 }
 
 jar.dependsOn writeSshjVersionProperties
-
 jar {
   manifest {
     // please see http://bnd.bndtools.org/chapters/390-wrapping.html
@@ -99,14 +118,7 @@ jar {
   }
 }
 
-task javadocJar(type: Jar) {
-  classifier = 'javadoc'
-  from javadoc
-}
-
-task sourcesJar(type: Jar) {
-  classifier = 'sources'
-  from sourceSets.main.allSource
+sourcesJar {
   manifest {
     attributes(
       // Add the needed OSGI attributes
@@ -117,6 +129,27 @@ task sourcesJar(type: Jar) {
       "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
     )
   }
+}
+
+configurations {
+  integrationTestCompile.extendsFrom testCompile
+  integrationTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+  integrationTest {
+    groovy {
+      compileClasspath += sourceSets.main.output + sourceSets.test.output
+      runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+      srcDir file('src/itest/groovy')
+    }
+    resources.srcDir file('src/itest/resources')
+  }
+}
+
+task integrationTest(type: Test) {
+  testClassesDirs = sourceSets.integrationTest.output.classesDirs
+  classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
 tasks.withType(Test) {
@@ -185,21 +218,12 @@ pom {
   }
 }
 
-publishing.publications {
-  Sshj(MavenPublication) {
-    from components.java
-    artifact sourcesJar
-    artifact javadocJar
-  }
-}
-
-
 if (project.hasProperty("bintrayUsername") && project.hasProperty("bintrayApiKey")) {
   bintray {
     user = project.property("bintrayUsername")
     key = project.property("bintrayApiKey")
     publish = true
-    publications = ["Sshj"]
+    publications = ["maven"]
     pkg {
       repo = "maven"
       name = project.name
@@ -208,7 +232,7 @@ if (project.hasProperty("bintrayUsername") && project.hasProperty("bintrayApiKey
       labels = ["ssh", "sftp", "secure-shell", "network", "file-transfer"]
       githubRepo = "hierynomus/sshj"
       version {
-        name = project.version.toString()
+        name = "${project.version}"
         vcsTag = "v${project.version}"
         released = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').format(new Date())
         gpg {
@@ -226,4 +250,43 @@ if (project.hasProperty("bintrayUsername") && project.hasProperty("bintrayApiKey
   }
 }
 
-project.tasks.release.dependsOn([project.tasks.build, project.tasks.bintrayUpload])
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}
+
+
+task buildItestImage(type: DockerBuildImage) {
+    inputDir = file('src/itest/docker-image')
+    tag = 'sshj/sshd-itest'
+}
+
+task createItestContainer(type: DockerCreateContainer) {
+    dependsOn buildItestImage
+    targetImageId { buildItestImage.getImageId() }
+    portBindings = ['2222:22']
+}
+
+task startItestContainer(type: DockerStartContainer) {
+    dependsOn createItestContainer
+    targetContainerId { createItestContainer.getContainerId() }
+}
+
+task stopItestContainer(type: DockerStopContainer) {
+    targetContainerId { createItestContainer.getContainerId() }
+}
+
+task forkedUploadRelease(type: GradleBuild) {
+  buildFile = project.buildFile
+  tasks = ["bintrayUpload"]
+}
+
+project.tasks.integrationTest.dependsOn(startItestContainer)
+project.tasks.integrationTest.finalizedBy(stopItestContainer)
+
+project.tasks.release.dependsOn([project.tasks.integrationTest, project.tasks.build])
+project.tasks.release.finalizedBy(project.tasks.forkedUploadRelease)
+project.tasks.jacocoTestReport.dependsOn(project.tasks.test)
+project.tasks.check.dependsOn(project.tasks.jacocoTestReport)

@@ -15,7 +15,14 @@
  */
 package net.schmizz.sshj.transport.cipher;
 
-/** {@code blowfish-ctr} cipher */
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+
+/**
+ * {@code blowfish-bcb} cipher
+ *
+ * @deprecated Use {@link BlockCiphers#BlowfishCBC()}
+ */
+@Deprecated
 public class BlowfishCBC
         extends BlockCipher {
 
@@ -31,6 +38,11 @@ public class BlowfishCBC
         @Override
         public String getName() {
             return "blowfish-cbc";
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 

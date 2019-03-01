@@ -10,8 +10,10 @@
 .settings/
 
 # Output dirs
+out/
 target/
 classes/
+bin/
 build/
 docs/
 .gradle/

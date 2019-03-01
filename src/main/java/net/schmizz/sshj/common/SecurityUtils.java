@@ -15,13 +15,24 @@
  */
 package net.schmizz.sshj.common;
 
-import java.security.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.Signature;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
 
@@ -36,12 +47,17 @@ public class SecurityUtils {
      */
     public static final String BOUNCY_CASTLE = "BC";
 
+    /**
+     * Identifier for the BouncyCastle JCE provider
+     */
+    public static final String SPONGY_CASTLE = "SC";
+
     /*
     * Security provider identifier. null = default JCE
     */
     private static String securityProvider = null;
 
-    // relate to BC registration
+    // relate to BC registration (or SpongyCastle on Android)
     private static Boolean registerBouncyCastle;
     private static boolean registrationDone;
 
@@ -68,18 +84,20 @@ public class SecurityUtils {
             }
 
             if (securityProvider == null) {
-                MessageDigest.getInstance("MD5", provider.getName());
-                KeyAgreement.getInstance("DH", provider.getName());
+                MessageDigest.getInstance("MD5", provider);
+                KeyAgreement.getInstance("DH", provider);
                 setSecurityProvider(provider.getName());
                 return true;
             }
         } catch (NoSuchAlgorithmException e) {
             LOG.info(format("Security Provider '%s' does not support necessary algorithm", providerClassName), e);
-        } catch (NoSuchProviderException e) {
-            LOG.info("Registration of Security Provider '{}' unexpectedly failed", providerClassName);
+        } catch (Exception e) {
+            LOG.info(format("Registration of Security Provider '%s' unexpectedly failed", providerClassName), e);
         }
         return false;
     }
+
+
 
     public static synchronized Cipher getCipher(String transformation)
             throws NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException {
@@ -221,11 +239,11 @@ public class SecurityUtils {
      * Attempts registering BouncyCastle as security provider if it has not been previously attempted and returns
      * whether the registration succeeded.
      *
-     * @return whether BC registered
+     * @return whether BC (or SC on Android) registered
      */
     public static synchronized boolean isBouncyCastleRegistered() {
         register();
-        return BOUNCY_CASTLE.equals(securityProvider);
+        return BOUNCY_CASTLE.equals(securityProvider) || SPONGY_CASTLE.equals(securityProvider);
     }
 
     public static synchronized void setRegisterBouncyCastle(boolean registerBouncyCastle) {

@@ -15,12 +15,17 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.signature.SignatureEdDSA;
+
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 
+/**
+ * Registers SpongyCastle as JCE provider.
+ */
 public class AndroidConfig
         extends DefaultConfig {
 
@@ -30,7 +35,9 @@ public class AndroidConfig
 
     // don't add ECDSA
     protected void initSignatureFactories() {
-        setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory());
+        setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory(),
+                // but add EdDSA
+                new SignatureEdDSA.Factory());
     }
 
     @Override

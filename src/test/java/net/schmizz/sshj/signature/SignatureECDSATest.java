@@ -15,15 +15,14 @@
  */
 package net.schmizz.sshj.signature;
 
-import java.security.PublicKey;
-
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.Buffer.BufferException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.Buffer.BufferException;
+import java.security.PublicKey;
 
-public class VerificationTest {
+public class SignatureECDSATest {
 
     @Test
     public void testECDSA256Verifies() throws BufferException {
@@ -34,7 +33,7 @@ public class VerificationTest {
         PublicKey hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
 
         Signature signature = new SignatureECDSA.Factory256().create();
-        signature.init(hostKey, null);
+        signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
         
         Assert.assertTrue("ECDSA256 signature verifies", signature.verify(sig));
@@ -49,7 +48,7 @@ public class VerificationTest {
         PublicKey hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
 
         Signature signature = new SignatureECDSA.Factory384().create();
-        signature.init(hostKey, null);
+        signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
         
         Assert.assertTrue("ECDSA384 signature verifies", signature.verify(sig));
@@ -64,7 +63,7 @@ public class VerificationTest {
         PublicKey hostKey = new Buffer.PlainBuffer(K_S).readPublicKey();
 
         Signature signature = new SignatureECDSA.Factory521().create();
-        signature.init(hostKey, null);
+        signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
         
         Assert.assertTrue("ECDSA521 signature verifies", signature.verify(sig));

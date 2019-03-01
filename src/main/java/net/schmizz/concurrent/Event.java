@@ -15,10 +15,10 @@
  */
 package net.schmizz.concurrent;
 
+import net.schmizz.sshj.common.LoggerFactory;
+
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-
-import net.schmizz.sshj.common.LoggerFactory;
 
 /**
  * An event can be set, cleared, or awaited, similar to Python's {@code threading.event}. The key difference is that a

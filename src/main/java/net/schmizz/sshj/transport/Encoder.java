@@ -62,39 +62,63 @@ final class Encoder
     long encode(SSHPacket buffer) {
         encodeLock.lock();
         try {
-            if (log.isTraceEnabled())
-                log.trace("Encoding packet #{}: {}", seq, buffer.printHex());
+            if (log.isTraceEnabled()) {
+                // Add +1 to seq as we log before actually incrementing the sequence.
+                log.trace("Encoding packet #{}: {}", seq + 1, buffer.printHex());
+            }
 
-            if (usingCompression())
+            if (usingCompression()) {
                 compress(buffer);
+            }
 
             final int payloadSize = buffer.available();
+            int lengthWithoutPadding;
+            if (etm) {
+                // in Encrypt-Then-Mac mode, the length field is not encrypted, so we should keep it out of the
+                // padding length calculation
+                lengthWithoutPadding = 1 + payloadSize; // padLength (1 byte) + payload
+            } else {
+                lengthWithoutPadding = 4 + 1 + payloadSize; // packetLength (4 bytes) + padLength (1 byte) + payload
+            }
 
             // Compute padding length
-            int padLen = -(payloadSize + 5) & cipherSize - 1;
-            if (padLen < cipherSize)
+            int padLen = cipherSize - (lengthWithoutPadding % cipherSize);
+            if (padLen < 4) {
                 padLen += cipherSize;
+            }
 
             final int startOfPacket = buffer.rpos() - 5;
-            final int packetLen = payloadSize + 1 + padLen;
+            int packetLen = 1 + payloadSize + padLen; // packetLength = padLen (1 byte) + payload + padding
+
+            if (packetLen < 16) {
+                padLen += cipherSize;
+                packetLen = 1 + payloadSize + padLen;
+            }
+
+            final int endOfPadding = startOfPacket + 4 + packetLen;
 
             // Put packet header
             buffer.wpos(startOfPacket);
             buffer.putUInt32(packetLen);
             buffer.putByte((byte) padLen);
-
             // Now wpos will mark end of padding
-            buffer.wpos(startOfPacket + 5 + payloadSize + padLen);
+            buffer.wpos(endOfPadding);
+
             // Fill padding
-            prng.fill(buffer.array(), buffer.wpos() - padLen, padLen);
+            prng.fill(buffer.array(), endOfPadding - padLen, padLen);
 
             seq = seq + 1 & 0xffffffffL;
 
-            if (mac != null)
-                putMAC(buffer, startOfPacket, buffer.wpos());
+            if (etm) {
+                cipher.update(buffer.array(), startOfPacket + 4, packetLen);
+                putMAC(buffer, startOfPacket, endOfPadding);
+            } else {
+                if (mac != null) {
+                    putMAC(buffer, startOfPacket, endOfPadding);
+                }
 
-            cipher.update(buffer.array(), startOfPacket, 4 + packetLen);
-
+                cipher.update(buffer.array(), startOfPacket, 4 + packetLen);
+            }
             buffer.rpos(startOfPacket); // Make ready-to-read
 
             return seq;

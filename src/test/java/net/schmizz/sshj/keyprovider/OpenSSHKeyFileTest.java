@@ -15,17 +15,21 @@
  */
 package net.schmizz.sshj.keyprovider;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import com.hierynomus.sshj.userauth.certificate.Certificate;
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
+import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
+import net.schmizz.sshj.userauth.password.Resource;
+import net.schmizz.sshj.util.KeyUtil;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
@@ -39,20 +43,10 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Scanner;
 
-import org.apache.sshd.common.util.SecurityUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.hierynomus.sshj.userauth.certificate.Certificate;
-import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
-
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
-import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.PasswordUtils;
-import net.schmizz.sshj.userauth.password.Resource;
-import net.schmizz.sshj.util.KeyUtil;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.*;
 
 public class OpenSSHKeyFileTest {
 
@@ -194,6 +188,49 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldLoadProtectedED25519PrivateKeyAes256CTR() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest");
+    }
+
+    @Test
+    public void shouldLoadProtectedED25519PrivateKeyAes256CBC() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar");
+    }
+
+    @Test
+    public void shouldLoadRSAPrivateKeyAsOpenSSHV1() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keyformats/rsa_opensshv1"));
+        PrivateKey aPrivate = keyFile.getPrivate();
+        assertThat(aPrivate.getAlgorithm(), equalTo("RSA"));
+    }
+
+    @Test
+    public void shouldLoadECDSAPrivateKeyAsOpenSSHV1() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keyformats/ecdsa_opensshv1"));
+        PrivateKey aPrivate = keyFile.getPrivate();
+        assertThat(aPrivate.getAlgorithm(), equalTo("ECDSA"));
+    }
+
+    private void checkOpenSSHKeyV1(String key, final String password) throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File(key), new PasswordFinder() {
+            @Override
+            public char[] reqPassword(Resource<?> resource) {
+                return password.toCharArray();
+            }
+
+            @Override
+            public boolean shouldRetry(Resource<?> resource) {
+                return false;
+            }
+        });
+        PrivateKey aPrivate = keyFile.getPrivate();
+        assertThat(aPrivate.getAlgorithm(), equalTo("EdDSA"));
+    }
+
+    @Test
     public void shouldSuccessfullyLoadSignedRSAPublicKey() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa"),
@@ -256,10 +293,10 @@ public class OpenSSHKeyFileTest {
     }
 
     @Before
-    public void setup()
-            throws UnsupportedEncodingException, GeneralSecurityException {
-        if (!SecurityUtils.isBouncyCastleRegistered())
+    public void checkBCRegistration() {
+        if (!SecurityUtils.isBouncyCastleRegistered()) {
             throw new AssertionError("bouncy castle needed");
+        }
     }
 
     private String readFile(String pathname)

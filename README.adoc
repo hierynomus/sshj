@@ -1,13 +1,15 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.21.1
+:sshj_version: 0.27.0
 :source-highlighter: pygments
 
+image:https://api.bintray.com/packages/hierynomus/maven/sshj/images/download.svg[link="https://bintray.com/hierynomus/maven/sshj/_latestVersion"]
 image:https://travis-ci.org/hierynomus/sshj.svg?branch=master[link="https://travis-ci.org/hierynomus/sshj"]
 image:https://api.codacy.com/project/badge/Grade/14a0a316bb9149739b5ea26dbfa8da8a["Codacy code quality", link="https://www.codacy.com/app/jeroen_2/sshj?utm_source=github.com&utm_medium=referral&utm_content=hierynomus/sshj&utm_campaign=Badge_Grade"]
+image:https://codecov.io/gh/hierynomus/sshj/branch/master/graph/badge.svg["codecov", link="https://codecov.io/gh/hierynomus/sshj"]
+image:http://www.javadoc.io/badge/com.hierynomus/sshj.svg?color=blue["JavaDocs", link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
-image:https://javadoc-emblem.rhcloud.com/doc/com.hierynomus/sshj/badge.svg["Javadoc",link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
 
@@ -70,15 +72,17 @@ key exchange::
   `diffie-hellman-group14-sha256`, `diffie-hellman-group15-sha512`, `diffie-hellman-group16-sha512`, `diffie-hellman-group17-sha512`, `diffie-hellman-group18-sha512`
   `diffie-hellman-group-exchange-sha1`, `diffie-hellman-group-exchange-sha256`,
   `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384`, `ecdh-sha2-nistp521`, `curve25519-sha256@libssh.org`
+
   SSHJ also supports the following extended (non official) key exchange algoriths:
   `diffie-hellman-group14-sha256@ssh.com`, `diffie-hellman-group15-sha256`, `diffie-hellman-group15-sha256@ssh.com`, `diffie-hellman-group15-sha384@ssh.com`,
   `diffie-hellman-group16-sha256`, `diffie-hellman-group16-sha384@ssh.com`, `diffie-hellman-group16-sha512@ssh.com`, `diffie-hellman-group18-sha512@ssh.com`
 
 signatures::
-  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ssh-ed25519`
+  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`
 
 mac::
-  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`
+  `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`, `hmac-ripemd160`, `hmac-ripemd160@openssh.com`
+  `hmac-md5-etm@openssh.com`, `hmac-md5-96-etm@openssh.com`, `hmac-sha1-etm@openssh.com`, `hmac-sha1-96-etm@openssh.com`, `hmac-sha2-256-etm@openssh.com`, `hmac-sha2-512-etm@openssh.com`, `hmac-ripemd160-etm@openssh.com`
 
 compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)
@@ -97,14 +101,41 @@ Java 6+. http://www.slf4j.org/download.html[slf4j] is required. http://www.bounc
 == Reporting bugs
 Issue tracker: https://github.com/hierynomus/sshj/issues
 
-== Discussion
-Google Group: http://groups.google.com/group/sshj-users
-
 == Contributing
 Fork away!
 
 == Release history
-SSHJ 0.22.0 (2017-??-??)::
+SSHJ 0.27.0 (2019-01-24)::
+* Fixed https://github.com/hierynomus/sshj/issues/415[#415]: Fixed wrongly prefixed '/' to path in SFTPClient.mkdirs
+* Added support for ETM (Encrypt-then-Mac) MAC algorithms.
+* Fixed https://github.com/hierynomus/sshj/issues/454[#454]: Added missing capacity check for Buffer.putUint64
+* Fixed https://github.com/hierynomus/sshj/issues/466[#466]: Added lock timeout for remote action to prevent hanging
+* Fixed https://github.com/hierynomus/sshj/issues/470[#470]: Made EdDSA the default (first) signature factory
+* Fixed https://github.com/hierynomus/sshj/issues/467[#467]: Added AES256-CBC as cipher mode in openssh-key-v1 support
+* Fixed https://github.com/hierynomus/sshj/issues/464[#464]: Enabled curve25519-sha256@openssh.org in DefaultConfig
+* Fixed https://github.com/hierynomus/sshj/issues/472[#472]: Handle server initiated global requests
+* Fixed https://github.com/hierynomus/sshj/issues/485[#485]: Added support for all keytypes to openssh-key-v1 keyfiles.
+SSHJ 0.26.0 (2018-07-24)::
+* Fixed https://github.com/hierynomus/sshj/issues/413[#413]: Use UTF-8 for PrivateKeyFileResource
+* Fixed https://github.com/hierynomus/sshj/issues/427[#427]: Support encrypted ed25519 openssh-key-v1 files
+* Upgraded BouncyCastle to 1.60
+* Added support for hmac-ripemd160@openssh.com MAC
+SSHJ 0.24.0 (2018-04-04)::
+* Added support for hmac-ripemd160
+* Fixed https://github.com/hierynomus/sshj/issues/382[#382]: Fixed escaping in WildcardHostmatcher
+* Added integration testsuite using Docker against OpenSSH
+* Fixed https://github.com/hierynomus/sshj/issues/187[#187]: Fixed length bug in Buffer.putString
+* Fixed https://github.com/hierynomus/sshj/issues/405[#405]: Continue host verification if first hostkey does not match.
+SSHJ 0.23.0 (2017-10-13)::
+* Merged https://github.com/hierynomus/sshj/pulls/372[#372]: Upgrade to 'net.i2p.crypto:eddsa:0.2.0'
+* Fixed https://github.com/hierynomus/sshj/issues/355[#355] and https://github.com/hierynomus/sshj/issues/354[#354]: Correctly decode signature bytes
+* Fixed https://github.com/hierynomus/sshj/issues/365[#365]: Added support for new-style OpenSSH fingerprints of server keys
+* Fixed https://github.com/hierynomus/sshj/issues/356[#356]: Fixed key type detection for ECDSA public keys
+* Made SSHJ Java9 compatible
+SSHJ 0.22.0 (2017-08-24)::
+* Fixed https://github.com/hierynomus/sshj/pulls/341[#341]: Fixed path walking during recursive copy
+* Merged https://github.com/hierynomus/sshj/pulls/338[#338]: Added ConsolePasswordFinder to read password from stdin
+* Merged https://github.com/hierynomus/sshj/pulls/336[#336]: Added support for ecdsa-sha2-nistp384 and ecdsa-sha2-nistp521 signatures
 * Fixed https://github.com/hierynomus/sshj/issues/331[#331]: Added support for wildcards in known_hosts file
 SSHJ 0.21.1 (2017-04-25)::
 * Merged https://github.com/hierynomus/sshj/pulls/322[#322]: Fix regression from 40f956b (invalid length parameter on outputstream)

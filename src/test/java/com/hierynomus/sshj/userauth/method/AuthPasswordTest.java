@@ -27,6 +27,7 @@ import org.apache.sshd.server.auth.UserAuth;
 import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.auth.password.UserAuthPassword;
+import org.apache.sshd.server.auth.password.UserAuthPasswordFactory;
 import org.apache.sshd.server.session.ServerSession;
 import org.junit.Before;
 import org.junit.Rule;
@@ -50,20 +51,24 @@ public class AuthPasswordTest {
     @Before
     public void setPasswordAuthenticator() throws IOException {
         fixture.getServer().setUserAuthFactories(Collections.<NamedFactory<UserAuth>>singletonList(new NamedFactory<UserAuth>() {
-
             @Override
             public String getName() {
-                return "password";
+                return UserAuthPasswordFactory.NAME;
+            }
+
+            @Override
+            public UserAuth get() {
+                return new UserAuthPassword() {
+                    @Override
+                    protected Boolean handleClientPasswordChangeRequest(Buffer buffer, ServerSession session, String username, String oldPassword, String newPassword) throws Exception {
+                        return session.getPasswordAuthenticator().authenticate(username, newPassword, session);
+                    }
+                };
             }
 
             @Override
             public UserAuth create() {
-                return new UserAuthPassword() {
-                    @Override
-                    protected Boolean handleClientPasswordChangeRequest(Buffer buffer, ServerSession session, String username, String oldPassword, String newPassword) throws Exception {
-                        return checkPassword(buffer, session, username, newPassword);
-                    }
-                };
+                return get();
             }
         }));
         fixture.getServer().setPasswordAuthenticator(new PasswordAuthenticator() {

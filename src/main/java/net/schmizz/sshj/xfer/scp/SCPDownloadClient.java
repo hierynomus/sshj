@@ -75,9 +75,9 @@ public class SCPDownloadClient extends AbstractSCPClient {
         engine.signal("Start status OK");
 
         String msg = engine.readMessage();
-        do
+        do {
             process(engine.getTransferListener(), null, msg, targetFile);
-        while (!(msg = engine.readMessage()).isEmpty());
+        } while (!(msg = engine.readMessage()).isEmpty());
     }
 
     private long parseLong(String longString, String valType)
@@ -93,15 +93,17 @@ public class SCPDownloadClient extends AbstractSCPClient {
 
     private int parsePermissions(String cmd)
             throws SCPException {
-        if (cmd.length() != 5)
+        if (cmd.length() != 5) {
             throw new SCPException("Could not parse permissions from `" + cmd + "`");
+        }
         return Integer.parseInt(cmd.substring(1), 8);
     }
 
     private boolean process(TransferListener listener, String bufferedTMsg, String msg, LocalDestFile f)
             throws IOException {
-        if (msg.length() < 1)
+        if (msg.length() < 1) {
             throw new SCPException("Could not parse message `" + msg + "`");
+        }
 
         switch (msg.charAt(0)) {
 
@@ -139,8 +141,9 @@ public class SCPDownloadClient extends AbstractSCPClient {
         final List<String> dMsgParts = tokenize(dMsg, 3, true); // D<perms> 0 <dirname>
         final long length = parseLong(dMsgParts.get(1), "dir length");
         final String dirname = dMsgParts.get(2);
-        if (length != 0)
+        if (length != 0) {
             throw new IOException("Remote SCP command sent strange directory length: " + length);
+        }
 
         final TransferListener dirListener = listener.directory(dirname);
         {
@@ -186,9 +189,9 @@ public class SCPDownloadClient extends AbstractSCPClient {
     private static List<String> tokenize(String msg, int totalParts, boolean consolidateTail)
             throws IOException {
         List<String> parts = Arrays.asList(msg.split(" "));
-        if (parts.size() < totalParts ||
-                (!consolidateTail && parts.size() != totalParts))
+        if (parts.size() < totalParts || (!consolidateTail && parts.size() != totalParts)) {
             throw new IOException("Could not parse message received from remote SCP: " + msg);
+        }
 
         if (consolidateTail && totalParts < parts.size()) {
             final StringBuilder sb = new StringBuilder(parts.get(totalParts - 1));

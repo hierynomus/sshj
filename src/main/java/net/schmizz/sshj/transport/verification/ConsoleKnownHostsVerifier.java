@@ -41,7 +41,7 @@ public class ConsoleKnownHostsVerifier
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
         console.printf("The authenticity of host '%s' can't be established.\n" +
-                               "%s key fingerprint is %s.\n", hostname, type, SecurityUtils.getFingerprint(key));
+                "%s key fingerprint is %s.\n", hostname, type, SecurityUtils.getFingerprint(key));
         String response = console.readLine("Are you sure you want to continue connecting (yes/no)? ");
         while (!(response.equalsIgnoreCase(YES) || response.equalsIgnoreCase(NO))) {
             response = console.readLine("Please explicitly enter yes/no: ");
@@ -60,7 +60,7 @@ public class ConsoleKnownHostsVerifier
     }
 
     @Override
-    protected boolean hostKeyChangedAction(KnownHostEntry entry, String hostname, PublicKey key) {
+    protected boolean hostKeyChangedAction(String hostname, PublicKey key) {
         final KeyType type = KeyType.fromKey(key);
         final String fp = SecurityUtils.getFingerprint(key);
         final String path = getFile().getAbsolutePath();

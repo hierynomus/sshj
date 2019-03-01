@@ -15,7 +15,14 @@
  */
 package net.schmizz.sshj.transport.cipher;
 
-/** {@code aes192-cbc} cipher */
+import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+
+/**
+ * {@code aes192-cbc} cipher
+ *
+ * @deprecated Use {@link BlockCiphers#AES192CBC()}
+ */
+@Deprecated
 public class AES192CBC
         extends BlockCipher {
 
@@ -31,6 +38,11 @@ public class AES192CBC
         @Override
         public String getName() {
             return "aes192-cbc";
+        }
+
+        @Override
+        public String toString() {
+            return getName();
         }
     }
 

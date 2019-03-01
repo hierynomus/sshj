@@ -20,6 +20,8 @@ import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.connection.ConnectionException;
 import org.slf4j.Logger;
 
+import java.util.concurrent.TimeUnit;
+
 public abstract class Window {
 
     protected final Logger log;
@@ -59,8 +61,9 @@ public abstract class Window {
         synchronized (lock) {
             size -= dec;
             log.debug("Consuming by {} down to {}", dec, size);
-            if (size < 0)
+            if (size < 0) {
                 throw new ConnectionException("Window consumed to below 0");
+            }
         }
     }
 
@@ -72,17 +75,23 @@ public abstract class Window {
     /** Controls how much data we can send before an adjustment notification from remote end is required. */
     public static final class Remote
             extends Window {
+        private final long timeoutMs;
 
-        public Remote(long initialWinSize, int maxPacketSize, LoggerFactory loggerFactory) {
+        public Remote(long initialWinSize, int maxPacketSize, long timeoutMs, LoggerFactory loggerFactory) {
             super(initialWinSize, maxPacketSize, loggerFactory);
+            this.timeoutMs = timeoutMs;
         }
 
         public long awaitExpansion(long was) throws ConnectionException {
             synchronized (lock) {
+                long end = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs);
                 while (size <= was) {
                     log.debug("Waiting, need size to grow from {} bytes", was);
                     try {
-                        lock.wait();
+                        lock.wait(timeoutMs);
+                        if ((size <= was) && ((System.nanoTime() - end) > 0)) {
+                            throw new ConnectionException("Timeout when trying to expand the window size");
+                        }
                     } catch (InterruptedException ie) {
                         throw new ConnectionException(ie);
                     }

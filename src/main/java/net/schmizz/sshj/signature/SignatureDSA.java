@@ -17,14 +17,23 @@ package net.schmizz.sshj.signature;
 
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
+import org.bouncycastle.asn1.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
 import java.security.SignatureException;
+import java.util.Arrays;
 
-/** DSA {@link Signature} */
+/**
+ * DSA {@link Signature}
+ */
 public class SignatureDSA
         extends AbstractSignature {
 
-    /** A named factory for DSA signature */
+    /**
+     * A named factory for DSA signature
+     */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
@@ -74,33 +83,33 @@ public class SignatureDSA
 
     @Override
     public boolean verify(byte[] sig) {
-        sig = extractSig(sig);
-
-        // ASN.1
-        int frst = (sig[0] & 0x80) != 0 ? 1 : 0;
-        int scnd = (sig[20] & 0x80) != 0 ? 1 : 0;
-
-        int length = sig.length + 6 + frst + scnd;
-        byte[] tmp = new byte[length];
-        tmp[0] = (byte) 0x30;
-        tmp[1] = (byte) 0x2c;
-        tmp[1] += frst;
-        tmp[1] += scnd;
-        tmp[2] = (byte) 0x02;
-        tmp[3] = (byte) 0x14;
-        tmp[3] += frst;
-        System.arraycopy(sig, 0, tmp, 4 + frst, 20);
-        tmp[4 + tmp[3]] = (byte) 0x02;
-        tmp[5 + tmp[3]] = (byte) 0x14;
-        tmp[5 + tmp[3]] += scnd;
-        System.arraycopy(sig, 20, tmp, 6 + tmp[3] + scnd, 20);
-        sig = tmp;
-
         try {
-            return signature.verify(sig);
+            byte[] sigBlob = extractSig(sig, "ssh-dss");
+            return signature.verify(asnEncode(sigBlob));
         } catch (SignatureException e) {
+            throw new SSHRuntimeException(e);
+        } catch (IOException e) {
             throw new SSHRuntimeException(e);
         }
     }
 
+    /**
+     * Encodes the signature as a DER sequence (ASN.1 format).
+     */
+    private byte[] asnEncode(byte[] sigBlob) throws IOException {
+        byte[] r = new BigInteger(1, Arrays.copyOfRange(sigBlob, 0, 20)).toByteArray();
+        byte[] s = new BigInteger(1, Arrays.copyOfRange(sigBlob, 20, 40)).toByteArray();
+
+        ASN1EncodableVector vector = new ASN1EncodableVector();
+        vector.add(new ASN1Integer(r));
+        vector.add(new ASN1Integer(s));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ASN1OutputStream asnOS = new ASN1OutputStream(baos);
+
+        asnOS.writeObject(new DERSequence(vector));
+        asnOS.flush();
+
+        return baos.toByteArray();
+    }
 }

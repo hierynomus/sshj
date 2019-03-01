@@ -17,12 +17,11 @@ package net.schmizz.sshj.common;
 
 import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.math.BigInteger;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class BufferTest {
 
@@ -147,4 +146,28 @@ public class BufferTest {
             assertArrayEquals("Value: " + value, bytesLong, bytesBigInt);
         }
     }
+
+
+    @Test
+    public void shouldExpandCapacityOfUInt32(){
+        PlainBuffer buf = new PlainBuffer();
+        for(int i=0;i<Buffer.DEFAULT_SIZE+1;i+=4) {
+            buf.putUInt32(1l);
+        }
+        /* Buffer should have been expanded at this point*/
+        assertEquals(Buffer.DEFAULT_SIZE*2,buf.data.length);
+    }
+
+    @Test
+    public void shouldExpandCapacityOfUInt64(){
+        BigInteger bigUint64 = BigInteger.valueOf(Long.MAX_VALUE);
+        PlainBuffer buf = new PlainBuffer();
+        assertEquals(Buffer.DEFAULT_SIZE,buf.data.length);
+        for(int i=0;i<Buffer.DEFAULT_SIZE+1;i+=8) {
+            buf.putUInt64(bigUint64.longValue());
+        }
+        /* Buffer should have been expanded at this point*/
+        assertEquals(Buffer.DEFAULT_SIZE*2,buf.data.length);
+    }
+
 }

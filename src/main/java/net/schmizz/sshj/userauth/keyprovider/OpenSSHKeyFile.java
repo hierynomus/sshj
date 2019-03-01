@@ -75,7 +75,12 @@ public class OpenSSHKeyFile
     @Override
     public void init(String privateKey, String publicKey) {
         if (publicKey != null) {
-            initPubKey(new StringReader(publicKey));
+            try {
+                initPubKey(new StringReader(publicKey));
+            } catch (IOException e) {
+                // let super provide both public & private key
+                log.warn("Error reading public key: {}", e.toString());
+            }
         }
         super.init(privateKey, null);
     }
@@ -85,23 +90,18 @@ public class OpenSSHKeyFile
      *
      * @param publicKey Public key accessible through a {@code Reader}
      */
-    private void initPubKey(Reader publicKey) {
+    private void initPubKey(Reader publicKey) throws IOException {
+        final BufferedReader br = new BufferedReader(publicKey);
         try {
-            final BufferedReader br = new BufferedReader(publicKey);
-            try {
-                final String keydata = br.readLine();
-                if (keydata != null) {
-                    String[] parts = keydata.trim().split(" ");
-                    assert parts.length >= 2;
-                    type = KeyType.fromString(parts[0]);
-                    pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
-                }
-            } finally {
-                br.close();
+            final String keydata = br.readLine();
+            if (keydata != null) {
+                String[] parts = keydata.trim().split(" ");
+                assert parts.length >= 2;
+                type = KeyType.fromString(parts[0]);
+                pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
             }
-        } catch (IOException e) {
-            // let super provide both public & private key
-            log.warn("Error reading public key: {}", e.toString());
+        } finally {
+            br.close();
         }
     }
 }
