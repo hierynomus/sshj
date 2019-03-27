@@ -190,7 +190,7 @@ public class OpenSSHKnownHosts
      * Lines starting with `#' and empty lines are ignored as comments.
      */
     public class EntryFactory {
-        EntryFactory() {
+        public EntryFactory() {
         }
 
         public KnownHostEntry parseEntry(String line)
