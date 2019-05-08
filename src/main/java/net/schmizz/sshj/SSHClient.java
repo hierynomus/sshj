@@ -19,11 +19,7 @@ import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.ConnectionImpl;
-import net.schmizz.sshj.connection.channel.direct.DirectConnection;
-import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
-import net.schmizz.sshj.connection.channel.direct.Session;
-import net.schmizz.sshj.connection.channel.direct.SessionChannel;
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
+import net.schmizz.sshj.connection.channel.direct.*;
 import net.schmizz.sshj.connection.channel.forwarded.ConnectListener;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder.ForwardedTCPIPChannel;
@@ -665,7 +661,7 @@ public class SSHClient
      *
      * @return a {@link LocalPortForwarder}
      */
-    public LocalPortForwarder newLocalPortForwarder(LocalPortForwarder.Parameters parameters,
+    public LocalPortForwarder newLocalPortForwarder(Parameters parameters,
                                                     ServerSocket serverSocket) {
         LocalPortForwarder forwarder = new LocalPortForwarder(conn, parameters, serverSocket, loggerFactory);
         forwarders.add(forwarder);

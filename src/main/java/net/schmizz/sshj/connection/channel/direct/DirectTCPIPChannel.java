@@ -15,22 +15,23 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
+import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.connection.Connection;
 
-/** A channel for creating a direct TCP/IP connection from the server to a remote address. */
-public class DirectConnection extends DirectTCPIPChannel {
-    public static final String LOCALHOST = "localhost";
-    public static final int LOCALPORT = 65536;
+public class DirectTCPIPChannel extends AbstractDirectChannel {
+    protected final Parameters parameters;
 
-    public DirectConnection(Connection conn, String remoteHost, int remotePort) {
-        super(conn, new Parameters(LOCALHOST, LOCALPORT, remoteHost, remotePort));
+    protected DirectTCPIPChannel(Connection conn, Parameters parameters) {
+        super(conn, "direct-tcpip");
+        this.parameters = parameters;
     }
 
-    public String getRemoteHost() {
-        return parameters.getRemoteHost();
-    }
-
-    public int getRemotePort() {
-        return parameters.getRemotePort();
+    @Override
+    protected SSHPacket buildOpenReq() {
+        return super.buildOpenReq()
+                .putString(parameters.getRemoteHost())
+                .putUInt32(parameters.getRemotePort())
+                .putString(parameters.getLocalHost())
+                .putUInt32(parameters.getLocalPort());
     }
 }

@@ -15,22 +15,34 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
-import net.schmizz.sshj.connection.Connection;
+public class Parameters {
 
-/** A channel for creating a direct TCP/IP connection from the server to a remote address. */
-public class DirectConnection extends DirectTCPIPChannel {
-    public static final String LOCALHOST = "localhost";
-    public static final int LOCALPORT = 65536;
+    private final String localHost;
+    private final int localPort;
+    private final String remoteHost;
+    private final int remotePort;
 
-    public DirectConnection(Connection conn, String remoteHost, int remotePort) {
-        super(conn, new Parameters(LOCALHOST, LOCALPORT, remoteHost, remotePort));
+    public Parameters(String localHost, int localPort, String remoteHost, int remotePort) {
+        this.localHost = localHost;
+        this.localPort = localPort;
+        this.remoteHost = remoteHost;
+        this.remotePort = remotePort;
     }
 
     public String getRemoteHost() {
-        return parameters.getRemoteHost();
+        return remoteHost;
     }
 
     public int getRemotePort() {
-        return parameters.getRemotePort();
+        return remotePort;
     }
+
+    public String getLocalHost() {
+        return localHost;
+    }
+
+    public int getLocalPort() {
+        return localPort;
+    }
+
 }
