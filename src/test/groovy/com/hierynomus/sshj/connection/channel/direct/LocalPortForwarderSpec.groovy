@@ -16,7 +16,7 @@
 package com.hierynomus.sshj.connection.channel.direct
 
 import com.hierynomus.sshj.test.SshFixture
-import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder
+import net.schmizz.sshj.connection.channel.direct.Parameters
 import org.junit.Rule
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
@@ -33,7 +33,7 @@ class LocalPortForwarderSpec extends Specification {
     def client = tunnelFixture.setupConnectedDefaultClient()
     client.authPassword("test", "test")
     def socket = new ServerSocket(0)
-    def lpf = client.newLocalPortForwarder(new LocalPortForwarder.Parameters("localhost", socket.getLocalPort(), "localhost", realServer.server.port), socket)
+    def lpf = client.newLocalPortForwarder(new Parameters("localhost", socket.getLocalPort(), "localhost", realServer.server.port), socket)
     def thread = new Thread(new Runnable() {
       @Override
       void run() {

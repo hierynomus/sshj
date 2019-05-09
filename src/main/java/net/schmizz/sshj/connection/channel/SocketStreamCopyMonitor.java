@@ -39,13 +39,19 @@ public class SocketStreamCopyMonitor
         new SocketStreamCopyMonitor(new Runnable() {
             public void run() {
                 try {
-                    for (Event<IOException> ev = x;
-                         !ev.tryAwait(frequency, unit);
-                         ev = (ev == x) ? y : x) {
-                    }
+                    await(x);
+                    await(y);
                 } catch (IOException ignored) {
                 } finally {
                     IOUtils.closeQuietly(channel, asCloseable(socket));
+                }
+            }
+
+            private void await(final Event<IOException> event) throws IOException {
+                while(true){
+                    if(event.tryAwait(frequency, unit)){
+                        break;
+                    }
                 }
             }
         }).start();
