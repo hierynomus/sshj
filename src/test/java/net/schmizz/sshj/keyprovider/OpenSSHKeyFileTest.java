@@ -265,6 +265,19 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldSuccessfullyLoadSignedRSAPublicKeyWithMaxDate() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa_max_date"),
+                PasswordUtils.createOneOff(correctPassphrase));
+        PublicKey pubKey = keyFile.getPublic();
+
+        @SuppressWarnings("unchecked")
+        Certificate<RSAPublicKey> certificate = (Certificate<RSAPublicKey>) pubKey;
+
+        assertTrue(parseDate("9999-04-11 18:09:27 -0400").before(certificate.getValidBefore()));
+    }
+
+    @Test
     public void shouldSuccessfullyLoadSignedDSAPublicKey() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/certificate/test_dsa"),
