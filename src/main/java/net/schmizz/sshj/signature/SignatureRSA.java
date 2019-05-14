@@ -73,7 +73,7 @@ public class SignatureRSA
     public void initVerify(PublicKey publicKey) {
         try {
             if (this.keyTypeName.equals(KeyType.RSA_CERT.toString()) && publicKey instanceof Certificate) {
-                verifyCertificate((Certificate<PublicKey>) publicKey);
+                signature.initVerify(((Certificate<PublicKey>) publicKey).getKey());
             } else {
                 signature.initVerify(publicKey);
             }
@@ -96,15 +96,4 @@ public class SignatureRSA
             throw new SSHRuntimeException(e);
         }
     }
-
-    private void verifyCertificate(Certificate<PublicKey> certificate) throws InvalidKeyException {
-        Date currentDate = new Date();
-        if (!currentDate.after(certificate.getValidAfter())) {
-            throw new InvalidKeyException("Certificate is not yet valid");
-        } else if (!currentDate.before(certificate.getValidBefore())) {
-            throw new InvalidKeyException("Certificate expired");
-        }
-        signature.initVerify(certificate.getKey());
-    }
-
 }
