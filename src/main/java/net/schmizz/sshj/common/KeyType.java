@@ -315,8 +315,8 @@ public enum KeyType {
                 builder.type(buf.readUInt32());
                 builder.id(buf.readString());
                 builder.validPrincipals(unpackList(buf.readBytes()));
-                builder.validAfter(dateFromEpoch(buf.readUInt64()));
-                builder.validBefore(dateFromEpoch(buf.readUInt64()));
+                builder.validAfter(dateFromEpoch(buf.readUInt64AsBigInteger()));
+                builder.validBefore(dateFromEpoch(buf.readUInt64AsBigInteger()));
                 builder.critOptions(unpackMap(buf.readBytes()));
                 builder.extensions(unpackMap(buf.readBytes()));
                 buf.readString(); // reserved
@@ -364,8 +364,13 @@ public enum KeyType {
             return ((Certificate<PublicKey>) key);
         }
 
-        private static Date dateFromEpoch(long seconds) {
-            return new Date(seconds * 1000);
+        private static Date dateFromEpoch(BigInteger seconds) {
+            BigInteger maxValue = BigInteger.valueOf(Long.MAX_VALUE / 1000);
+            if (seconds.compareTo(maxValue) > 0) {
+                return new Date(maxValue.longValue() * 1000);
+            } else {
+                return new Date(seconds.longValue() * 1000);
+            }
         }
 
         private static long epochFromDate(Date date) {
