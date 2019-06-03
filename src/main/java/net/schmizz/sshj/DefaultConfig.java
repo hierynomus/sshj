@@ -214,6 +214,7 @@ public class DefaultConfig
                 new SignatureECDSA.Factory384(),
                 new SignatureECDSA.Factory521(),
                 new SignatureRSA.Factory(),
+                new SignatureRSA.FactoryCERT(),
                 new SignatureDSA.Factory()
         );
     }
