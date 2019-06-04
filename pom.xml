@@ -78,7 +78,7 @@
         <dependency>
             <groupId>net.i2p.crypto</groupId>
             <artifactId>eddsa</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
