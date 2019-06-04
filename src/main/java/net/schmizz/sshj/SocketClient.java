@@ -17,6 +17,7 @@ package net.schmizz.sshj;
 
 import com.hierynomus.sshj.backport.JavaVersion;
 import com.hierynomus.sshj.backport.Jdk7HttpProxySocket;
+import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 
 import javax.net.SocketFactory;
@@ -148,14 +149,18 @@ public abstract class SocketClient {
         }
     }
 
-    /** Connect to a remote address via a direct TCP/IP connection from the server. */
-    public void connectVia(DirectConnection directConnection) throws IOException {
-        this.hostname = directConnection.getRemoteHost();
-        this.port = directConnection.getRemotePort();
-        this.input = directConnection.getInputStream();
-        this.output = directConnection.getOutputStream();
+    public void connectVia(Channel channel, String hostname, int port) throws IOException {
+        this.hostname = hostname;
+        this.port = port;
+        this.input = channel.getInputStream();
+        this.output = channel.getOutputStream();
         this.tunneled = true;
         onConnect();
+    }
+
+    /** Connect to a remote address via a direct TCP/IP connection from the server. */
+    public void connectVia(DirectConnection directConnection) throws IOException {
+        connectVia(directConnection, directConnection.getRemoteHost(), directConnection.getRemotePort());
     }
 
     public void connect(InetAddress host) throws IOException {
