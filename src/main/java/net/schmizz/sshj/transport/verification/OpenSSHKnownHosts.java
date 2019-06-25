@@ -381,6 +381,9 @@ public class OpenSSHKnownHosts
             line.append(getHostPart());
             line.append(" ").append(type.toString());
             line.append(" ").append(getKeyString(key));
+
+            if (!comment.isEmpty()) line.append(" ").append(comment);
+
             return line.toString();
         }
 
