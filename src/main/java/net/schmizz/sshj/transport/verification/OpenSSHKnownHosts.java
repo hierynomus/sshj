@@ -242,7 +242,16 @@ public class OpenSSHKnownHosts
                 return new BadHostEntry(line);
             }
 
-            return new HostEntry(marker, hostnames, type, key);
+            final StringBuilder comment = new StringBuilder();
+            if (i < split.length) {
+                while (i < split.length - 1) {
+                    comment.append(split[i++]);
+                    comment.append(' ');
+                }
+                comment.append(split[i]);
+            }
+
+            return new HostEntry(marker, hostnames, type, key, comment.toString());
         }
 
         private boolean isBits(String type) {
@@ -323,13 +332,19 @@ public class OpenSSHKnownHosts
         private final String hostPart;
         protected final KeyType type;
         protected final PublicKey key;
+        private final String comment;
         private final KnownHostMatchers.HostMatcher matcher;
 
         public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
+            this(marker, hostPart, type, key, "");
+        }
+
+        public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key, String comment) throws SSHException {
             this.marker = marker;
             this.hostPart = hostPart;
             this.type = type;
             this.key = key;
+            this.comment = comment;
             this.matcher = KnownHostMatchers.createMatcher(hostPart);
         }
 
@@ -376,6 +391,10 @@ public class OpenSSHKnownHosts
 
         protected String getHostPart() {
             return hostPart;
+        }
+
+        public String getComment() {
+            return comment;
         }
     }
 

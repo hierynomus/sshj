@@ -117,6 +117,33 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
     }
 
     @Unroll
+    def "should contain comment at end of line"() {
+        given:
+        def f = knownHosts("""|1|F1E1KeoE/eEWhi10WpGv4OdiO6Y=|3988QV0VE8wmZL7suNrYQLITLCg= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ== this is a comment
+test.com,1.1.1.1 2048 35 22017496617994656680820635966392838863613340434802393112245951008866692373218840197754553998457793202561151141246686162285550121243768846314646395880632789308110750881198697743542374668273149584280424505890648953477691795864456749782348425425954366277600319096366690719901119774784695056100331902394094537054256611668966698242432417382422091372756244612839068092471592121759862971414741954991375710930168229171638843329213652899594987626853020377726482288618521941129157643483558764875338089684351824791983007780922947554898825663693324944982594850256042689880090306493029526546183035567296830604572253312294059766327 single
+schmizz.net,69.163.155.180 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ==
+schmizz.net,69.163.155.180 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ== 
+schmizz.net,69.163.155.180 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ== extra   space
+""")
+
+        when:
+        OpenSSHKnownHosts knownHosts = new OpenSSHKnownHosts(f)
+
+        then:
+        knownHosts.entries().size() == 5
+        knownHosts.entries().get(0) instanceof OpenSSHKnownHosts.HostEntry &&
+                ((OpenSSHKnownHosts.HostEntry)knownHosts.entries().get(0)).getComment() == "this is a comment"
+        knownHosts.entries().get(1) instanceof OpenSSHKnownHosts.HostEntry &&
+                ((OpenSSHKnownHosts.HostEntry)knownHosts.entries().get(1)).getComment() == "single"
+        knownHosts.entries().get(2) instanceof OpenSSHKnownHosts.HostEntry &&
+                ((OpenSSHKnownHosts.HostEntry)knownHosts.entries().get(2)).getComment() == ""
+        knownHosts.entries().get(3) instanceof OpenSSHKnownHosts.HostEntry &&
+                ((OpenSSHKnownHosts.HostEntry)knownHosts.entries().get(3)).getComment() == ""
+        knownHosts.entries().get(4) instanceof OpenSSHKnownHosts.HostEntry &&
+                ((OpenSSHKnownHosts.HostEntry)knownHosts.entries().get(4)).getComment() == "extra   space"
+    }
+
+    @Unroll
     def "should match any host name from multi-host line"() {
         given:
         def f = knownHosts("schmizz.net,69.163.155.180 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ==")
