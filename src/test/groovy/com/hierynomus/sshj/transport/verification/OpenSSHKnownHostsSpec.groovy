@@ -144,6 +144,27 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
         toStringValue == "OpenSSHKnownHosts{khFile='" + f + "'}"
     }
 
+    def "should forgive redundant spaces like OpenSSH does"() {
+        given:
+        def key = "AAAAC3NzaC1lZDI1NTE5AAAAIIRsJi92NJJTQwXHZiRiARoEy4n1jYsNTQePHFTSl7tG"
+        def f = knownHosts("""
+          |host1 ssh-ed25519 $key
+          |
+          | host2   ssh-ed25519   $key  ,./gargage\\.,
+          |\t\t\t\t\t
+          |\t@revoked   host3\tssh-ed25519\t \t$key\t
+          """.stripMargin())
+        def pk = new Buffer.PlainBuffer(Base64.decode(key)).readPublicKey()
+
+        when:
+        def knownhosts = new OpenSSHKnownHosts(f)
+
+        then:
+        ["host1", "host2", "host3"].forEach {
+            knownhosts.verify(it, 22, pk)
+        }
+    }
+
     def knownHosts(String s) {
         def f = temp.newFile("known_hosts")
         f.write(s)

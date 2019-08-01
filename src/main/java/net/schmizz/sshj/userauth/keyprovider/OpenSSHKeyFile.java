@@ -93,13 +93,21 @@ public class OpenSSHKeyFile
     private void initPubKey(Reader publicKey) throws IOException {
         final BufferedReader br = new BufferedReader(publicKey);
         try {
-            final String keydata = br.readLine();
-            if (keydata != null) {
-                String[] parts = keydata.trim().split(" ");
-                assert parts.length >= 2;
-                type = KeyType.fromString(parts[0]);
-                pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
+            String keydata;
+            while ((keydata = br.readLine()) != null) {
+                keydata = keydata.trim();
+                if (!keydata.isEmpty()) {
+                    String[] parts = keydata.trim().split("\\\\s+");
+                    if (parts.length >= 2) {
+                        type = KeyType.fromString(parts[0]);
+                        pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
+                    } else {
+                        throw new IOException("Got line with only one column");
+                    }
+                    return;
+                }
             }
+            throw new IOException("Public key file is blank");
         } finally {
             br.close();
         }

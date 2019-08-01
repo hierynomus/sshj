@@ -199,9 +199,12 @@ public class OpenSSHKnownHosts
                 return new CommentEntry(line);
             }
 
-            final String[] split = line.split(" ");
+            final String[] split = line.split("\\\\s+");
 
             int i = 0;
+            if (split[i].isEmpty()) {
+                i++;
+            }
             final Marker marker = Marker.fromString(split[i]);
             if (marker != null) {
                 i++;
