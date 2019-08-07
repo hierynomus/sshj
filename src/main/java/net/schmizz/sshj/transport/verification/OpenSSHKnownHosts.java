@@ -199,7 +199,10 @@ public class OpenSSHKnownHosts
                 return new CommentEntry(line);
             }
 
-            final String[] split = line.split("\\\\s+");
+            final String[] split = line.split("\\s+");
+            if (split.length == 0) {
+                return new BadHostEntry(line);
+            }
 
             int i = 0;
             if (split[i].isEmpty()) {

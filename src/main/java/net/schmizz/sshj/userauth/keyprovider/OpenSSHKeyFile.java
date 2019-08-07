@@ -97,7 +97,7 @@ public class OpenSSHKeyFile
             while ((keydata = br.readLine()) != null) {
                 keydata = keydata.trim();
                 if (!keydata.isEmpty()) {
-                    String[] parts = keydata.trim().split("\\\\s+");
+                    String[] parts = keydata.trim().split("\\s+");
                     if (parts.length >= 2) {
                         type = KeyType.fromString(parts[0]);
                         pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
