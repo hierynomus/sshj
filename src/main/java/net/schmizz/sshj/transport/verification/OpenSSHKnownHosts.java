@@ -200,7 +200,8 @@ public class OpenSSHKnownHosts
             }
 
             final String[] split = line.split("\\s+");
-            if (split.length == 0) {
+            if(split.length < 3) {
+                log.error("Error reading entry `{}`", line);
                 return new BadHostEntry(line);
             }
 
@@ -212,7 +213,7 @@ public class OpenSSHKnownHosts
             if (marker != null) {
                 i++;
             }
-            if(split.length < 3) {
+            if(split.length < i + 3) {
                 log.error("Error reading entry `{}`", line);
                 return new BadHostEntry(line);
             }

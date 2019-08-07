@@ -165,6 +165,26 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
         }
     }
 
+    def "should not throw errors while parsing corrupted records"() {
+        given:
+        def key = "AAAAC3NzaC1lZDI1NTE5AAAAIIRsJi92NJJTQwXHZiRiARoEy4n1jYsNTQePHFTSl7tG"
+        def f = knownHosts(
+                "\n"  // empty line
+                + "    \n"  // blank line
+                + "bad-host1\n"  // absent key type and key contents
+                + "bad-host2 ssh-ed25519\n"  // absent key contents
+                + "  bad-host3 ssh-ed25519\n"  // absent key contents, with leading spaces
+                + "@revoked  bad-host5 ssh-ed25519\n"  // absent key contents, with marker
+                + "good-host ssh-ed25519 $key"  // the only good host at the end
+        )
+
+        when:
+        def knownhosts = new OpenSSHKnownHosts(f)
+
+        then:
+        knownhosts.verify("good-host", 22, new Buffer.PlainBuffer(Base64.decode(key)).readPublicKey())
+    }
+
     def knownHosts(String s) {
         def f = temp.newFile("known_hosts")
         f.write(s)
