@@ -19,6 +19,8 @@ import net.schmizz.sshj.Service;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 
+import java.util.Collection;
+
 /** User authentication API. See RFC 4252. */
 public interface UserAuth {
 
@@ -58,6 +60,6 @@ public interface UserAuth {
     boolean hadPartialSuccess();
 
     /** The available authentication methods. This is only defined once an unsuccessful authentication has taken place. */
-    Iterable<String> getAllowedMethods();
+    Collection<String> getAllowedMethods();
 
 }
