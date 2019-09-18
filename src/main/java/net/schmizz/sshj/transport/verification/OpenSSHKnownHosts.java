@@ -199,23 +199,21 @@ public class OpenSSHKnownHosts
                 return new CommentEntry(line);
             }
 
-            final String[] split = line.split("\\s+");
-            if(split.length < 3) {
+            final String trimmed = line.trim();
+            int minComponents = 3;
+            if (trimmed.startsWith("@")) {
+                minComponents = 4;
+            }
+            String[] split = trimmed.split("\\s+", minComponents + 1); // Add 1 for optional comments
+            if(split.length < minComponents) {
                 log.error("Error reading entry `{}`", line);
                 return new BadHostEntry(line);
             }
-
             int i = 0;
-            if (split[i].isEmpty()) {
-                i++;
-            }
+
             final Marker marker = Marker.fromString(split[i]);
             if (marker != null) {
                 i++;
-            }
-            if(split.length < i + 3) {
-                log.error("Error reading entry `{}`", line);
-                return new BadHostEntry(line);
             }
             final String hostnames = split[i++];
             final String sType = split[i++];
@@ -234,6 +232,9 @@ public class OpenSSHKnownHosts
                 }
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
+                minComponents += 1;
+                // re-split
+                split = trimmed.split("\\s+", minComponents + 1); // Add 1 for optional comments
                 // int bits = Integer.valueOf(sType);
                 final BigInteger e = new BigInteger(split[i++]);
                 final BigInteger n = new BigInteger(split[i++]);
@@ -249,16 +250,13 @@ public class OpenSSHKnownHosts
                 return new BadHostEntry(line);
             }
 
-            final StringBuilder comment = new StringBuilder();
+            final String comment;
             if (i < split.length) {
-                while (i < split.length - 1) {
-                    comment.append(split[i++]);
-                    comment.append(' ');
-                }
-                comment.append(split[i]);
+                comment = split[i++];
+            } else {
+                comment = null;
             }
-
-            return new HostEntry(marker, hostnames, type, key, comment.toString());
+            return new HostEntry(marker, hostnames, type, key, comment);
         }
 
         private boolean isBits(String type) {
