@@ -171,6 +171,47 @@ schmizz.net,69.163.155.180 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZY
         toStringValue == "OpenSSHKnownHosts{khFile='" + f + "'}"
     }
 
+    def "should forgive redundant spaces like OpenSSH does"() {
+        given:
+        def key = "AAAAC3NzaC1lZDI1NTE5AAAAIIRsJi92NJJTQwXHZiRiARoEy4n1jYsNTQePHFTSl7tG"
+        def f = knownHosts("""
+          |host1 ssh-ed25519 $key
+          |
+          | host2   ssh-ed25519   $key  ,./gargage\\.,
+          |\t\t\t\t\t
+          |\t@revoked   host3\tssh-ed25519\t \t$key\t
+          """.stripMargin())
+        def pk = new Buffer.PlainBuffer(Base64.decode(key)).readPublicKey()
+
+        when:
+        def knownhosts = new OpenSSHKnownHosts(f)
+
+        then:
+        ["host1", "host2", "host3"].forEach {
+            knownhosts.verify(it, 22, pk)
+        }
+    }
+
+    def "should not throw errors while parsing corrupted records"() {
+        given:
+        def key = "AAAAC3NzaC1lZDI1NTE5AAAAIIRsJi92NJJTQwXHZiRiARoEy4n1jYsNTQePHFTSl7tG"
+        def f = knownHosts(
+                "\n"  // empty line
+                + "    \n"  // blank line
+                + "bad-host1\n"  // absent key type and key contents
+                + "bad-host2 ssh-ed25519\n"  // absent key contents
+                + "  bad-host3 ssh-ed25519\n"  // absent key contents, with leading spaces
+                + "@revoked  bad-host5 ssh-ed25519\n"  // absent key contents, with marker
+                + "good-host ssh-ed25519 $key"  // the only good host at the end
+        )
+
+        when:
+        def knownhosts = new OpenSSHKnownHosts(f)
+
+        then:
+        knownhosts.verify("good-host", 22, new Buffer.PlainBuffer(Base64.decode(key)).readPublicKey())
+    }
+
     def knownHosts(String s) {
         def f = temp.newFile("known_hosts")
         f.write(s)
