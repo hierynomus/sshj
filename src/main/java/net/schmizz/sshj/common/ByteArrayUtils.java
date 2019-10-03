@@ -15,6 +15,12 @@
  */
 package net.schmizz.sshj.common;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.util.Arrays;
+
 /** Utility functions for byte arrays. */
 public class ByteArrayUtils {
 
@@ -123,5 +129,27 @@ public class ByteArrayUtils {
             return c - 'A' + 10;
         }
         throw new IllegalArgumentException("Digit '" + c + "' out of bounds [0-9a-fA-F]");
+    }
+
+    /**
+     * Converts a char-array to UTF-8 byte-array and then blanks out source array and all intermediate arrays.
+     * <p/>
+     * This is useful when a plaintext password needs to be encoded as UTF-8.
+     *
+     * @param str A not-null string as a character array.
+     *
+     * @return UTF-8 bytes of the string
+     */
+    public static byte[] encodeSensitiveStringToUtf8(char[] str) {
+        CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
+        ByteBuffer utf8Buffer = ByteBuffer.allocate((int) (str.length * charsetEncoder.maxBytesPerChar()));
+        assert utf8Buffer.hasArray();
+        charsetEncoder.encode(CharBuffer.wrap(str), utf8Buffer, true);
+        Arrays.fill(str, ' ');
+
+        byte[] utf8Bytes = new byte[utf8Buffer.position()];
+        System.arraycopy(utf8Buffer.array(), 0, utf8Bytes, 0, utf8Bytes.length);
+        Arrays.fill(utf8Buffer.array(), (byte) 0);
+        return utf8Bytes;
     }
 }

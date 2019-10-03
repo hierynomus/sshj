@@ -18,7 +18,6 @@ package net.schmizz.sshj.connection.channel.direct;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.LoggerFactory;
-import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
@@ -34,48 +33,14 @@ import static com.hierynomus.sshj.backport.Sockets.asCloseable;
 
 public class LocalPortForwarder {
 
-    public static class Parameters {
-
-        private final String localHost;
-        private final int localPort;
-        private final String remoteHost;
-        private final int remotePort;
-
-        public Parameters(String localHost, int localPort, String remoteHost, int remotePort) {
-            this.localHost = localHost;
-            this.localPort = localPort;
-            this.remoteHost = remoteHost;
-            this.remotePort = remotePort;
-        }
-
-        public String getRemoteHost() {
-            return remoteHost;
-        }
-
-        public int getRemotePort() {
-            return remotePort;
-        }
-
-        public String getLocalHost() {
-            return localHost;
-        }
-
-        public int getLocalPort() {
-            return localPort;
-        }
-
-    }
-
-    public static class DirectTCPIPChannel
-            extends AbstractDirectChannel {
+    public static class ForwardedChannel
+            extends DirectTCPIPChannel {
 
         protected final Socket socket;
-        protected final Parameters parameters;
 
-        public DirectTCPIPChannel(Connection conn, Socket socket, Parameters parameters) {
-            super(conn, "direct-tcpip");
+        public ForwardedChannel(Connection conn, Socket socket, Parameters parameters) {
+            super(conn, parameters);
             this.socket = socket;
-            this.parameters = parameters;
         }
 
         protected void start()
@@ -90,16 +55,6 @@ public class LocalPortForwarder {
                     .spawnDaemon("chan2soc");
             SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, soc2chan, chan2soc, this, socket);
         }
-
-        @Override
-        protected SSHPacket buildOpenReq() {
-            return super.buildOpenReq()
-                    .putString(parameters.getRemoteHost())
-                    .putUInt32(parameters.getRemotePort())
-                    .putString(parameters.getLocalHost())
-                    .putUInt32(parameters.getLocalPort());
-        }
-
     }
 
     private final LoggerFactory loggerFactory;
@@ -118,7 +73,7 @@ public class LocalPortForwarder {
     }
 
     private void startChannel(Socket socket) throws IOException {
-        DirectTCPIPChannel chan = new DirectTCPIPChannel(conn, socket, parameters);
+        ForwardedChannel chan = new ForwardedChannel(conn, socket, parameters);
         try {
             chan.open();
             chan.start();

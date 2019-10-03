@@ -199,14 +199,21 @@ public class OpenSSHKnownHosts
                 return new CommentEntry(line);
             }
 
-            final String[] split = line.split(" ");
+            final String[] split = line.split("\\s+");
+            if(split.length < 3) {
+                log.error("Error reading entry `{}`", line);
+                return new BadHostEntry(line);
+            }
 
             int i = 0;
+            if (split[i].isEmpty()) {
+                i++;
+            }
             final Marker marker = Marker.fromString(split[i]);
             if (marker != null) {
                 i++;
             }
-            if(split.length < 3) {
+            if(split.length < i + 3) {
                 log.error("Error reading entry `{}`", line);
                 return new BadHostEntry(line);
             }

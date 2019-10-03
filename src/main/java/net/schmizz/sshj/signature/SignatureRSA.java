@@ -15,10 +15,14 @@
  */
 package net.schmizz.sshj.signature;
 
+import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
 
+import java.security.InvalidKeyException;
+import java.security.PublicKey;
 import java.security.SignatureException;
+import java.util.Date;
 
 /** RSA {@link Signature} */
 public class SignatureRSA
@@ -30,7 +34,7 @@ public class SignatureRSA
 
         @Override
         public Signature create() {
-            return new SignatureRSA();
+            return new SignatureRSA(KeyType.RSA.toString());
         }
 
         @Override
@@ -40,8 +44,42 @@ public class SignatureRSA
 
     }
 
-    public SignatureRSA() {
+    /** A named factory for RSA {@link Signature} */
+    public static class FactoryCERT
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureRSA(KeyType.RSA_CERT.toString());
+        }
+
+        @Override
+        public String getName() {
+            return KeyType.RSA_CERT.toString();
+        }
+
+    }
+
+    private String keyTypeName;
+
+
+    public SignatureRSA(String keyTypeName) {
         super("SHA1withRSA");
+        this.keyTypeName = keyTypeName;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void initVerify(PublicKey publicKey) {
+        try {
+            if (this.keyTypeName.equals(KeyType.RSA_CERT.toString()) && publicKey instanceof Certificate) {
+                signature.initVerify(((Certificate<PublicKey>) publicKey).getKey());
+            } else {
+                signature.initVerify(publicKey);
+            }
+        } catch (InvalidKeyException e) {
+            throw new SSHRuntimeException(e);
+        }
     }
 
     @Override
@@ -51,12 +89,11 @@ public class SignatureRSA
 
     @Override
     public boolean verify(byte[] sig) {
-        sig = extractSig(sig, "ssh-rsa");
+        sig = extractSig(sig, KeyType.RSA.toString());
         try {
             return signature.verify(sig);
         } catch (SignatureException e) {
             throw new SSHRuntimeException(e);
         }
     }
-
 }
