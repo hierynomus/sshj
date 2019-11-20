@@ -515,7 +515,7 @@ public class SSHClient
     }
 
     /**
-     * Utility function for createing a {@link KeyProvider} instance from given location on the file system. Creates a
+     * Utility function for creating a {@link KeyProvider} instance from given location on the file system. Creates a
      * one-off {@link PasswordFinder} using {@link PasswordUtils#createOneOff(char[])}, and calls {@link
      * #loadKeys(String, PasswordFinder)}.
      *
