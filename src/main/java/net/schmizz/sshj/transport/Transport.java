@@ -156,7 +156,7 @@ public interface Transport
      *
      * @return the sequence number of the packet sent
      *
-     * @throws TransportException if an error occured sending the packet
+     * @throws TransportException if an error occurred sending the packet
      */
     long sendUnimplemented()
             throws TransportException;
