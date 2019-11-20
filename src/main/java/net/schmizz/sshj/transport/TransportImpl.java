@@ -486,7 +486,7 @@ public final class TransportImpl
      * packet has been decoded.
      *
      * @param msg the message identifer
-     * @param buf buffer containg rest of the packet
+     * @param buf buffer containing rest of the packet
      * @throws SSHException if an error occurs during handling (unrecoverable)
      */
     @Override
