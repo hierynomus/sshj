@@ -754,7 +754,7 @@ public class SSHClient
 
     /**
      * Adds {@code zlib} compression to preferred compression algorithms. There is no guarantee that it will be
-     * successfully negotiatied.
+     * successfully negotiated.
      * <p/>
      * If the client is already connected renegotiation is done; otherwise this method simply returns (and compression
      * will be negotiated during connection establishment).
