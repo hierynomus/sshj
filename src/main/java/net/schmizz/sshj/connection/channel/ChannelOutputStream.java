@@ -37,6 +37,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     private final byte[] b = new byte[1];
 
     private boolean closed;
+    private boolean signalCloseToRemote = false;
     private SSHException error;
 
     private final class DataBuffer {
@@ -163,7 +164,9 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         if (!closed) {
             try {
                 buffer.flush(false);
-//                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
+                if (signalCloseToRemote) {
+                    trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
+                }
             } finally {
                 closed = true;
             }
@@ -187,4 +190,20 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         return "< ChannelOutputStream for Channel #" + chan.getID() + " >";
     }
 
+    public boolean isSignalCloseToRemote() {
+        return signalCloseToRemote;
+    }
+
+    /**
+     * @param signalCloseToRemote <code>true</code>: when calling {@link #close()} the remote side will be informed
+     *                            that no further input will be received. Effectively this means that the remote
+     *                            command will get an EOF on stdin. This is only important for remote commands that
+     *                            process data from stdin (e.g. files) and do not terminate until they get an EOF for
+     *                            stdin.
+     *                            <p>
+     *                            By default the remote side will not be informed that the stream has been closed.
+     */
+    public void setSignalCloseToRemote(boolean signalCloseToRemote) {
+        this.signalCloseToRemote = signalCloseToRemote;
+    }
 }
