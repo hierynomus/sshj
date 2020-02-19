@@ -453,11 +453,14 @@ public class Buffer<T extends Buffer<T>> {
     public T putSensitiveString(char[] str) {
         if (str == null)
             return putString("");
-        putUInt32(str.length);
-        ensureCapacity(str.length);
-        for (char c : str)
-            data[wpos++] = (byte) c;
-        Arrays.fill(str, ' ');
+        // RFC 4252, Section 8 says: passwords should be encoded as UTF-8.
+        // RFC 4256, Section 3.4 says: keyboard-interactive information responses should be encoded as UTF-8.
+        byte[] utf8 = ByteArrayUtils.encodeSensitiveStringToUtf8(str);
+        putUInt32(utf8.length);
+        ensureCapacity(utf8.length);
+        for (byte c : utf8)
+            data[wpos++] = c;
+        Arrays.fill(utf8, (byte) 0);
         return (T) this;
     }
 

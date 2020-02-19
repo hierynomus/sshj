@@ -26,7 +26,7 @@ import java.math.BigInteger;
 import static net.schmizz.sshj.transport.kex.DHGroupData.*;
 
 /**
- * Factory methods for Diffie Hellmann KEX algorithms based on MODP groups / Oakley Groups
+ * Factory methods for Diffie Hellman KEX algorithms based on MODP groups / Oakley Groups
  *
  * - https://tools.ietf.org/html/rfc4253
  * - https://tools.ietf.org/html/draft-ietf-curdle-ssh-modp-dh-sha2-01

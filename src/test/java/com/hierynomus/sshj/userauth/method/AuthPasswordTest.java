@@ -144,6 +144,14 @@ public class AuthPasswordTest {
         assertThat("Should have been authenticated", sshClient.isAuthenticated());
     }
 
+    @Test
+    public void shouldEncodePasswordsAsUtf8() throws IOException {
+        SSHClient sshClient = fixture.setupConnectedDefaultClient();
+        String userAndPassword = "øæå";
+        sshClient.authPassword(userAndPassword, userAndPassword);
+        assertThat("Should have been authenticated", sshClient.isAuthenticated());
+    }
+
     private static class StaticPasswordUpdateProvider implements PasswordUpdateProvider {
         private Stack<String> newPasswords = new Stack<String>();
 

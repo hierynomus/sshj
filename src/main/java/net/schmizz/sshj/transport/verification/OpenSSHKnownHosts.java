@@ -199,16 +199,21 @@ public class OpenSSHKnownHosts
                 return new CommentEntry(line);
             }
 
-            final String[] split = line.split(" ");
-
+            final String trimmed = line.trim();
+            int minComponents = 3;
+            if (trimmed.startsWith("@")) {
+                minComponents = 4;
+            }
+            String[] split = trimmed.split("\\s+", minComponents + 1); // Add 1 for optional comments
+            if(split.length < minComponents) {
+                log.error("Error reading entry `{}`", line);
+                return new BadHostEntry(line);
+            }
             int i = 0;
+
             final Marker marker = Marker.fromString(split[i]);
             if (marker != null) {
                 i++;
-            }
-            if(split.length < 3) {
-                log.error("Error reading entry `{}`", line);
-                return new BadHostEntry(line);
             }
             final String hostnames = split[i++];
             final String sType = split[i++];
@@ -227,6 +232,9 @@ public class OpenSSHKnownHosts
                 }
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
+                minComponents += 1;
+                // re-split
+                split = trimmed.split("\\s+", minComponents + 1); // Add 1 for optional comments
                 // int bits = Integer.valueOf(sType);
                 final BigInteger e = new BigInteger(split[i++]);
                 final BigInteger n = new BigInteger(split[i++]);
@@ -242,7 +250,13 @@ public class OpenSSHKnownHosts
                 return new BadHostEntry(line);
             }
 
-            return new HostEntry(marker, hostnames, type, key);
+            final String comment;
+            if (i < split.length) {
+                comment = split[i++];
+            } else {
+                comment = null;
+            }
+            return new HostEntry(marker, hostnames, type, key, comment);
         }
 
         private boolean isBits(String type) {
@@ -323,13 +337,19 @@ public class OpenSSHKnownHosts
         private final String hostPart;
         protected final KeyType type;
         protected final PublicKey key;
+        private final String comment;
         private final KnownHostMatchers.HostMatcher matcher;
 
         public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
+            this(marker, hostPart, type, key, "");
+        }
+
+        public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key, String comment) throws SSHException {
             this.marker = marker;
             this.hostPart = hostPart;
             this.type = type;
             this.key = key;
+            this.comment = comment;
             this.matcher = KnownHostMatchers.createMatcher(hostPart);
         }
 
@@ -366,6 +386,9 @@ public class OpenSSHKnownHosts
             line.append(getHostPart());
             line.append(" ").append(type.toString());
             line.append(" ").append(getKeyString(key));
+
+            if (!comment.isEmpty()) line.append(" ").append(comment);
+
             return line.toString();
         }
 
@@ -376,6 +399,10 @@ public class OpenSSHKnownHosts
 
         protected String getHostPart() {
             return hostPart;
+        }
+
+        public String getComment() {
+            return comment;
         }
     }
 

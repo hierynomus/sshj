@@ -26,10 +26,18 @@ import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.KeyUtil;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
@@ -94,6 +102,9 @@ public class OpenSSHKeyFileTest {
             return triesLeft >= 0;
         }
     };
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
     public void blankingOut()
@@ -265,6 +276,19 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldSuccessfullyLoadSignedRSAPublicKeyWithMaxDate() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa_max_date"),
+                PasswordUtils.createOneOff(correctPassphrase));
+        PublicKey pubKey = keyFile.getPublic();
+
+        @SuppressWarnings("unchecked")
+        Certificate<RSAPublicKey> certificate = (Certificate<RSAPublicKey>) pubKey;
+
+        assertTrue(parseDate("9999-04-11 18:09:27 -0400").before(certificate.getValidBefore()));
+    }
+
+    @Test
     public void shouldSuccessfullyLoadSignedDSAPublicKey() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/certificate/test_dsa"),
@@ -290,6 +314,47 @@ public class OpenSSHKeyFileTest {
 
         assertEquals(1, certificate.getExtensions().size());
         assertEquals("", certificate.getExtensions().get("permit-pty"));
+    }
+
+    /**
+     * Sometimes users copy-pastes private and public keys in text editors. It leads to redundant
+     * spaces and newlines. OpenSSH can easily read such keys, so users expect from SSHJ the same.
+     */
+    @Test
+    public void notTrimmedKeys() throws IOException {
+        File initialPrivateKey = new File("src/test/resources/id_rsa");
+        File initialPublicKey = new File("src/test/resources/id_rsa.pub");
+        File corruptedPrivateKey = new File(temporaryFolder.newFolder(), "id_rsa");
+        File corruptedPublicKey = new File(corruptedPrivateKey.getParent(), "id_rsa.pub");
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(initialPrivateKey)));
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(corruptedPrivateKey)));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            writer.write(line);
+            writer.write("\n");
+        }
+        writer.write("\n\n");
+        reader.close();
+        writer.close();
+
+        reader = new BufferedReader(new InputStreamReader(new FileInputStream(initialPublicKey)));
+        writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(corruptedPublicKey)));
+        writer.write("\n\n   \t ");
+        writer.write(reader.readLine().replace(" ", " \t "));
+        writer.write("\n\n");
+        reader.close();
+        writer.close();
+
+        FileKeyProvider initialKeyFile = new OpenSSHKeyFile();
+        FileKeyProvider corruptedKeyFile = new OpenSSHKeyFile();
+        initialKeyFile.init(initialPrivateKey);
+        corruptedKeyFile.init(corruptedPrivateKey);
+
+        assertEquals(initialKeyFile.getPrivate(),
+                     corruptedKeyFile.getPrivate());
+        assertEquals(initialKeyFile.getPublic(),
+                     corruptedKeyFile.getPublic());
     }
 
     @Before
