@@ -515,7 +515,7 @@ public class SSHClient
     }
 
     /**
-     * Utility function for createing a {@link KeyProvider} instance from given location on the file system. Creates a
+     * Utility function for creating a {@link KeyProvider} instance from given location on the file system. Creates a
      * one-off {@link PasswordFinder} using {@link PasswordUtils#createOneOff(char[])}, and calls {@link
      * #loadKeys(String, PasswordFinder)}.
      *
@@ -754,7 +754,7 @@ public class SSHClient
 
     /**
      * Adds {@code zlib} compression to preferred compression algorithms. There is no guarantee that it will be
-     * successfully negotiatied.
+     * successfully negotiated.
      * <p/>
      * If the client is already connected renegotiation is done; otherwise this method simply returns (and compression
      * will be negotiated during connection establishment).

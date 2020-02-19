@@ -485,8 +485,8 @@ public final class TransportImpl
      * This method is called in the context of the {@link #reader} thread via {@link Decoder#received} when a full
      * packet has been decoded.
      *
-     * @param msg the message identifer
-     * @param buf buffer containg rest of the packet
+     * @param msg the message identifier
+     * @param buf buffer containing rest of the packet
      * @throws SSHException if an error occurs during handling (unrecoverable)
      */
     @Override
