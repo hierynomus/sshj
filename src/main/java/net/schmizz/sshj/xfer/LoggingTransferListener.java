@@ -54,7 +54,11 @@ public class LoggingTransferListener
             public void reportProgress(long transferred)
                     throws IOException {
                 if (log.isTraceEnabled()) {
-                    log.trace("transferred {}% of `{}`", ((transferred * 100) / size), path);
+                    long percent = 100;
+                    if (size > 0) {
+                        percent = (transferred * 100)/size;
+                    }
+                    log.trace("transferred {}% of `{}`", percent, path);
                 }
             }
         };
