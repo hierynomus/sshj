@@ -73,7 +73,7 @@ key exchange::
   `diffie-hellman-group-exchange-sha1`, `diffie-hellman-group-exchange-sha256`,
   `ecdh-sha2-nistp256`, `ecdh-sha2-nistp384`, `ecdh-sha2-nistp521`, `curve25519-sha256@libssh.org`
 
-  SSHJ also supports the following extended (non official) key exchange algoriths:
+  SSHJ also supports the following extended (non official) key exchange algorithms:
   `diffie-hellman-group14-sha256@ssh.com`, `diffie-hellman-group15-sha256`, `diffie-hellman-group15-sha256@ssh.com`, `diffie-hellman-group15-sha384@ssh.com`,
   `diffie-hellman-group16-sha256`, `diffie-hellman-group16-sha384@ssh.com`, `diffie-hellman-group16-sha512@ssh.com`, `diffie-hellman-group18-sha512@ssh.com`
 
@@ -152,7 +152,7 @@ SSHJ 0.19.1 (2016-12-30)::
 * Enabled PKCS5 Key files in DefaultConfig
 * Merged https://github.com/hierynomus/sshj/pulls/291[#291]: Fixed sshj.properties loading and chained exception messages
 * Merged https://github.com/hierynomus/sshj/pulls/284[#284]: Correctly catch interrupt in keepalive thread
-* Fixed https://github.com/hierynomus/sshj/issues/292[#292]: Pass the configured RandomFactory to Diffie Hellmann KEX
+* Fixed https://github.com/hierynomus/sshj/issues/292[#292]: Pass the configured RandomFactory to Diffie Hellman KEX
 * Fixed https://github.com/hierynomus/sshj/issues/256[#256]: SSHJ now builds if no git repository present
 * LocalPortForwarder now correctly interrupts its own thread on close()
 SSHJ 0.19.0 (2016-11-25)::

@@ -94,7 +94,7 @@ final class KeyExchanger
      * Add a callback for host key verification.
      * <p/>
      * Any of the {@link HostKeyVerifier} implementations added this way can deem a host key to be acceptable, allowing
-     * key exchange to successfuly complete. Otherwise, a {@link TransportException} will result during key exchange.
+     * key exchange to successfully complete. Otherwise, a {@link TransportException} will result during key exchange.
      *
      * @param hkv object whose {@link HostKeyVerifier#verify} method will be invoked
      */
