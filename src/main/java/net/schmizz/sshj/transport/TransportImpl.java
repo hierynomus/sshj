@@ -104,6 +104,11 @@ public final class TransportImpl
      */
     private volatile Service service;
 
+    /**
+     * The next service that will be activated, only set when sending an SSH_MSG_SERVICE_REQUEST
+     */
+    private volatile Service nextService;
+
     private DisconnectListener disconnectListener;
 
     private ConnInfo connInfo;
@@ -324,8 +329,9 @@ public final class TransportImpl
 
     @Override
     public synchronized void setService(Service service) {
-        if (service == null)
+        if (service == null) {
             service = nullService;
+        }
 
         log.debug("Setting active service to {}", service.getName());
         this.service = service;
@@ -337,11 +343,12 @@ public final class TransportImpl
         serviceAccept.lock();
         try {
             serviceAccept.clear();
+            this.nextService = service;
             sendServiceRequest(service.getName());
             serviceAccept.await(timeoutMs, TimeUnit.MILLISECONDS);
-            setService(service);
         } finally {
             serviceAccept.unlock();
+            this.nextService = null;
         }
     }
 
@@ -496,13 +503,11 @@ public final class TransportImpl
 
         log.trace("Received packet {}", msg);
 
-        if (msg.geq(50)) // not a transport layer packet
+        if (msg.geq(50)) { // not a transport layer packet
             service.handle(msg, buf);
-
-        else if (msg.in(20, 21) || msg.in(30, 49)) // kex packet
+        } else if (msg.in(20, 21) || msg.in(30, 49)) { // kex packet
             kexer.handle(msg, buf);
-
-        else
+        } else {
             switch (msg) {
                 case DISCONNECT:
                     gotDisconnect(buf);
@@ -526,6 +531,7 @@ public final class TransportImpl
                     sendUnimplemented();
                     break;
             }
+        }
     }
 
     private void gotDebug(SSHPacket buf)
@@ -558,6 +564,8 @@ public final class TransportImpl
             if (!serviceAccept.hasWaiters())
                 throw new TransportException(DisconnectReason.PROTOCOL_ERROR,
                         "Got a service accept notification when none was awaited");
+            // Immediately switch to next service to prevent race condition mentioned in #559
+            setService(nextService);
             serviceAccept.set();
         } finally {
             serviceAccept.unlock();
