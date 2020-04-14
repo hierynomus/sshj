@@ -36,7 +36,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew check -xanimalSnifferMain
+      run: ./gradlew check -xanimalSnifferMain -xanimalSnifferTest
 
   integration:
     name: Integration test
