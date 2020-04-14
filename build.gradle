@@ -6,7 +6,7 @@ plugins {
   id "java"
   id "groovy"
   id "jacoco"
-  id "osgi"
+  id "com.github.blindpirate.osgi" version '0.0.3'
   id "maven-publish"
   id 'pl.allegro.tech.build.axion-release' version '1.11.0'
   id "com.bmuschko.docker-remote-api" version "3.2.1"
@@ -15,7 +15,7 @@ plugins {
   id 'ru.vyarus.java-lib' version '1.0.5'
   // id 'ru.vyarus.pom' version '1.0.3'
   id 'ru.vyarus.github-info' version '1.1.0'
-  id 'ru.vyarus.animalsniffer' version '1.4.2'
+  id 'ru.vyarus.animalsniffer' version '1.5.0'
 }
 
 group = "com.hierynomus"

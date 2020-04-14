@@ -11,28 +11,36 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    name: Build with Java ${{ matrix.java }}
-    strategy:
-      matrix:
-        java: [ 8, 9 ]
-
+  java8:
+    name: Build with Java 8
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
-    - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-    - name: Set up JDK ${{ matrix.java }}
+    - name: Set up JDK 8
       uses: actions/setup-java@v1
       with:
-        java-version: ${{ matrix.java }}
+        java-version: 8
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew check
+  java9:
+    name: Build with Java 9
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 9
+      uses: actions/setup-java@v1
+      with:
+        java-version: 9
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
+      run: ./gradlew check -xanimalSnifferMain
+
   integration:
     name: Integration test
-    needs: [build]
+    needs: [java8]
     runs-on: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
@@ -44,4 +52,4 @@ jobs:
         run: chmod +x gradlew
       - name: Build with Gradle
         run: ./gradlew integrationTest
-      
+
