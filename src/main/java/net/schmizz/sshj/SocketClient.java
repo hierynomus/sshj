@@ -17,6 +17,8 @@ package net.schmizz.sshj;
 
 import com.hierynomus.sshj.backport.JavaVersion;
 import com.hierynomus.sshj.backport.Jdk7HttpProxySocket;
+import net.schmizz.sshj.connection.channel.Channel;
+import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 
 import javax.net.SocketFactory;
 import java.io.IOException;
@@ -43,9 +45,16 @@ public abstract class SocketClient {
     private int timeout = 0;
 
     private String hostname;
+    private int port;
+
+    private boolean tunneled = false;
 
     SocketClient(int defaultPort) {
         this.defaultPort = defaultPort;
+    }
+
+    protected InetSocketAddress makeInetSocketAddress(String hostname, int port) {
+        return new InetSocketAddress(hostname, port);
     }
 
     /**
@@ -71,13 +80,14 @@ public abstract class SocketClient {
     @Deprecated
     public void connect(String hostname, int port, Proxy proxy) throws IOException {
         this.hostname = hostname;
+        this.port = port;
         if (JavaVersion.isJava7OrEarlier() && proxy.type() == Proxy.Type.HTTP) {
             // Java7 and earlier have no support for HTTP Connect proxies, return our custom socket.
             socket = new Jdk7HttpProxySocket(proxy);
         } else {
             socket = new Socket(proxy);
         }
-        socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+        socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
         onConnect();
     }
 
@@ -103,6 +113,7 @@ public abstract class SocketClient {
      */
     @Deprecated
     public void connect(InetAddress host, int port, Proxy proxy) throws IOException {
+        this.port = port;
         if (JavaVersion.isJava7OrEarlier() && proxy.type() == Proxy.Type.HTTP) {
             // Java7 and earlier have no support for HTTP Connect proxies, return our custom socket.
             socket = new Jdk7HttpProxySocket(proxy);
@@ -122,8 +133,9 @@ public abstract class SocketClient {
             connect(InetAddress.getByName(null), port);
         } else {
             this.hostname = hostname;
+            this.port = port;
             socket = socketFactory.createSocket();
-            socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+            socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
             onConnect();
         }
     }
@@ -133,11 +145,26 @@ public abstract class SocketClient {
             connect(InetAddress.getByName(null), port, localAddr, localPort);
         } else {
             this.hostname = hostname;
+            this.port = port;
             socket = socketFactory.createSocket();
             socket.bind(new InetSocketAddress(localAddr, localPort));
-            socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+            socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
             onConnect();
         }
+    }
+
+    public void connectVia(Channel channel, String hostname, int port) throws IOException {
+        this.hostname = hostname;
+        this.port = port;
+        this.input = channel.getInputStream();
+        this.output = channel.getOutputStream();
+        this.tunneled = true;
+        onConnect();
+    }
+
+    /** Connect to a remote address via a direct TCP/IP connection from the server. */
+    public void connectVia(DirectConnection directConnection) throws IOException {
+        connectVia(directConnection, directConnection.getRemoteHost(), directConnection.getRemotePort());
     }
 
     public void connect(InetAddress host) throws IOException {
@@ -145,6 +172,7 @@ public abstract class SocketClient {
     }
 
     public void connect(InetAddress host, int port) throws IOException {
+        this.port = port;
         socket = socketFactory.createSocket();
         socket.connect(new InetSocketAddress(host, port), connectTimeout);
         onConnect();
@@ -152,6 +180,7 @@ public abstract class SocketClient {
 
     public void connect(InetAddress host, int port, InetAddress localAddr, int localPort)
             throws IOException {
+        this.port = port;
         socket = socketFactory.createSocket();
         socket.bind(new InetSocketAddress(localAddr, localPort));
         socket.connect(new InetSocketAddress(host, port), connectTimeout);
@@ -174,15 +203,15 @@ public abstract class SocketClient {
     }
 
     public boolean isConnected() {
-        return (socket != null) && socket.isConnected();
+        return tunneled || ((socket != null) && socket.isConnected());
     }
 
     public int getLocalPort() {
-        return socket.getLocalPort();
+        return tunneled ? 65536 : socket.getLocalPort();
     }
 
     public InetAddress getLocalAddress() {
-        return socket.getLocalAddress();
+        return socket == null ? null : socket.getLocalAddress();
     }
 
     public String getRemoteHostname() {
@@ -190,11 +219,11 @@ public abstract class SocketClient {
     }
 
     public int getRemotePort() {
-        return socket.getPort();
+        return socket == null ? this.port : socket.getPort();
     }
 
     public InetAddress getRemoteAddress() {
-        return socket.getInetAddress();
+        return socket == null ? null : socket.getInetAddress();
     }
 
     public void setSocketFactory(SocketFactory factory) {
@@ -238,9 +267,11 @@ public abstract class SocketClient {
     }
 
     void onConnect() throws IOException {
-        socket.setSoTimeout(timeout);
-        input = socket.getInputStream();
-        output = socket.getOutputStream();
+        if (socket != null) {
+            socket.setSoTimeout(timeout);
+            input = socket.getInputStream();
+            output = socket.getOutputStream();
+        }
     }
 
 }

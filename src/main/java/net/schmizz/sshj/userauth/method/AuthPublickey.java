@@ -24,7 +24,7 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 /**
  * Implements the {@code "publickey"} SSH authentication method.
  * <p/>
- * Requesteing authentication with this method first sends a "feeler" request with just the public key, and if the
+ * Requesting authentication with this method first sends a "feeler" request with just the public key, and if the
  * server responds with {@code SSH_MSG_USERAUTH_PK_OK} indicating that the key is acceptable, it proceeds to send a
  * request signed with the private key. Therefore, private keys are not requested from the associated {@link
  * KeyProvider} unless needed.

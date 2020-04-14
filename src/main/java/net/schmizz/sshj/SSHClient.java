@@ -19,10 +19,7 @@ import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.ConnectionImpl;
-import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
-import net.schmizz.sshj.connection.channel.direct.Session;
-import net.schmizz.sshj.connection.channel.direct.SessionChannel;
-import net.schmizz.sshj.connection.channel.direct.SessionFactory;
+import net.schmizz.sshj.connection.channel.direct.*;
 import net.schmizz.sshj.connection.channel.forwarded.ConnectListener;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder.ForwardedTCPIPChannel;
@@ -518,7 +515,7 @@ public class SSHClient
     }
 
     /**
-     * Utility function for createing a {@link KeyProvider} instance from given location on the file system. Creates a
+     * Utility function for creating a {@link KeyProvider} instance from given location on the file system. Creates a
      * one-off {@link PasswordFinder} using {@link PasswordUtils#createOneOff(char[])}, and calls {@link
      * #loadKeys(String, PasswordFinder)}.
      *
@@ -664,11 +661,25 @@ public class SSHClient
      *
      * @return a {@link LocalPortForwarder}
      */
-    public LocalPortForwarder newLocalPortForwarder(LocalPortForwarder.Parameters parameters,
+    public LocalPortForwarder newLocalPortForwarder(Parameters parameters,
                                                     ServerSocket serverSocket) {
         LocalPortForwarder forwarder = new LocalPortForwarder(conn, parameters, serverSocket, loggerFactory);
         forwarders.add(forwarder);
         return forwarder;
+    }
+
+    /** Create a {@link DirectConnection} channel that connects to a remote address from the server.
+     *
+     * This can be used to open a tunnel to, for example, an HTTP server that is only
+     * accessible from the SSH server, or opening an SSH connection via a 'jump' server.
+     *
+     * @param hostname name of the host to connect to from the server.
+     * @param port remote port number.
+     */
+    public DirectConnection newDirectConnection(String hostname, int port) throws IOException {
+        DirectConnection tunnel = new DirectConnection(conn, hostname, port);
+        tunnel.open();
+        return tunnel;
     }
 
     /**
@@ -743,7 +754,7 @@ public class SSHClient
 
     /**
      * Adds {@code zlib} compression to preferred compression algorithms. There is no guarantee that it will be
-     * successfully negotiatied.
+     * successfully negotiated.
      * <p/>
      * If the client is already connected renegotiation is done; otherwise this method simply returns (and compression
      * will be negotiated during connection establishment).
