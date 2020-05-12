@@ -11,19 +11,6 @@ on:
     branches: [ master ]
 
 jobs:
-  java8:
-    name: Build with Java 8
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 8
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew check
   java9:
     name: Build with Java 9
     runs-on: ubuntu-latest
@@ -36,18 +23,31 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
+      run: ./gradlew check
+  java10:
+    name: Build with Java 10
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 10
+      uses: actions/setup-java@v1
+      with:
+        java-version: 10
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Build with Gradle
       run: ./gradlew check -xanimalsnifferMain -xanimalsnifferTest
 
   integration:
     name: Integration test
-    needs: [java8]
+    needs: [java9]
     runs-on: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
       - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - uses: actions/setup-java@v1
         with:
-          java-version: 8
+          java-version: 9
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle

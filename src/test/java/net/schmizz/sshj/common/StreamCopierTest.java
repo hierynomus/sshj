@@ -44,6 +44,6 @@ public class StreamCopierTest {
         long copied = streamCopier.copy();
         assertThat(copied, is(1024L));
 
-        verify(logger).debug(contains("1.0 KiB transferred"));
+        verify(logger).debug(matches("^1[.,]0 KiB transferred.*$"));
     }
 }

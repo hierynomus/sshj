@@ -15,7 +15,6 @@ plugins {
   id 'ru.vyarus.java-lib' version '1.0.5'
   // id 'ru.vyarus.pom' version '1.0.3'
   id 'ru.vyarus.github-info' version '1.1.0'
-  id 'ru.vyarus.animalsniffer' version '1.5.0'
 }
 
 group = "com.hierynomus"
@@ -39,17 +38,12 @@ repositories {
   mavenCentral()
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-
 configurations.compile.transitive = false
 
 def bouncycastleVersion = "1.65"
 def sshdVersion = "2.1.0"
 
 dependencies {
-  signature 'org.codehaus.mojo.signature:java16:1.1@signature'
-
   implementation "org.slf4j:slf4j-api:1.7.7"
   implementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
   implementation "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
@@ -78,11 +72,20 @@ license {
   excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java', '**/org/mindrot/jbcrypt/*.java'])
 }
 
+if (!JavaVersion.current().isJava9Compatible()) {
+  throw new GradleScriptException("Minimum compilation version is Java 9")
+}
+
 // This disables the pedantic doclint feature of JDK8
 if (JavaVersion.current().isJava8Compatible()) {
   tasks.withType(Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
   }
+}
+
+
+compileJava {
+  options.compilerArgs.addAll(['--release', '7'])
 }
 
 task writeSshjVersionProperties {
