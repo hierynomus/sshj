@@ -103,7 +103,7 @@ class ECDSAVariationsAdapter {
     }
 
     static boolean isECKeyWithFieldSize(Key key, int fieldSize) {
-        return "ECDSA".equals(key.getAlgorithm())
+        return ("ECDSA".equals(key.getAlgorithm()) || "EC".equals(key.getAlgorithm()))
                 && fieldSizeFromKey((ECKey) key) == fieldSize;
     }
 
