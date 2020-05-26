@@ -66,7 +66,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return (key instanceof RSAPublicKey || key instanceof RSAPrivateKey);
+            return "RSA".equals(key.getAlgorithm());
         }
     },
 
@@ -99,7 +99,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return (key instanceof DSAPublicKey || key instanceof DSAPrivateKey);
+            return "DSA".equals(key.getAlgorithm());
         }
 
     },
