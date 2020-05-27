@@ -11,43 +11,43 @@ on:
     branches: [ master ]
 
 jobs:
-  java9:
-    name: Build with Java 9
+  java12:
+    name: Build with Java 12
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 9
+    - name: Set up JDK 12
       uses: actions/setup-java@v1
       with:
-        java-version: 9
+        java-version: 12
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew check
-  java10:
-    name: Build with Java 10
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 10
-      uses: actions/setup-java@v1
-      with:
-        java-version: 10
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew check -xanimalsnifferMain -xanimalsnifferTest
+  # java10:
+  #   name: Build with Java 10
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Set up JDK 10
+  #     uses: actions/setup-java@v1
+  #     with:
+  #       java-version: 10
+  #   - name: Grant execute permission for gradlew
+  #     run: chmod +x gradlew
+  #   - name: Build with Gradle
+  #     run: ./gradlew check -xanimalsnifferMain -xanimalsnifferTest
 
   integration:
     name: Integration test
-    needs: [java9]
+    needs: [java12]
     runs-on: [ubuntu-latest]
     steps:
       - uses: actions/checkout@v2
       - run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - uses: actions/setup-java@v1
         with:
-          java-version: 9
+          java-version: 12
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Build with Gradle
