@@ -28,7 +28,6 @@ import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.bouncycastle.openssl.EncryptionException;
 import org.mindrot.jbcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +66,13 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         @Override
         public String getName() {
             return KeyFormat.OpenSSHv1.name();
+        }
+    }
+
+    private static class CheckIntsDifferedException extends IOException {
+
+        public CheckIntsDifferedException() {
+            super("The checkInts differed, the key was not correctly decoded. Passphrase may be incorrect.");
         }
     }
 
@@ -117,7 +123,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 PlainBuffer decrypted = decryptBuffer(decryptionBuffer, cipherName, kdfName, kdfOptions);
                 try {
                     return readUnencrypted(decrypted, publicKey);
-                } catch (EncryptionException e) {
+                } catch (CheckIntsDifferedException e) {
                     if (pwdf == null || !pwdf.shouldRetry(resource))
                         throw e;
                 }
@@ -193,7 +199,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         int checkInt1 = keyBuffer.readUInt32AsInt(); // uint32 checkint1
         int checkInt2 = keyBuffer.readUInt32AsInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
-            throw new EncryptionException("The checkInts differed, the key was not correctly decoded.");
+            throw new CheckIntsDifferedException();
         }
         // The private key section contains both the public key and the private key
         String keyType = keyBuffer.readString(); // string keytype
