@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.common;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.signature.Ed25519PublicKey;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
@@ -30,9 +31,7 @@ import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -53,7 +52,7 @@ public enum KeyType {
             } catch (Buffer.BufferException be) {
                 throw new GeneralSecurityException(be);
             }
-            final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
+            final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.RSA);
             return keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
         }
 
@@ -66,7 +65,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return (key instanceof RSAPublicKey || key instanceof RSAPrivateKey);
+            return KeyAlgorithm.RSA.equals(key.getAlgorithm());
         }
     },
 
@@ -84,7 +83,7 @@ public enum KeyType {
             } catch (Buffer.BufferException be) {
                 throw new GeneralSecurityException(be);
             }
-            final KeyFactory keyFactory = SecurityUtils.getKeyFactory("DSA");
+            final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.DSA);
             return keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
         }
 
@@ -99,7 +98,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return (key instanceof DSAPublicKey || key instanceof DSAPrivateKey);
+            return KeyAlgorithm.DSA.equals(key.getAlgorithm());
         }
 
     },

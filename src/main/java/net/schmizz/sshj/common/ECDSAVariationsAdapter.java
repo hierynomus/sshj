@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.common;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.secg.SecgUtils;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -87,7 +88,7 @@ class ECDSAVariationsAdapter {
             ECPoint p = new ECPoint(bigX, bigY);
             ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(p, ecCurveSpec);
 
-            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA");
+            KeyFactory keyFactory = KeyFactory.getInstance(KeyAlgorithm.ECDSA);
             return keyFactory.generatePublic(publicKeySpec);
         } catch (Exception ex) {
             throw new GeneralSecurityException(ex);
@@ -103,7 +104,7 @@ class ECDSAVariationsAdapter {
     }
 
     static boolean isECKeyWithFieldSize(Key key, int fieldSize) {
-        return "ECDSA".equals(key.getAlgorithm())
+        return (KeyAlgorithm.ECDSA.equals(key.getAlgorithm()) || KeyAlgorithm.EC_KEYSTORE.equals(key.getAlgorithm()))
                 && fieldSizeFromKey((ECKey) key) == fieldSize;
     }
 

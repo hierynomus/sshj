@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.random.Random;
@@ -54,7 +55,7 @@ public class ECDH extends DHBase {
 
     @Override
     public void computeK(byte[] f) throws GeneralSecurityException {
-        KeyFactory keyFactory = SecurityUtils.getKeyFactory("EC");
+        KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.EC_BC);
         ECPublicKeySpec keySpec = new ECPublicKeySpec(getDecoded(f, ecParameterSpec.getCurve()), ecParameterSpec);
         PublicKey yourPubKey = keyFactory.generatePublic(keySpec);
         agreement.doPhase(yourPubKey, true);

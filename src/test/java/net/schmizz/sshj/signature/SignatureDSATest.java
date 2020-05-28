@@ -22,6 +22,7 @@ import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.DSAPublicKeySpec;
 import java.util.Arrays;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class SignatureDSATest {
 
     @Before
     public void setUp() throws NoSuchAlgorithmException {
-        keyFactory = KeyFactory.getInstance("DSA");
+        keyFactory = KeyFactory.getInstance(KeyAlgorithm.DSA);
     }
 
     @Test

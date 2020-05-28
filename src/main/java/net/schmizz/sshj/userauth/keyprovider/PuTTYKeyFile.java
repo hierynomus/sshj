@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -114,7 +115,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
             final KeyFactory factory;
             try {
-                factory = KeyFactory.getInstance("RSA");
+                factory = KeyFactory.getInstance(KeyAlgorithm.RSA);
             } catch (NoSuchAlgorithmException s) {
                 throw new IOException(s.getMessage(), s);
             }
@@ -141,7 +142,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
             final KeyFactory factory;
             try {
-                factory = KeyFactory.getInstance("DSA");
+                factory = KeyFactory.getInstance(KeyAlgorithm.DSA);
             } catch (NoSuchAlgorithmException s) {
                 throw new IOException(s.getMessage(), s);
             }
