@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.ByteArrayUtils;
@@ -140,7 +141,7 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
             ASN1Data asn = new ASN1Data(data = decrypt(Base64.decode(sb.toString()), cipher, iv));
             switch (type) {
                 case RSA: {
-                    KeyFactory factory = KeyFactory.getInstance("RSA");
+                    KeyFactory factory = KeyFactory.getInstance(KeyAlgorithm.RSA);
                     asn.readNext();
                     BigInteger modulus = asn.readNext();
                     BigInteger pubExp = asn.readNext();
@@ -150,7 +151,7 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
                     return new KeyPair(pubKey, prvKey);
                 }
                 case DSA: {
-                    KeyFactory factory = KeyFactory.getInstance("DSA");
+                    KeyFactory factory = KeyFactory.getInstance(KeyAlgorithm.DSA);
                     asn.readNext();
                     BigInteger p = asn.readNext();
                     BigInteger q = asn.readNext();

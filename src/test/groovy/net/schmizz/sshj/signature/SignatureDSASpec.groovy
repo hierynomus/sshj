@@ -30,6 +30,7 @@
 */
 package net.schmizz.sshj.signature
 
+import com.hierynomus.sshj.common.KeyAlgorithm
 import spock.lang.Unroll;
 
 import java.math.BigInteger;
@@ -47,7 +48,7 @@ import spock.lang.Specification
 
 class SignatureDSASpec extends Specification {
 
-    def keyFactory = KeyFactory.getInstance("DSA")
+    def keyFactory = KeyFactory.getInstance(KeyAlgorithm.DSA)
 
     private PublicKey createPublicKey(final byte[] y, final byte[] p, final byte[] q, final byte[] g) throws Exception {
         final BigInteger publicKey = new BigInteger(y);

@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport.verification;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.transport.verification.KnownHostMatchers;
 import net.schmizz.sshj.common.*;
 import org.slf4j.Logger;
@@ -239,7 +240,7 @@ public class OpenSSHKnownHosts
                 final BigInteger e = new BigInteger(split[i++]);
                 final BigInteger n = new BigInteger(split[i++]);
                 try {
-                    final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
+                    final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.RSA);
                     key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
                 } catch (Exception ex) {
                     log.error("Error reading entry `{}`, could not create key", line, ex);

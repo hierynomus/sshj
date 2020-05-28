@@ -15,6 +15,7 @@
  */
 package com.hierynomus.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -207,7 +208,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 keyBuffer.readMPInt(); // iqmp (q^-1 mod p)
                 keyBuffer.readMPInt(); // p (Prime 1)
                 keyBuffer.readMPInt(); // q (Prime 2)
-                kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory("RSA").generatePrivate(new RSAPrivateKeySpec(n, d)));
+                kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePrivate(new RSAPrivateKeySpec(n, d)));
                 break;
             case ECDSA256:
                 kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-256"));
@@ -239,7 +240,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         X9ECParameters ecParams = NISTNamedCurves.getByName(name);
         ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
         ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
-        return SecurityUtils.getKeyFactory("ECDSA").generatePrivate(pks);
+        return SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
 
     }
 }
