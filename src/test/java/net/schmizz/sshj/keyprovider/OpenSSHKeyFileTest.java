@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.keyprovider;
 
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.common.KeyType;
@@ -200,12 +201,34 @@ public class OpenSSHKeyFileTest {
 
     @Test
     public void shouldLoadProtectedED25519PrivateKeyAes256CTR() throws IOException {
-        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest");
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest", false);
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest", true);
     }
 
     @Test
     public void shouldLoadProtectedED25519PrivateKeyAes256CBC() throws IOException {
-        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar");
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar", false);
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar", true);
+    }
+
+    @Test(expected = KeyDecryptionFailedException.class)
+    public void shouldFailOnIncorrectPassphraseAfterRetries() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/ed25519_aes256cbc.pem"), new PasswordFinder() {
+            private int reqCounter = 0;
+
+            @Override
+            public char[] reqPassword(Resource<?> resource) {
+                reqCounter++;
+                return "incorrect".toCharArray();
+            }
+
+            @Override
+            public boolean shouldRetry(Resource<?> resource) {
+                return reqCounter <= 3;
+            }
+        });
+        keyFile.getPrivate();
     }
 
     @Test
@@ -224,17 +247,25 @@ public class OpenSSHKeyFileTest {
         assertThat(aPrivate.getAlgorithm(), equalTo("ECDSA"));
     }
 
-    private void checkOpenSSHKeyV1(String key, final String password) throws IOException {
+    private void checkOpenSSHKeyV1(String key, final String password, boolean withRetry) throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File(key), new PasswordFinder() {
+            private int reqCounter = 0;
+
             @Override
             public char[] reqPassword(Resource<?> resource) {
-                return password.toCharArray();
+                if (withRetry && reqCounter < 3) {
+                    reqCounter++;
+                    // Return an incorrect password three times before returning the correct one.
+                    return (password + "incorrect").toCharArray();
+                } else {
+                    return password.toCharArray();
+                }
             }
 
             @Override
             public boolean shouldRetry(Resource<?> resource) {
-                return false;
+                return withRetry && reqCounter <= 3;
             }
         });
         PrivateKey aPrivate = keyFile.getPrivate();

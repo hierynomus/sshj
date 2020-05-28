@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -85,7 +86,7 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
                 if (pwdf != null && pwdf.shouldRetry(resource))
                     continue;
                 else
-                    throw e;
+                    throw new KeyDecryptionFailedException(e);
             } finally {
                 IOUtils.closeQuietly(r);
             }
