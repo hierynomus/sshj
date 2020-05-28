@@ -16,6 +16,7 @@
 package com.hierynomus.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -112,8 +113,16 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             return readUnencrypted(privateKeyBuffer, publicKey);
         } else {
             logger.info("Keypair is encrypted with: " + cipherName + ", " + kdfName + ", " + Arrays.toString(kdfOptions));
-            PlainBuffer decrypted = decryptBuffer(privateKeyBuffer, cipherName, kdfName, kdfOptions);
-            return readUnencrypted(decrypted, publicKey);
+            while (true) {
+                PlainBuffer decryptionBuffer = new PlainBuffer(privateKeyBuffer);
+                PlainBuffer decrypted = decryptBuffer(decryptionBuffer, cipherName, kdfName, kdfOptions);
+                try {
+                    return readUnencrypted(decrypted, publicKey);
+                } catch (KeyDecryptionFailedException e) {
+                    if (pwdf == null || !pwdf.shouldRetry(resource))
+                        throw e;
+                }
+            }
 //            throw new IOException("Cannot read encrypted keypair with " + cipherName + " yet.");
         }
     }
@@ -185,7 +194,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         int checkInt1 = keyBuffer.readUInt32AsInt(); // uint32 checkint1
         int checkInt2 = keyBuffer.readUInt32AsInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
-            throw new IOException("The checkInts differed, the key was not correctly decoded.");
+            throw new KeyDecryptionFailedException();
         }
         // The private key section contains both the public key and the private key
         String keyType = keyBuffer.readString(); // string keytype
