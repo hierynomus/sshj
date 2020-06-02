@@ -9,7 +9,7 @@ plugins {
   id "com.github.blindpirate.osgi" version '0.0.3'
   id "maven-publish"
   id 'pl.allegro.tech.build.axion-release' version '1.11.0'
-  id "com.bmuschko.docker-remote-api" version "3.2.1"
+  id "com.bmuschko.docker-remote-api" version "6.4.0"
   id "com.github.hierynomus.license" version "0.12.1"
   id "com.jfrog.bintray" version "1.8.5"
   id 'ru.vyarus.java-lib' version '1.0.5'
@@ -260,22 +260,23 @@ jacocoTestReport {
 
 task buildItestImage(type: DockerBuildImage) {
     inputDir = file('src/itest/docker-image')
-    tag = 'sshj/sshd-itest'
+    images.add('sshj/sshd-itest:latest')
 }
 
 task createItestContainer(type: DockerCreateContainer) {
     dependsOn buildItestImage
-    targetImageId { buildItestImage.getImageId() }
-    portBindings = ['2222:22']
+    targetImageId buildItestImage.getImageId()
+    hostConfig.portBindings = ['2222:22']
+    hostConfig.autoRemove = true
 }
 
 task startItestContainer(type: DockerStartContainer) {
     dependsOn createItestContainer
-    targetContainerId { createItestContainer.getContainerId() }
+    targetContainerId createItestContainer.getContainerId()
 }
 
 task stopItestContainer(type: DockerStopContainer) {
-    targetContainerId { createItestContainer.getContainerId() }
+    targetContainerId createItestContainer.getContainerId()
 }
 
 task forkedUploadRelease(type: GradleBuild) {
