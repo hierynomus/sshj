@@ -78,7 +78,7 @@ key exchange::
   `diffie-hellman-group16-sha256`, `diffie-hellman-group16-sha384@ssh.com`, `diffie-hellman-group16-sha512@ssh.com`, `diffie-hellman-group18-sha512@ssh.com`
 
 signatures::
-  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`
+  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`, `ssh-rsa2-256`, `ssh-rsa2-512`
 
 mac::
   `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`, `hmac-ripemd160`, `hmac-ripemd160@openssh.com`
@@ -105,6 +105,13 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.30.0 (2020-06-02)::
+* **BREAKING CHANGE**: Removed `setSignatureFactories` and `getSignatureFactories` from the Config and switched them for `getKeyAlgorithms` and `setKeyAlgorithms`
+* Fixed https://github.com/hierynomus/sshj/pulls/588[#588]: Add support for `ssh-rsa2-256` and `ssh-rsa2-512` signatures
+* Merged https://github.com/hierynomus/sshj/pulls/579[#579]: Fix NPE in OpenSSHKnownHosts
+* Merged https://github.com/hierynomus/sshj/pulls/587[#587]: Add passwordfinder retry for OpenSSHKeyV1KeyFile
+* Merged https://github.com/hierynomus/sshj/pulls/586[#586]: Make KeyType compatible with Android Store
+
 SSHJ 0.27.0 (2019-01-24)::
 * Fixed https://github.com/hierynomus/sshj/issues/415[#415]: Fixed wrongly prefixed '/' to path in SFTPClient.mkdirs
 * Added support for ETM (Encrypt-then-Mac) MAC algorithms.
