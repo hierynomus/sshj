@@ -15,18 +15,20 @@
  */
 package net.schmizz.sshj.signature;
 
+import com.hierynomus.asn1.encodingrules.der.DEREncoder;
+import com.hierynomus.asn1.types.ASN1Object;
+import com.hierynomus.asn1.types.constructed.ASN1Sequence;
+import com.hierynomus.asn1.types.primitive.ASN1Integer;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1OutputStream;
-import org.bouncycastle.asn1.DERSequence;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
+import java.util.ArrayList;
+import java.util.List;
 
 /** ECDSA {@link Signature} */
 public class SignatureECDSA extends AbstractSignature {
@@ -122,18 +124,18 @@ public class SignatureECDSA extends AbstractSignature {
      */
     private byte[] asnEncode(byte[] sigBlob) throws IOException {
         Buffer.PlainBuffer sigbuf = new Buffer.PlainBuffer(sigBlob);
-        byte[] r = sigbuf.readBytes();
-        byte[] s = sigbuf.readBytes();
+        BigInteger r = sigbuf.readMPInt();
+        BigInteger s = sigbuf.readMPInt();
 
-        ASN1EncodableVector vector = new ASN1EncodableVector();
+        List<ASN1Object> vector = new ArrayList<ASN1Object>();
         vector.add(new ASN1Integer(r));
         vector.add(new ASN1Integer(s));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ASN1OutputStream asnOS = new ASN1OutputStream(baos);
+        com.hierynomus.asn1.ASN1OutputStream asn1OutputStream = new com.hierynomus.asn1.ASN1OutputStream(new DEREncoder(), baos);
 
-        asnOS.writeObject(new DERSequence(vector));
-        asnOS.flush();
+        asn1OutputStream.writeObject(new ASN1Sequence(vector));
+        asn1OutputStream.flush();
 
         return baos.toByteArray();
     }
