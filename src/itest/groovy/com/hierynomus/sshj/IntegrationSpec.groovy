@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj
 
+import com.hierynomus.sshj.key.ECDSAKeyAlgorithm
+import com.hierynomus.sshj.key.EdDSAKeyAlgorithm
 import com.hierynomus.sshj.signature.SignatureEdDSA
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
@@ -29,7 +31,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
     def "should accept correct key for #signatureName"() {
         given:
         def config = new DefaultConfig()
-        config.setSignatureFactories(signatureFactory)
+        config.setKeyAlgorithms(Collections.singletonList(signatureFactory))
         SSHClient sshClient = new SSHClient(config)
         sshClient.addHostKeyVerifier(fingerprint) // test-containers/ssh_host_ecdsa_key's fingerprint
 
@@ -40,7 +42,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
         sshClient.isConnected()
 
         where:
-        signatureFactory << [new SignatureECDSA.Factory256(), new SignatureEdDSA.Factory()]
+        signatureFactory << [new ECDSAKeyAlgorithm.Factory256(), new EdDSAKeyAlgorithm.Factory()]
         fingerprint << ["d3:6a:a9:52:05:ab:b5:48:dd:73:60:18:0c:3a:f0:a3", "dc:68:38:ce:fc:6f:2c:d6:6d:6b:34:eb:5c:f0:41:6a"]
         signatureName = signatureFactory.getName()
     }

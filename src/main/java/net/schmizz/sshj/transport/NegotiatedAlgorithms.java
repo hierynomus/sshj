@@ -15,10 +15,12 @@
  */
 package net.schmizz.sshj.transport;
 
+import java.util.List;
+
 public final class NegotiatedAlgorithms {
 
     private final String kex;
-    private final String sig;
+    private final List<String> availableSigs;
     private final String c2sCipher;
     private final String s2cCipher;
     private final String c2sMAC;
@@ -26,10 +28,10 @@ public final class NegotiatedAlgorithms {
     private final String c2sComp;
     private final String s2cComp;
 
-    NegotiatedAlgorithms(String kex, String sig, String c2sCipher, String s2cCipher, String c2sMAC, String s2cMAC,
+    NegotiatedAlgorithms(String kex, List<String> availableSigs, String c2sCipher, String s2cCipher, String c2sMAC, String s2cMAC,
                          String c2sComp, String s2cComp) {
         this.kex = kex;
-        this.sig = sig;
+        this.availableSigs = availableSigs;
         this.c2sCipher = c2sCipher;
         this.s2cCipher = s2cCipher;
         this.c2sMAC = c2sMAC;
@@ -42,8 +44,8 @@ public final class NegotiatedAlgorithms {
         return kex;
     }
 
-    public String getSignatureAlgorithm() {
-        return sig;
+    public List<String> getSignatureAlgorithms() {
+        return availableSigs;
     }
 
     public String getClient2ServerCipherAlgorithm() {
@@ -74,7 +76,7 @@ public final class NegotiatedAlgorithms {
     public String toString() {
         return ("[ " +
                 "kex=" + kex + "; " +
-                "sig=" + sig + "; " +
+                "availableSigs=" + availableSigs + "; " +
                 "c2sCipher=" + c2sCipher + "; " +
                 "s2cCipher=" + s2cCipher + "; " +
                 "c2sMAC=" + c2sMAC + "; " +

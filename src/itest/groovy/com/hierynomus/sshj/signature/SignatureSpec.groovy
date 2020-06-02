@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hierynomus.sshj.transport.mac
+package com.hierynomus.sshj.signature
 
 import com.hierynomus.sshj.IntegrationBaseSpec
+import com.hierynomus.sshj.key.RSAKeyAlgorithm
 import net.schmizz.sshj.DefaultConfig
+import net.schmizz.sshj.signature.SignatureRSA
 import spock.lang.Unroll
 
-class MacSpec extends IntegrationBaseSpec {
+class SignatureSpec extends IntegrationBaseSpec {
 
     @Unroll
-    def "should correctly connect with #mac MAC"() {
+    def "should correctly connect with #sig Signature"() {
         given:
         def cfg = new DefaultConfig()
-        cfg.setMACFactories(macFactory)
+        cfg.setKeyAlgorithms(Collections.singletonList(sigFactory))
         def client = getConnectedClient(cfg)
 
         when:
@@ -34,32 +36,8 @@ class MacSpec extends IntegrationBaseSpec {
         then:
         client.authenticated
 
-        cleanup:
-        client.disconnect()
-
         where:
-        macFactory << [Macs.HMACRIPEMD160(), Macs.HMACRIPEMD160OpenSsh(), Macs.HMACSHA2256(), Macs.HMACSHA2512()]
-        mac = macFactory.name
-    }
-
-    @Unroll
-    def "should correctly connect with Encrypt-Then-Mac #mac MAC"() {
-        given:
-        def cfg = new DefaultConfig()
-        cfg.setMACFactories(macFactory)
-        def client = getConnectedClient(cfg)
-
-        when:
-        client.authPublickey(USERNAME, KEYFILE)
-
-        then:
-        client.authenticated
-
-        cleanup:
-        client.disconnect()
-
-        where:
-        macFactory << [Macs.HMACRIPEMD160Etm(), Macs.HMACSHA2256Etm(), Macs.HMACSHA2512Etm()]
-        mac = macFactory.name
+        sigFactory << [new RSAKeyAlgorithm.FactorySSHRSA(), new RSAKeyAlgorithm.FactoryRSASHA256(), new RSAKeyAlgorithm.FactoryRSASHA512()]
+        sig = sigFactory.name
     }
 }

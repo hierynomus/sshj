@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import com.hierynomus.sshj.transport.IdentificationStringParser;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,6 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class TransportImpl
         implements Transport, DisconnectListener {
+
 
     private static final class NullService
             extends AbstractService {
@@ -85,6 +88,8 @@ public final class TransportImpl
     private final Encoder encoder;
 
     private final Decoder decoder;
+
+    private List<KeyAlgorithm> keyAlgorithms;
 
     private final Event<TransportException> serviceAccept;
 
@@ -649,4 +654,18 @@ public final class TransportImpl
         return connInfo;
     }
 
+    @Override
+    public KeyAlgorithm getKeyAlgorithm(KeyType keyType) throws TransportException {
+        for (KeyAlgorithm ka : keyAlgorithms) {
+            if (ka.getKeyFormat().equals(keyType)) {
+                return ka;
+            }
+        }
+
+        throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
+    }
+
+    public void setKeyAlgorithms(List<KeyAlgorithm> keyAlgorithms) {
+        this.keyAlgorithms = keyAlgorithms;
+    }
 }

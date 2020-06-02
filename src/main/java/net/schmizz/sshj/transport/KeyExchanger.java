@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.*;
@@ -30,9 +31,7 @@ import org.slf4j.Logger;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -232,6 +231,13 @@ final class KeyExchanger
         }
         kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(),
                                         negotiatedAlgs.getKeyExchangeAlgorithm());
+
+        List<KeyAlgorithm> keyAlgorithms = new ArrayList<KeyAlgorithm>();
+        for (String signatureAlgorithm : negotiatedAlgs.getSignatureAlgorithms()) {
+            keyAlgorithms.add(Factory.Named.Util.create(transport.getConfig().getKeyAlgorithms(), signatureAlgorithm));
+        }
+        transport.setKeyAlgorithms(keyAlgorithms);
+
         try {
             kex.init(transport,
                      transport.getServerID(), transport.getClientID(),
