@@ -15,10 +15,8 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.key.DSAKeyAlgorithm;
-import com.hierynomus.sshj.key.ECDSAKeyAlgorithm;
-import com.hierynomus.sshj.key.EdDSAKeyAlgorithm;
-import com.hierynomus.sshj.key.RSAKeyAlgorithm;
+import com.hierynomus.sshj.key.KeyAlgorithm;
+import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import com.hierynomus.sshj.transport.kex.DHGroups;
@@ -134,17 +132,17 @@ public class DefaultConfig
     }
 
     protected void initKeyAlgorithms() {
-        setKeyAlgorithms(Arrays.asList(
-                new EdDSAKeyAlgorithm.Factory(),
-                new ECDSAKeyAlgorithm.Factory521(),
-                new ECDSAKeyAlgorithm.Factory384(),
-                new ECDSAKeyAlgorithm.Factory256(),
-                new RSAKeyAlgorithm.FactoryRSASHA512(),
-                new RSAKeyAlgorithm.FactoryRSASHA256(),
-                new RSAKeyAlgorithm.FactorySSHRSACert(),
-                new DSAKeyAlgorithm.FactorySSHDSSCert(),
-                new RSAKeyAlgorithm.FactorySSHRSA(),
-                new DSAKeyAlgorithm.FactorySSHDSA()));
+        setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
+                KeyAlgorithms.EdDSA25519(),
+                KeyAlgorithms.ECDSASHANistp521(),
+                KeyAlgorithms.ECDSASHANistp384(),
+                KeyAlgorithms.ECDSASHANistp256(),
+                KeyAlgorithms.RSASHA512(),
+                KeyAlgorithms.RSASHA256(),
+                KeyAlgorithms.SSHRSACertV01(),
+                KeyAlgorithms.SSHDSSCertV01(),
+                KeyAlgorithms.SSHRSA(),
+                KeyAlgorithms.SSHDSA()));
     }
 
     protected void initRandomFactory(boolean bouncyCastleRegistered) {

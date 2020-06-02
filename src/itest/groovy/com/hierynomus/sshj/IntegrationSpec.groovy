@@ -15,12 +15,9 @@
  */
 package com.hierynomus.sshj
 
-import com.hierynomus.sshj.key.ECDSAKeyAlgorithm
-import com.hierynomus.sshj.key.EdDSAKeyAlgorithm
-import com.hierynomus.sshj.signature.SignatureEdDSA
+import com.hierynomus.sshj.key.KeyAlgorithms
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
-import net.schmizz.sshj.signature.SignatureECDSA
 import net.schmizz.sshj.transport.TransportException
 import net.schmizz.sshj.userauth.UserAuthException
 import spock.lang.Unroll
@@ -42,7 +39,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
         sshClient.isConnected()
 
         where:
-        signatureFactory << [new ECDSAKeyAlgorithm.Factory256(), new EdDSAKeyAlgorithm.Factory()]
+        signatureFactory << [KeyAlgorithms.ECDSASHANistp256(), KeyAlgorithms.EdDSA25519()]
         fingerprint << ["d3:6a:a9:52:05:ab:b5:48:dd:73:60:18:0c:3a:f0:a3", "dc:68:38:ce:fc:6f:2c:d6:6d:6b:34:eb:5c:f0:41:6a"]
         signatureName = signatureFactory.getName()
     }

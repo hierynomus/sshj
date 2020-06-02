@@ -15,14 +15,10 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.key.DSAKeyAlgorithm;
-import com.hierynomus.sshj.key.EdDSAKeyAlgorithm;
-import com.hierynomus.sshj.key.RSAKeyAlgorithm;
-import com.hierynomus.sshj.signature.SignatureEdDSA;
-
+import com.hierynomus.sshj.key.KeyAlgorithm;
+import com.hierynomus.sshj.key.KeyAlgorithms;
+import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
-import net.schmizz.sshj.signature.SignatureDSA;
-import net.schmizz.sshj.signature.SignatureRSA;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 
@@ -41,10 +37,10 @@ public class AndroidConfig
 
     @Override
     protected void initKeyAlgorithms() {
-        setKeyAlgorithms(Arrays.asList(
-                new EdDSAKeyAlgorithm.Factory(),
-                new RSAKeyAlgorithm.FactorySSHRSA(),
-                new DSAKeyAlgorithm.FactorySSHDSA()
+        setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
+                KeyAlgorithms.EdDSA25519(),
+                KeyAlgorithms.SSHRSA(),
+                KeyAlgorithms.SSHDSA()
         ));
     }
 

@@ -16,9 +16,8 @@
 package com.hierynomus.sshj.signature
 
 import com.hierynomus.sshj.IntegrationBaseSpec
-import com.hierynomus.sshj.key.RSAKeyAlgorithm
+import com.hierynomus.sshj.key.KeyAlgorithms
 import net.schmizz.sshj.DefaultConfig
-import net.schmizz.sshj.signature.SignatureRSA
 import spock.lang.Unroll
 
 class SignatureSpec extends IntegrationBaseSpec {
@@ -37,7 +36,7 @@ class SignatureSpec extends IntegrationBaseSpec {
         client.authenticated
 
         where:
-        sigFactory << [new RSAKeyAlgorithm.FactorySSHRSA(), new RSAKeyAlgorithm.FactoryRSASHA256(), new RSAKeyAlgorithm.FactoryRSASHA512()]
+        sigFactory << [KeyAlgorithms.SSHRSA(), KeyAlgorithms.RSASHA256(), KeyAlgorithms.RSASHA512()]
         sig = sigFactory.name
     }
 }

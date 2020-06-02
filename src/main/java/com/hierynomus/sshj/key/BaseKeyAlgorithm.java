@@ -23,12 +23,12 @@ import net.schmizz.sshj.signature.Signature;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
-public abstract class AbstractKeyAlgorithm implements KeyAlgorithm {
+public class BaseKeyAlgorithm implements KeyAlgorithm {
     private final String keyAlgorithm;
     private final Factory.Named<Signature> signature;
     private final KeyType keyFormat;
 
-    public AbstractKeyAlgorithm(String keyAlgorithm, Factory.Named<Signature> signature, KeyType keyFormat) {
+    public BaseKeyAlgorithm(String keyAlgorithm, Factory.Named<Signature> signature, KeyType keyFormat) {
         this.keyAlgorithm = keyAlgorithm;
         this.signature = signature;
         this.keyFormat = keyFormat;
