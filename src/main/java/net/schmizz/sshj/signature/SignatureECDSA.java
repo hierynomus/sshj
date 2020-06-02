@@ -79,7 +79,7 @@ public class SignatureECDSA extends AbstractSignature {
     private String keyTypeName;
 
     public SignatureECDSA(String algorithm, String keyTypeName) {
-        super(algorithm);
+        super(algorithm, keyTypeName);
         this.keyTypeName = keyTypeName;
     }
 

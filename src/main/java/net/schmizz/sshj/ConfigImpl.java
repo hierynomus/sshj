@@ -15,10 +15,10 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.LoggerFactory;
-import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.Compression;
 import net.schmizz.sshj.transport.kex.KeyExchange;
@@ -42,7 +42,7 @@ public class ConfigImpl
     private List<Factory.Named<Cipher>> cipherFactories;
     private List<Factory.Named<Compression>> compressionFactories;
     private List<Factory.Named<MAC>> macFactories;
-    private List<Factory.Named<Signature>> signatureFactories;
+    private List<Factory.Named<KeyAlgorithm>> keyAlgorithms;
     private List<Factory.Named<FileKeyProvider>> fileKeyProviderFactories;
 
     private boolean waitForServerIdentBeforeSendingClientIdent = false;
@@ -76,11 +76,6 @@ public class ConfigImpl
     @Override
     public Factory<Random> getRandomFactory() {
         return randomFactory;
-    }
-
-    @Override
-    public List<Factory.Named<Signature>> getSignatureFactories() {
-        return signatureFactories;
     }
 
     @Override
@@ -138,15 +133,6 @@ public class ConfigImpl
         this.randomFactory = randomFactory;
     }
 
-    public void setSignatureFactories(Factory.Named<Signature>... signatureFactories) {
-        setSignatureFactories(Arrays.asList(signatureFactories));
-    }
-
-    @Override
-    public void setSignatureFactories(List<Factory.Named<Signature>> signatureFactories) {
-        this.signatureFactories = signatureFactories;
-    }
-
     @Override
     public void setVersion(String version) {
         this.version = version;
@@ -170,6 +156,16 @@ public class ConfigImpl
     @Override
     public void setWaitForServerIdentBeforeSendingClientIdent(boolean waitForServerIdentBeforeSendingClientIdent) {
         this.waitForServerIdentBeforeSendingClientIdent = waitForServerIdentBeforeSendingClientIdent;
+    }
+
+    @Override
+    public List<Factory.Named<KeyAlgorithm>> getKeyAlgorithms() {
+        return keyAlgorithms;
+    }
+
+    @Override
+    public void setKeyAlgorithms(List<Factory.Named<KeyAlgorithm>> keyAlgorithms) {
+        this.keyAlgorithms = keyAlgorithms;
     }
 
     @Override

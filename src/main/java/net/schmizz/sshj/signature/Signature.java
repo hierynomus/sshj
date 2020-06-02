@@ -21,6 +21,8 @@ import java.security.PublicKey;
 /** Signature interface for SSH used to sign or verify data. Usually wraps a {@code javax.crypto.Signature} object. */
 public interface Signature {
 
+    String getSignatureName();
+
     /**
      * Initialize this signature with the given public key for signature verification.
      *

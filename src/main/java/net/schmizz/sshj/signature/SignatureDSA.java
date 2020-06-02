@@ -50,7 +50,7 @@ public class SignatureDSA
     }
 
     public SignatureDSA() {
-        super("SHA1withDSA");
+        super("SHA1withDSA", KeyType.DSA.toString());
     }
 
     @Override
@@ -72,8 +72,8 @@ public class SignatureDSA
 
         // result must be 40 bytes, but length of r and s may not be 20 bytes
 
-        int r_copylen = (r.length < 20) ? r.length : 20;
-        int s_copylen = (s.length < 20) ? s.length : 20;
+        int r_copylen = Math.min(r.length, 20);
+        int s_copylen = Math.min(s.length, 20);
 
         System.arraycopy(r, r.length - r_copylen, result, 20 - r_copylen, r_copylen);
         System.arraycopy(s, s.length - s_copylen, result, 40 - s_copylen, s_copylen);

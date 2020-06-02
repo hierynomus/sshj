@@ -15,6 +15,9 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.key.DSAKeyAlgorithm;
+import com.hierynomus.sshj.key.EdDSAKeyAlgorithm;
+import com.hierynomus.sshj.key.RSAKeyAlgorithm;
 import com.hierynomus.sshj.signature.SignatureEdDSA;
 
 import net.schmizz.sshj.common.SecurityUtils;
@@ -22,6 +25,8 @@ import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
+
+import java.util.Arrays;
 
 /**
  * Registers SpongyCastle as JCE provider.
@@ -33,11 +38,14 @@ public class AndroidConfig
         SecurityUtils.registerSecurityProvider("org.spongycastle.jce.provider.BouncyCastleProvider");
     }
 
-    // don't add ECDSA
-    protected void initSignatureFactories() {
-        setSignatureFactories(new SignatureRSA.Factory(), new SignatureDSA.Factory(),
-                // but add EdDSA
-                new SignatureEdDSA.Factory());
+
+    @Override
+    protected void initKeyAlgorithms() {
+        setKeyAlgorithms(Arrays.asList(
+                new EdDSAKeyAlgorithm.Factory(),
+                new RSAKeyAlgorithm.FactorySSHRSA(),
+                new DSAKeyAlgorithm.FactorySSHDSA()
+        ));
     }
 
     @Override

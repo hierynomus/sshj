@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.LoggerFactory;
@@ -77,11 +78,11 @@ public interface Config {
     Factory<Random> getRandomFactory();
 
     /**
-     * Retrieve the list of named factories for {@link Signature}
+     * Retrieve the list of named factories for {@link com.hierynomus.sshj.key.KeyAlgorithm}
      *
-     * @return a list of named {@link Signature} factories
+     * @return a list of named {@link com.hierynomus.sshj.key.KeyAlgorithm} factories
      */
-    List<Factory.Named<Signature>> getSignatureFactories();
+    List<Factory.Named<KeyAlgorithm>> getKeyAlgorithms();
 
     /**
      * Returns the software version information for identification during SSH connection initialization. For example,
@@ -132,11 +133,11 @@ public interface Config {
     void setRandomFactory(Factory<Random> randomFactory);
 
     /**
-     * Set the named factories for {@link Signature}.
+     * Set the named factories for {@link KeyAlgorithm}.
      *
-     * @param signatureFactories a list of named factories
+     * @param keyAlgorithms a list of named factories
      */
-    void setSignatureFactories(List<Factory.Named<Signature>> signatureFactories);
+    void setKeyAlgorithms(List<Factory.Named<KeyAlgorithm>> keyAlgorithms);
 
     /**
      * Set the software version information for identification during SSH connection initialization. For example, {@code

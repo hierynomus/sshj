@@ -78,8 +78,8 @@ public abstract class AbstractDHG extends AbstractDH
         digest.update(buf.array(), buf.rpos(), buf.available());
         H = digest.digest();
 
-        Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(),
-                                                        KeyType.fromKey(hostKey).toString());
+
+        Signature signature = trans.getKeyAlgorithm(KeyType.fromKey(hostKey)).newSignature();
         signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))

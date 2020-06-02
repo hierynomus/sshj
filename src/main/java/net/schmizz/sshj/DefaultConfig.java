@@ -15,7 +15,10 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.signature.SignatureEdDSA;
+import com.hierynomus.sshj.key.DSAKeyAlgorithm;
+import com.hierynomus.sshj.key.ECDSAKeyAlgorithm;
+import com.hierynomus.sshj.key.EdDSAKeyAlgorithm;
+import com.hierynomus.sshj.key.RSAKeyAlgorithm;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import com.hierynomus.sshj.transport.kex.DHGroups;
@@ -26,10 +29,7 @@ import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SecurityUtils;
-import net.schmizz.sshj.signature.SignatureDSA;
-import net.schmizz.sshj.signature.SignatureECDSA;
-import net.schmizz.sshj.signature.SignatureRSA;
-import net.schmizz.sshj.transport.cipher.*;
+import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.NoneCompression;
 import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
@@ -56,7 +56,7 @@ import java.util.*;
  * <li>{@link net.schmizz.sshj.ConfigImpl#setMACFactories MAC}: {@link net.schmizz.sshj.transport.mac.HMACSHA1}, {@link net.schmizz.sshj.transport.mac.HMACSHA196}, {@link net.schmizz.sshj.transport.mac.HMACMD5}, {@link
  * net.schmizz.sshj.transport.mac.HMACMD596}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setCompressionFactories Compression}: {@link net.schmizz.sshj.transport.compression.NoneCompression}</li>
- * <li>{@link net.schmizz.sshj.ConfigImpl#setSignatureFactories Signature}: {@link net.schmizz.sshj.signature.SignatureRSA}, {@link net.schmizz.sshj.signature.SignatureDSA}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setKeyAlgorithms KeyAlgorithm}: {@link net.schmizz.sshj.signature.SignatureRSA}, {@link net.schmizz.sshj.signature.SignatureDSA}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setRandomFactory PRNG}: {@link net.schmizz.sshj.transport.random.BouncyCastleRandom}* or {@link net.schmizz.sshj.transport.random.JCERandom}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setFileKeyProviderFactories Key file support}: {@link net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile}*, {@link
  * net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile}*</li>
@@ -76,12 +76,12 @@ public class DefaultConfig
         setVersion(readVersionFromProperties());
         final boolean bouncyCastleRegistered = SecurityUtils.isBouncyCastleRegistered();
         initKeyExchangeFactories(bouncyCastleRegistered);
+        initKeyAlgorithms();
         initRandomFactory(bouncyCastleRegistered);
         initFileKeyProviderFactories(bouncyCastleRegistered);
         initCipherFactories();
         initCompressionFactories();
         initMACFactories();
-        initSignatureFactories();
         setKeepAliveProvider(KeepAliveProvider.HEARTBEAT);
     }
 
@@ -99,8 +99,8 @@ public class DefaultConfig
 
     @Override
     public void setLoggerFactory(LoggerFactory loggerFactory) {
-	super.setLoggerFactory(loggerFactory);
-	log = loggerFactory.getLogger(getClass());
+        super.setLoggerFactory(loggerFactory);
+        log = loggerFactory.getLogger(getClass());
     }
 
     protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
@@ -131,6 +131,20 @@ public class DefaultConfig
         } else {
             setKeyExchangeFactories(DHGroups.Group1SHA1(), new DHGexSHA1.Factory());
         }
+    }
+
+    protected void initKeyAlgorithms() {
+        setKeyAlgorithms(Arrays.asList(
+                new EdDSAKeyAlgorithm.Factory(),
+                new ECDSAKeyAlgorithm.Factory521(),
+                new ECDSAKeyAlgorithm.Factory384(),
+                new ECDSAKeyAlgorithm.Factory256(),
+                new RSAKeyAlgorithm.FactoryRSASHA512(),
+                new RSAKeyAlgorithm.FactoryRSASHA256(),
+                new RSAKeyAlgorithm.FactorySSHRSACert(),
+                new DSAKeyAlgorithm.FactorySSHDSSCert(),
+                new RSAKeyAlgorithm.FactorySSHRSA(),
+                new DSAKeyAlgorithm.FactorySSHDSA()));
     }
 
     protected void initRandomFactory(boolean bouncyCastleRegistered) {
@@ -205,18 +219,6 @@ public class DefaultConfig
 
         setCipherFactories(avail);
         log.debug("Available cipher factories: {}", avail);
-    }
-
-    protected void initSignatureFactories() {
-        setSignatureFactories(
-                new SignatureEdDSA.Factory(),
-                new SignatureECDSA.Factory256(),
-                new SignatureECDSA.Factory384(),
-                new SignatureECDSA.Factory521(),
-                new SignatureRSA.Factory(),
-                new SignatureRSA.FactoryCERT(),
-                new SignatureDSA.Factory()
-        );
     }
 
     protected void initMACFactories() {

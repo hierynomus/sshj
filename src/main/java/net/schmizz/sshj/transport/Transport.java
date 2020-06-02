@@ -15,9 +15,11 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.Service;
 import net.schmizz.sshj.common.DisconnectReason;
+import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.SSHPacketHandler;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
@@ -235,4 +237,6 @@ public interface Transport
      * @param e The exception that occurred.
      */
     void die(Exception e);
+
+    KeyAlgorithm getKeyAlgorithm(KeyType keyType) throws TransportException;
 }
