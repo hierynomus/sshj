@@ -27,6 +27,7 @@ import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -99,7 +100,7 @@ public class UserAuthImpl
     }
 
     @Override
-    public Iterable<String> getAllowedMethods() {
+    public Collection<String> getAllowedMethods() {
         return Collections.unmodifiableList(allowedMethods);
     }
 
