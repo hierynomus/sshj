@@ -108,6 +108,14 @@ public class SFTPEngine
         return operativeVersion;
     }
 
+    public boolean supportsServerExtension(final String extension, final String domain) {
+        return serverExtensions.containsKey(extension + "@" + domain);
+    }
+
+    public String getServerExtensionData(final String extension, final String domain) {
+        return serverExtensions.get(extension + "@" + domain);
+    }
+
     public Request newExtendedRequest(String reqName) {
         return newRequest(PacketType.EXTENDED).putString(reqName);
     }
