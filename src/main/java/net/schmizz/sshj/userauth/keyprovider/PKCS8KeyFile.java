@@ -64,12 +64,16 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
                 final Object o = r.readObject();
 
                 final JcaPEMKeyConverter pemConverter = new JcaPEMKeyConverter();
-                pemConverter.setProvider(SecurityUtils.getSecurityProvider());
+                if (SecurityUtils.getSecurityProvider() != null) {
+                    pemConverter.setProvider(SecurityUtils.getSecurityProvider());
+                }    
 
                 if (o instanceof PEMEncryptedKeyPair) {
                     final PEMEncryptedKeyPair encryptedKeyPair = (PEMEncryptedKeyPair) o;
                     JcePEMDecryptorProviderBuilder decryptorBuilder = new JcePEMDecryptorProviderBuilder();
-                    decryptorBuilder.setProvider(SecurityUtils.getSecurityProvider());
+                    if (SecurityUtils.getSecurityProvider() != null) {
+                        decryptorBuilder.setProvider(SecurityUtils.getSecurityProvider());
+                    }
                     try {
                         passphrase = pwdf == null ? null : pwdf.reqPassword(resource);
                         kp = pemConverter.getKeyPair(encryptedKeyPair.decryptKeyPair(decryptorBuilder.build(passphrase)));
