@@ -17,6 +17,7 @@ package net.schmizz.sshj.userauth.method;
 
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.signature.Signature;
@@ -48,15 +49,14 @@ public abstract class KeyedAuthMethod
         }
 
         // public key as 2 strings: [ key type | key blob ]
-        KeyType keyType = KeyType.fromKey(key);
-        try {
-            KeyAlgorithm ka = params.getTransport().getKeyAlgorithm(keyType);
-            reqBuf.putString(ka.getKeyAlgorithm())
-                    .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
-            return reqBuf;
-        } catch (IOException ioe) {
+        final KeyType keyType = KeyType.fromKey(key);
+        final KeyAlgorithm ka = Factory.Named.Util.create(params.getTransport().getConfig().getKeyAlgorithms(),
+                                                          keyType.toString());
+        if (ka == null)
             throw new UserAuthException("No KeyAlgorithm configured for key " + keyType);
-        }
+        reqBuf.putString(ka.getKeyAlgorithm())
+                .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
+        return reqBuf;
     }
 
     protected SSHPacket putSig(SSHPacket reqBuf)
@@ -69,13 +69,12 @@ public abstract class KeyedAuthMethod
         }
 
         final KeyType kt = KeyType.fromKey(key);
-        Signature signature;
-        try {
-            signature = params.getTransport().getKeyAlgorithm(kt).newSignature();
-        } catch (TransportException e) {
+        final KeyAlgorithm ka = Factory.Named.Util.create(params.getTransport().getConfig().getKeyAlgorithms(),
+                                                          kt.toString());
+        if (ka == null)
             throw new UserAuthException("No KeyAlgorithm configured for key " + kt);
-        }
 
+        final Signature signature = ka.newSignature();
         signature.initSign(key);
         signature.update(new Buffer.PlainBuffer()
                 .putString(params.getTransport().getSessionID())

@@ -85,8 +85,14 @@ public abstract class AbstractDHGex extends AbstractDH {
                 .putMPInt(k);
         digest.update(buf.array(), buf.rpos(), buf.available());
         H = digest.digest();
-        KeyAlgorithm keyAlgorithm = trans.getKeyAlgorithm(KeyType.fromKey(hostKey));
-        Signature signature = keyAlgorithm.newSignature();
+        final KeyType keyType = KeyType.fromKey(hostKey);
+        final KeyAlgorithm keyAlgorithm = Factory.Named.Util.create(trans.getConfig().getKeyAlgorithms(),
+                keyType.toString());
+        if (keyAlgorithm == null)
+            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                    "No KeyAlgorithm configured for key " + keyType);
+
+        final Signature signature = keyAlgorithm.newSignature();
         signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))

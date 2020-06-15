@@ -232,12 +232,6 @@ final class KeyExchanger
         kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(),
                                         negotiatedAlgs.getKeyExchangeAlgorithm());
 
-        List<KeyAlgorithm> keyAlgorithms = new ArrayList<KeyAlgorithm>();
-        for (String signatureAlgorithm : negotiatedAlgs.getSignatureAlgorithms()) {
-            keyAlgorithms.add(Factory.Named.Util.create(transport.getConfig().getKeyAlgorithms(), signatureAlgorithm));
-        }
-        transport.setKeyAlgorithms(keyAlgorithms);
-
         try {
             kex.init(transport,
                      transport.getServerID(), transport.getClientID(),

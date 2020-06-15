@@ -15,11 +15,13 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.digest.Digest;
+import net.schmizz.sshj.userauth.UserAuthException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +80,14 @@ public abstract class AbstractDHG extends AbstractDH
         digest.update(buf.array(), buf.rpos(), buf.available());
         H = digest.digest();
 
+        final KeyType keyType = KeyType.fromKey(hostKey);
+        final KeyAlgorithm keyAlgorithm = Factory.Named.Util.create(trans.getConfig().getKeyAlgorithms(),
+                                                                    keyType.toString());
+        if (keyAlgorithm == null)
+            throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                                         "No KeyAlgorithm configured for key " + keyType);
 
-        Signature signature = trans.getKeyAlgorithm(KeyType.fromKey(hostKey)).newSignature();
+        final Signature signature = keyAlgorithm.newSignature();
         signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))

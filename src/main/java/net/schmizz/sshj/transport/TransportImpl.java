@@ -653,19 +653,4 @@ public final class TransportImpl
     ConnInfo getConnInfo() {
         return connInfo;
     }
-
-    @Override
-    public KeyAlgorithm getKeyAlgorithm(KeyType keyType) throws TransportException {
-        for (KeyAlgorithm ka : keyAlgorithms) {
-            if (ka.getKeyFormat().equals(keyType)) {
-                return ka;
-            }
-        }
-
-        throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
-    }
-
-    public void setKeyAlgorithms(List<KeyAlgorithm> keyAlgorithms) {
-        this.keyAlgorithms = keyAlgorithms;
-    }
 }
