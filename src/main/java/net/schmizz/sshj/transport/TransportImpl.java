@@ -655,14 +655,16 @@ public final class TransportImpl
     }
 
     @Override
-    public KeyAlgorithm getKeyAlgorithm(KeyType keyType) throws TransportException {
-        for (KeyAlgorithm ka : keyAlgorithms) {
-            if (ka.getKeyFormat().equals(keyType)) {
-                return ka;
+    public KeyAlgorithm getKeyAlgorithm(final KeyType initialKeyType) throws TransportException {
+        for (KeyType keyType = initialKeyType; keyType != null; keyType = keyType.getParent()) {
+            for (KeyAlgorithm ka : keyAlgorithms) {
+                if (ka.getKeyFormat().equals(keyType)) {
+                    return ka;
+                }
             }
         }
 
-        throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
+        throw new TransportException("Cannot find an available KeyAlgorithm for type " + initialKeyType);
     }
 
     public void setKeyAlgorithms(List<KeyAlgorithm> keyAlgorithms) {

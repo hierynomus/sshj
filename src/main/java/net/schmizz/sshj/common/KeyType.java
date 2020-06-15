@@ -220,6 +220,11 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return CertUtils.isCertificateOfType(key, RSA);
         }
+
+        @Override
+        public KeyType getParent() {
+            return RSA;
+        }
     },
 
     /** Signed dsa certificate */
@@ -238,6 +243,11 @@ public enum KeyType {
         @Override
         protected boolean isMyType(Key key) {
             return CertUtils.isCertificateOfType(key, DSA);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.DSA;
         }
     },
 
@@ -283,10 +293,24 @@ public enum KeyType {
     protected abstract boolean isMyType(Key key);
 
     public static KeyType fromKey(Key key) {
+        KeyType result = UNKNOWN;
         for (KeyType kt : values())
-            if (kt.isMyType((key)))
-                return kt;
-        return UNKNOWN;
+            if (kt.isMyType((key)) && (result == UNKNOWN || kt.isSubType(result)))
+                result = kt;
+        return result;
+    }
+
+    private boolean isSubType(KeyType keyType) {
+        for (KeyType node = this; node != null; node = node.getParent()) {
+            if (keyType == node) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public KeyType getParent() {
+        return null;
     }
 
     public static KeyType fromString(String sType) {
