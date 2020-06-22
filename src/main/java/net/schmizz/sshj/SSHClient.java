@@ -723,6 +723,19 @@ public class SSHClient
     }
 
     /**
+     * Stateful FTP client is required in order to connect to Serv-U FTP servers.
+     * @return Instantiated {@link SFTPClient} implementation.
+     *
+     * @throws IOException if there is an error starting the {@code sftp} subsystem
+     */
+    public SFTPClient newStatefulSFTPClient()
+            throws IOException {
+        checkConnected();
+        checkAuthenticated();
+        return new StatefulSFTPClient(new SFTPEngine(this).init());
+    }
+
+    /**
      * Does key re-exchange.
      *
      * @throws TransportException if an error occurs during key exchange
