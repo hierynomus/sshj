@@ -50,7 +50,7 @@ public abstract class KeyedAuthMethod
         // public key as 2 strings: [ key type | key blob ]
         KeyType keyType = KeyType.fromKey(key);
         try {
-            KeyAlgorithm ka = params.getTransport().getKeyAlgorithm(keyType);
+            KeyAlgorithm ka = params.getTransport().getClientKeyAlgorithm(keyType);
             reqBuf.putString(ka.getKeyAlgorithm())
                     .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
             return reqBuf;
@@ -71,7 +71,7 @@ public abstract class KeyedAuthMethod
         final KeyType kt = KeyType.fromKey(key);
         Signature signature;
         try {
-            signature = params.getTransport().getKeyAlgorithm(kt).newSignature();
+            signature = params.getTransport().getClientKeyAlgorithm(kt).newSignature();
         } catch (TransportException e) {
             throw new UserAuthException("No KeyAlgorithm configured for key " + kt);
         }

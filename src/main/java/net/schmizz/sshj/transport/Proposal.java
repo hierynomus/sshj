@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithms;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Factory;
@@ -91,7 +92,7 @@ class Proposal {
         return kex;
     }
 
-    public List<String> getSignatureAlgorithms() {
+    public List<String> getHostKeyAlgorithms() {
         return sig;
     }
 
@@ -127,13 +128,14 @@ class Proposal {
             throws TransportException {
         return new NegotiatedAlgorithms(
                 firstMatch(this.getKeyExchangeAlgorithms(), other.getKeyExchangeAlgorithms()),
-                allMatch(this.getSignatureAlgorithms(), other.getSignatureAlgorithms()),
+                firstMatch(this.getHostKeyAlgorithms(), other.getHostKeyAlgorithms()),
                 firstMatch(this.getClient2ServerCipherAlgorithms(), other.getClient2ServerCipherAlgorithms()),
                 firstMatch(this.getServer2ClientCipherAlgorithms(), other.getServer2ClientCipherAlgorithms()),
                 firstMatch(this.getClient2ServerMACAlgorithms(), other.getClient2ServerMACAlgorithms()),
                 firstMatch(this.getServer2ClientMACAlgorithms(), other.getServer2ClientMACAlgorithms()),
                 firstMatch(this.getClient2ServerCompressionAlgorithms(), other.getClient2ServerCompressionAlgorithms()),
-                firstMatch(this.getServer2ClientCompressionAlgorithms(), other.getServer2ClientCompressionAlgorithms())
+                firstMatch(this.getServer2ClientCompressionAlgorithms(), other.getServer2ClientCompressionAlgorithms()),
+                other.getHostKeyAlgorithms().containsAll(KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS)
         );
     }
 

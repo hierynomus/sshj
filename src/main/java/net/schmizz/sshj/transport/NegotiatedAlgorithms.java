@@ -15,12 +15,10 @@
  */
 package net.schmizz.sshj.transport;
 
-import java.util.List;
-
 public final class NegotiatedAlgorithms {
 
     private final String kex;
-    private final List<String> availableSigs;
+    private final String sig;
     private final String c2sCipher;
     private final String s2cCipher;
     private final String c2sMAC;
@@ -28,24 +26,27 @@ public final class NegotiatedAlgorithms {
     private final String c2sComp;
     private final String s2cComp;
 
-    NegotiatedAlgorithms(String kex, List<String> availableSigs, String c2sCipher, String s2cCipher, String c2sMAC, String s2cMAC,
-                         String c2sComp, String s2cComp) {
+    private final Boolean rsaSHA2Support;
+
+    NegotiatedAlgorithms(String kex, String sig, String c2sCipher, String s2cCipher, String c2sMAC, String s2cMAC,
+                         String c2sComp, String s2cComp, Boolean rsaSHA2Support) {
         this.kex = kex;
-        this.availableSigs = availableSigs;
+        this.sig = sig;
         this.c2sCipher = c2sCipher;
         this.s2cCipher = s2cCipher;
         this.c2sMAC = c2sMAC;
         this.s2cMAC = s2cMAC;
         this.c2sComp = c2sComp;
         this.s2cComp = s2cComp;
+        this.rsaSHA2Support = rsaSHA2Support;
     }
 
     public String getKeyExchangeAlgorithm() {
         return kex;
     }
 
-    public List<String> getSignatureAlgorithms() {
-        return availableSigs;
+    public String getSignatureAlgorithm() {
+        return sig;
     }
 
     public String getClient2ServerCipherAlgorithm() {
@@ -72,17 +73,22 @@ public final class NegotiatedAlgorithms {
         return s2cComp;
     }
 
+    public Boolean getRSASHA2Support() {
+        return rsaSHA2Support;
+    }
+
     @Override
     public String toString() {
         return ("[ " +
                 "kex=" + kex + "; " +
-                "availableSigs=" + availableSigs + "; " +
+                "sig=" + sig + "; " +
                 "c2sCipher=" + c2sCipher + "; " +
                 "s2cCipher=" + s2cCipher + "; " +
                 "c2sMAC=" + c2sMAC + "; " +
                 "s2cMAC=" + s2cMAC + "; " +
                 "c2sComp=" + c2sComp + "; " +
-                "s2cComp=" + s2cComp +
+                "s2cComp=" + s2cComp + "; " +
+                "rsaSHA2Support=" + rsaSHA2Support +
                 " ]");
     }
 

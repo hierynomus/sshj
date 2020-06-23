@@ -238,5 +238,8 @@ public interface Transport
      */
     void die(Exception e);
 
-    KeyAlgorithm getKeyAlgorithm(KeyType keyType) throws TransportException;
+    void setHostKeyAlgorithm(KeyAlgorithm keyAlgorithm);
+    KeyAlgorithm getHostKeyAlgorithm();
+    void setRSASHA2Support(Boolean rsaSHA2Support);
+    KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException;
 }
