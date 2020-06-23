@@ -146,8 +146,7 @@ public class DefaultConfig
     }
 
     protected void initRandomFactory(boolean bouncyCastleRegistered) {
-        setRandomFactory(new SingletonRandomFactory(bouncyCastleRegistered
-                ? new BouncyCastleRandom.Factory() : new JCERandom.Factory()));
+        setRandomFactory(new SingletonRandomFactory(new JCERandom.Factory()));
     }
 
     protected void initFileKeyProviderFactories(boolean bouncyCastleRegistered) {
