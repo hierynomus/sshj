@@ -20,7 +20,7 @@ import net.schmizz.sshj.connection.Connection;
 /** A channel for creating a direct TCP/IP connection from the server to a remote address. */
 public class DirectConnection extends DirectTCPIPChannel {
     public static final String LOCALHOST = "localhost";
-    public static final int LOCALPORT = 65536;
+    public static final int LOCALPORT = 65535;
 
     public DirectConnection(Connection conn, String remoteHost, int remotePort) {
         super(conn, new Parameters(LOCALHOST, LOCALPORT, remoteHost, remotePort));
