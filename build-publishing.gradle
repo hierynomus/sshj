@@ -17,7 +17,7 @@ configurations {
   pom
 }
 
-def bouncycastleVersion = "1.50"
+def bouncycastleVersion = "1.66"
 
 dependencies {
   compile "org.slf4j:slf4j-api:1.7.7"
