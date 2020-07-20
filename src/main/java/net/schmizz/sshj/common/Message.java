@@ -25,6 +25,7 @@ public enum Message {
     DEBUG(4),
     SERVICE_REQUEST(5),
     SERVICE_ACCEPT(6),
+    EXT_INFO(7),
     KEXINIT(20),
     NEWKEYS(21),
 
