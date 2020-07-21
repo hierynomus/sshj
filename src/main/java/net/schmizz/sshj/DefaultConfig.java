@@ -20,6 +20,7 @@ import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import com.hierynomus.sshj.transport.kex.DHGroups;
+import com.hierynomus.sshj.transport.kex.ExtInfoClientFactory;
 import com.hierynomus.sshj.transport.kex.ExtendedDHGroups;
 import com.hierynomus.sshj.transport.mac.Macs;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
@@ -125,7 +126,8 @@ public class DefaultConfig
                     ExtendedDHGroups.Group16SHA256(),
                     ExtendedDHGroups.Group16SHA384AtSSH(),
                     ExtendedDHGroups.Group16SHA512AtSSH(),
-                    ExtendedDHGroups.Group18SHA512AtSSH());
+                    ExtendedDHGroups.Group18SHA512AtSSH(),
+                    new ExtInfoClientFactory());
         } else {
             setKeyExchangeFactories(DHGroups.Group1SHA1(), new DHGexSHA1.Factory());
         }
