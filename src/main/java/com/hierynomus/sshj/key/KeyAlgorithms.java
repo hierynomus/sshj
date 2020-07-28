@@ -22,7 +22,6 @@ import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureECDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
