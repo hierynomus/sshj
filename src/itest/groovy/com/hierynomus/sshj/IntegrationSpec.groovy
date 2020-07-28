@@ -77,6 +77,8 @@ class IntegrationSpec extends IntegrationBaseSpec {
         "id_ed25519_opensshv1_protected" | "sshjtest"
         "id_rsa" | null
         "id_rsa_opensshv1" | null
+        "id_ecdsa_nistp384_opensshv1" | null
+        "id_ecdsa_nistp521_opensshv1" | null
     }
 
    def "should not authenticate with wrong key"() {
