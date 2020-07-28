@@ -92,7 +92,7 @@ public final class TransportImpl
 
     private KeyAlgorithm hostKeyAlgorithm;
 
-    private Boolean rsaSHA2Support;
+    private boolean rsaSHA2Support;
 
     private final Event<TransportException> serviceAccept;
 
@@ -671,7 +671,7 @@ public final class TransportImpl
     }
 
     @Override
-    public void setRSASHA2Support(Boolean rsaSHA2Support) {
+    public void setRSASHA2Support(boolean rsaSHA2Support) {
         this.rsaSHA2Support = rsaSHA2Support;
     }
 

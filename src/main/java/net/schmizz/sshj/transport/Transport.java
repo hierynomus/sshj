@@ -240,6 +240,6 @@ public interface Transport
 
     void setHostKeyAlgorithm(KeyAlgorithm keyAlgorithm);
     KeyAlgorithm getHostKeyAlgorithm();
-    void setRSASHA2Support(Boolean rsaSHA2Support);
+    void setRSASHA2Support(boolean rsaSHA2Support);
     KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException;
 }

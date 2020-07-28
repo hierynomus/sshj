@@ -26,10 +26,10 @@ public final class NegotiatedAlgorithms {
     private final String c2sComp;
     private final String s2cComp;
 
-    private final Boolean rsaSHA2Support;
+    private final boolean rsaSHA2Support;
 
     NegotiatedAlgorithms(String kex, String sig, String c2sCipher, String s2cCipher, String c2sMAC, String s2cMAC,
-                         String c2sComp, String s2cComp, Boolean rsaSHA2Support) {
+                         String c2sComp, String s2cComp, boolean rsaSHA2Support) {
         this.kex = kex;
         this.sig = sig;
         this.c2sCipher = c2sCipher;
@@ -73,7 +73,7 @@ public final class NegotiatedAlgorithms {
         return s2cComp;
     }
 
-    public Boolean getRSASHA2Support() {
+    public boolean getRSASHA2Support() {
         return rsaSHA2Support;
     }
 
