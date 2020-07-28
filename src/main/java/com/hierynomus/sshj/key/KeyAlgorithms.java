@@ -22,7 +22,12 @@ import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureECDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class KeyAlgorithms {
+
+    public static List<String> SSH_RSA_SHA2_ALGORITHMS = Arrays.asList("rsa-sha2-512", "rsa-sha2-256");
 
     public static Factory SSHRSA() { return new Factory("ssh-rsa", new SignatureRSA.FactorySSHRSA(), KeyType.RSA); }
     public static Factory SSHRSACertV01() { return new Factory("ssh-rsa-cert-v01@openssh.com", new SignatureRSA.FactoryCERT(), KeyType.RSA_CERT); }
