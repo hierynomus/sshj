@@ -529,6 +529,9 @@ public final class TransportImpl
                 case SERVICE_ACCEPT:
                     gotServiceAccept();
                     break;
+                case EXT_INFO:
+                    log.debug("Received SSH_MSG_EXT_INFO");
+                    break;
                 case USERAUTH_BANNER:
                     log.debug("Received USERAUTH_BANNER");
                     break;
