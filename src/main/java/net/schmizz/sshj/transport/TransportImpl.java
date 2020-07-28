@@ -660,7 +660,6 @@ public final class TransportImpl
         return connInfo;
     }
 
-    @Override
     public void setHostKeyAlgorithm(KeyAlgorithm keyAlgorithm) {
         this.hostKeyAlgorithm = keyAlgorithm;
     }
@@ -670,7 +669,6 @@ public final class TransportImpl
         return this.hostKeyAlgorithm;
     }
 
-    @Override
     public void setRSASHA2Support(boolean rsaSHA2Support) {
         this.rsaSHA2Support = rsaSHA2Support;
     }
