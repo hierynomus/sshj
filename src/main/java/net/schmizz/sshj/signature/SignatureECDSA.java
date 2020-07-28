@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.signature;
 
+import com.hierynomus.asn1.encodingrules.der.DERDecoder;
 import com.hierynomus.asn1.encodingrules.der.DEREncoder;
 import com.hierynomus.asn1.types.ASN1Object;
 import com.hierynomus.asn1.types.constructed.ASN1Sequence;
@@ -23,6 +24,7 @@ import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -87,22 +89,16 @@ public class SignatureECDSA extends AbstractSignature {
 
     @Override
     public byte[] encode(byte[] sig) {
-        int rIndex = 3;
-        int rLen = sig[rIndex++] & 0xff;
-        byte[] r = new byte[rLen];
-        System.arraycopy(sig, rIndex, r, 0, r.length);
+        ByteArrayInputStream bais = new ByteArrayInputStream(sig);
+        com.hierynomus.asn1.ASN1InputStream asn1InputStream = new com.hierynomus.asn1.ASN1InputStream(new DERDecoder(), bais);
 
-        int sIndex = rIndex + rLen + 1;
-        int sLen = sig[sIndex++] & 0xff;
-        byte[] s = new byte[sLen];
-        System.arraycopy(sig, sIndex, s, 0, s.length);
-
-        System.arraycopy(sig, 4, r, 0, rLen);
-        System.arraycopy(sig, 6 + rLen, s, 0, sLen);
+        ASN1Sequence sequence = asn1InputStream.readObject();
+        ASN1Integer r = (ASN1Integer) sequence.get(0);
+        ASN1Integer s = (ASN1Integer) sequence.get(1);
 
         Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
-        buf.putMPInt(new BigInteger(r));
-        buf.putMPInt(new BigInteger(s));
+        buf.putMPInt(r.getValue());
+        buf.putMPInt(s.getValue());
 
         return buf.getCompactData();
     }
