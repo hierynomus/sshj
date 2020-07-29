@@ -47,10 +47,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -69,6 +66,44 @@ public class OpenSSHKeyFileTest {
 
     final char[] correctPassphrase = "test_passphrase".toCharArray();
     final char[] incorrectPassphrase = new char[]{' '};
+
+    private static class WipeTrackingPasswordFinder implements PasswordFinder {
+        private int reqCounter = 0;
+
+        final private String password;
+        final private boolean withRetry;
+        final private ArrayList<char[]> toWipe = new ArrayList<>();
+
+        WipeTrackingPasswordFinder(String password, Boolean withRetry) {
+            this.password = password;
+            this.withRetry = withRetry;
+        }
+
+        @Override
+        public char[] reqPassword(Resource<?> resource) {
+            char[] passwordChars;
+            if (withRetry && reqCounter < 3) {
+                reqCounter++;
+                // Return an incorrect password three times before returning the correct one.
+                passwordChars = (password + "incorrect").toCharArray();
+            } else {
+                passwordChars = password.toCharArray();
+            }
+            toWipe.add(passwordChars);
+            return passwordChars;
+        }
+
+        @Override
+        public boolean shouldRetry(Resource<?> resource) {
+            return withRetry && reqCounter <= 3;
+        }
+
+        public void assertWiped() {
+            for (char[] passwordChars : toWipe) {
+                assertArrayEquals(new char[passwordChars.length], passwordChars);
+            }
+        }
+    };
 
     final PasswordFinder onlyGivesWhenReady = new PasswordFinder() {
         @Override
@@ -249,27 +284,11 @@ public class OpenSSHKeyFileTest {
 
     private void checkOpenSSHKeyV1(String key, final String password, boolean withRetry) throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
-        keyFile.init(new File(key), new PasswordFinder() {
-            private int reqCounter = 0;
-
-            @Override
-            public char[] reqPassword(Resource<?> resource) {
-                if (withRetry && reqCounter < 3) {
-                    reqCounter++;
-                    // Return an incorrect password three times before returning the correct one.
-                    return (password + "incorrect").toCharArray();
-                } else {
-                    return password.toCharArray();
-                }
-            }
-
-            @Override
-            public boolean shouldRetry(Resource<?> resource) {
-                return withRetry && reqCounter <= 3;
-            }
-        });
+        WipeTrackingPasswordFinder pwf = new WipeTrackingPasswordFinder(password, withRetry);
+        keyFile.init(new File(key), pwf);
         PrivateKey aPrivate = keyFile.getPrivate();
         assertThat(aPrivate.getAlgorithm(), equalTo("EdDSA"));
+        pwf.assertWiped();
     }
 
     @Test

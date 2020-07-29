@@ -85,7 +85,7 @@ public abstract class AbstractDHGex extends AbstractDH {
                 .putMPInt(k);
         digest.update(buf.array(), buf.rpos(), buf.available());
         H = digest.digest();
-        KeyAlgorithm keyAlgorithm = trans.getKeyAlgorithm(KeyType.fromKey(hostKey));
+        KeyAlgorithm keyAlgorithm = trans.getHostKeyAlgorithm();
         Signature signature = keyAlgorithm.newSignature();
         signature.initVerify(hostKey);
         signature.update(H, 0, H.length);

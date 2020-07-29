@@ -143,9 +143,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 CharBuffer charBuffer = CharBuffer.wrap(pwdf.reqPassword(null));
                 ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
                 passphrase = Arrays.copyOfRange(byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
+                Arrays.fill(charBuffer.array(), '\u0000');
+                Arrays.fill(byteBuffer.array(), (byte) 0);
             }
             byte[] keyiv = new byte[48];
             new BCrypt().pbkdf(passphrase, opts.readBytes(), opts.readUInt32AsInt(), keyiv);
+            Arrays.fill(passphrase, (byte) 0);
             byte[] key = Arrays.copyOfRange(keyiv, 0, 32);
             byte[] iv = Arrays.copyOfRange(keyiv, 32, 48);
             cipher.init(Cipher.Mode.Decrypt, key, iv);

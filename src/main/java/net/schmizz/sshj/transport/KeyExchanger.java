@@ -231,12 +231,9 @@ final class KeyExchanger
         }
         kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(),
                                         negotiatedAlgs.getKeyExchangeAlgorithm());
-
-        List<KeyAlgorithm> keyAlgorithms = new ArrayList<KeyAlgorithm>();
-        for (String signatureAlgorithm : negotiatedAlgs.getSignatureAlgorithms()) {
-            keyAlgorithms.add(Factory.Named.Util.create(transport.getConfig().getKeyAlgorithms(), signatureAlgorithm));
-        }
-        transport.setKeyAlgorithms(keyAlgorithms);
+        transport.setHostKeyAlgorithm(Factory.Named.Util.create(transport.getConfig().getKeyAlgorithms(),
+                                      negotiatedAlgs.getSignatureAlgorithm()));
+        transport.setRSASHA2Support(negotiatedAlgs.getRSASHA2Support());
 
         try {
             kex.init(transport,

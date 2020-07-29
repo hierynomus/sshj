@@ -238,5 +238,6 @@ public interface Transport
      */
     void die(Exception e);
 
-    KeyAlgorithm getKeyAlgorithm(KeyType keyType) throws TransportException;
+    KeyAlgorithm getHostKeyAlgorithm();
+    KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException;
 }

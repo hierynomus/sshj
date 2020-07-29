@@ -16,6 +16,7 @@
 package net.schmizz.sshj.transport;
 
 import com.hierynomus.sshj.key.KeyAlgorithm;
+import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.IdentificationStringParser;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
@@ -89,7 +90,9 @@ public final class TransportImpl
 
     private final Decoder decoder;
 
-    private List<KeyAlgorithm> keyAlgorithms;
+    private KeyAlgorithm hostKeyAlgorithm;
+
+    private boolean rsaSHA2Support;
 
     private final Event<TransportException> serviceAccept;
 
@@ -529,6 +532,9 @@ public final class TransportImpl
                 case SERVICE_ACCEPT:
                     gotServiceAccept();
                     break;
+                case EXT_INFO:
+                    log.debug("Received SSH_MSG_EXT_INFO");
+                    break;
                 case USERAUTH_BANNER:
                     log.debug("Received USERAUTH_BANNER");
                     break;
@@ -654,20 +660,33 @@ public final class TransportImpl
         return connInfo;
     }
 
+    public void setHostKeyAlgorithm(KeyAlgorithm keyAlgorithm) {
+        this.hostKeyAlgorithm = keyAlgorithm;
+    }
+
     @Override
-    public KeyAlgorithm getKeyAlgorithm(final KeyType initialKeyType) throws TransportException {
+    public KeyAlgorithm getHostKeyAlgorithm() {
+        return this.hostKeyAlgorithm;
+    }
+
+    public void setRSASHA2Support(boolean rsaSHA2Support) {
+        this.rsaSHA2Support = rsaSHA2Support;
+    }
+
+    @Override
+    public KeyAlgorithm getClientKeyAlgorithm(final KeyType initialKeyType) throws TransportException {
         for (KeyType keyType = initialKeyType; keyType != null; keyType = keyType.getParent()) {
-            for (KeyAlgorithm ka : keyAlgorithms) {
-                if (ka.getKeyFormat().equals(keyType)) {
-                    return ka;
-                }
+            if (keyType != KeyType.RSA || !rsaSHA2Support) {
+                return Factory.Named.Util.create(getConfig().getKeyAlgorithms(), keyType.toString());
             }
+
+            List<Factory.Named<KeyAlgorithm>> factories = getConfig().getKeyAlgorithms();
+            if (factories != null)
+                for (Factory.Named<KeyAlgorithm> f : factories)
+                    if (f.getName().equals("ssh-rsa") || KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS.contains(f.getName()))
+                        return f.create();
         }
 
         throw new TransportException("Cannot find an available KeyAlgorithm for type " + initialKeyType);
-    }
-
-    public void setKeyAlgorithms(List<KeyAlgorithm> keyAlgorithms) {
-        this.keyAlgorithms = keyAlgorithms;
     }
 }
