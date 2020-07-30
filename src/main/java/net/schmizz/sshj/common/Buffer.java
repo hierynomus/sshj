@@ -58,7 +58,7 @@ public class Buffer<T extends Buffer<T>> {
     public static final int MAX_SIZE = (1 << 30); 
 
     /** Maximum size of a uint64 */
-    private static final BigInteger MAX_UINT64_VALUE = BigInteger.ONE
+    public static final BigInteger MAX_UINT64_VALUE = BigInteger.ONE
                                                             .shiftLeft(64)
                                                             .subtract(BigInteger.ONE);
 

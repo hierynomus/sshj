@@ -396,8 +396,14 @@ public enum KeyType {
             }
         }
 
-        private static long epochFromDate(Date date) {
-            return date.getTime() / 1000;
+        private static BigInteger epochFromDate(Date date) {
+            long time = date.getTime();
+            if (time >= Long.MAX_VALUE / 1000 * 1000) {
+                // OpenSSH expects this number when the date is the infinite future.
+                return Buffer.MAX_UINT64_VALUE;
+            } else {
+                return BigInteger.valueOf(time / 1000);
+            }
         }
 
         private static String unpackString(byte[] packedString) throws BufferException {
