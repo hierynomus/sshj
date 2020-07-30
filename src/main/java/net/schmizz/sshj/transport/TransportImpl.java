@@ -674,19 +674,16 @@ public final class TransportImpl
     }
 
     @Override
-    public KeyAlgorithm getClientKeyAlgorithm(final KeyType initialKeyType) throws TransportException {
-        for (KeyType keyType = initialKeyType; keyType != null; keyType = keyType.getParent()) {
-            if (keyType != KeyType.RSA || !rsaSHA2Support) {
-                return Factory.Named.Util.create(getConfig().getKeyAlgorithms(), keyType.toString());
-            }
-
-            List<Factory.Named<KeyAlgorithm>> factories = getConfig().getKeyAlgorithms();
-            if (factories != null)
-                for (Factory.Named<KeyAlgorithm> f : factories)
-                    if (f.getName().equals("ssh-rsa") || KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS.contains(f.getName()))
-                        return f.create();
+    public KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException {
+        if (keyType != KeyType.RSA || !rsaSHA2Support) {
+            return Factory.Named.Util.create(getConfig().getKeyAlgorithms(), keyType.toString());
         }
 
-        throw new TransportException("Cannot find an available KeyAlgorithm for type " + initialKeyType);
+        List<Factory.Named<KeyAlgorithm>> factories = getConfig().getKeyAlgorithms();
+        if (factories != null)
+            for (Factory.Named<KeyAlgorithm> f : factories)
+                if (f.getName().equals("ssh-rsa") || KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS.contains(f.getName()))
+                    return f.create();
+        throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
     }
 }
