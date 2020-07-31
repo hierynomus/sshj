@@ -220,6 +220,11 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return CertUtils.isCertificateOfType(key, RSA);
         }
+
+        @Override
+        public KeyType getParent() {
+            return RSA;
+        }
     },
 
     /** Signed dsa certificate */
@@ -238,6 +243,11 @@ public enum KeyType {
         @Override
         protected boolean isMyType(Key key) {
             return CertUtils.isCertificateOfType(key, DSA);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.DSA;
         }
     },
 
@@ -283,10 +293,24 @@ public enum KeyType {
     protected abstract boolean isMyType(Key key);
 
     public static KeyType fromKey(Key key) {
+        KeyType result = UNKNOWN;
         for (KeyType kt : values())
-            if (kt.isMyType((key)))
-                return kt;
-        return UNKNOWN;
+            if (kt.isMyType((key)) && (result == UNKNOWN || kt.isSubType(result)))
+                result = kt;
+        return result;
+    }
+
+    private boolean isSubType(KeyType keyType) {
+        for (KeyType node = this; node != null; node = node.getParent()) {
+            if (keyType == node) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public KeyType getParent() {
+        return null;
     }
 
     public static KeyType fromString(String sType) {
@@ -372,8 +396,18 @@ public enum KeyType {
             }
         }
 
-        private static long epochFromDate(Date date) {
-            return date.getTime() / 1000;
+        private static BigInteger epochFromDate(Date date) {
+            long time = date.getTime() / 1000;
+            if (time >= Long.MAX_VALUE / 1000) {
+                // Dealing with the signed longs in Java. Since the protocol requires a unix timestamp in milliseconds,
+                // and since Java can store numbers not bigger than 2^63-1 as `long`, we can't distinguish dates
+                // after `new Date(Long.MAX_VALUE / 1000)`. It's unlikely that someone uses certificate valid until
+                // the 10 January of 294247 year. Supposing that such dates are unlimited.
+                // OpenSSH expects to see 0xFF_FF_FF_FF_FF_FF_FF_FF in such cases.
+                return Buffer.MAX_UINT64_VALUE;
+            } else {
+                return BigInteger.valueOf(time);
+            }
         }
 
         private static String unpackString(byte[] packedString) throws BufferException {
