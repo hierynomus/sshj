@@ -397,12 +397,16 @@ public enum KeyType {
         }
 
         private static BigInteger epochFromDate(Date date) {
-            long time = date.getTime();
-            if (time >= Long.MAX_VALUE / 1000 * 1000) {
-                // OpenSSH expects this number when the date is the infinite future.
+            long time = date.getTime() / 1000;
+            if (time >= Long.MAX_VALUE / 1000) {
+                // Dealing with the signed longs in Java. Since the protocol requires a unix timestamp in milliseconds,
+                // and since Java can store numbers not bigger than 2^63-1 as `long`, we can't distinguish dates
+                // after `new Date(Long.MAX_VALUE / 1000)`. It's unlikely that someone uses certificate valid until
+                // the 10 January of 294247 year. Supposing that such dates are unlimited.
+                // OpenSSH expects to see 0xFF_FF_FF_FF_FF_FF_FF_FF in such cases.
                 return Buffer.MAX_UINT64_VALUE;
             } else {
-                return BigInteger.valueOf(time / 1000);
+                return BigInteger.valueOf(time);
             }
         }
 
