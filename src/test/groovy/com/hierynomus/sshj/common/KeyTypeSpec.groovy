@@ -15,6 +15,9 @@
  */
 package com.hierynomus.sshj.common
 
+import com.hierynomus.sshj.userauth.certificate.Certificate
+import net.schmizz.sshj.common.Base64
+import net.schmizz.sshj.common.Buffer
 import net.schmizz.sshj.common.KeyType
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile
 import spock.lang.Specification
@@ -98,5 +101,20 @@ f26VSnEypH3G3cmPYfpVcXL63bCb0E4sNJwENM4tQGZa5YGz3CxMdgIVAJUv4z9+
                 KeyType.RSA,
                 KeyType.DSA,
         ]
+    }
+
+    def "should read signed certificate (public)"() {
+        given:
+        def key = """ssh-rsa-cert-v01@openssh.com AAAAHHNzaC1yc2EtY2VydC12MDFAb3BlbnNzaC5jb20AAAAg10JjXqWoxeMUyik45jr0cIZ/hFmYZQO27ilcjFHDVpgAAAADAQABAAAAgQCbFJRT+YwxvPCuHjWfEzeMs/Xkp6ay/N9J4XgSgHcyB6yeYw0KMW4Rs6OWJZcvj5ejuUonS9Kbwyf0YaylZxlfxt/K06rtHgKjwY3SSAQz4Y6woo4QI+pNP6SciJ/XymnE8+ZC6bJxwF5VtX1ivPn8o5am6LiDUk7kQoPAkBfs5/IE+w5UvO4zAAAAAQAAAE52YXVsdC1hcHByb2xlLWRiZDY5ZGExNmNiOTYwYjRhYTJkMzdlODcwZTA5OTdkN2M3ZjhhMjVlZTcyYmEwNTU0NTQ0NjBmNDA1YWU3ZjIAAAAPAAAAC2JyZWFrLWdsYXNzAAAAAF7B1hkAAAAAXsHdPwAAAAAAAAASAAAACnBlcm1pdC1wdHkAAAAAAAAAAAAAAhcAAAAHc3NoLXJzYQAAAAMBAAEAAAIBAOZSr+o8qpoAxBByB3dB0uRbaP9TMKU7W/j/RTIrVINeMJFzzkrqX6Bwwvn6+cAUjuLMz7L8H9Wqjivp48XWWPyyYbJ64bPdlPFzAzWbdCfY4Nd2akFLDTKqd5i0+iu+06suMEmvKVMQraNvjPccshrtcQYHTB0qmq6G1PjFaUxMeeSdv+U8+AqKIVMcuvnVfidUnaaVXn3ie9R616l3JwtvW/XS1SeAqrMqovvMMmZrIB9Jq9WPyV5hriYeWwFPbZUhsQsSj78IMxLdp0P318+6LUkuLuGZ9QGrQxWeOM2Y1/4PA3CHUBIRiA7+UGafkwn2y3L9XtxHXdQvcotV1zWq805YDw7frQJTXEI028+NPE0sE0aLbNM8/RibXgukiL8nP9M9ZfSlB8tUDO5Kuq5nWEUQ6hODW+RLf3qQFlCCF1mLy4HnwjY70jyLankVThIK2ZMoUqujVlBo5Fh8ptwzQ+VvJ9EUcz9rnoGtP0qIxutcTROKvUMcCKNimu7K+PP5+U6GJK4UbPqJSKGO7z85BBsNoqU50S2DP7lEhqd/9Ty+zXICu/Fjtio2uM4GfFIFChqTR2QuJ25dw9+v9yCVcqwozWeb0MOLm3i/bpxNqbici8ol1ZNBDyoI9gyi3vuxPkzerse7IplqUraINvXXQxrqR7/WNehayruAwYcNAAACDwAAAAdzc2gtcnNhAAACAMoIDDhDC2TCOEYE46tKL/lD4eODb4MxVJBWxBPcdUtDf24L7TuOoeRAoOIpKtv5JKU2du3ElUMnheyX+3IWuh4H8AuHGU4AyFc+cXvyGNAE7mppUb637cPNCOVgfUdImHtPRiP6MdILFeMAHNPpfkh8i+qqszum2QuukexF+7wieuaaOtlBNeuZ0/2oi6I2KGOzEnL54w0PKXgQY2AVWgeOQ2S7c+XFjxI0ospE0XVjut/Kn1VSK3cO3sI4W14gb9agaF/XTUegtrpHuPvW4Q3OQbbGHG9J/8/WGQB/HlexDkXh2GaNupC4+vwXb4//P1OV9bMUYPqMH6j2DAs8cSMdfh14utmmwrIWIgoKD3Htiby6XDkNs0EQdzPHeVgE6wbL0hO2oV3VRgcQ2CUxD+Z8j/S/q/mWS+PrfMkVBTPFojdrmxy0fJeZnkqhqK/N5+zkcP2RCwPiy2DQ/NOSrpJFqwxSctse7kbrwESdtT4cUIuofN1UOceRBhk2DoSJgLag9JflYeWez6rBW7GzJEtTLbObkRGWacWNZsyVHZlQFd1rhA2+6Yn42FFJQm9E6Eh+Higd2u7HmSrAVKiqZuwdGLCuUut+QhHIShBN0WBQAZTKtvv8/IQGk84jHy7UZeVrmNFM57AsSLIw3kTcebrRP+vFLYPun/KzbnTP3yrC"""
+        def parts = key.split("\\s+")
+        def keyType = KeyType.fromString(parts[0])
+
+        when:
+        def pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey()
+
+        then:
+        KeyType.fromKey(pubKey) == keyType
+        pubKey.getClass() == Certificate.class
+        ((Certificate)pubKey).getSignature().length > 0
     }
 }
