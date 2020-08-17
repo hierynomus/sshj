@@ -41,6 +41,11 @@ public class OpenSSHKnownHosts
     protected final File khFile;
     protected final List<KnownHostEntry> entries = new ArrayList<KnownHostEntry>();
 
+    public OpenSSHKnownHosts(Reader reader) throws IOException {
+        this(reader, LoggerFactory.DEFAULT);
+    }
+
+
     public OpenSSHKnownHosts(File khFile)
             throws IOException {
         this(khFile, LoggerFactory.DEFAULT);
@@ -51,28 +56,39 @@ public class OpenSSHKnownHosts
         this.khFile = khFile;
         log = loggerFactory.getLogger(getClass());
         if (khFile.exists()) {
-            final EntryFactory entryFactory = new EntryFactory();
             final BufferedReader br = new BufferedReader(new FileReader(khFile));
             try {
-                // Read in the file, storing each line as an entry
-                String line;
-                while ((line = br.readLine()) != null) {
-                    try {
-                        KnownHostEntry entry = entryFactory.parseEntry(line);
-                        if (entry != null) {
-                            entries.add(entry);
-                        }
-                    } catch (SSHException ignore) {
-                        log.debug("Bad line ({}): {} ", ignore.toString(), line);
-                    } catch (SSHRuntimeException ignore) {
-                        log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
-                    }
-                }
+                readEntries(br);
             } finally {
                 IOUtils.closeQuietly(br);
             }
         }
     }
+
+    public OpenSSHKnownHosts(Reader reader, LoggerFactory loggerFactory) throws IOException {
+        this.khFile = null;
+        log = loggerFactory.getLogger(getClass());
+        BufferedReader br = new BufferedReader(reader);
+        readEntries(br);
+    }
+
+    private void readEntries(BufferedReader br) throws IOException {
+        final EntryFactory entryFactory = new EntryFactory();
+        String line;
+        while ((line = br.readLine()) != null) {
+            try {
+                KnownHostEntry entry = entryFactory.parseEntry(line);
+                if (entry != null) {
+                    entries.add(entry);
+                }
+            } catch (SSHException ignore) {
+                log.debug("Bad line ({}): {} ", ignore.toString(), line);
+            } catch (SSHRuntimeException ignore) {
+                log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
+            }
+        }
+    }
+
 
     public File getFile() {
         return khFile;
