@@ -142,7 +142,9 @@ public class SSHClient
 	log = loggerFactory.getLogger(getClass());
         this.trans = new TransportImpl(config, this);
         this.auth = new UserAuthImpl(trans);
-        this.conn = new ConnectionImpl(trans, config.getKeepAliveProvider());
+	ConnectionImpl connectionImpl = new ConnectionImpl(trans, config.getKeepAliveProvider());
+        this.conn = connectionImpl;
+	this.trans.setService(connectionImpl);
     }
 
     /**
