@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.transport;
 
-import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.common.*;
@@ -323,13 +322,25 @@ final class KeyExchanger
                         resizedKey(encryptionKey_S2C, cipher_S2C.getBlockSize(), hash, kex.getK(), kex.getH()),
                         initialIV_S2C);
 
-        final MAC mac_C2S = Factory.Named.Util.create(transport.getConfig().getMACFactories(), negotiatedAlgs
-                .getClient2ServerMACAlgorithm());
-        mac_C2S.init(resizedKey(integrityKey_C2S, mac_C2S.getBlockSize(), hash, kex.getK(), kex.getH()));
+        /*
+         * For AES-GCM ciphers, MAC will also be AES-GCM, so it is handled by the cipher itself.
+         * In that case, both s2c and c2s MACs are ignored.
+         *
+         * Refer to RFC5647 Section 5.1
+         */
+        MAC mac_C2S = null;
+        if(cipher_C2S.getAuthenticationTagSize() == 0) {
+            mac_C2S = Factory.Named.Util.create(transport.getConfig().getMACFactories(), negotiatedAlgs
+                    .getClient2ServerMACAlgorithm());
+            mac_C2S.init(resizedKey(integrityKey_C2S, mac_C2S.getBlockSize(), hash, kex.getK(), kex.getH()));
+        }
 
-        final MAC mac_S2C = Factory.Named.Util.create(transport.getConfig().getMACFactories(),
-                                                      negotiatedAlgs.getServer2ClientMACAlgorithm());
-        mac_S2C.init(resizedKey(integrityKey_S2C, mac_S2C.getBlockSize(), hash, kex.getK(), kex.getH()));
+        MAC mac_S2C = null;
+        if(cipher_S2C.getAuthenticationTagSize() == 0) {
+            mac_S2C  = Factory.Named.Util.create(transport.getConfig().getMACFactories(),
+                    negotiatedAlgs.getServer2ClientMACAlgorithm());
+            mac_S2C.init(resizedKey(integrityKey_S2C, mac_S2C.getBlockSize(), hash, kex.getK(), kex.getH()));
+        }
 
         final Compression compression_S2C =
                 Factory.Named.Util.create(transport.getConfig().getCompressionFactories(),

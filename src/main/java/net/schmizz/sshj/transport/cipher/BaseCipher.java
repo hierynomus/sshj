@@ -38,6 +38,7 @@ public abstract class BaseCipher
     }
 
     private final int ivsize;
+    private final int authSize;
     private final int bsize;
     private final String algorithm;
     private final String transformation;
@@ -45,7 +46,12 @@ public abstract class BaseCipher
     private javax.crypto.Cipher cipher;
 
     public BaseCipher(int ivsize, int bsize, String algorithm, String transformation) {
+        this(ivsize, 0, bsize, algorithm, transformation);
+    }
+
+    public BaseCipher(int ivsize, int authSize, int bsize, String algorithm, String transformation) {
         this.ivsize = ivsize;
+        this.authSize = authSize;
         this.bsize = bsize;
         this.algorithm = algorithm;
         this.transformation = transformation;
@@ -62,6 +68,11 @@ public abstract class BaseCipher
     }
 
     @Override
+    public int getAuthenticationTagSize() {
+        return authSize;
+    }
+
+    @Override
     public void init(Mode mode, byte[] key, byte[] iv) {
         key = BaseCipher.resize(key, bsize);
         iv = BaseCipher.resize(iv, ivsize);
@@ -75,6 +86,11 @@ public abstract class BaseCipher
     }
 
     protected abstract void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv) throws InvalidKeyException, InvalidAlgorithmParameterException;
+
+    public javax.crypto.Cipher getCipherInstance() {
+        return cipher;
+    }
+
     protected SecretKeySpec getKeySpec(byte[] key) {
         return new SecretKeySpec(key, algorithm);
     }
@@ -92,4 +108,19 @@ public abstract class BaseCipher
         }
     }
 
+    @Override
+    public void updateAAD(byte[] data, int offset, int length) {
+        throw new UnsupportedOperationException(getClass() + " does not support AAD operations");
+    }
+
+    @Override
+    public void updateAAD(byte[] data) {
+        updateAAD(data, 0, data.length);
+    }
+
+    @Override
+    public void updateWithAAD(byte[] input, int offset, int aadLen, int inputLen) {
+        updateAAD(input, offset, aadLen);
+        update(input, offset + aadLen, inputLen);
+    }
 }

@@ -355,6 +355,23 @@ public class Buffer<T extends Buffer<T>> {
         return new BigInteger(1, magnitude);
     }
 
+    public static long getLong(byte[] buf, int off, int len) {
+        if (len < 8) {
+            throw new IllegalArgumentException("Not enough data for a long: required=8, available=" + len);
+        }
+
+        long l = (long) buf[off] << 56;
+        l |= ((long) buf[off + 1] & 0xff) << 48;
+        l |= ((long) buf[off + 2] & 0xff) << 40;
+        l |= ((long) buf[off + 3] & 0xff) << 32;
+        l |= ((long) buf[off + 4] & 0xff) << 24;
+        l |= ((long) buf[off + 5] & 0xff) << 16;
+        l |= ((long) buf[off + 6] & 0xff) << 8;
+        l |= (long) buf[off + 7] & 0xff;
+
+        return l;
+    }
+
     public T putUInt64(long uint64) {
         if (uint64 < 0) {
             throw new IllegalArgumentException("Invalid value: " + uint64);
@@ -382,6 +399,23 @@ public class Buffer<T extends Buffer<T>> {
         data[wpos++] = (byte) (uint64 >> 8);
         data[wpos++] = (byte) uint64;
         return (T) this;
+    }
+
+    public static int putLong(long value, byte[] buf, int off, int len) {
+        if (len < 8) {
+            throw new IllegalArgumentException("Not enough data for a long: required=8, available=" + len);
+        }
+
+        buf[off] = (byte) (value >> 56);
+        buf[off + 1] = (byte) (value >> 48);
+        buf[off + 2] = (byte) (value >> 40);
+        buf[off + 3] = (byte) (value >> 32);
+        buf[off + 4] = (byte) (value >> 24);
+        buf[off + 5] = (byte) (value >> 16);
+        buf[off + 6] = (byte) (value >> 8);
+        buf[off + 7] = (byte) value;
+
+        return 8;
     }
 
     /**

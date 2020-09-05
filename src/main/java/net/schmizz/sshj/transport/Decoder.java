@@ -72,12 +72,48 @@ final class Decoder
      */
     private int decode()
             throws SSHException {
-
-        if (etm) {
+        if (authMode) {
+            return decodeAuthMode();
+        } else if (etm) {
             return decodeEtm();
         } else {
             return decodeMte();
         }
+    }
+
+    private int decodeAuthMode() throws SSHException {
+        int need;
+        for(;;) {
+            if (packetLength == -1) { // Waiting for beginning of packet
+                assert inputBuffer.rpos() == 0 : "buffer cleared";
+                need = cipherSize - inputBuffer.available();
+                if (need <= 0) {
+                    packetLength = decryptLengthAAD();
+                } else {
+                    // Need more data
+                    break;
+                }
+            } else {
+                assert inputBuffer.rpos() == 4 : "packet length read";
+                need = packetLength + cipherSize - inputBuffer.available();
+                if (need <= 0) {
+                    seq = seq + 1 & 0xffffffffL;
+                    cipher.update(inputBuffer.array(), 4, packetLength);
+                    inputBuffer.wpos(packetLength + 4 - inputBuffer.readByte());
+                    final SSHPacket plain = usingCompression() ? decompressed() : inputBuffer;
+                    if (log.isTraceEnabled()) {
+                        log.trace("Received packet #{}: {}", seq, plain.printHex());
+                    }
+                    packetHandler.handle(plain.readMessageID(), plain); // Process the decoded packet
+                    inputBuffer.clear();
+                    packetLength = -1;
+                } else {
+                    // Needs more data
+                    break;
+                }
+            }
+        }
+        return need;
     }
 
     /**
@@ -99,7 +135,7 @@ final class Decoder
                 }
             } else {
                 assert inputBuffer.rpos() == 4 : "packet length read";
-                bytesNeeded = packetLength + mac.getBlockSize() - inputBuffer.available();
+                bytesNeeded = packetLength + (mac != null ? mac.getBlockSize() : 0) - inputBuffer.available();
                 if (bytesNeeded <= 0) {
                     seq = seq + 1 & 0xffffffffL;
                     checkMAC(inputBuffer.array());
@@ -170,6 +206,9 @@ final class Decoder
 
     private void checkMAC(final byte[] data)
             throws TransportException {
+        if(mac == null)
+            return;
+
         mac.update(seq); // seq num
         mac.update(data, 0, packetLength + 4); // packetLength+4 = entire packet w/o mac
         mac.doFinal(macResult, 0); // compute
@@ -184,6 +223,20 @@ final class Decoder
         uncompressBuffer.clear();
         compression.uncompress(inputBuffer, uncompressBuffer);
         return uncompressBuffer;
+    }
+
+    private int decryptLengthAAD() throws TransportException {
+        cipher.updateAAD(inputBuffer.array(), 0, 4);
+
+        final int len;
+        try {
+            len = inputBuffer.readUInt32AsInt();
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
+        checkPacketLength(len);
+
+        return len;
     }
 
     private int decryptLength()
@@ -237,7 +290,8 @@ final class Decoder
     @Override
     void setAlgorithms(Cipher cipher, MAC mac, Compression compression) {
         super.setAlgorithms(cipher, mac, compression);
-        macResult = new byte[mac.getBlockSize()];
+        if(mac != null)
+            macResult = new byte[mac.getBlockSize()];
     }
 
     @Override
