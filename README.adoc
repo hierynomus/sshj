@@ -105,13 +105,25 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
-SSHJ 0.30.0 (2020-??-??)::
+SSHJ 0.30.0 (2020-08-17)::
 * **BREAKING CHANGE**: Removed `setSignatureFactories` and `getSignatureFactories` from the Config and switched them for `getKeyAlgorithms` and `setKeyAlgorithms`
 * Fixed https://github.com/hierynomus/sshj/pulls/588[#588]: Add support for `ssh-rsa2-256` and `ssh-rsa2-512` signatures
 * Merged https://github.com/hierynomus/sshj/pulls/579[#579]: Fix NPE in OpenSSHKnownHosts
 * Merged https://github.com/hierynomus/sshj/pulls/587[#587]: Add passwordfinder retry for OpenSSHKeyV1KeyFile
 * Merged https://github.com/hierynomus/sshj/pulls/586[#586]: Make KeyType compatible with Android Store
 * Merged  https://github.com/hierynomus/sshj/pulls/593[#593]: Change `UserAuth.getAllowedMethods()` to Collection return type
+* Merged  https://github.com/hierynomus/sshj/pulls/595[#595]: Allow reading arbitrary length keys
+* Merged  https://github.com/hierynomus/sshj/pulls/591[#591]: Allow to query SFTP extensions
+* Merged  https://github.com/hierynomus/sshj/pulls/603[#603]: Add method to create Stateful SFTP client
+* Merged  https://github.com/hierynomus/sshj/pulls/605[#605]: Use Daemon threads to avoid blocking JVM shutdown
+* Merged  https://github.com/hierynomus/sshj/pulls/606[#606]: Always use the JCERandom RNG by default
+* Merged  https://github.com/hierynomus/sshj/pulls/609[#609]: Clear passphrase after use to prevent security issues
+* Merged  https://github.com/hierynomus/sshj/pulls/618[#618]: Fix localport of DirectConnection for use with OpenSSH > 8.0
+* Merged  https://github.com/hierynomus/sshj/pulls/619[#619]: Upgraded BouncyCastle to 1.66
+* Merged  https://github.com/hierynomus/sshj/pulls/622[#622]: Send 'ext-info-c' with KEX algorithms
+* Merged  https://github.com/hierynomus/sshj/pulls/623[#623]: Fix transport encoding of `nistp521` signatures
+* Merged  https://github.com/hierynomus/sshj/pulls/607[#607]: Fix mathing pubkeys to key algorithms
+* Merged  https://github.com/hierynomus/sshj/pulls/602[#602]: Fix RSA certificate key determination
 SSHJ 0.27.0 (2019-01-24)::
 * Fixed https://github.com/hierynomus/sshj/issues/415[#415]: Fixed wrongly prefixed '/' to path in SFTPClient.mkdirs
 * Added support for ETM (Encrypt-then-Mac) MAC algorithms.
