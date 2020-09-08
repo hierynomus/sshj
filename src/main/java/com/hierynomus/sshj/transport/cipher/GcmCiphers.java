@@ -22,7 +22,7 @@ public class GcmCiphers {
     public static final String GALOIS_COUNTER_MODE = "GCM";
 
     public static Factory AES128GCM() {
-        return new Factory(12, 16,128, "aes128-gcm@openssh.com", "AES", GALOIS_COUNTER_MODE);
+        return new Factory(12, 16, 128, "aes128-gcm@openssh.com", "AES", GALOIS_COUNTER_MODE);
     }
 
     public static Factory AES256GCM() {
@@ -58,7 +58,7 @@ public class GcmCiphers {
 
         @Override
         public Cipher create() {
-            return new GcmCipher(ivsize, authSize,keysize / 8, cipher, cipher + "/" + mode + "/NoPadding");
+            return new GcmCipher(ivsize, authSize, keysize / 8, cipher, cipher + "/" + mode + "/NoPadding");
         }
 
         @Override

@@ -123,8 +123,7 @@ final class Encoder
                 int wpos = buffer.wpos();
                 buffer.wpos(wpos + cipherSize);
                 aeadOutgoingBuffer(buffer, startOfPacket, packetLen);
-            }
-            else if (etm) {
+            } else if (etm) {
                 cipher.update(buffer.array(), startOfPacket + 4, packetLen);
                 putMAC(buffer, startOfPacket, endOfPadding);
             } else {

@@ -38,20 +38,14 @@ public abstract class BaseCipher
     }
 
     private final int ivsize;
-    private final int authSize;
     private final int bsize;
     private final String algorithm;
     private final String transformation;
 
-    private javax.crypto.Cipher cipher;
+    protected javax.crypto.Cipher cipher;
 
     public BaseCipher(int ivsize, int bsize, String algorithm, String transformation) {
-        this(ivsize, 0, bsize, algorithm, transformation);
-    }
-
-    public BaseCipher(int ivsize, int authSize, int bsize, String algorithm, String transformation) {
         this.ivsize = ivsize;
-        this.authSize = authSize;
         this.bsize = bsize;
         this.algorithm = algorithm;
         this.transformation = transformation;
@@ -69,7 +63,7 @@ public abstract class BaseCipher
 
     @Override
     public int getAuthenticationTagSize() {
-        return authSize;
+        return 0;
     }
 
     @Override
@@ -86,10 +80,6 @@ public abstract class BaseCipher
     }
 
     protected abstract void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv) throws InvalidKeyException, InvalidAlgorithmParameterException;
-
-    public javax.crypto.Cipher getCipherInstance() {
-        return cipher;
-    }
 
     protected SecretKeySpec getKeySpec(byte[] key) {
         return new SecretKeySpec(key, algorithm);

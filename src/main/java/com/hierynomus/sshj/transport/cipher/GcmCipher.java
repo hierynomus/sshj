@@ -15,7 +15,6 @@
  */
 package com.hierynomus.sshj.transport.cipher;
 
-import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.transport.cipher.BaseCipher;
 
@@ -28,17 +27,23 @@ import java.security.InvalidKeyException;
 
 public class GcmCipher extends BaseCipher {
 
+    protected int authSize;
     protected Mode mode;
     protected boolean initialized;
     protected CounterGCMParameterSpec parameters;
     protected SecretKey secretKey;
 
     public GcmCipher(int ivsize, int authSize, int bsize, String algorithm, String transformation) {
-        super(ivsize, authSize, bsize, algorithm, transformation);
+        super(ivsize, bsize, algorithm, transformation);
+        this.authSize = authSize;
+    }
+
+    @Override
+    public int getAuthenticationTagSize() {
+        return authSize;
     }
 
     protected Cipher getInitializedCipherInstance() throws GeneralSecurityException {
-        Cipher cipher = getCipherInstance();
         if (!initialized) {
             cipher.init(mode == Mode.Encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, secretKey, parameters);
             initialized = true;
@@ -76,6 +81,13 @@ public class GcmCipher extends BaseCipher {
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException("Error updating data through cipher", e);
         }
+        /*
+         *  As the RFC stated, the IV used in AES-GCM cipher for SSH is a 4-byte constant plus a 8-byte invocation
+         *  counter. After cipher.doFinal() is called, IV invocation counter is increased by 1, and changes to the IV
+         *  requires reinitializing the cipher, so initialized have to be false here, for the next invocation.
+         *
+         *  Refer to RFC5647, Section 7.1
+         */
         parameters.incrementCounter();
         initialized = false;
     }
@@ -96,8 +108,8 @@ public class GcmCipher extends BaseCipher {
 
         protected void incrementCounter() {
             int off = iv.length - 8;
-            long counter = Buffer.getLong(iv, off, 8);
-            Buffer.putLong(addExact(counter, 1L), iv, off, 8);
+            long counter = getLong(iv, off, 8);
+            putLong(addExact(counter, 1L), iv, off, 8);
         }
 
         @Override
@@ -113,6 +125,40 @@ public class GcmCipher extends BaseCipher {
             } else {
                 return var4;
             }
+        }
+
+        static long getLong(byte[] buf, int off, int len) {
+            if (len < 8) {
+                throw new IllegalArgumentException("Not enough data for a long: required=8, available=" + len);
+            }
+
+            long l = (long) buf[off] << 56;
+            l |= ((long) buf[off + 1] & 0xff) << 48;
+            l |= ((long) buf[off + 2] & 0xff) << 40;
+            l |= ((long) buf[off + 3] & 0xff) << 32;
+            l |= ((long) buf[off + 4] & 0xff) << 24;
+            l |= ((long) buf[off + 5] & 0xff) << 16;
+            l |= ((long) buf[off + 6] & 0xff) << 8;
+            l |= (long) buf[off + 7] & 0xff;
+
+            return l;
+        }
+
+        static int putLong(long value, byte[] buf, int off, int len) {
+            if (len < 8) {
+                throw new IllegalArgumentException("Not enough data for a long: required=8, available=" + len);
+            }
+
+            buf[off] = (byte) (value >> 56);
+            buf[off + 1] = (byte) (value >> 48);
+            buf[off + 2] = (byte) (value >> 40);
+            buf[off + 3] = (byte) (value >> 32);
+            buf[off + 4] = (byte) (value >> 24);
+            buf[off + 5] = (byte) (value >> 16);
+            buf[off + 6] = (byte) (value >> 8);
+            buf[off + 7] = (byte) value;
+
+            return 8;
         }
     }
 }
