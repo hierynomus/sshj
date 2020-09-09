@@ -26,7 +26,7 @@ import java.util.List;
 public interface Factory<T> {
 
     /**
-     * Inteface for a named factory. Named factories are simply factories that are identified by a name. Such names are
+     * Interface for a named factory. Named factories are simply factories that are identified by a name. Such names are
      * used mainly in SSH algorithm negotiation.
      *
      * @param <T> type of object created by this factory

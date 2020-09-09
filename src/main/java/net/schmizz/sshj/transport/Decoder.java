@@ -70,87 +70,41 @@ final class Decoder
      *
      * @return number of bytes needed before further decoding possible
      */
-    private int decode()
-            throws SSHException {
-
-        if (etm) {
-            return decodeEtm();
-        } else {
-            return decodeMte();
-        }
-    }
-
-    /**
-     * Decode an Encrypt-Then-Mac packet.
-     */
-    private int decodeEtm() throws SSHException {
-        int bytesNeeded;
-        while (true) {
-            if (packetLength == -1) {
-                assert inputBuffer.rpos() == 0 : "buffer cleared";
-                bytesNeeded = 4 - inputBuffer.available();
-                if (bytesNeeded <= 0) {
-                    // In Encrypt-Then-Mac, the packetlength is sent unencrypted.
-                    packetLength = inputBuffer.readUInt32AsInt();
-                    checkPacketLength(packetLength);
-                } else {
-                    // Needs more data
-                    break;
-                }
-            } else {
-                assert inputBuffer.rpos() == 4 : "packet length read";
-                bytesNeeded = packetLength + mac.getBlockSize() - inputBuffer.available();
-                if (bytesNeeded <= 0) {
-                    seq = seq + 1 & 0xffffffffL;
-                    checkMAC(inputBuffer.array());
-                    decryptBuffer(4, packetLength);
-                    inputBuffer.wpos(packetLength + 4 - inputBuffer.readByte());
-                    final SSHPacket plain = usingCompression() ? decompressed() : inputBuffer;
-                    if (log.isTraceEnabled()) {
-                        log.trace("Received packet #{}: {}", seq, plain.printHex());
-                    }
-                    packetHandler.handle(plain.readMessageID(), plain); // Process the decoded packet
-                    inputBuffer.clear();
-                    packetLength = -1;
-                } else {
-                    // Needs more data
-                    break;
-                }
-            }
-        }
-        return bytesNeeded;
-    }
-
-    /**
-     * Decode a Mac-Then-Encrypt packet
-     * @return
-     * @throws SSHException
-     */
-    private int decodeMte() throws SSHException {
+    private int decode() throws SSHException {
         int need;
-
-        /* Decoding loop */
-        for (; ; )
-
+        for(;;) {
             if (packetLength == -1) { // Waiting for beginning of packet
                 assert inputBuffer.rpos() == 0 : "buffer cleared";
                 need = cipherSize - inputBuffer.available();
                 if (need <= 0) {
-                    packetLength = decryptLength();
+                    if (authMode) {
+                        packetLength = decryptLengthAAD();
+                    } else if (etm) {
+                        packetLength = inputBuffer.readUInt32AsInt();
+                        checkPacketLength(packetLength);
+                    } else {
+                        packetLength = decryptLength();
+                    }
                 } else {
                     // Need more data
                     break;
                 }
             } else {
                 assert inputBuffer.rpos() == 4 : "packet length read";
-                need = packetLength + (mac != null ? mac.getBlockSize() : 0) - inputBuffer.available();
+                need = (authMode) ? packetLength + cipherSize - inputBuffer.available() : packetLength + (mac != null ? mac.getBlockSize() : 0) - inputBuffer.available();
                 if (need <= 0) {
-                    decryptBuffer(cipherSize, packetLength + 4 - cipherSize); // Decrypt the rest of the payload
                     seq = seq + 1 & 0xffffffffL;
-                    if (mac != null) {
+                    if (authMode) {
+                        cipher.update(inputBuffer.array(), 4, packetLength);
+                    } else if (etm) {
                         checkMAC(inputBuffer.array());
+                        decryptBuffer(4, packetLength);
+                    } else {
+                        decryptBuffer(cipherSize, packetLength + 4 - cipherSize); // Decrypt the rest of the payload
+                        if (mac != null) {
+                            checkMAC(inputBuffer.array());
+                        }
                     }
-                    // Exclude the padding & MAC
                     inputBuffer.wpos(packetLength + 4 - inputBuffer.readByte());
                     final SSHPacket plain = usingCompression() ? decompressed() : inputBuffer;
                     if (log.isTraceEnabled()) {
@@ -160,16 +114,20 @@ final class Decoder
                     inputBuffer.clear();
                     packetLength = -1;
                 } else {
-                    // Need more data
+                    // Needs more data
                     break;
                 }
             }
-
+        }
         return need;
     }
 
     private void checkMAC(final byte[] data)
             throws TransportException {
+        if (mac == null) {
+            return;
+        }
+
         mac.update(seq); // seq num
         mac.update(data, 0, packetLength + 4); // packetLength+4 = entire packet w/o mac
         mac.doFinal(macResult, 0); // compute
@@ -184,6 +142,20 @@ final class Decoder
         uncompressBuffer.clear();
         compression.uncompress(inputBuffer, uncompressBuffer);
         return uncompressBuffer;
+    }
+
+    private int decryptLengthAAD() throws TransportException {
+        cipher.updateAAD(inputBuffer.array(), 0, 4);
+
+        final int len;
+        try {
+            len = inputBuffer.readUInt32AsInt();
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
+        checkPacketLength(len);
+
+        return len;
     }
 
     private int decryptLength()
@@ -237,7 +209,9 @@ final class Decoder
     @Override
     void setAlgorithms(Cipher cipher, MAC mac, Compression compression) {
         super.setAlgorithms(cipher, mac, compression);
-        macResult = new byte[mac.getBlockSize()];
+        if (mac != null) {
+            macResult = new byte[mac.getBlockSize()];
+        }
     }
 
     @Override

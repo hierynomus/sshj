@@ -30,9 +30,7 @@ import org.slf4j.Logger;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -94,7 +92,7 @@ final class KeyExchanger
      * Add a callback for host key verification.
      * <p/>
      * Any of the {@link HostKeyVerifier} implementations added this way can deem a host key to be acceptable, allowing
-     * key exchange to successfuly complete. Otherwise, a {@link TransportException} will result during key exchange.
+     * key exchange to successfully complete. Otherwise, a {@link TransportException} will result during key exchange.
      *
      * @param hkv object whose {@link HostKeyVerifier#verify} method will be invoked
      */
@@ -232,6 +230,10 @@ final class KeyExchanger
         }
         kex = Factory.Named.Util.create(transport.getConfig().getKeyExchangeFactories(),
                                         negotiatedAlgs.getKeyExchangeAlgorithm());
+        transport.setHostKeyAlgorithm(Factory.Named.Util.create(transport.getConfig().getKeyAlgorithms(),
+                                      negotiatedAlgs.getSignatureAlgorithm()));
+        transport.setRSASHA2Support(negotiatedAlgs.getRSASHA2Support());
+
         try {
             kex.init(transport,
                      transport.getServerID(), transport.getClientID(),
@@ -320,13 +322,25 @@ final class KeyExchanger
                         resizedKey(encryptionKey_S2C, cipher_S2C.getBlockSize(), hash, kex.getK(), kex.getH()),
                         initialIV_S2C);
 
-        final MAC mac_C2S = Factory.Named.Util.create(transport.getConfig().getMACFactories(), negotiatedAlgs
-                .getClient2ServerMACAlgorithm());
-        mac_C2S.init(resizedKey(integrityKey_C2S, mac_C2S.getBlockSize(), hash, kex.getK(), kex.getH()));
+        /*
+         * For AES-GCM ciphers, MAC will also be AES-GCM, so it is handled by the cipher itself.
+         * In that case, both s2c and c2s MACs are ignored.
+         *
+         * Refer to RFC5647 Section 5.1
+         */
+        MAC mac_C2S = null;
+        if(cipher_C2S.getAuthenticationTagSize() == 0) {
+            mac_C2S = Factory.Named.Util.create(transport.getConfig().getMACFactories(), negotiatedAlgs
+                    .getClient2ServerMACAlgorithm());
+            mac_C2S.init(resizedKey(integrityKey_C2S, mac_C2S.getBlockSize(), hash, kex.getK(), kex.getH()));
+        }
 
-        final MAC mac_S2C = Factory.Named.Util.create(transport.getConfig().getMACFactories(),
-                                                      negotiatedAlgs.getServer2ClientMACAlgorithm());
-        mac_S2C.init(resizedKey(integrityKey_S2C, mac_S2C.getBlockSize(), hash, kex.getK(), kex.getH()));
+        MAC mac_S2C = null;
+        if(cipher_S2C.getAuthenticationTagSize() == 0) {
+            mac_S2C  = Factory.Named.Util.create(transport.getConfig().getMACFactories(),
+                    negotiatedAlgs.getServer2ClientMACAlgorithm());
+            mac_S2C.init(resizedKey(integrityKey_S2C, mac_S2C.getBlockSize(), hash, kex.getK(), kex.getH()));
+        }
 
         final Compression compression_S2C =
                 Factory.Named.Util.create(transport.getConfig().getCompressionFactories(),

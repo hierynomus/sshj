@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.cipher.Cipher;
@@ -83,7 +84,7 @@ final class Encoder
 
             // Compute padding length
             int padLen = cipherSize - (lengthWithoutPadding % cipherSize);
-            if (padLen < 4) {
+            if (padLen < 4 || (authMode && padLen < cipherSize)) {
                 padLen += cipherSize;
             }
 
@@ -94,6 +95,14 @@ final class Encoder
                 padLen += cipherSize;
                 packetLen = 1 + payloadSize + padLen;
             }
+            /*
+             * In AES-GCM ciphers, they require packets must be a multiple of 16 bytes (which is also block size of AES)
+             * as mentioned in RFC5647 Section 7.2. So we are calculating the extra padding as necessary here
+             */
+            if (authMode && packetLen % cipherSize != 0) {
+                padLen += cipherSize - (packetLen % cipherSize);
+                packetLen = 1 + payloadSize + padLen;
+            }
 
             final int endOfPadding = startOfPacket + 4 + packetLen;
 
@@ -101,6 +110,7 @@ final class Encoder
             buffer.wpos(startOfPacket);
             buffer.putUInt32(packetLen);
             buffer.putByte((byte) padLen);
+
             // Now wpos will mark end of padding
             buffer.wpos(endOfPadding);
 
@@ -109,14 +119,17 @@ final class Encoder
 
             seq = seq + 1 & 0xffffffffL;
 
-            if (etm) {
+            if (authMode) {
+                int wpos = buffer.wpos();
+                buffer.wpos(wpos + cipherSize);
+                aeadOutgoingBuffer(buffer, startOfPacket, packetLen);
+            } else if (etm) {
                 cipher.update(buffer.array(), startOfPacket + 4, packetLen);
                 putMAC(buffer, startOfPacket, endOfPadding);
             } else {
                 if (mac != null) {
                     putMAC(buffer, startOfPacket, endOfPadding);
                 }
-
                 cipher.update(buffer.array(), startOfPacket, 4 + packetLen);
             }
             buffer.rpos(startOfPacket); // Make ready-to-read
@@ -125,6 +138,14 @@ final class Encoder
         } finally {
             encodeLock.unlock();
         }
+    }
+
+    protected void aeadOutgoingBuffer(Buffer buf, int offset, int len) {
+        if (cipher == null || cipher.getAuthenticationTagSize() == 0) {
+            throw new IllegalArgumentException("AEAD mode requires an AEAD cipher");
+        }
+        byte[] data = buf.array();
+        cipher.updateWithAAD(data, offset, 4, len);
     }
 
     @Override

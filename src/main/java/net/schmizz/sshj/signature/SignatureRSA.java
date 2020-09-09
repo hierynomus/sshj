@@ -22,26 +22,53 @@ import net.schmizz.sshj.common.SSHRuntimeException;
 import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.Date;
 
 /** RSA {@link Signature} */
 public class SignatureRSA
         extends AbstractSignature {
 
     /** A named factory for RSA {@link Signature} */
-    public static class Factory
+    public static class FactorySSHRSA
             implements net.schmizz.sshj.common.Factory.Named<Signature> {
 
         @Override
         public Signature create() {
-            return new SignatureRSA(KeyType.RSA.toString());
+            return new SignatureRSA("SHA1withRSA", KeyType.RSA, KeyType.RSA.toString());
         }
 
         @Override
         public String getName() {
             return KeyType.RSA.toString();
         }
+    }
 
+    /** A named factory for RSA {@link Signature} */
+    public static class FactoryRSASHA256
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureRSA("SHA256withRSA", KeyType.RSA, "rsa-sha2-256");
+        }
+
+        @Override
+        public String getName() {
+            return "rsa-sha2-256";
+        }
+    }
+    /** A named factory for RSA {@link Signature} */
+    public static class FactoryRSASHA512
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureRSA("SHA512withRSA", KeyType.RSA, "rsa-sha2-512");
+        }
+
+        @Override
+        public String getName() {
+            return "rsa-sha2-512";
+        }
     }
 
     /** A named factory for RSA {@link Signature} */
@@ -50,7 +77,7 @@ public class SignatureRSA
 
         @Override
         public Signature create() {
-            return new SignatureRSA(KeyType.RSA_CERT.toString());
+            return new SignatureRSA("SHA1withRSA", KeyType.RSA_CERT, KeyType.RSA.toString());
         }
 
         @Override
@@ -60,19 +87,19 @@ public class SignatureRSA
 
     }
 
-    private String keyTypeName;
+    private KeyType keyType;
 
 
-    public SignatureRSA(String keyTypeName) {
-        super("SHA1withRSA");
-        this.keyTypeName = keyTypeName;
+    public SignatureRSA(String algorithm, KeyType keyType, String name) {
+        super(algorithm, name);
+        this.keyType = keyType;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public void initVerify(PublicKey publicKey) {
         try {
-            if (this.keyTypeName.equals(KeyType.RSA_CERT.toString()) && publicKey instanceof Certificate) {
+            if (this.keyType.equals(KeyType.RSA_CERT) && publicKey instanceof Certificate) {
                 signature.initVerify(((Certificate<PublicKey>) publicKey).getKey());
             } else {
                 signature.initVerify(publicKey);
@@ -89,7 +116,7 @@ public class SignatureRSA
 
     @Override
     public boolean verify(byte[] sig) {
-        sig = extractSig(sig, KeyType.RSA.toString());
+        sig = extractSig(sig, getSignatureName());
         try {
             return signature.verify(sig);
         } catch (SignatureException e) {

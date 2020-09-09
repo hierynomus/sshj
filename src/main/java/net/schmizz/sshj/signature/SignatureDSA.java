@@ -15,15 +15,20 @@
  */
 package net.schmizz.sshj.signature;
 
+import com.hierynomus.asn1.encodingrules.der.DEREncoder;
+import com.hierynomus.asn1.types.ASN1Object;
+import com.hierynomus.asn1.types.constructed.ASN1Sequence;
+import com.hierynomus.asn1.types.primitive.ASN1Integer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
-import org.bouncycastle.asn1.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * DSA {@link Signature}
@@ -50,7 +55,7 @@ public class SignatureDSA
     }
 
     public SignatureDSA() {
-        super("SHA1withDSA");
+        super("SHA1withDSA", KeyType.DSA.toString());
     }
 
     @Override
@@ -72,8 +77,8 @@ public class SignatureDSA
 
         // result must be 40 bytes, but length of r and s may not be 20 bytes
 
-        int r_copylen = (r.length < 20) ? r.length : 20;
-        int s_copylen = (s.length < 20) ? s.length : 20;
+        int r_copylen = Math.min(r.length, 20);
+        int s_copylen = Math.min(s.length, 20);
 
         System.arraycopy(r, r.length - r_copylen, result, 20 - r_copylen, r_copylen);
         System.arraycopy(s, s.length - s_copylen, result, 40 - s_copylen, s_copylen);
@@ -97,18 +102,19 @@ public class SignatureDSA
      * Encodes the signature as a DER sequence (ASN.1 format).
      */
     private byte[] asnEncode(byte[] sigBlob) throws IOException {
-        byte[] r = new BigInteger(1, Arrays.copyOfRange(sigBlob, 0, 20)).toByteArray();
-        byte[] s = new BigInteger(1, Arrays.copyOfRange(sigBlob, 20, 40)).toByteArray();
+        BigInteger r = new BigInteger(1, Arrays.copyOfRange(sigBlob, 0, 20));
+        BigInteger s = new BigInteger(1, Arrays.copyOfRange(sigBlob, 20, 40));
 
-        ASN1EncodableVector vector = new ASN1EncodableVector();
-        vector.add(new ASN1Integer(r));
+        List<ASN1Object> vector = new ArrayList<ASN1Object>();
+        vector.add(new com.hierynomus.asn1.types.primitive.ASN1Integer(r));
         vector.add(new ASN1Integer(s));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ASN1OutputStream asnOS = new ASN1OutputStream(baos);
+        com.hierynomus.asn1.ASN1OutputStream asn1OutputStream = new com.hierynomus.asn1.ASN1OutputStream(new DEREncoder(), baos);
 
-        asnOS.writeObject(new DERSequence(vector));
-        asnOS.flush();
+        asn1OutputStream.writeObject(new ASN1Sequence(vector));
+        asn1OutputStream.flush();
+
 
         return baos.toByteArray();
     }

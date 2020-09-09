@@ -30,6 +30,7 @@ public abstract class KeepAlive extends Thread {
         this.conn = conn;
         log = conn.getTransport().getConfig().getLoggerFactory().getLogger(getClass());
         setName(name);
+        setDaemon(true);
     }
 
     public synchronized int getKeepAliveInterval() {

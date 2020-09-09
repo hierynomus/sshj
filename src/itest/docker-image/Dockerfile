@@ -7,6 +7,7 @@ ADD test-container/ssh_host_ecdsa_key.pub /etc/ssh/ssh_host_ecdsa_key.pub
 ADD test-container/ssh_host_ed25519_key   /etc/ssh/ssh_host_ed25519_key
 ADD test-container/ssh_host_ed25519_key.pub   /etc/ssh/ssh_host_ed25519_key.pub
 ADD test-container/sshd_config /etc/ssh/sshd_config
+ADD test-container/users_rsa_ca.pub /etc/ssh/users_rsa_ca.pub
 
 RUN apk add --no-cache tini
 RUN \
@@ -20,4 +21,4 @@ RUN \
   chmod 644 /etc/ssh/ssh_host_ed25519_key.pub && \
   chown -R sshj:sshj /home/sshj
 
-ENTRYPOINT ["/sbin/tini", "/entrypoint.sh"]
+ENTRYPOINT ["/sbin/tini", "/entrypoint.sh", "-o", "LogLevel=DEBUG2"]

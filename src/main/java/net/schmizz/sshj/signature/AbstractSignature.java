@@ -29,18 +29,26 @@ public abstract class AbstractSignature
 
     @SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
     protected final java.security.Signature signature;
+    private final String signatureName;
 
-    protected AbstractSignature(String algorithm) {
+    protected AbstractSignature(String algorithm, String signatureName) {
         try {
             this.signature = SecurityUtils.getSignature(algorithm);
+            this.signatureName = signatureName;
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException(e);
         }
     }
 
     protected AbstractSignature(@SuppressWarnings("PMD.UnnecessaryFullyQualifiedName")
-                                        java.security.Signature signatureEngine) {
+                                        java.security.Signature signatureEngine, String signatureName) {
         this.signature = signatureEngine;
+        this.signatureName = signatureName;
+    }
+
+    @Override
+    public String getSignatureName() {
+        return signatureName;
     }
 
     @Override

@@ -53,6 +53,10 @@ public abstract class SocketClient {
         this.defaultPort = defaultPort;
     }
 
+    protected InetSocketAddress makeInetSocketAddress(String hostname, int port) {
+        return new InetSocketAddress(hostname, port);
+    }
+
     /**
      * Connect to a host via a proxy.
      * @param hostname The host name to connect to.
@@ -83,7 +87,7 @@ public abstract class SocketClient {
         } else {
             socket = new Socket(proxy);
         }
-        socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+        socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
         onConnect();
     }
 
@@ -131,7 +135,7 @@ public abstract class SocketClient {
             this.hostname = hostname;
             this.port = port;
             socket = socketFactory.createSocket();
-            socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+            socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
             onConnect();
         }
     }
@@ -144,7 +148,7 @@ public abstract class SocketClient {
             this.port = port;
             socket = socketFactory.createSocket();
             socket.bind(new InetSocketAddress(localAddr, localPort));
-            socket.connect(new InetSocketAddress(hostname, port), connectTimeout);
+            socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
             onConnect();
         }
     }

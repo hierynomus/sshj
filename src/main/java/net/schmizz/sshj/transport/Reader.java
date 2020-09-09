@@ -30,6 +30,7 @@ public final class Reader
         this.trans = trans;
         log = trans.getConfig().getLoggerFactory().getLogger(getClass());
         setName("reader");
+        setDaemon(true);
     }
 
     @Override
