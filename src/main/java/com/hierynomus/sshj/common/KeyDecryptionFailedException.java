@@ -23,6 +23,7 @@ import java.io.IOException;
  * Thrown when a key file could not be decrypted correctly, e.g. if its checkInts differed in the case of an OpenSSH
  * key file.
  */
+@SuppressWarnings("serial")
 public class KeyDecryptionFailedException extends IOException {
 
     public static final String MESSAGE = "Decryption of the key failed. A supplied passphrase may be incorrect.";

@@ -27,6 +27,7 @@ import java.util.Arrays;
  * Our own extension of the EdDSAPublicKey that comes from ECC-25519, as that class does not implement equality.
  * The code uses the equality of the keys as an indicator whether they're the same during host key verification.
  */
+@SuppressWarnings("serial")
 public class Ed25519PublicKey extends EdDSAPublicKey {
 
     public Ed25519PublicKey(EdDSAPublicKeySpec spec) {

@@ -19,7 +19,6 @@ import com.hierynomus.sshj.test.BaseAlgorithmTest;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.common.Factory;
-import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;

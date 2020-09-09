@@ -36,6 +36,8 @@ import javax.crypto.NoSuchPaddingException;
 
 import static java.lang.String.format;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Static utility method relating to security facilities.
  */
@@ -53,8 +55,8 @@ public class SecurityUtils {
     public static final String SPONGY_CASTLE = "SC";
 
     /*
-    * Security provider identifier. null = default JCE
-    */
+     * Security provider identifier. null = default JCE
+     */
     private static String securityProvider = null;
 
     // relate to BC registration (or SpongyCastle on Android)
@@ -65,13 +67,17 @@ public class SecurityUtils {
         Provider provider = null;
         try {
             Class<?> name = Class.forName(providerClassName);
-            provider = (Provider) name.newInstance();
+            provider = (Provider) name.getDeclaredConstructor().newInstance();
         } catch (ClassNotFoundException e) {
             LOG.info("Security Provider class '{}' not found", providerClassName);
         } catch (InstantiationException e) {
             LOG.info("Security Provider class '{}' could not be created", providerClassName);
         } catch (IllegalAccessException e) {
             LOG.info("Security Provider class '{}' could not be accessed", providerClassName);
+        } catch (InvocationTargetException e) {
+            LOG.info("Security Provider class '{}' could not be created", providerClassName);
+        } catch (NoSuchMethodException e) {
+            LOG.info("Security Provider class '{}' does not have a no-args constructor", providerClassName);
         }
 
         if (provider == null) {
