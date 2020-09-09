@@ -45,6 +45,11 @@ public class NoneCipher
     }
 
     @Override
+    public int getAuthenticationTagSize() {
+        return 0;
+    }
+
+    @Override
     public void init(Mode mode, byte[] bytes, byte[] bytes1) {
         // Nothing to do
     }
@@ -54,4 +59,18 @@ public class NoneCipher
         // Nothing to do
     }
 
+    @Override
+    public void updateAAD(byte[] data, int offset, int length) {
+
+    }
+
+    @Override
+    public void updateAAD(byte[] data) {
+
+    }
+
+    @Override
+    public void updateWithAAD(byte[] input, int offset, int aadLen, int inputLen) {
+
+    }
 }

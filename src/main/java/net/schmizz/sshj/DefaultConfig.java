@@ -18,6 +18,7 @@ package net.schmizz.sshj;
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import com.hierynomus.sshj.transport.kex.DHGroups;
 import com.hierynomus.sshj.transport.kex.ExtInfoClientFactory;
@@ -171,6 +172,8 @@ public class DefaultConfig
                 BlockCiphers.AES192CTR(),
                 BlockCiphers.AES256CBC(),
                 BlockCiphers.AES256CTR(),
+                GcmCiphers.AES128GCM(),
+                GcmCiphers.AES256GCM(),
                 BlockCiphers.BlowfishCBC(),
                 BlockCiphers.BlowfishCTR(),
                 BlockCiphers.Cast128CBC(),

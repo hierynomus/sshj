@@ -42,7 +42,7 @@ public abstract class BaseCipher
     private final String algorithm;
     private final String transformation;
 
-    private javax.crypto.Cipher cipher;
+    protected javax.crypto.Cipher cipher;
 
     public BaseCipher(int ivsize, int bsize, String algorithm, String transformation) {
         this.ivsize = ivsize;
@@ -62,6 +62,11 @@ public abstract class BaseCipher
     }
 
     @Override
+    public int getAuthenticationTagSize() {
+        return 0;
+    }
+
+    @Override
     public void init(Mode mode, byte[] key, byte[] iv) {
         key = BaseCipher.resize(key, bsize);
         iv = BaseCipher.resize(iv, ivsize);
@@ -75,6 +80,7 @@ public abstract class BaseCipher
     }
 
     protected abstract void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv) throws InvalidKeyException, InvalidAlgorithmParameterException;
+
     protected SecretKeySpec getKeySpec(byte[] key) {
         return new SecretKeySpec(key, algorithm);
     }
@@ -92,4 +98,19 @@ public abstract class BaseCipher
         }
     }
 
+    @Override
+    public void updateAAD(byte[] data, int offset, int length) {
+        throw new UnsupportedOperationException(getClass() + " does not support AAD operations");
+    }
+
+    @Override
+    public void updateAAD(byte[] data) {
+        updateAAD(data, 0, data.length);
+    }
+
+    @Override
+    public void updateWithAAD(byte[] input, int offset, int aadLen, int inputLen) {
+        updateAAD(input, offset, aadLen);
+        update(input, offset + aadLen, inputLen);
+    }
 }

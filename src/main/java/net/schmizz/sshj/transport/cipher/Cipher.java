@@ -29,6 +29,9 @@ public interface Cipher {
     /** @return the size of the initialization vector */
     int getIVSize();
 
+    /** @return Size of the authentication tag (AT) in bytes or 0 if this cipher does not support authentication */
+    int getAuthenticationTagSize();
+
     /**
      * Initialize the cipher for encryption or decryption with the given private key and initialization vector
      *
@@ -47,4 +50,32 @@ public interface Cipher {
      */
     void update(byte[] input, int inputOffset, int inputLen);
 
+    /**
+     * Adds the provided input data as additional authenticated data during encryption or decryption.
+     *
+     * @param  data      The additional data to authenticate
+     * @param  offset    The offset of the additional data in the buffer
+     * @param  length    The number of bytes in the buffer to use for authentication
+     */
+    void updateAAD(byte[] data, int offset, int length);
+
+    /**
+     * Adds the provided input data as additional authenticated data during encryption or decryption.
+     *
+     * @param  data      The data to authenticate
+     */
+    void updateAAD(byte[] data);
+
+    /**
+     * Performs in-place authenticated encryption or decryption with additional data (AEAD). Authentication tags are
+     * implicitly appended after the output ciphertext or implicitly verified after the input ciphertext. Header data
+     * indicated by the {@code aadLen} parameter are authenticated but not encrypted/decrypted, while payload data
+     * indicated by the {@code inputLen} parameter are authenticated and encrypted/decrypted.
+     *
+     * @param  input     The input/output bytes
+     * @param  offset    The offset of the data in the input buffer
+     * @param  aadLen    The number of bytes to use as additional authenticated data - starting at offset
+     * @param  inputLen  The number of bytes to update - starting at offset + aadLen
+     */
+    void updateWithAAD(byte[] input, int offset, int aadLen, int inputLen);
 }
