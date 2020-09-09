@@ -64,7 +64,7 @@ In the `examples` directory, there is a separate Maven project that shows how th
 Implementations / adapters for the following algorithms are included:
 
 ciphers::
-  `aes{128,192,256}-{cbc,ctr}`, `blowfish-{cbc,ctr}`, `3des-{cbc,ctr}`, `twofish{128,192,256}-{cbc,ctr}`, `twofish-cbc`, `serpent{128,192,256}-{cbc,ctr}`, `idea-{cbc,ctr}`, `cast128-{cbc,ctr}`, `arcfour`, `arcfour{128,256}`
+  `aes{128,192,256}-{cbc,ctr}`, `aes{128,256}-gcm@openssh.com`, `blowfish-{cbc,ctr}`, `3des-{cbc,ctr}`, `twofish{128,192,256}-{cbc,ctr}`, `twofish-cbc`, `serpent{128,192,256}-{cbc,ctr}`, `idea-{cbc,ctr}`, `cast128-{cbc,ctr}`, `arcfour`, `arcfour{128,256}`
   SSHJ also supports the following extended (non official) ciphers: `camellia{128,192,256}-{cbc,ctr}`, `camellia{128,192,256}-{cbc,ctr}@openssh.org`
 
 key exchange::
@@ -105,6 +105,8 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.31.0 (????-??-??)::
+* Merged https://github.com/hierynomus/sshj/pulls/630[#630]: Add support for `aes128-gcm@openssh.com` and `aes256-gcm@openssh.com` ciphers
 SSHJ 0.30.0 (2020-08-17)::
 * **BREAKING CHANGE**: Removed `setSignatureFactories` and `getSignatureFactories` from the Config and switched them for `getKeyAlgorithms` and `setKeyAlgorithms`
 * Fixed https://github.com/hierynomus/sshj/pulls/588[#588]: Add support for `ssh-rsa2-256` and `ssh-rsa2-512` signatures
