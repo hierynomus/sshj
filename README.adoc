@@ -106,26 +106,26 @@ Fork away!
 
 == Release history
 SSHJ 0.31.0 (????-??-??)::
-* Merged https://github.com/hierynomus/sshj/pulls/630[#630]: Add support for `aes128-gcm@openssh.com` and `aes256-gcm@openssh.com` ciphers
+* Merged https://github.com/hierynomus/sshj/pull/630[#630]: Add support for `aes128-gcm@openssh.com` and `aes256-gcm@openssh.com` ciphers
 SSHJ 0.30.0 (2020-08-17)::
 * **BREAKING CHANGE**: Removed `setSignatureFactories` and `getSignatureFactories` from the Config and switched them for `getKeyAlgorithms` and `setKeyAlgorithms`
-* Fixed https://github.com/hierynomus/sshj/pulls/588[#588]: Add support for `ssh-rsa2-256` and `ssh-rsa2-512` signatures
-* Merged https://github.com/hierynomus/sshj/pulls/579[#579]: Fix NPE in OpenSSHKnownHosts
-* Merged https://github.com/hierynomus/sshj/pulls/587[#587]: Add passwordfinder retry for OpenSSHKeyV1KeyFile
-* Merged https://github.com/hierynomus/sshj/pulls/586[#586]: Make KeyType compatible with Android Store
-* Merged  https://github.com/hierynomus/sshj/pulls/593[#593]: Change `UserAuth.getAllowedMethods()` to Collection return type
-* Merged  https://github.com/hierynomus/sshj/pulls/595[#595]: Allow reading arbitrary length keys
-* Merged  https://github.com/hierynomus/sshj/pulls/591[#591]: Allow to query SFTP extensions
-* Merged  https://github.com/hierynomus/sshj/pulls/603[#603]: Add method to create Stateful SFTP client
-* Merged  https://github.com/hierynomus/sshj/pulls/605[#605]: Use Daemon threads to avoid blocking JVM shutdown
-* Merged  https://github.com/hierynomus/sshj/pulls/606[#606]: Always use the JCERandom RNG by default
-* Merged  https://github.com/hierynomus/sshj/pulls/609[#609]: Clear passphrase after use to prevent security issues
-* Merged  https://github.com/hierynomus/sshj/pulls/618[#618]: Fix localport of DirectConnection for use with OpenSSH > 8.0
-* Merged  https://github.com/hierynomus/sshj/pulls/619[#619]: Upgraded BouncyCastle to 1.66
-* Merged  https://github.com/hierynomus/sshj/pulls/622[#622]: Send 'ext-info-c' with KEX algorithms
-* Merged  https://github.com/hierynomus/sshj/pulls/623[#623]: Fix transport encoding of `nistp521` signatures
-* Merged  https://github.com/hierynomus/sshj/pulls/607[#607]: Fix mathing pubkeys to key algorithms
-* Merged  https://github.com/hierynomus/sshj/pulls/602[#602]: Fix RSA certificate key determination
+* Fixed https://github.com/hierynomus/sshj/pull/588[#588]: Add support for `ssh-rsa2-256` and `ssh-rsa2-512` signatures
+* Merged https://github.com/hierynomus/sshj/pull/579[#579]: Fix NPE in OpenSSHKnownHosts
+* Merged https://github.com/hierynomus/sshj/pull/587[#587]: Add passwordfinder retry for OpenSSHKeyV1KeyFile
+* Merged https://github.com/hierynomus/sshj/pull/586[#586]: Make KeyType compatible with Android Store
+* Merged  https://github.com/hierynomus/sshj/pull/593[#593]: Change `UserAuth.getAllowedMethods()` to Collection return type
+* Merged  https://github.com/hierynomus/sshj/pull/595[#595]: Allow reading arbitrary length keys
+* Merged  https://github.com/hierynomus/sshj/pull/591[#591]: Allow to query SFTP extensions
+* Merged  https://github.com/hierynomus/sshj/pull/603[#603]: Add method to create Stateful SFTP client
+* Merged  https://github.com/hierynomus/sshj/pull/605[#605]: Use Daemon threads to avoid blocking JVM shutdown
+* Merged  https://github.com/hierynomus/sshj/pull/606[#606]: Always use the JCERandom RNG by default
+* Merged  https://github.com/hierynomus/sshj/pull/609[#609]: Clear passphrase after use to prevent security issues
+* Merged  https://github.com/hierynomus/sshj/pull/618[#618]: Fix localport of DirectConnection for use with OpenSSH > 8.0
+* Merged  https://github.com/hierynomus/sshj/pull/619[#619]: Upgraded BouncyCastle to 1.66
+* Merged  https://github.com/hierynomus/sshj/pull/622[#622]: Send 'ext-info-c' with KEX algorithms
+* Merged  https://github.com/hierynomus/sshj/pull/623[#623]: Fix transport encoding of `nistp521` signatures
+* Merged  https://github.com/hierynomus/sshj/pull/607[#607]: Fix mathing pubkeys to key algorithms
+* Merged  https://github.com/hierynomus/sshj/pull/602[#602]: Fix RSA certificate key determination
 SSHJ 0.27.0 (2019-01-24)::
 * Fixed https://github.com/hierynomus/sshj/issues/415[#415]: Fixed wrongly prefixed '/' to path in SFTPClient.mkdirs
 * Added support for ETM (Encrypt-then-Mac) MAC algorithms.
@@ -148,31 +148,31 @@ SSHJ 0.24.0 (2018-04-04)::
 * Fixed https://github.com/hierynomus/sshj/issues/187[#187]: Fixed length bug in Buffer.putString
 * Fixed https://github.com/hierynomus/sshj/issues/405[#405]: Continue host verification if first hostkey does not match.
 SSHJ 0.23.0 (2017-10-13)::
-* Merged https://github.com/hierynomus/sshj/pulls/372[#372]: Upgrade to 'net.i2p.crypto:eddsa:0.2.0'
+* Merged https://github.com/hierynomus/sshj/pull/372[#372]: Upgrade to 'net.i2p.crypto:eddsa:0.2.0'
 * Fixed https://github.com/hierynomus/sshj/issues/355[#355] and https://github.com/hierynomus/sshj/issues/354[#354]: Correctly decode signature bytes
 * Fixed https://github.com/hierynomus/sshj/issues/365[#365]: Added support for new-style OpenSSH fingerprints of server keys
 * Fixed https://github.com/hierynomus/sshj/issues/356[#356]: Fixed key type detection for ECDSA public keys
 * Made SSHJ Java9 compatible
 SSHJ 0.22.0 (2017-08-24)::
-* Fixed https://github.com/hierynomus/sshj/pulls/341[#341]: Fixed path walking during recursive copy
-* Merged https://github.com/hierynomus/sshj/pulls/338[#338]: Added ConsolePasswordFinder to read password from stdin
-* Merged https://github.com/hierynomus/sshj/pulls/336[#336]: Added support for ecdsa-sha2-nistp384 and ecdsa-sha2-nistp521 signatures
+* Fixed https://github.com/hierynomus/sshj/pull/341[#341]: Fixed path walking during recursive copy
+* Merged https://github.com/hierynomus/sshj/pull/338[#338]: Added ConsolePasswordFinder to read password from stdin
+* Merged https://github.com/hierynomus/sshj/pull/336[#336]: Added support for ecdsa-sha2-nistp384 and ecdsa-sha2-nistp521 signatures
 * Fixed https://github.com/hierynomus/sshj/issues/331[#331]: Added support for wildcards in known_hosts file
 SSHJ 0.21.1 (2017-04-25)::
-* Merged https://github.com/hierynomus/sshj/pulls/322[#322]: Fix regression from 40f956b (invalid length parameter on outputstream)
+* Merged https://github.com/hierynomus/sshj/pull/322[#322]: Fix regression from 40f956b (invalid length parameter on outputstream)
 SSHJ 0.21.0 (2017-04-14)::
-* Merged https://github.com/hierynomus/sshj/pulls/319[#319]: Added support for `ssh-rsa-cert-v01@openssh.com` and `ssh-dsa-cert-v01@openssh.com` certificate key files
+* Merged https://github.com/hierynomus/sshj/pull/319[#319]: Added support for `ssh-rsa-cert-v01@openssh.com` and `ssh-dsa-cert-v01@openssh.com` certificate key files
 * Upgraded Gradle to 3.4.1
-* Merged https://github.com/hierynomus/sshj/pulls/305[#305]: Added support for custom string encoding
+* Merged https://github.com/hierynomus/sshj/pull/305[#305]: Added support for custom string encoding
 * Fixed https://github.com/hierynomus/sshj/issues/312[#312]: Upgraded BouncyCastle to 1.56
 SSHJ 0.20.0 (2017-02-09)::
-* Merged https://github.com/hierynomus/sshj/pulls/294[#294]: Reference ED25519 by constant instead of name
-* Merged https://github.com/hierynomus/sshj/pulls/293[#293], https://github.com/hierynomus/sshj/pulls/295[#295] and https://github.com/hierynomus/sshj/pulls/301[#301]: Fixed OSGi packaging
+* Merged https://github.com/hierynomus/sshj/pull/294[#294]: Reference ED25519 by constant instead of name
+* Merged https://github.com/hierynomus/sshj/pull/293[#293], https://github.com/hierynomus/sshj/pull/295[#295] and https://github.com/hierynomus/sshj/pull/301[#301]: Fixed OSGi packaging
 * Added new Diffie Hellman groups 15-18 for stronger KeyExchange algorithms
 SSHJ 0.19.1 (2016-12-30)::
 * Enabled PKCS5 Key files in DefaultConfig
-* Merged https://github.com/hierynomus/sshj/pulls/291[#291]: Fixed sshj.properties loading and chained exception messages
-* Merged https://github.com/hierynomus/sshj/pulls/284[#284]: Correctly catch interrupt in keepalive thread
+* Merged https://github.com/hierynomus/sshj/pull/291[#291]: Fixed sshj.properties loading and chained exception messages
+* Merged https://github.com/hierynomus/sshj/pull/284[#284]: Correctly catch interrupt in keepalive thread
 * Fixed https://github.com/hierynomus/sshj/issues/292[#292]: Pass the configured RandomFactory to Diffie Hellman KEX
 * Fixed https://github.com/hierynomus/sshj/issues/256[#256]: SSHJ now builds if no git repository present
 * LocalPortForwarder now correctly interrupts its own thread on close()
@@ -182,11 +182,11 @@ SSHJ 0.19.0 (2016-11-25)::
 SSHJ 0.18.0 (2016-09-30)::
 * Fixed Android compatibility
 * Upgrade to Gradle 3.0
-* Merged https://github.com/hierynomus/sshj/pulls/271[#271]: Load known_hosts without requiring BouncyCastle
-* Merged https://github.com/hierynomus/sshj/pulls/269[#269]: Brought back Java6 support by popular demand
-* Merged https://github.com/hierynomus/sshj/pulls/267[#267]: Added support for per connection logging (Fixes https://github.com/hierynomus/sshj/issues/264[#264])
-* Merged https://github.com/hierynomus/sshj/pulls/262[#262], https://github.com/hierynomus/sshj/pulls/265[#265] and https://github.com/hierynomus/sshj/pulls/266[#266]: Added PKCS5 key file support
-* Fixed toString of sftp FileAttributes (Fixes https://github.com/hierynomus/sshj/pulls/258[#258])
+* Merged https://github.com/hierynomus/sshj/pull/271[#271]: Load known_hosts without requiring BouncyCastle
+* Merged https://github.com/hierynomus/sshj/pull/269[#269]: Brought back Java6 support by popular demand
+* Merged https://github.com/hierynomus/sshj/pull/267[#267]: Added support for per connection logging (Fixes https://github.com/hierynomus/sshj/issues/264[#264])
+* Merged https://github.com/hierynomus/sshj/pull/262[#262], https://github.com/hierynomus/sshj/pull/265[#265] and https://github.com/hierynomus/sshj/pull/266[#266]: Added PKCS5 key file support
+* Fixed toString of sftp FileAttributes (Fixes https://github.com/hierynomus/sshj/pull/258[#258])
 * Fixed https://github.com/hierynomus/sshj/issues/255[#255]: No longer depending on 'privately marked' classes in `net.i2p.crypto.eddsa.math` package, fixes OSGI dependencies
 SSHJ 0.17.2 (2016-07-07)::
 * Treating SSH Server identification line ending in '\n' instead of '\r\n' leniently.
@@ -196,7 +196,7 @@ SSHJ 0.17.0 (2016-07-05)::
 * *Introduced breaking change in SFTP copy behaviour*: Previously an SFTP copy operation would behave differently if both source and target were folders with different names.
   In this case instead of copying the contents of the source into the target directory, the directory itself was copied as a sub directory of the target directory.
   This behaviour has been removed in favour of the default behaviour which is to copy the contents of the source into the target. Bringing the behaviour in line with how SCP works.
-* Fixed https://github.com/hierynomus/sshj/issues/252[#252] (via: https://github.com/hierynomus/sshj/pulls/253[#253]): Same name subdirs are no longer merged by accident
+* Fixed https://github.com/hierynomus/sshj/issues/252[#252] (via: https://github.com/hierynomus/sshj/pull/253[#253]): Same name subdirs are no longer merged by accident
 SSHJ 0.16.0 (2016-04-11)::
 * Fixed https://github.com/hierynomus/sshj/issues/239[#239]: Remote port forwards did not work if you used the empty string as address, or a catch-all address.
 * Fixed https://github.com/hierynomus/sshj/issues/242[#242]: Added OSGI headers to sources jar manifest
