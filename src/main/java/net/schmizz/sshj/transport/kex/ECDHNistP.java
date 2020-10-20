@@ -19,9 +19,9 @@ import net.schmizz.sshj.transport.digest.Digest;
 import net.schmizz.sshj.transport.digest.SHA256;
 import net.schmizz.sshj.transport.digest.SHA384;
 import net.schmizz.sshj.transport.digest.SHA512;
-import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec;
 
 import java.security.GeneralSecurityException;
+import java.security.spec.ECGenParameterSpec;
 
 public class ECDHNistP extends AbstractDHG {
 
@@ -33,7 +33,7 @@ public class ECDHNistP extends AbstractDHG {
 
         @Override
         public KeyExchange create() {
-            return new ECDHNistP("P-521", new SHA512());
+            return new ECDHNistP("secp521r1", new SHA512());
         }
 
         @Override
@@ -48,7 +48,7 @@ public class ECDHNistP extends AbstractDHG {
 
         @Override
         public KeyExchange create() {
-            return new ECDHNistP("P-384", new SHA384());
+            return new ECDHNistP("secp384r1", new SHA384());
         }
 
         @Override
@@ -63,7 +63,7 @@ public class ECDHNistP extends AbstractDHG {
 
         @Override
         public KeyExchange create() {
-            return new ECDHNistP("P-256", new SHA256());
+            return new ECDHNistP("secp256r1", new SHA256());
         }
 
         @Override
@@ -79,7 +79,7 @@ public class ECDHNistP extends AbstractDHG {
 
     @Override
     protected void initDH(DHBase dh) throws GeneralSecurityException {
-        dh.init(new ECNamedCurveGenParameterSpec(curve), trans.getConfig().getRandomFactory());
+        dh.init(new ECGenParameterSpec(curve), trans.getConfig().getRandomFactory());
     }
 
 }

@@ -249,7 +249,14 @@ public class SecurityUtils {
      */
     public static synchronized boolean isBouncyCastleRegistered() {
         register();
-        return BOUNCY_CASTLE.equals(securityProvider) || SPONGY_CASTLE.equals(securityProvider);
+        Provider[] providers = Security.getProviders();
+        for (Provider provider : providers) {
+            String name = provider.getName();
+            if (BOUNCY_CASTLE.equals(name) || SPONGY_CASTLE.equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static synchronized void setRegisterBouncyCastle(boolean registerBouncyCastle) {
