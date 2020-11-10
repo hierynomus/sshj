@@ -26,8 +26,6 @@ import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.security.Security;
 import java.util.Arrays;
 

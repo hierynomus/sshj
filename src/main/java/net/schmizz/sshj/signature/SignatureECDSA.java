@@ -21,6 +21,7 @@ import com.hierynomus.asn1.types.ASN1Object;
 import com.hierynomus.asn1.types.constructed.ASN1Sequence;
 import com.hierynomus.asn1.types.primitive.ASN1Integer;
 import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
 
@@ -91,16 +92,18 @@ public class SignatureECDSA extends AbstractSignature {
     public byte[] encode(byte[] sig) {
         ByteArrayInputStream bais = new ByteArrayInputStream(sig);
         com.hierynomus.asn1.ASN1InputStream asn1InputStream = new com.hierynomus.asn1.ASN1InputStream(new DERDecoder(), bais);
+        try {
+            ASN1Sequence sequence = asn1InputStream.readObject();
+            ASN1Integer r = (ASN1Integer) sequence.get(0);
+            ASN1Integer s = (ASN1Integer) sequence.get(1);
+            Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
+            buf.putMPInt(r.getValue());
+            buf.putMPInt(s.getValue());
 
-        ASN1Sequence sequence = asn1InputStream.readObject();
-        ASN1Integer r = (ASN1Integer) sequence.get(0);
-        ASN1Integer s = (ASN1Integer) sequence.get(1);
-
-        Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
-        buf.putMPInt(r.getValue());
-        buf.putMPInt(s.getValue());
-
-        return buf.getCompactData();
+            return buf.getCompactData();
+        } finally {
+            IOUtils.closeQuietly(asn1InputStream, bais);
+        }
     }
 
     @Override
@@ -123,16 +126,19 @@ public class SignatureECDSA extends AbstractSignature {
         BigInteger r = sigbuf.readMPInt();
         BigInteger s = sigbuf.readMPInt();
 
+
         List<ASN1Object> vector = new ArrayList<ASN1Object>();
         vector.add(new ASN1Integer(r));
         vector.add(new ASN1Integer(s));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         com.hierynomus.asn1.ASN1OutputStream asn1OutputStream = new com.hierynomus.asn1.ASN1OutputStream(new DEREncoder(), baos);
-
-        asn1OutputStream.writeObject(new ASN1Sequence(vector));
-        asn1OutputStream.flush();
-
+        try {
+            asn1OutputStream.writeObject(new ASN1Sequence(vector));
+            asn1OutputStream.flush();
+        } finally {
+            IOUtils.closeQuietly(asn1OutputStream);
+        }
         return baos.toByteArray();
     }
 }

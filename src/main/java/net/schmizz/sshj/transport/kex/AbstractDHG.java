@@ -29,8 +29,7 @@ import java.security.GeneralSecurityException;
  * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the
  * {@link DH} class in the
  */
-public abstract class AbstractDHG extends AbstractDH
-        implements KeyExchange {
+public abstract class AbstractDHG extends AbstractDH {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 

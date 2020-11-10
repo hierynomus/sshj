@@ -57,11 +57,12 @@ public abstract class AbstractDHGex extends AbstractDH {
                     return parseGexGroup(buffer);
                 case KEX_DH_GEX_REPLY:
                     return parseGexReply(buffer);
+                default:
+                    throw new TransportException("Unexpected message " + msg);
             }
         } catch (Buffer.BufferException be) {
             throw new TransportException(be);
         }
-        throw new TransportException("Unexpected message " + msg);
     }
 
     private boolean parseGexReply(SSHPacket buffer) throws Buffer.BufferException, GeneralSecurityException, TransportException {
