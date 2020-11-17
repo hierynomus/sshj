@@ -107,6 +107,7 @@ Fork away!
 == Release history
 SSHJ 0.31.0 (????-??-??)::
 * Merged https://github.com/hierynomus/sshj/pull/630[#630]: Add support for `aes128-gcm@openssh.com` and `aes256-gcm@openssh.com` ciphers
+* Merged https://github.com/hierynomus/sshj/pull/636[#636]: Improved Android compatibility
 SSHJ 0.30.0 (2020-08-17)::
 * **BREAKING CHANGE**: Removed `setSignatureFactories` and `getSignatureFactories` from the Config and switched them for `getKeyAlgorithms` and `setKeyAlgorithms`
 * Fixed https://github.com/hierynomus/sshj/pull/588[#588]: Add support for `ssh-rsa2-256` and `ssh-rsa2-512` signatures
