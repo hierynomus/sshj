@@ -17,9 +17,9 @@
 package net.schmizz.sshj.sftp;
 
 public enum RenameFlags {
-    OVERWRITE(0),
-    ATOMIC(1),
-    NATIVE(2);
+    OVERWRITE(1),
+    ATOMIC(2),
+    NATIVE(4);
 
     private final long flag;
 
