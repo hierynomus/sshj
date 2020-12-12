@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
+import java.util.Objects;
+
 public class Parameters {
 
     private final String localHost;
@@ -43,6 +45,11 @@ public class Parameters {
 
     public int getLocalPort() {
         return localPort;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(localHost, localPort, remoteHost, remotePort);
     }
 
 }
