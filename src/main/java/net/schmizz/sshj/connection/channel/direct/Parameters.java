@@ -61,4 +61,10 @@ public class Parameters {
                Objects.equals(remoteHost, other.remoteHost) && remotePort == other.remotePort;
     }
 
+    @Override
+    public String toString() {
+        return "Parameters [localHost="  + localHost  + ", localPort="  + localPort  + ", "+
+                           "remoteHost=" + remoteHost + ", remotePort=" + remotePort + "]";
+    }
+
 }
