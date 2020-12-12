@@ -3,6 +3,7 @@ package net.schmizz.sshj.connection.channel.direct;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
@@ -91,6 +92,17 @@ public class ParametersTest {
         final Parameters third = new Parameters("127.0.0.1", 443, "github.com", 80);
         assertFalse(map.containsKey(third));
         assertNull(map.get(third));
+    }
+
+    @Test
+    public void testToString() {
+        final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 443);
+        assertNotNull(first.toString());
+        assertFalse(first.toString().isBlank());
+        assertTrue(first.toString().contains("127.0.0.1"));
+        assertTrue(first.toString().contains("8080"));
+        assertTrue(first.toString().contains("github.com"));
+        assertTrue(first.toString().contains("443"));
     }
 
 }
