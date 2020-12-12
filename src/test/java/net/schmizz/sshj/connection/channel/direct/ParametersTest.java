@@ -21,6 +21,35 @@ public class ParametersTest {
     }
 
     @Test
+    public void testFieldsEquality() {
+        final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 80);
+        final Parameters second = new Parameters("127.0.0.1", 8080, "github.com", 80);
+        assertEquals(first.getLocalHost(), second.getLocalHost());
+        assertEquals(first.getLocalPort(), second.getLocalPort());
+        assertEquals(first.getRemoteHost(), second.getRemoteHost());
+        assertEquals(first.getRemotePort(), second.getRemotePort());
+    }
+
+    @Test
+    public void testInstanceIdentity() {
+        final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 80);
+        final Parameters second = new Parameters("127.0.0.1", 8080, "github.com", 80);
+        assertTrue(first == first);
+        assertTrue(second == second);
+        assertFalse(first == second);
+    }
+
+    @Test
+    public void testInstanceEquality() {
+        final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 80);
+        final Parameters second = new Parameters("127.0.0.1", 8080, "github.com", 80);
+        assertFalse(first == second);
+        assertTrue(first.equals(second));
+        assertTrue(second.equals(first));
+        assertEquals(first, second);
+    }
+
+    @Test
     public void testHashCode() {
         final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 80);
         final Parameters second = new Parameters("127.0.0.1", 8080, "github.com", 80);
