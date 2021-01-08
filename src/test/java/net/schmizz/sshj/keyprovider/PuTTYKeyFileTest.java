@@ -16,6 +16,7 @@
 package net.schmizz.sshj.keyprovider;
 
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
+import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
@@ -288,6 +289,54 @@ public class PuTTYKeyFileTest {
 
         OpenSSHKeyV1KeyFile referenceKey = new OpenSSHKeyV1KeyFile();
         referenceKey.init(new File("src/test/resources/keytypes/test_ed25519"));
+        assertEquals(key.getPrivate(), referenceKey.getPrivate());
+        assertEquals(key.getPublic(), referenceKey.getPublic());
+    }
+
+    @Test
+    public void testEcDsa256() throws Exception {
+        // Generated with
+        //   puttygen src/test/resources/keytypes/test_ecdsa_nistp256 -O private \
+        //     -o src/test/resources/keytypes/test_ecdsa_nistp256_puttygen.ppk
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new File("src/test/resources/keytypes/test_ecdsa_nistp256_puttygen.ppk"));
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
+
+        PKCS8KeyFile referenceKey = new PKCS8KeyFile();
+        referenceKey.init(new File("src/test/resources/keytypes/test_ecdsa_nistp256"));
+        assertEquals(key.getPrivate(), referenceKey.getPrivate());
+        assertEquals(key.getPublic(), referenceKey.getPublic());
+    }
+
+    @Test
+    public void testEcDsa384() throws Exception {
+        // Generated with
+        //   puttygen src/test/resources/keytypes/test_ecdsa_nistp384_2 -O private \
+        //     -o src/test/resources/keytypes/test_ecdsa_nistp384_2_puttygen.ppk
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new File("src/test/resources/keytypes/test_ecdsa_nistp384_2_puttygen.ppk"));
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
+
+        OpenSSHKeyV1KeyFile referenceKey = new OpenSSHKeyV1KeyFile();
+        referenceKey.init(new File("src/test/resources/keytypes/test_ecdsa_nistp384_2"));
+        assertEquals(key.getPrivate(), referenceKey.getPrivate());
+        assertEquals(key.getPublic(), referenceKey.getPublic());
+    }
+
+    @Test
+    public void testEcDsa521() throws Exception {
+        // Generated with
+        //   puttygen src/test/resources/keytypes/test_ecdsa_nistp521_2 -O private \
+        //     -o src/test/resources/keytypes/test_ecdsa_nistp521_2_puttygen.ppk
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new File("src/test/resources/keytypes/test_ecdsa_nistp521_2_puttygen.ppk"));
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
+
+        OpenSSHKeyV1KeyFile referenceKey = new OpenSSHKeyV1KeyFile();
+        referenceKey.init(new File("src/test/resources/keytypes/test_ecdsa_nistp521_2"));
         assertEquals(key.getPrivate(), referenceKey.getPrivate());
         assertEquals(key.getPublic(), referenceKey.getPublic());
     }

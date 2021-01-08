@@ -25,7 +25,11 @@ import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
+import org.bouncycastle.asn1.nist.NISTNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
@@ -164,6 +168,35 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(publicKeyReader.readBytes(), ed25519);
             EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.readBytes(), ed25519);
             return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
+        }
+        final int ecdsaCurve;
+        switch (this.getType()) {
+            case ECDSA256:
+                ecdsaCurve = 256;
+                break;
+            case ECDSA384:
+                ecdsaCurve = 384;
+                break;
+            case ECDSA521:
+                ecdsaCurve = 521;
+                break;
+            default:
+                ecdsaCurve = -1;
+                break;
+        }
+        if (ecdsaCurve > 0) {
+            BigInteger s = new BigInteger(1, privateKeyReader.readBytes());
+            String name = "P-" + ecdsaCurve;
+            X9ECParameters ecParams = NISTNamedCurves.getByName(name);
+            ECNamedCurveSpec ecCurveSpec =
+                    new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
+            ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
+            try {
+                PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
+                return new KeyPair(getType().readPubKeyFromBuffer(publicKeyReader), privateKey);
+            } catch (GeneralSecurityException e) {
+                throw new IOException(e.getMessage(), e);
+            }
         }
         throw new IOException(String.format("Unknown key type %s", this.getType()));
     }
