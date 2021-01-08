@@ -117,12 +117,12 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         publicKeyReader.readBytes();  // The first part of the payload is a human-readable key format name.
         if (KeyType.RSA.equals(this.getType())) {
             // public key exponent
-            BigInteger e = new BigInteger(publicKeyReader.readBytes());
+            BigInteger e = publicKeyReader.readMPInt();
             // modulus
-            BigInteger n = new BigInteger(publicKeyReader.readBytes());
+            BigInteger n = publicKeyReader.readMPInt();
 
             // private key exponent
-            BigInteger d = new BigInteger(privateKeyReader.readBytes());
+            BigInteger d = privateKeyReader.readMPInt();
 
             final KeyFactory factory;
             try {
@@ -140,13 +140,13 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             }
         }
         if (KeyType.DSA.equals(this.getType())) {
-            BigInteger p = new BigInteger(publicKeyReader.readBytes());
-            BigInteger q = new BigInteger(publicKeyReader.readBytes());
-            BigInteger g = new BigInteger(publicKeyReader.readBytes());
-            BigInteger y = new BigInteger(publicKeyReader.readBytes());
+            BigInteger p = publicKeyReader.readMPInt();
+            BigInteger q = publicKeyReader.readMPInt();
+            BigInteger g = publicKeyReader.readMPInt();
+            BigInteger y = publicKeyReader.readMPInt();
 
             // Private exponent from the private key
-            BigInteger x = new BigInteger(privateKeyReader.readBytes());
+            BigInteger x = privateKeyReader.readMPInt();
 
             final KeyFactory factory;
             try {
@@ -169,27 +169,26 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.readBytes(), ed25519);
             return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
         }
-        final int ecdsaCurve;
+        final String ecdsaCurve;
         switch (this.getType()) {
             case ECDSA256:
-                ecdsaCurve = 256;
+                ecdsaCurve = "P-256";
                 break;
             case ECDSA384:
-                ecdsaCurve = 384;
+                ecdsaCurve = "P-384";
                 break;
             case ECDSA521:
-                ecdsaCurve = 521;
+                ecdsaCurve = "P-521";
                 break;
             default:
-                ecdsaCurve = -1;
+                ecdsaCurve = null;
                 break;
         }
-        if (ecdsaCurve > 0) {
+        if (ecdsaCurve != null) {
             BigInteger s = new BigInteger(1, privateKeyReader.readBytes());
-            String name = "P-" + ecdsaCurve;
-            X9ECParameters ecParams = NISTNamedCurves.getByName(name);
+            X9ECParameters ecParams = NISTNamedCurves.getByName(ecdsaCurve);
             ECNamedCurveSpec ecCurveSpec =
-                    new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
+                    new ECNamedCurveSpec(ecdsaCurve, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
             ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
             try {
                 PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
