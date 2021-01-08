@@ -16,6 +16,12 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
+import net.i2p.crypto.eddsa.EdDSAPrivateKey;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -154,9 +160,19 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             } catch (InvalidKeySpecException e) {
                 throw new IOException(e.getMessage(), e);
             }
-        } else {
-            throw new IOException(String.format("Unknown key type %s", this.getType()));
         }
+        if (KeyType.ED25519.equals(this.getType())) {
+            EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("Ed25519");
+
+            final KeyReader publicKeyReader = new KeyReader(publicKey);
+            publicKeyReader.skip();  // The first part of the payload is "ssh-ed25519" string.
+            EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(publicKeyReader.read(), ed25519);
+
+            final KeyReader privateKeyReader = new KeyReader(privateKey);
+            EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.read(), ed25519);
+            return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
+        }
+        throw new IOException(String.format("Unknown key type %s", this.getType()));
     }
 
     protected void parseKeyPair() throws IOException {
