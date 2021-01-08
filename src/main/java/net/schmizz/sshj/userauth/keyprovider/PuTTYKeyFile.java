@@ -23,6 +23,7 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.Base64;
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.bouncycastle.util.encoders.Hex;
@@ -107,17 +108,17 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
     protected KeyPair readKeyPair() throws IOException {
         this.parseKeyPair();
+        final Buffer.PlainBuffer publicKeyReader = new Buffer.PlainBuffer(publicKey);
+        final Buffer.PlainBuffer privateKeyReader = new Buffer.PlainBuffer(privateKey);
+        publicKeyReader.readBytes();  // The first part of the payload is a human-readable key format name.
         if (KeyType.RSA.equals(this.getType())) {
-            final KeyReader publicKeyReader = new KeyReader(publicKey);
-            publicKeyReader.skip();   // skip this
             // public key exponent
-            BigInteger e = publicKeyReader.readInt();
+            BigInteger e = new BigInteger(publicKeyReader.readBytes());
             // modulus
-            BigInteger n = publicKeyReader.readInt();
+            BigInteger n = new BigInteger(publicKeyReader.readBytes());
 
-            final KeyReader privateKeyReader = new KeyReader(privateKey);
             // private key exponent
-            BigInteger d = privateKeyReader.readInt();
+            BigInteger d = new BigInteger(privateKeyReader.readBytes());
 
             final KeyFactory factory;
             try {
@@ -135,16 +136,13 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             }
         }
         if (KeyType.DSA.equals(this.getType())) {
-            final KeyReader publicKeyReader = new KeyReader(publicKey);
-            publicKeyReader.skip();   // skip this
-            BigInteger p = publicKeyReader.readInt();
-            BigInteger q = publicKeyReader.readInt();
-            BigInteger g = publicKeyReader.readInt();
-            BigInteger y = publicKeyReader.readInt();
+            BigInteger p = new BigInteger(publicKeyReader.readBytes());
+            BigInteger q = new BigInteger(publicKeyReader.readBytes());
+            BigInteger g = new BigInteger(publicKeyReader.readBytes());
+            BigInteger y = new BigInteger(publicKeyReader.readBytes());
 
-            final KeyReader privateKeyReader = new KeyReader(privateKey);
             // Private exponent from the private key
-            BigInteger x = privateKeyReader.readInt();
+            BigInteger x = new BigInteger(privateKeyReader.readBytes());
 
             final KeyFactory factory;
             try {
@@ -163,13 +161,8 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         }
         if (KeyType.ED25519.equals(this.getType())) {
             EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("Ed25519");
-
-            final KeyReader publicKeyReader = new KeyReader(publicKey);
-            publicKeyReader.skip();  // The first part of the payload is "ssh-ed25519" string.
-            EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(publicKeyReader.read(), ed25519);
-
-            final KeyReader privateKeyReader = new KeyReader(privateKey);
-            EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.read(), ed25519);
+            EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(publicKeyReader.readBytes(), ed25519);
+            EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.readBytes(), ed25519);
             return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
         }
         throw new IOException(String.format("Unknown key type %s", this.getType()));
@@ -311,42 +304,6 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             return cipher.doFinal(key);
         } catch (GeneralSecurityException e) {
             throw new IOException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Parses the putty key bit vector, which is an encoded sequence
-     * of {@link java.math.BigInteger}s.
-     */
-    private final static class KeyReader {
-        private final DataInput di;
-
-        public KeyReader(byte[] key) {
-            this.di = new DataInputStream(new ByteArrayInputStream(key));
-        }
-
-        /**
-         * Skips an integer without reading it.
-         */
-        public void skip() throws IOException {
-            final int read = di.readInt();
-            if (read != di.skipBytes(read)) {
-                throw new IOException(String.format("Failed to skip %d bytes", read));
-            }
-        }
-
-        private byte[] read() throws IOException {
-            int len = di.readInt();
-            byte[] r = new byte[len];
-            di.readFully(r);
-            return r;
-        }
-
-        /**
-         * Reads the next integer.
-         */
-        public BigInteger readInt() throws IOException {
-            return new BigInteger(read());
         }
     }
 }
