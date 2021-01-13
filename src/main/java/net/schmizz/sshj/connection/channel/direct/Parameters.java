@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
+import java.util.Objects;
+
 public class Parameters {
 
     private final String localHost;
@@ -43,6 +45,26 @@ public class Parameters {
 
     public int getLocalPort() {
         return localPort;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(localHost, localPort, remoteHost, remotePort);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) { return true; }
+        if (!(obj instanceof Parameters)) { return false; }
+        Parameters other = (Parameters) obj;
+        return Objects.equals(localHost,  other.localHost)  && localPort  == other.localPort &&
+               Objects.equals(remoteHost, other.remoteHost) && remotePort == other.remotePort;
+    }
+
+    @Override
+    public String toString() {
+        return "Parameters [localHost="  + localHost  + ", localPort="  + localPort  + ", "+
+                           "remoteHost=" + remoteHost + ", remotePort=" + remotePort + "]";
     }
 
 }
