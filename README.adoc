@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.30.0
+:sshj_version: 0.31.0
 :source-highlighter: pygments
 
 image:https://api.bintray.com/packages/hierynomus/maven/sshj/images/download.svg[link="https://bintray.com/hierynomus/maven/sshj/_latestVersion"]
