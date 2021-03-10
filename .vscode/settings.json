@@ -1,0 +1,6 @@
+{
+    "java.checkstyle.configuration": "${workspaceFolder}/gradle/config/checkstyle/checkstyle.xml",
+    "files.watcherExclude": {
+        "**/target": true
+    }
+}
