@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.30.0
+:sshj_version: 0.31.0
 :source-highlighter: pygments
 
 image:https://api.bintray.com/packages/hierynomus/maven/sshj/images/download.svg[link="https://bintray.com/hierynomus/maven/sshj/_latestVersion"]
@@ -105,8 +105,15 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
-SSHJ 0.31.0 (????-??-??)::
+SSHJ 0.31.0 (2021-02-08)::
+* Bump dependencies (asn-one 0.5.0, BouncyCastle 1.68, slf4j-api 1.7.30)
+* Merged https://github.com/hierynomus/sshj/pull/660[#660]: Support ED25519 and ECDSA keys in PuTTY format
+* Merged https://github.com/hierynomus/sshj/pull/655[#655]: Bump BouncyCastle due to CVE
+* Merged https://github.com/hierynomus/sshj/pull/653[#653]: Make Parameters class useable as HashMap key
+* Merged https://github.com/hierynomus/sshj/pull/647[#647]: Reduce log level for identification parser
 * Merged https://github.com/hierynomus/sshj/pull/630[#630]: Add support for `aes128-gcm@openssh.com` and `aes256-gcm@openssh.com` ciphers
+* Merged https://github.com/hierynomus/sshj/pull/636[#636]: Improved Android compatibility
+* Merged https://github.com/hierynomus/sshj/pull/627[#627]: Prevent key leakage
 SSHJ 0.30.0 (2020-08-17)::
 * **BREAKING CHANGE**: Removed `setSignatureFactories` and `getSignatureFactories` from the Config and switched them for `getKeyAlgorithms` and `setKeyAlgorithms`
 * Fixed https://github.com/hierynomus/sshj/pull/588[#588]: Add support for `ssh-rsa2-256` and `ssh-rsa2-512` signatures
