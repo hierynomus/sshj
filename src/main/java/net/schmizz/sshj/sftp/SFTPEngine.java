@@ -62,10 +62,15 @@ public class SFTPEngine
 
     public SFTPEngine(SessionFactory ssh, String pathSep)
             throws SSHException {
+        this(ssh, "sftp", pathSep);
+    }
+
+    public SFTPEngine(SessionFactory ssh, String subsystemName, String pathSep)
+            throws SSHException {
         Session session = ssh.startSession();
         loggerFactory = session.getLoggerFactory();
         log = loggerFactory.getLogger(getClass());
-        sub = session.startSubsystem("sftp");
+        sub = session.startSubsystem(subsystemName);
         out = sub.getOutputStream();
         reader = new PacketReader(this);
         pathHelper = new PathHelper(new PathHelper.Canonicalizer() {
