@@ -16,6 +16,7 @@
 package net.schmizz.sshj.transport;
 
 import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.cipher.Cipher;
@@ -83,18 +84,38 @@ final class Encoder
             }
 
             // Compute padding length
-            int padLen = cipherSize - (lengthWithoutPadding % cipherSize);
-            if (padLen < 4 || (authMode && padLen < cipherSize)) {
-                padLen += cipherSize;
+            // random padding - Arbitrary-length padding, such that the total length of
+            // (packet_length || padding_length || payload || random padding)
+            // is a multiple of the cipher block size or 8, whichever is
+            // larger.  There MUST be at least four bytes of padding.  The
+            // padding SHOULD consist of random bytes.  The maximum amount of
+            // padding is 255 bytes.
+            int mod = 8;
+            if (cipherSize > mod) {
+                mod = cipherSize;
+            }
+
+            int padLen = mod - (lengthWithoutPadding % mod);
+            if (padLen < 4 || (authMode && padLen < mod)) {
+                padLen += mod;
             }
 
             final int startOfPacket = buffer.rpos() - 5;
             int packetLen = 1 + payloadSize + padLen; // packetLength = padLen (1 byte) + payload + padding
 
+            // The minimum size of a packet is 16 (or the cipher block size,
+            // whichever is larger) bytes (plus 'mac').  Implementations SHOULD
+            // decrypt the length after receiving the first 8 (or cipher block size,
+            // whichever is larger) bytes of a packet.
             if (packetLen < 16) {
                 padLen += cipherSize;
                 packetLen = 1 + payloadSize + padLen;
             }
+            // while (packetLen < Math.max(16, cipherSize)) {
+            //     padLen += mod; // Increment with the mod so that multiple holds
+            //     packetLen = 1 + payloadSize + padLen;
+            // }
+
             /*
              * In AES-GCM ciphers, they require packets must be a multiple of 16 bytes (which is also block size of AES)
              * as mentioned in RFC5647 Section 7.2. So we are calculating the extra padding as necessary here
@@ -130,9 +151,15 @@ final class Encoder
                 if (mac != null) {
                     putMAC(buffer, startOfPacket, endOfPadding);
                 }
+
+                if (log.isTraceEnabled()) {
+                    log.trace("Encrypting packet #{}: {}", seq, ByteArrayUtils.printHex(buffer.array(), startOfPacket, 4 + packetLen));
+                }
+
                 cipher.update(buffer.array(), startOfPacket, 4 + packetLen);
             }
             buffer.rpos(startOfPacket); // Make ready-to-read
+
 
             return seq;
         } finally {
