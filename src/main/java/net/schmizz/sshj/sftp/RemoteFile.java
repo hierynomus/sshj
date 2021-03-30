@@ -288,12 +288,15 @@ public class RemoteFile
                 // we also need to go here for len <= 0, because pending may be at
                 // EOF in which case it would return -1 instead of 0
 
-                while (unconfirmedReads.size() <= maxUnconfirmedReads && requestOffset < maxOffset) {
+                while (unconfirmedReads.size() <= maxUnconfirmedReads) {
                     // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
                     int reqLen = Math.max(1024, len); // don't be shy!
                     unconfirmedReads.add(RemoteFile.this.asyncRead(requestOffset, reqLen));
                     unconfirmedReadOffsets.add(requestOffset);
                     requestOffset += reqLen;
+                    if (requestOffset >= maxOffset) {
+                        break;
+                    }
                 }
 
                 long nextOffset = unconfirmedReadOffsets.peek();
