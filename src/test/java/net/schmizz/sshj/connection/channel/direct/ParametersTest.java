@@ -47,18 +47,18 @@ public class ParametersTest {
     public void testInstanceIdentity() {
         final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 80);
         final Parameters second = new Parameters("127.0.0.1", 8080, "github.com", 80);
-        assertTrue(first == first);
-        assertTrue(second == second);
-        assertFalse(first == second);
+        assertSame(first, first);
+        assertSame(second, second);
+        assertNotSame(first, second);
     }
 
     @Test
     public void testInstanceEquality() {
         final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 80);
         final Parameters second = new Parameters("127.0.0.1", 8080, "github.com", 80);
-        assertFalse(first == second);
-        assertTrue(first.equals(second));
-        assertTrue(second.equals(first));
+        assertNotSame(first, second);
+        assertEquals(first, second);
+        assertEquals(second, first);
         assertEquals(first, second);
     }
 
@@ -80,7 +80,6 @@ public class ParametersTest {
         final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 80);
 
         final Map<Parameters, String> map = new HashMap<>();
-        assertFalse(map.containsKey(first));
 
         final String none = map.put(first, "is now in the map");
         assertNull(none);
@@ -110,11 +109,9 @@ public class ParametersTest {
     public void testToString() {
         final Parameters first = new Parameters("127.0.0.1", 8080, "github.com", 443);
         assertNotNull(first.toString());
-        assertFalse(first.toString().isBlank());
         assertTrue(first.toString().contains("127.0.0.1"));
         assertTrue(first.toString().contains("8080"));
         assertTrue(first.toString().contains("github.com"));
         assertTrue(first.toString().contains("443"));
     }
-
 }
