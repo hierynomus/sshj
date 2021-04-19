@@ -78,4 +78,6 @@ public interface Cipher {
      * @param  inputLen  The number of bytes to update - starting at offset + aadLen
      */
     void updateWithAAD(byte[] input, int offset, int aadLen, int inputLen);
+
+    void setSequenceNumber(long seq);
 }
