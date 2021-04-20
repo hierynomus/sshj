@@ -40,7 +40,7 @@ public class ChachaPolyCipherTest {
         Cipher enc = FACTORY.create();
         byte[] key = new byte[enc.getBlockSize()];
         Arrays.fill(key, (byte) 1);
-        enc.init(Cipher.Mode.Encrypt, key, null);
+        enc.init(Cipher.Mode.Encrypt, key, new byte[0]);
 
         byte[] aad = new byte[AAD_LENGTH];
         byte[] ptBytes = PLAINTEXT.getBytes(StandardCharsets.UTF_8);
@@ -53,7 +53,7 @@ public class ChachaPolyCipherTest {
         byte[] corrupted = message.clone();
 
         Cipher dec = FACTORY.create();
-        dec.init(Cipher.Mode.Decrypt, key, null);
+        dec.init(Cipher.Mode.Decrypt, key, new byte[0]);
         dec.updateWithAAD(message, 0, AAD_LENGTH, ptBytes.length);
 
         assertArrayEquals(aad, Arrays.copyOf(message, AAD_LENGTH));
@@ -63,7 +63,7 @@ public class ChachaPolyCipherTest {
 
         corrupted[corrupted.length - 1] += 1;
         Cipher failingDec = FACTORY.create();
-        failingDec.init(Cipher.Mode.Decrypt, key, null);
+        failingDec.init(Cipher.Mode.Decrypt, key, new byte[0]);
         try {
             failingDec.updateWithAAD(corrupted, 0, AAD_LENGTH, ptBytes.length);
             fail("Modified authentication tag should not validate");

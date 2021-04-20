@@ -15,8 +15,10 @@
  */
 package com.hierynomus.sshj.transport.cipher;
 
-import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 import javax.crypto.spec.IvParameterSpec;
@@ -34,7 +36,6 @@ public class ChachaPolyCipher extends BaseCipher {
     private static final String CIPHER_CHACHA = "CHACHA";
     private static final String MAC_POLY1305 = "POLY1305";
 
-    private static final ByteBuffer LONG_TO_BYTES_BUFFER = ByteBuffer.allocate(8);
     private static final byte[] POLY_KEY_INPUT = new byte[32];
 
     private final int authSize;
@@ -58,28 +59,8 @@ public class ChachaPolyCipher extends BaseCipher {
     }
 
     @Override
-    public void init(Mode mode, byte[] key, byte[] iv) {
-        this.mode = mode;
-
-        cipherKey = getKeySpec(Arrays.copyOfRange(key, 0, CHACHA_KEY_SIZE));
-        aadCipherKey = getKeySpec(Arrays.copyOfRange(key, CHACHA_KEY_SIZE, 2 * CHACHA_KEY_SIZE));
-        try {
-            cipher = SecurityUtils.getCipher(CIPHER_CHACHA);
-            aadCipher = SecurityUtils.getCipher(CIPHER_CHACHA);
-            mac = SecurityUtils.getMAC(MAC_POLY1305);
-        } catch (GeneralSecurityException e) {
-            cipher = null;
-            aadCipher = null;
-            mac = null;
-            throw new SSHRuntimeException(e);
-        }
-
-        setSequenceNumber(0);
-    }
-
-    @Override
     public void setSequenceNumber(long seq) {
-        byte[] seqAsBytes = LONG_TO_BYTES_BUFFER.putLong(0, seq).array();
+        byte[] seqAsBytes = longToBytes(seq);
         AlgorithmParameterSpec ivSpec = new IvParameterSpec(seqAsBytes);
 
         try {
@@ -101,16 +82,31 @@ public class ChachaPolyCipher extends BaseCipher {
     }
 
     @Override
-    protected void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv) {
-        throw new UnsupportedOperationException("not implemented in " + getClass());
+    protected void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv)
+            throws InvalidKeyException, InvalidAlgorithmParameterException {
+        this.mode = mode;
+
+        cipherKey = getKeySpec(Arrays.copyOfRange(key, 0, CHACHA_KEY_SIZE));
+        aadCipherKey = getKeySpec(Arrays.copyOfRange(key, CHACHA_KEY_SIZE, 2 * CHACHA_KEY_SIZE));
+
+        try {
+            aadCipher = SecurityUtils.getCipher(CIPHER_CHACHA);
+            mac = SecurityUtils.getMAC(MAC_POLY1305);
+        } catch (GeneralSecurityException e) {
+            cipher = null;
+            aadCipher = null;
+            mac = null;
+            throw new SSHRuntimeException(e);
+        }
+
+        setSequenceNumber(0);
     }
 
     @Override
     public void updateAAD(byte[] data, int offset, int length) {
         if (offset != 0 || length != AAD_LENGTH) {
-            throw new IllegalArgumentException(String.format(
-                "updateAAD called with offset %d and length %d", offset, length
-            ));
+            throw new IllegalArgumentException(
+                    String.format("updateAAD called with offset %d and length %d", offset, length));
         }
 
         if (mode == Mode.Decrypt) {
@@ -160,5 +156,10 @@ public class ChachaPolyCipher extends BaseCipher {
             byte[] polyTag = mac.doFinal(macInput);
             System.arraycopy(polyTag, 0, input, macInputLength, POLY_TAG_LENGTH);
         }
+    }
+
+    private byte[] longToBytes(long lng) {
+        return new byte[] { (byte) (lng >> 56), (byte) (lng >> 48), (byte) (lng >> 40), (byte) (lng >> 32),
+                (byte) (lng >> 24), (byte) (lng >> 16), (byte) (lng >> 8), (byte) lng };
     }
 }
