@@ -47,7 +47,8 @@ class CipherSpec extends IntegrationBaseSpec {
                           BlockCiphers.AES256CBC(),
                           BlockCiphers.AES256CTR(),
                           GcmCiphers.AES128GCM(),
-                          GcmCiphers.AES256GCM()]
+                          GcmCiphers.AES256GCM(),
+                          ChachaPolyCiphers.CHACHA_POLY_OPENSSH()]
         cipher = cipherFactory.name
     }
 

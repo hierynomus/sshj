@@ -145,6 +145,7 @@ final class Decoder
     }
 
     private int decryptLengthAAD() throws TransportException {
+        cipher.setSequenceNumber(seq + 1 & 0xffffffffL);
         cipher.updateAAD(inputBuffer.array(), 0, 4);
 
         final int len;
@@ -184,10 +185,6 @@ final class Decoder
             throw new TransportException(DisconnectReason.PROTOCOL_ERROR, "invalid packet length: " + len);
         }
     }
-
-//    private void decryptPayload(final byte[] data, int offset, int length) {
-//        cipher.update(data, cipherSize, packetLength + 4 - cipherSize);
-//    }
 
     /**
      * Adds {@code len} bytes from {@code b} to the decoder buffer. When a packet has been successfully decoded, hooks
