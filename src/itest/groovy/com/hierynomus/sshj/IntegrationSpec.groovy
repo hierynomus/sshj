@@ -16,6 +16,11 @@
 package com.hierynomus.sshj
 
 import com.hierynomus.sshj.key.KeyAlgorithms
+import com.hierynomus.sshj.transport.kex.DHGroups
+import com.hierynomus.sshj.transport.cipher.BlockCiphers
+import com.hierynomus.sshj.transport.mac.Macs
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier
+
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.TransportException
@@ -91,5 +96,23 @@ class IntegrationSpec extends IntegrationBaseSpec {
         then:
         thrown(UserAuthException.class)
         !client.isAuthenticated()
+    }
+
+    def "should correctly connect using parameters in #670"() {
+        given:
+        def config = new DefaultConfig()
+        // config.setKeyAlgorithms(Collections.singletonList(KeyAlgorithms.SSHDSA())) // Can't get openssh to offer ssh-dss
+        config.setKeyExchangeFactories(DHGroups.Group1SHA1())
+        config.setCipherFactories(BlockCiphers.TripleDESCBC())
+        config.setMACFactories(Macs.HMACSHA1())
+        SSHClient sshClient = new SSHClient(config)
+        sshClient.addHostKeyVerifier(new PromiscuousVerifier())
+
+        when:
+        sshClient.connect(SERVER_IP, DOCKER_PORT)
+
+        then:
+        sshClient.isConnected()
+
     }
 }
