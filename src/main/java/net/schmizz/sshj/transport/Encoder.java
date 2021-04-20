@@ -74,7 +74,7 @@ final class Encoder
             }
 
             final int payloadSize = buffer.available();
-            int lengthWithoutPadding;
+            final int lengthWithoutPadding;
             if (etm) {
                 // in Encrypt-Then-Mac mode, the length field is not encrypted, so we should keep it out of the
                 // padding length calculation
@@ -90,11 +90,9 @@ final class Encoder
             // larger.  There MUST be at least four bytes of padding.  The
             // padding SHOULD consist of random bytes.  The maximum amount of
             // padding is 255 bytes.
-            int mod = 8;
-            if (cipherSize > mod) {
-                mod = cipherSize;
-            }
+            final int mod = cipherSize > 8 ? cipherSize : 8;
 
+            // (lengthWithoutPadding + padLen) % mod == 0 where 4 <= padLen < 256
             int padLen = mod - (lengthWithoutPadding % mod);
             if (padLen < 4 || (authMode && padLen < mod)) {
                 padLen += mod;
@@ -107,14 +105,14 @@ final class Encoder
             // whichever is larger) bytes (plus 'mac').  Implementations SHOULD
             // decrypt the length after receiving the first 8 (or cipher block size,
             // whichever is larger) bytes of a packet.
-            if (packetLen < 16) {
-                padLen += cipherSize;
-                packetLen = 1 + payloadSize + padLen;
-            }
-            // while (packetLen < Math.max(16, cipherSize)) {
-            //     padLen += mod; // Increment with the mod so that multiple holds
+            // if (packetLen < 16) {
+            //     padLen += cipherSize;
             //     packetLen = 1 + payloadSize + padLen;
             // }
+            while (packetLen < Math.max(16, cipherSize)) {
+                padLen += mod; // Increment with the mod so that multiple holds
+                packetLen = 1 + payloadSize + padLen;
+            }
 
             /*
              * In AES-GCM ciphers, they require packets must be a multiple of 16 bytes (which is also block size of AES)
@@ -167,7 +165,7 @@ final class Encoder
         }
     }
 
-    protected void aeadOutgoingBuffer(Buffer buf, int offset, int len) {
+    protected void aeadOutgoingBuffer(Buffer<?> buf, int offset, int len) {
         if (cipher == null || cipher.getAuthenticationTagSize() == 0) {
             throw new IllegalArgumentException("AEAD mode requires an AEAD cipher");
         }
