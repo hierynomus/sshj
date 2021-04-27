@@ -18,6 +18,7 @@ package net.schmizz.sshj;
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+import com.hierynomus.sshj.transport.cipher.ChachaPolyCiphers;
 import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import com.hierynomus.sshj.transport.kex.DHGroups;
@@ -35,7 +36,6 @@ import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
-import net.schmizz.sshj.transport.random.BouncyCastleRandom;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
@@ -184,7 +184,8 @@ public class DefaultConfig
                 BlockCiphers.TwofishCBC(),
                 StreamCiphers.Arcfour(),
                 StreamCiphers.Arcfour128(),
-                StreamCiphers.Arcfour256())
+                StreamCiphers.Arcfour256(),
+                ChachaPolyCiphers.CHACHA_POLY_OPENSSH())
         );
 
         boolean warn = false;
