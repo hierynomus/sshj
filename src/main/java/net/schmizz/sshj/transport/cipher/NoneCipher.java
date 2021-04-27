@@ -73,4 +73,9 @@ public class NoneCipher
     public void updateWithAAD(byte[] input, int offset, int aadLen, int inputLen) {
 
     }
+
+    @Override
+    public void setSequenceNumber(long seq) {
+
+    }
 }

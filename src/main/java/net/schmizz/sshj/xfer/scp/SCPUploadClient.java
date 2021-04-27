@@ -43,11 +43,15 @@ public class SCPUploadClient extends AbstractSCPClient {
         return copy(sourceFile, remotePath, ScpCommandLine.EscapeMode.SingleQuote);
     }
 
-    public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode)
-            throws IOException {
+    public synchronized int copy (LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode) throws IOException {
+        return copy(sourceFile, remotePath, escapeMode, true);
+    }
+
+    public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes)
+        throws IOException {
         engine.cleanSlate();
         try {
-            startCopy(sourceFile, remotePath, escapeMode);
+            startCopy(sourceFile, remotePath, escapeMode, preserveTimes);
         } finally {
             engine.exit();
         }
@@ -58,40 +62,44 @@ public class SCPUploadClient extends AbstractSCPClient {
         this.uploadFilter = uploadFilter;
     }
 
-    private void startCopy(LocalSourceFile sourceFile, String targetPath, ScpCommandLine.EscapeMode escapeMode)
-            throws IOException {
+    private void startCopy(LocalSourceFile sourceFile, String targetPath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes)
+        throws IOException {
         ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SINK)
-                .and(ScpCommandLine.Arg.RECURSIVE)
-                .and(ScpCommandLine.Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime())
-                .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
+            .and(ScpCommandLine.Arg.RECURSIVE)
+            .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
+        if (preserveTimes) {
+            commandLine.and(ScpCommandLine.Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime());
+        }
         commandLine.withPath(targetPath, escapeMode);
         engine.execSCPWith(commandLine);
         engine.check("Start status OK");
-        process(engine.getTransferListener(), sourceFile);
+        process(engine.getTransferListener(), sourceFile, preserveTimes);
     }
 
-    private void process(TransferListener listener, LocalSourceFile f)
-            throws IOException {
+    private void process(TransferListener listener, LocalSourceFile f, boolean preserveTimes)
+        throws IOException {
         if (f.isDirectory()) {
-            sendDirectory(listener.directory(f.getName()), f);
+            sendDirectory(listener.directory(f.getName()), f, preserveTimes);
         } else if (f.isFile()) {
-            sendFile(listener.file(f.getName(), f.getLength()), f);
+            sendFile(listener.file(f.getName(), f.getLength()), f, preserveTimes);
         } else
             throw new IOException(f + " is not a regular file or directory");
     }
 
-    private void sendDirectory(TransferListener listener, LocalSourceFile f)
-            throws IOException {
+    private void sendDirectory(TransferListener listener, LocalSourceFile f, boolean preserveTimes)
+        throws IOException {
         preserveTimeIfPossible(f);
         engine.sendMessage("D0" + getPermString(f) + " 0 " + f.getName());
         for (LocalSourceFile child : f.getChildren(uploadFilter))
-            process(listener, child);
+            process(listener, child, preserveTimes);
         engine.sendMessage("E");
     }
 
-    private void sendFile(StreamCopier.Listener listener, LocalSourceFile f)
-            throws IOException {
-        preserveTimeIfPossible(f);
+    private void sendFile(StreamCopier.Listener listener, LocalSourceFile f, boolean preserveTimes)
+        throws IOException {
+        if(preserveTimes) {
+            preserveTimeIfPossible(f);
+        }
         final InputStream src = f.getInputStream();
         try {
             engine.sendMessage("C0" + getPermString(f) + " " + f.getLength() + " " + f.getName());
