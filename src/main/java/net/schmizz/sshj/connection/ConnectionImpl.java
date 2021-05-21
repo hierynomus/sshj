@@ -245,7 +245,7 @@ public class ConnectionImpl
     public void sendOpenFailure(int recipient, Reason reason, String message)
             throws TransportException {
         trans.write(new SSHPacket(Message.CHANNEL_OPEN_FAILURE)
-                            .putUInt32(recipient)
+                            .putUInt32FromInt(recipient)
                             .putUInt32(reason.getCode())
                             .putString(message));
     }

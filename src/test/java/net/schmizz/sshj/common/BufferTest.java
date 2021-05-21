@@ -25,6 +25,26 @@ import static org.junit.Assert.*;
 
 public class BufferTest {
 
+    @Test
+    public void testNegativeInteger() throws BufferException {
+        byte[] negativeInt = new byte[] { (byte) 0xB8,
+                (byte) 0x4B,
+                (byte) 0xF4,
+                (byte) 0x38,
+            };
+        PlainBuffer buffer = new PlainBuffer(negativeInt);
+        assertEquals(buffer.readUInt32AsInt(),-1202981832);
+
+        PlainBuffer buff = new PlainBuffer();
+        buff.ensureCapacity(4);
+        buff.putUInt32(-1202981832);
+        byte[] data = buff.getCompactData();
+        assertEquals(data[0], (byte) 0xB8);
+        assertEquals(data[1], (byte) 0x4B);
+        assertEquals(data[2], (byte) 0xF4);
+        assertEquals(data[3], (byte) 0x38);
+    }
+
     // Issue 72: previously, it entered an infinite loop trying to establish the buffer size
     @Test
     public void shouldThrowOnTooLargeCapacity() {

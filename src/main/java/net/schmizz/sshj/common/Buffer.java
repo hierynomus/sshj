@@ -314,6 +314,23 @@ public class Buffer<T extends Buffer<T>> {
      * @return this
      */
     @SuppressWarnings("unchecked")
+    public T putUInt32FromInt(int uint32) {
+        ensureCapacity(4);
+        data[wpos++] = (byte) (uint32 >> 24);
+        data[wpos++] = (byte) (uint32 >> 16);
+        data[wpos++] = (byte) (uint32 >> 8);
+        data[wpos++] = (byte) uint32;
+        return (T) this;
+    }
+
+    /**
+     * Writes a uint32 integer
+     *
+     * @param uint32
+     *
+     * @return this
+     */
+    @SuppressWarnings("unchecked")
     public T putUInt32(long uint32) {
         ensureCapacity(4);
         if (uint32 < 0 || uint32 > 0xffffffffL)
