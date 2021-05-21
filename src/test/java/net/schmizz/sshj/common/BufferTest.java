@@ -37,7 +37,7 @@ public class BufferTest {
 
         PlainBuffer buff = new PlainBuffer();
         buff.ensureCapacity(4);
-        buff.putUInt32(-1202981832);
+        buff.putUInt32FromInt(-1202981832);
         byte[] data = buff.getCompactData();
         assertEquals(data[0], (byte) 0xB8);
         assertEquals(data[1], (byte) 0x4B);
