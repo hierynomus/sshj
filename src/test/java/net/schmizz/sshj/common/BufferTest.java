@@ -28,10 +28,9 @@ public class BufferTest {
     @Test
     public void testNegativeInteger() throws BufferException {
         byte[] negativeInt = new byte[] { (byte) 0xB8,
-                (byte) 0x4B,
-                (byte) 0xF4,
-                (byte) 0x38,
-            };
+                                          (byte) 0x4B,
+                                          (byte) 0xF4,
+                                          (byte) 0x38 };
         PlainBuffer buffer = new PlainBuffer(negativeInt);
         assertEquals(buffer.readUInt32AsInt(),-1202981832);
 
