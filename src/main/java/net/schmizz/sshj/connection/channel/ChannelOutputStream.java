@@ -90,7 +90,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
 
                 packet.wpos(headerOffset);
                 packet.putMessageID(Message.CHANNEL_DATA);
-                packet.putUInt32(chan.getRecipient());
+                packet.putUInt32FromInt(chan.getRecipient());
                 packet.putUInt32(writeNow);
                 packet.wpos(dataOffset + writeNow);
 

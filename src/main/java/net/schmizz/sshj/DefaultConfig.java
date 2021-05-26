@@ -153,6 +153,7 @@ public class DefaultConfig
 
     protected void initCipherFactories() {
         List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
+                ChachaPolyCiphers.CHACHA_POLY_OPENSSH(),
                 BlockCiphers.AES128CBC(),
                 BlockCiphers.AES128CTR(),
                 BlockCiphers.AES192CBC(),
