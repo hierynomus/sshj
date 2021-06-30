@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.Transport;
@@ -79,7 +80,12 @@ public abstract class AbstractDHG extends AbstractDH {
 
 
         Signature signature = trans.getHostKeyAlgorithm().newSignature();
-        signature.initVerify(hostKey);
+        if (hostKey instanceof Certificate<?>) {
+            signature.initVerify(((Certificate<?>)hostKey).getKey());
+        }
+        else {
+            signature.initVerify(hostKey);
+        }
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
