@@ -36,9 +36,13 @@ public class KeyAlgorithms {
     public static Factory SSHDSA() { return new Factory(KeyType.DSA.toString(), new SignatureDSA.Factory(), KeyType.DSA); }
     public static Factory SSHDSSCertV01() { return new Factory(KeyType.DSA_CERT.toString(), new SignatureDSA.Factory(), KeyType.DSA_CERT); }
     public static Factory ECDSASHANistp256() { return new Factory(KeyType.ECDSA256.toString(), new SignatureECDSA.Factory256(), KeyType.ECDSA256); }
+    public static Factory ECDSASHANistp256CertV01() { return new Factory(KeyType.ECDSA256_CERT.toString(), new SignatureECDSA.Factory256(), KeyType.ECDSA256_CERT); }
     public static Factory ECDSASHANistp384() { return new Factory(KeyType.ECDSA384.toString(), new SignatureECDSA.Factory384(), KeyType.ECDSA384); }
+    public static Factory ECDSASHANistp384CertV01() { return new Factory(KeyType.ECDSA384_CERT.toString(), new SignatureECDSA.Factory384(), KeyType.ECDSA384_CERT); }
     public static Factory ECDSASHANistp521() { return new Factory(KeyType.ECDSA521.toString(), new SignatureECDSA.Factory521(), KeyType.ECDSA521); }
+    public static Factory ECDSASHANistp521CertV01() { return new Factory(KeyType.ECDSA521_CERT.toString(), new SignatureECDSA.Factory521(), KeyType.ECDSA521_CERT); }
     public static Factory EdDSA25519() { return new Factory(KeyType.ED25519.toString(), new SignatureEdDSA.Factory(), KeyType.ED25519); }
+    public static Factory EdDSA25519CertV01() { return new Factory(KeyType.ED25519_CERT.toString(), new SignatureEdDSA.Factory(), KeyType.ED25519_CERT); }
 
     public static class Factory implements net.schmizz.sshj.common.Factory.Named<KeyAlgorithm> {
 

@@ -251,6 +251,98 @@ public enum KeyType {
         }
     },
 
+    ED25519_CERT("ssh-ed25519-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ED25519);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ED25519, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ED25519);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ED25519;
+        }
+    },
+
+    ECDSA256_CERT("ecdsa-sha2-nistp256-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ECDSA256);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ECDSA256, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ECDSA256);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ECDSA256;
+        }
+    },
+
+    ECDSA384_CERT("ecdsa-sha2-nistp384-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ECDSA384);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ECDSA384, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ECDSA384);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ECDSA384;
+        }
+    },
+
+    ECDSA521_CERT("ecdsa-sha2-nistp521-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ECDSA521);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ECDSA521, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ECDSA521);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ECDSA521;
+        }
+    },
+
     /** Unrecognized */
     UNKNOWN("unknown") {
         @Override
