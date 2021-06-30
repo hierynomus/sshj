@@ -276,6 +276,15 @@ task startItestContainer(type: DockerStartContainer) {
     targetContainerId createItestContainer.getContainerId()
 }
 
+task logItestContainer(type: DockerLogsContainer) {
+    dependsOn createItestContainer
+    targetContainerId createItestContainer.getContainerId()
+    showTimestamps = true
+    stdErr = true
+    stdOut = true
+    tailAll = true
+}
+
 task stopItestContainer(type: DockerStopContainer) {
     targetContainerId createItestContainer.getContainerId()
 }
@@ -287,6 +296,9 @@ task forkedUploadRelease(type: GradleBuild) {
 
 project.tasks.integrationTest.dependsOn(startItestContainer)
 project.tasks.integrationTest.finalizedBy(stopItestContainer)
+
+// Being enabled, it pollutes logs on CI. Uncomment when debugging some test to get sshd logs.
+// project.tasks.stopItestContainer.dependsOn(logItestContainer)
 
 project.tasks.release.dependsOn([project.tasks.integrationTest, project.tasks.build])
 project.tasks.release.finalizedBy(project.tasks.forkedUploadRelease)

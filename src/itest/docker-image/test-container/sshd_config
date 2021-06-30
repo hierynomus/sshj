@@ -154,3 +154,5 @@ HostCertificate /etc/ssh/ssh_host_ed25519_384_key-cert.pub
 
 HostKey /etc/ssh/ssh_host_rsa_2048_key
 HostCertificate /etc/ssh/ssh_host_rsa_2048_key-cert.pub
+
+LogLevel DEBUG2
