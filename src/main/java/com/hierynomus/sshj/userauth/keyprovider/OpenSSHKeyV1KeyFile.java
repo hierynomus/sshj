@@ -35,7 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -56,6 +59,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
     public static final String OPENSSH_PRIVATE_KEY = "OPENSSH PRIVATE KEY-----";
     public static final String BCRYPT = "bcrypt";
+    private PublicKey pubKey;
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -69,6 +73,24 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         public String getName() {
             return KeyFormat.OpenSSHv1.name();
         }
+    }
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Override
+    public void init(File location) {
+        File pubKey = new File(location + "-cert.pub");
+        if (!pubKey.exists()) {
+            pubKey = new File(location + ".pub");
+        }
+        if (pubKey.exists())
+            try {
+                initPubKey(new FileReader(pubKey));
+            } catch (IOException e) {
+                // let super provide both public & private key
+                log.warn("Error reading public key file: {}", e.toString());
+            }
+        super.init(location);
     }
 
     @Override
@@ -91,6 +113,28 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         }
     }
 
+    private void initPubKey(Reader publicKey) throws IOException {
+        final BufferedReader br = new BufferedReader(publicKey);
+        try {
+            String keydata;
+            while ((keydata = br.readLine()) != null) {
+                keydata = keydata.trim();
+                if (!keydata.isEmpty()) {
+                    String[] parts = keydata.trim().split("\\s+");
+                    if (parts.length >= 2) {
+                        pubKey = new PlainBuffer(Base64.decode(parts[1])).readPublicKey();
+                        return;
+                    } else {
+                        throw new IOException("Got line with only one column");
+                    }
+                }
+            }
+            throw new IOException("Public key file is blank");
+        } finally {
+            br.close();
+        }
+    }
+
     private KeyPair readDecodedKeyPair(final PlainBuffer keyBuffer) throws IOException, GeneralSecurityException {
         byte[] bytes = new byte[AUTH_MAGIC.length];
         keyBuffer.readRawBytes(bytes); // byte[] AUTH_MAGIC
@@ -106,7 +150,13 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         if (nrKeys != 1) {
             throw new IOException("We don't support having more than 1 key in the file (yet).");
         }
-        PublicKey publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes())); // string publickey1
+        PublicKey publicKey = pubKey;
+        if (publicKey == null) {
+            publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes()));
+        }
+        else {
+            keyBuffer.readBytes();
+        }
         PlainBuffer privateKeyBuffer = new PlainBuffer(keyBuffer.readBytes()); // string (possibly) encrypted, padded list of private keys
         if ("none".equals(cipherName)) {
             logger.debug("Reading unencrypted keypair");
