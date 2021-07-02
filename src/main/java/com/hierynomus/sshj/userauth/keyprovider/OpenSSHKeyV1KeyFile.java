@@ -79,11 +79,8 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     public void init(File location) {
-        File pubKey = new File(location + "-cert.pub");
-        if (!pubKey.exists()) {
-            pubKey = new File(location + ".pub");
-        }
-        if (pubKey.exists())
+        File pubKey = OpenSSHKeyFileUtil.getPublicKeyFile(location);
+        if (pubKey != null)
             try {
                 initPubKey(new FileReader(pubKey));
             } catch (IOException e) {
@@ -114,25 +111,9 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     }
 
     private void initPubKey(Reader publicKey) throws IOException {
-        final BufferedReader br = new BufferedReader(publicKey);
-        try {
-            String keydata;
-            while ((keydata = br.readLine()) != null) {
-                keydata = keydata.trim();
-                if (!keydata.isEmpty()) {
-                    String[] parts = keydata.trim().split("\\s+");
-                    if (parts.length >= 2) {
-                        pubKey = new PlainBuffer(Base64.decode(parts[1])).readPublicKey();
-                        return;
-                    } else {
-                        throw new IOException("Got line with only one column");
-                    }
-                }
-            }
-            throw new IOException("Public key file is blank");
-        } finally {
-            br.close();
-        }
+        OpenSSHKeyFileUtil.ParsedPubKey parsed = OpenSSHKeyFileUtil.initPubKey(publicKey);
+        type = parsed.getType();
+        pubKey = parsed.getPubKey();
     }
 
     private KeyPair readDecodedKeyPair(final PlainBuffer keyBuffer) throws IOException, GeneralSecurityException {

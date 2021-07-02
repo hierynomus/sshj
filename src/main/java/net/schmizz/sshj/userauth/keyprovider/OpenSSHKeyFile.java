@@ -15,9 +15,7 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import net.schmizz.sshj.common.Base64;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.KeyType;
+import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyFileUtil;
 
 import java.io.*;
 import java.security.PublicKey;
@@ -58,11 +56,8 @@ public class OpenSSHKeyFile
     @Override
     public void init(File location) {
         // try cert key location first
-        File pubKey = new File(location + "-cert.pub");
-        if (!pubKey.exists()) {
-            pubKey = new File(location + ".pub");
-        }
-        if (pubKey.exists())
+        File pubKey = OpenSSHKeyFileUtil.getPublicKeyFile(location);
+        if (pubKey != null)
             try {
                 initPubKey(new FileReader(pubKey));
             } catch (IOException e) {
@@ -91,25 +86,8 @@ public class OpenSSHKeyFile
      * @param publicKey Public key accessible through a {@code Reader}
      */
     private void initPubKey(Reader publicKey) throws IOException {
-        final BufferedReader br = new BufferedReader(publicKey);
-        try {
-            String keydata;
-            while ((keydata = br.readLine()) != null) {
-                keydata = keydata.trim();
-                if (!keydata.isEmpty()) {
-                    String[] parts = keydata.trim().split("\\s+");
-                    if (parts.length >= 2) {
-                        type = KeyType.fromString(parts[0]);
-                        pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey();
-                    } else {
-                        throw new IOException("Got line with only one column");
-                    }
-                    return;
-                }
-            }
-            throw new IOException("Public key file is blank");
-        } finally {
-            br.close();
-        }
+        OpenSSHKeyFileUtil.ParsedPubKey parsed = OpenSSHKeyFileUtil.initPubKey(publicKey);
+        type = parsed.getType();
+        pubKey = parsed.getPubKey();
     }
 }
