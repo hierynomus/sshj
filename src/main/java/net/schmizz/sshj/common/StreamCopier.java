@@ -132,6 +132,9 @@ public class StreamCopier {
             while ((read = in.read(buf)) != -1) {
                 count += write(buf, count, read);
             }
+
+            // Read from in got EOF -> also close out
+            out.close();
         } else {
             while (count < length && (read = in.read(buf, 0, (int) Math.min(bufSize, length - count))) != -1) {
                 count += write(buf, count, read);
