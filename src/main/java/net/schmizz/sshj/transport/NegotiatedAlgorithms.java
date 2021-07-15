@@ -26,8 +26,10 @@ public final class NegotiatedAlgorithms {
     private final String c2sComp;
     private final String s2cComp;
 
+    private final boolean rsaSHA2Support;
+
     NegotiatedAlgorithms(String kex, String sig, String c2sCipher, String s2cCipher, String c2sMAC, String s2cMAC,
-                         String c2sComp, String s2cComp) {
+                         String c2sComp, String s2cComp, boolean rsaSHA2Support) {
         this.kex = kex;
         this.sig = sig;
         this.c2sCipher = c2sCipher;
@@ -36,6 +38,7 @@ public final class NegotiatedAlgorithms {
         this.s2cMAC = s2cMAC;
         this.c2sComp = c2sComp;
         this.s2cComp = s2cComp;
+        this.rsaSHA2Support = rsaSHA2Support;
     }
 
     public String getKeyExchangeAlgorithm() {
@@ -70,6 +73,10 @@ public final class NegotiatedAlgorithms {
         return s2cComp;
     }
 
+    public boolean getRSASHA2Support() {
+        return rsaSHA2Support;
+    }
+
     @Override
     public String toString() {
         return ("[ " +
@@ -80,7 +87,8 @@ public final class NegotiatedAlgorithms {
                 "c2sMAC=" + c2sMAC + "; " +
                 "s2cMAC=" + s2cMAC + "; " +
                 "c2sComp=" + c2sComp + "; " +
-                "s2cComp=" + s2cComp +
+                "s2cComp=" + s2cComp + "; " +
+                "rsaSHA2Support=" + rsaSHA2Support +
                 " ]");
     }
 

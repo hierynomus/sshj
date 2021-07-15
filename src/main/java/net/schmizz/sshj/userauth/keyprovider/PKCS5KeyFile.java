@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.ByteArrayUtils;
@@ -98,7 +99,7 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
                         } else if ("DSS".equals(s)) {
                             type = KeyType.DSA;
                         } else {
-                            throw new FormatException("Unrecognized PKCS5 key type: " + s);
+                            throw new FormatException("Unrecognized PKCS5 key type");
                         }
                     } else {
                         throw new FormatException("Bad header; possibly PKCS8 format?");
@@ -108,12 +109,12 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
                 } else if (type != null) {
                     if (line.startsWith("Proc-Type: ")) {
                         if (!"4,ENCRYPTED".equals(line.substring(11))) {
-                            throw new FormatException("Unrecognized Proc-Type: " + line.substring(11));
+                            throw new FormatException("Unrecognized Proc-Type");
                         }
                     } else if (line.startsWith("DEK-Info: ")) {
                         int ptr = line.indexOf(",");
                         if (ptr == -1) {
-                            throw new FormatException("Unrecognized DEK-Info: " + line.substring(10));
+                            throw new FormatException("Unrecognized DEK-Info");
                         } else {
                             String algorithm = line.substring(10, ptr);
                             if ("DES-EDE3-CBC".equals(algorithm)) {
@@ -140,7 +141,7 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
             ASN1Data asn = new ASN1Data(data = decrypt(Base64.decode(sb.toString()), cipher, iv));
             switch (type) {
                 case RSA: {
-                    KeyFactory factory = KeyFactory.getInstance("RSA");
+                    KeyFactory factory = KeyFactory.getInstance(KeyAlgorithm.RSA);
                     asn.readNext();
                     BigInteger modulus = asn.readNext();
                     BigInteger pubExp = asn.readNext();
@@ -150,7 +151,7 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
                     return new KeyPair(pubKey, prvKey);
                 }
                 case DSA: {
-                    KeyFactory factory = KeyFactory.getInstance("DSA");
+                    KeyFactory factory = KeyFactory.getInstance(KeyAlgorithm.DSA);
                     asn.readNext();
                     BigInteger p = asn.readNext();
                     BigInteger q = asn.readNext();

@@ -79,11 +79,9 @@ public class IdentificationStringParser {
         }
         if (bytes[bytes.length - 2] != '\r') {
             String ident = new String(bytes, 0, bytes.length - 1);
-            log.warn("Server identification has bad line ending, was expecting a '\\r\\n' however got: '{}' (hex: {})", (char) (bytes[bytes.length - 2] & 0xFF), Integer.toHexString(bytes[bytes.length - 2] & 0xFF));
-            log.warn("Will treat the identification of this server '{}' leniently", ident);
+            log.info("Server identification has bad line ending, was expecting a '\\r\\n' however got: '{}' (hex: {})", (char) (bytes[bytes.length - 2] & 0xFF), Integer.toHexString(bytes[bytes.length - 2] & 0xFF));
+            log.info("Will treat the identification of this server '{}' leniently", ident);
             return ident;
-            // log.error("Data received up til here was: {}", new String(bytes));
-            // throw new TransportException("Incorrect identification: bad line ending: " + ByteArrayUtils.toHex(bytes, 0, bytes.length));
         }
 
         // Strip off the \r\n

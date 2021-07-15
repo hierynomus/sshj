@@ -15,18 +15,23 @@
  */
 package net.schmizz.sshj.signature;
 
+import com.hierynomus.asn1.encodingrules.der.DERDecoder;
+import com.hierynomus.asn1.encodingrules.der.DEREncoder;
+import com.hierynomus.asn1.types.ASN1Object;
+import com.hierynomus.asn1.types.constructed.ASN1Sequence;
+import com.hierynomus.asn1.types.primitive.ASN1Integer;
 import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1OutputStream;
-import org.bouncycastle.asn1.DERSequence;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
+import java.util.ArrayList;
+import java.util.List;
 
 /** ECDSA {@link Signature} */
 public class SignatureECDSA extends AbstractSignature {
@@ -79,30 +84,26 @@ public class SignatureECDSA extends AbstractSignature {
     private String keyTypeName;
 
     public SignatureECDSA(String algorithm, String keyTypeName) {
-        super(algorithm);
+        super(algorithm, keyTypeName);
         this.keyTypeName = keyTypeName;
     }
 
     @Override
     public byte[] encode(byte[] sig) {
-        int rIndex = 3;
-        int rLen = sig[rIndex++] & 0xff;
-        byte[] r = new byte[rLen];
-        System.arraycopy(sig, rIndex, r, 0, r.length);
+        ByteArrayInputStream bais = new ByteArrayInputStream(sig);
+        com.hierynomus.asn1.ASN1InputStream asn1InputStream = new com.hierynomus.asn1.ASN1InputStream(new DERDecoder(), bais);
+        try {
+            ASN1Sequence sequence = asn1InputStream.readObject();
+            ASN1Integer r = (ASN1Integer) sequence.get(0);
+            ASN1Integer s = (ASN1Integer) sequence.get(1);
+            Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
+            buf.putMPInt(r.getValue());
+            buf.putMPInt(s.getValue());
 
-        int sIndex = rIndex + rLen + 1;
-        int sLen = sig[sIndex++] & 0xff;
-        byte[] s = new byte[sLen];
-        System.arraycopy(sig, sIndex, s, 0, s.length);
-
-        System.arraycopy(sig, 4, r, 0, rLen);
-        System.arraycopy(sig, 6 + rLen, s, 0, sLen);
-
-        Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
-        buf.putMPInt(new BigInteger(r));
-        buf.putMPInt(new BigInteger(s));
-
-        return buf.getCompactData();
+            return buf.getCompactData();
+        } finally {
+            IOUtils.closeQuietly(asn1InputStream, bais);
+        }
     }
 
     @Override
@@ -122,19 +123,22 @@ public class SignatureECDSA extends AbstractSignature {
      */
     private byte[] asnEncode(byte[] sigBlob) throws IOException {
         Buffer.PlainBuffer sigbuf = new Buffer.PlainBuffer(sigBlob);
-        byte[] r = sigbuf.readBytes();
-        byte[] s = sigbuf.readBytes();
+        BigInteger r = sigbuf.readMPInt();
+        BigInteger s = sigbuf.readMPInt();
 
-        ASN1EncodableVector vector = new ASN1EncodableVector();
+
+        List<ASN1Object> vector = new ArrayList<ASN1Object>();
         vector.add(new ASN1Integer(r));
         vector.add(new ASN1Integer(s));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ASN1OutputStream asnOS = new ASN1OutputStream(baos);
-
-        asnOS.writeObject(new DERSequence(vector));
-        asnOS.flush();
-
+        com.hierynomus.asn1.ASN1OutputStream asn1OutputStream = new com.hierynomus.asn1.ASN1OutputStream(new DEREncoder(), baos);
+        try {
+            asn1OutputStream.writeObject(new ASN1Sequence(vector));
+            asn1OutputStream.flush();
+        } finally {
+            IOUtils.closeQuietly(asn1OutputStream);
+        }
         return baos.toByteArray();
     }
 }

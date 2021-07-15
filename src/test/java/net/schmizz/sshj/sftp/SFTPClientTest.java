@@ -57,7 +57,11 @@ public class SFTPClientTest {
     @Test
     public void doesNotTryToCreateDirectoryTwiceWhenPathHasTrailingSeparator() throws Exception {
         SFTPClient client = new SFTPClient(sftpEngine);
-        client.mkdirs("/folder/directory/");
-        verify(sftpEngine, times(1)).makeDir("/folder/directory");
+        try {
+            client.mkdirs("/folder/directory/");
+            verify(sftpEngine, times(1)).makeDir("/folder/directory");
+        } finally {
+            client.close();
+        }
     }
 }

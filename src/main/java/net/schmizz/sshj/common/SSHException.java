@@ -23,6 +23,7 @@ import java.io.IOException;
  * Most exceptions in the {@code net.schmizz.sshj} package are instances of this class. An {@link SSHException} is
  * itself an {@link IOException} and can be caught like that if this level of granularity is not desired.
  */
+@SuppressWarnings("serial")
 public class SSHException
         extends IOException {
 

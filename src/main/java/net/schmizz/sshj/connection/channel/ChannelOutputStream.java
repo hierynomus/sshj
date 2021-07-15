@@ -90,7 +90,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
 
                 packet.wpos(headerOffset);
                 packet.putMessageID(Message.CHANNEL_DATA);
-                packet.putUInt32(chan.getRecipient());
+                packet.putUInt32FromInt(chan.getRecipient());
                 packet.putUInt32(writeNow);
                 packet.wpos(dataOffset + writeNow);
 
@@ -150,7 +150,8 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     }
 
     private void checkClose() throws SSHException {
-        if (closed) {
+        // Check whether either the Stream is closed, or the underlying channel is closed
+        if (closed || !chan.isOpen()) {
             if (error != null)
                 throw error;
             else
@@ -160,7 +161,8 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
 
     @Override
     public synchronized void close() throws IOException {
-        if (!closed) {
+        // Not closed yet, and underlying channel is open to flush the data to.
+        if (!closed && chan.isOpen()) {
             try {
                 buffer.flush(false);
 //                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));

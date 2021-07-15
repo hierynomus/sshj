@@ -2,6 +2,7 @@ package net.schmizz.sshj.examples;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
+import net.schmizz.sshj.connection.channel.direct.Parameters;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -28,8 +29,8 @@ public class LocalPF {
             * _We_ listen on localhost:8080 and forward all connections on to server, which then forwards it to
             * google.com:80
             */
-            final LocalPortForwarder.Parameters params
-                    = new LocalPortForwarder.Parameters("0.0.0.0", 8080, "google.com", 80);
+            final Parameters params
+                    = new Parameters("0.0.0.0", 8080, "google.com", 80);
             final ServerSocket ss = new ServerSocket();
             ss.setReuseAddress(true);
             ss.bind(new InetSocketAddress(params.getLocalHost(), params.getLocalPort()));

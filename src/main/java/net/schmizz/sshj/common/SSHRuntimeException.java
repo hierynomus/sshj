@@ -16,6 +16,7 @@
 package net.schmizz.sshj.common;
 
 /** Represents unrecoverable exceptions in the {@code net.schmizz.sshj} package. */
+@SuppressWarnings("serial")
 public class SSHRuntimeException
         extends RuntimeException {
 

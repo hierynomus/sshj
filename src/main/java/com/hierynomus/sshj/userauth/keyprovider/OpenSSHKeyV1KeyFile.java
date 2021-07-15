@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -33,7 +35,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -54,6 +59,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
     public static final String OPENSSH_PRIVATE_KEY = "OPENSSH PRIVATE KEY-----";
     public static final String BCRYPT = "bcrypt";
+    private PublicKey pubKey;
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -67,6 +73,21 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         public String getName() {
             return KeyFormat.OpenSSHv1.name();
         }
+    }
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Override
+    public void init(File location) {
+        File pubKey = OpenSSHKeyFileUtil.getPublicKeyFile(location);
+        if (pubKey != null)
+            try {
+                initPubKey(new FileReader(pubKey));
+            } catch (IOException e) {
+                // let super provide both public & private key
+                log.warn("Error reading public key file: {}", e.toString());
+            }
+        super.init(location);
     }
 
     @Override
@@ -89,6 +110,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         }
     }
 
+    private void initPubKey(Reader publicKey) throws IOException {
+        OpenSSHKeyFileUtil.ParsedPubKey parsed = OpenSSHKeyFileUtil.initPubKey(publicKey);
+        type = parsed.getType();
+        pubKey = parsed.getPubKey();
+    }
+
     private KeyPair readDecodedKeyPair(final PlainBuffer keyBuffer) throws IOException, GeneralSecurityException {
         byte[] bytes = new byte[AUTH_MAGIC.length];
         keyBuffer.readRawBytes(bytes); // byte[] AUTH_MAGIC
@@ -104,15 +131,29 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         if (nrKeys != 1) {
             throw new IOException("We don't support having more than 1 key in the file (yet).");
         }
-        PublicKey publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes())); // string publickey1
+        PublicKey publicKey = pubKey;
+        if (publicKey == null) {
+            publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes()));
+        }
+        else {
+            keyBuffer.readBytes();
+        }
         PlainBuffer privateKeyBuffer = new PlainBuffer(keyBuffer.readBytes()); // string (possibly) encrypted, padded list of private keys
         if ("none".equals(cipherName)) {
             logger.debug("Reading unencrypted keypair");
             return readUnencrypted(privateKeyBuffer, publicKey);
         } else {
             logger.info("Keypair is encrypted with: " + cipherName + ", " + kdfName + ", " + Arrays.toString(kdfOptions));
-            PlainBuffer decrypted = decryptBuffer(privateKeyBuffer, cipherName, kdfName, kdfOptions);
-            return readUnencrypted(decrypted, publicKey);
+            while (true) {
+                PlainBuffer decryptionBuffer = new PlainBuffer(privateKeyBuffer);
+                PlainBuffer decrypted = decryptBuffer(decryptionBuffer, cipherName, kdfName, kdfOptions);
+                try {
+                    return readUnencrypted(decrypted, publicKey);
+                } catch (KeyDecryptionFailedException e) {
+                    if (pwdf == null || !pwdf.shouldRetry(resource))
+                        throw e;
+                }
+            }
 //            throw new IOException("Cannot read encrypted keypair with " + cipherName + " yet.");
         }
     }
@@ -133,9 +174,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 CharBuffer charBuffer = CharBuffer.wrap(pwdf.reqPassword(null));
                 ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
                 passphrase = Arrays.copyOfRange(byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
+                Arrays.fill(charBuffer.array(), '\u0000');
+                Arrays.fill(byteBuffer.array(), (byte) 0);
             }
             byte[] keyiv = new byte[48];
             new BCrypt().pbkdf(passphrase, opts.readBytes(), opts.readUInt32AsInt(), keyiv);
+            Arrays.fill(passphrase, (byte) 0);
             byte[] key = Arrays.copyOfRange(keyiv, 0, 32);
             byte[] iv = Arrays.copyOfRange(keyiv, 32, 48);
             cipher.init(Cipher.Mode.Decrypt, key, iv);
@@ -184,7 +228,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         int checkInt1 = keyBuffer.readUInt32AsInt(); // uint32 checkint1
         int checkInt2 = keyBuffer.readUInt32AsInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
-            throw new IOException("The checkInts differed, the key was not correctly decoded.");
+            throw new KeyDecryptionFailedException();
         }
         // The private key section contains both the public key and the private key
         String keyType = keyBuffer.readString(); // string keytype
@@ -207,7 +251,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 keyBuffer.readMPInt(); // iqmp (q^-1 mod p)
                 keyBuffer.readMPInt(); // p (Prime 1)
                 keyBuffer.readMPInt(); // q (Prime 2)
-                kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory("RSA").generatePrivate(new RSAPrivateKeySpec(n, d)));
+                kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePrivate(new RSAPrivateKeySpec(n, d)));
                 break;
             case ECDSA256:
                 kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-256"));
@@ -239,7 +283,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         X9ECParameters ecParams = NISTNamedCurves.getByName(name);
         ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
         ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
-        return SecurityUtils.getKeyFactory("ECDSA").generatePrivate(pks);
+        return SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
 
     }
 }

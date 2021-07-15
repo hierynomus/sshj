@@ -15,9 +15,11 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.Service;
 import net.schmizz.sshj.common.DisconnectReason;
+import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.common.SSHPacketHandler;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
@@ -92,7 +94,7 @@ public interface Transport
     int getHeartbeatInterval();
 
     /**
-     * @param interval the interval in seconds, {@code 0} means no hearbeat
+     * @param interval the interval in seconds, {@code 0} means no heartbeat
      * @deprecated Moved to {@link net.schmizz.keepalive.KeepAlive#getKeepAliveInterval()}. This is accessible through the {@link net.schmizz.sshj.connection.Connection}.
      *             Scheduled to be removed in 0.12.0
      */
@@ -156,7 +158,7 @@ public interface Transport
      *
      * @return the sequence number of the packet sent
      *
-     * @throws TransportException if an error occured sending the packet
+     * @throws TransportException if an error occurred sending the packet
      */
     long sendUnimplemented()
             throws TransportException;
@@ -235,4 +237,7 @@ public interface Transport
      * @param e The exception that occurred.
      */
     void die(Exception e);
+
+    KeyAlgorithm getHostKeyAlgorithm();
+    KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException;
 }

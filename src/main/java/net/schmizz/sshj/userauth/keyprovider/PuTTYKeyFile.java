@@ -15,9 +15,21 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
+import net.i2p.crypto.eddsa.EdDSAPrivateKey;
+import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.Base64;
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
+import org.bouncycastle.asn1.nist.NISTNamedCurves;
+import org.bouncycastle.asn1.x9.X9ECParameters;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
@@ -100,21 +112,21 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
     protected KeyPair readKeyPair() throws IOException {
         this.parseKeyPair();
+        final Buffer.PlainBuffer publicKeyReader = new Buffer.PlainBuffer(publicKey);
+        final Buffer.PlainBuffer privateKeyReader = new Buffer.PlainBuffer(privateKey);
+        publicKeyReader.readBytes();  // The first part of the payload is a human-readable key format name.
         if (KeyType.RSA.equals(this.getType())) {
-            final KeyReader publicKeyReader = new KeyReader(publicKey);
-            publicKeyReader.skip();   // skip this
             // public key exponent
-            BigInteger e = publicKeyReader.readInt();
+            BigInteger e = publicKeyReader.readMPInt();
             // modulus
-            BigInteger n = publicKeyReader.readInt();
+            BigInteger n = publicKeyReader.readMPInt();
 
-            final KeyReader privateKeyReader = new KeyReader(privateKey);
             // private key exponent
-            BigInteger d = privateKeyReader.readInt();
+            BigInteger d = privateKeyReader.readMPInt();
 
             final KeyFactory factory;
             try {
-                factory = KeyFactory.getInstance("RSA");
+                factory = KeyFactory.getInstance(KeyAlgorithm.RSA);
             } catch (NoSuchAlgorithmException s) {
                 throw new IOException(s.getMessage(), s);
             }
@@ -128,20 +140,17 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             }
         }
         if (KeyType.DSA.equals(this.getType())) {
-            final KeyReader publicKeyReader = new KeyReader(publicKey);
-            publicKeyReader.skip();   // skip this
-            BigInteger p = publicKeyReader.readInt();
-            BigInteger q = publicKeyReader.readInt();
-            BigInteger g = publicKeyReader.readInt();
-            BigInteger y = publicKeyReader.readInt();
+            BigInteger p = publicKeyReader.readMPInt();
+            BigInteger q = publicKeyReader.readMPInt();
+            BigInteger g = publicKeyReader.readMPInt();
+            BigInteger y = publicKeyReader.readMPInt();
 
-            final KeyReader privateKeyReader = new KeyReader(privateKey);
             // Private exponent from the private key
-            BigInteger x = privateKeyReader.readInt();
+            BigInteger x = privateKeyReader.readMPInt();
 
             final KeyFactory factory;
             try {
-                factory = KeyFactory.getInstance("DSA");
+                factory = KeyFactory.getInstance(KeyAlgorithm.DSA);
             } catch (NoSuchAlgorithmException s) {
                 throw new IOException(s.getMessage(), s);
             }
@@ -153,9 +162,42 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             } catch (InvalidKeySpecException e) {
                 throw new IOException(e.getMessage(), e);
             }
-        } else {
-            throw new IOException(String.format("Unknown key type %s", this.getType()));
         }
+        if (KeyType.ED25519.equals(this.getType())) {
+            EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("Ed25519");
+            EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(publicKeyReader.readBytes(), ed25519);
+            EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.readBytes(), ed25519);
+            return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
+        }
+        final String ecdsaCurve;
+        switch (this.getType()) {
+            case ECDSA256:
+                ecdsaCurve = "P-256";
+                break;
+            case ECDSA384:
+                ecdsaCurve = "P-384";
+                break;
+            case ECDSA521:
+                ecdsaCurve = "P-521";
+                break;
+            default:
+                ecdsaCurve = null;
+                break;
+        }
+        if (ecdsaCurve != null) {
+            BigInteger s = new BigInteger(1, privateKeyReader.readBytes());
+            X9ECParameters ecParams = NISTNamedCurves.getByName(ecdsaCurve);
+            ECNamedCurveSpec ecCurveSpec =
+                    new ECNamedCurveSpec(ecdsaCurve, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
+            ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
+            try {
+                PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
+                return new KeyPair(getType().readPubKeyFromBuffer(publicKeyReader), privateKey);
+            } catch (GeneralSecurityException e) {
+                throw new IOException(e.getMessage(), e);
+            }
+        }
+        throw new IOException(String.format("Unknown key type %s", this.getType()));
     }
 
     protected void parseKeyPair() throws IOException {
@@ -294,45 +336,6 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             return cipher.doFinal(key);
         } catch (GeneralSecurityException e) {
             throw new IOException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Parses the putty key bit vector, which is an encoded sequence
-     * of {@link java.math.BigInteger}s.
-     */
-    private final static class KeyReader {
-        private final DataInput di;
-
-        public KeyReader(byte[] key) {
-            this.di = new DataInputStream(new ByteArrayInputStream(key));
-        }
-
-        /**
-         * Skips an integer without reading it.
-         */
-        public void skip() throws IOException {
-            final int read = di.readInt();
-            if (read != di.skipBytes(read)) {
-                throw new IOException(String.format("Failed to skip %d bytes", read));
-            }
-        }
-
-        private byte[] read() throws IOException {
-            int len = di.readInt();
-            if (len <= 0 || len > 513) {
-                throw new IOException(String.format("Invalid length %d", len));
-            }
-            byte[] r = new byte[len];
-            di.readFully(r);
-            return r;
-        }
-
-        /**
-         * Reads the next integer.
-         */
-        public BigInteger readInt() throws IOException {
-            return new BigInteger(read());
         }
     }
 }

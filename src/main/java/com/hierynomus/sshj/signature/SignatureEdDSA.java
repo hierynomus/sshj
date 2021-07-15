@@ -40,7 +40,7 @@ public class SignatureEdDSA extends AbstractSignature {
     }
 
     SignatureEdDSA() {
-        super(getEngine());
+        super(getEngine(), KeyType.ED25519.toString());
     }
 
     private static EdDSAEngine getEngine() {

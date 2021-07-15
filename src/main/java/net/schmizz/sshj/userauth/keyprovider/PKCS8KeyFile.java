@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -63,12 +64,16 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
                 final Object o = r.readObject();
 
                 final JcaPEMKeyConverter pemConverter = new JcaPEMKeyConverter();
-                pemConverter.setProvider(SecurityUtils.getSecurityProvider());
+                if (SecurityUtils.getSecurityProvider() != null) {
+                    pemConverter.setProvider(SecurityUtils.getSecurityProvider());
+                }    
 
                 if (o instanceof PEMEncryptedKeyPair) {
                     final PEMEncryptedKeyPair encryptedKeyPair = (PEMEncryptedKeyPair) o;
                     JcePEMDecryptorProviderBuilder decryptorBuilder = new JcePEMDecryptorProviderBuilder();
-                    decryptorBuilder.setProvider(SecurityUtils.getSecurityProvider());
+                    if (SecurityUtils.getSecurityProvider() != null) {
+                        decryptorBuilder.setProvider(SecurityUtils.getSecurityProvider());
+                    }
                     try {
                         passphrase = pwdf == null ? null : pwdf.reqPassword(resource);
                         kp = pemConverter.getKeyPair(encryptedKeyPair.decryptKeyPair(decryptorBuilder.build(passphrase)));
@@ -85,7 +90,7 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
                 if (pwdf != null && pwdf.shouldRetry(resource))
                     continue;
                 else
-                    throw e;
+                    throw new KeyDecryptionFailedException(e);
             } finally {
                 IOUtils.closeQuietly(r);
             }

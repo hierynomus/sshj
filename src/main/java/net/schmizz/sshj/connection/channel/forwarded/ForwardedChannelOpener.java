@@ -28,7 +28,7 @@ public interface ForwardedChannelOpener {
     /**
      * Delegates a {@code SSH_MSG_CHANNEL_OPEN} request for the channel type claimed by this opener.
      *
-     * @param buf {@link SSHPacket} containg the request except for the message identifier and channel type field
+     * @param buf {@link SSHPacket} containing the request except for the message identifier and channel type field
      */
     void handleOpen(SSHPacket buf)
             throws ConnectionException, TransportException;
