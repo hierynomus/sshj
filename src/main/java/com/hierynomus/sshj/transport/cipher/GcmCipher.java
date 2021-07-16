@@ -21,6 +21,8 @@ import net.schmizz.sshj.transport.cipher.BaseCipher;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.GCMParameterSpec;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -60,13 +62,29 @@ public class GcmCipher extends BaseCipher {
         initialized = true;
     }
 
+    private static Method updateAAD = null;
+    static {
+        try {
+            updateAAD = Cipher.class.getMethod("updateAAD", Class.forName("[B"), int.class, int.class);
+        } catch (ClassNotFoundException e) {
+        } catch (NoSuchMethodException e) {
+        }
+    }
+
     @Override
     public void updateAAD(byte[] data, int offset, int length) {
-        try {
-            Cipher cipher = getInitializedCipherInstance();
-            cipher.updateAAD(data, offset, length);
-        } catch (GeneralSecurityException e) {
-            throw new SSHRuntimeException("Error updating data through cipher", e);
+        if (updateAAD == null) {
+            super.updateAAD(data, offset, length);
+        } else {
+            try {
+                updateAAD.invoke(getInitializedCipherInstance(), data, offset, length);
+            } catch (GeneralSecurityException e) {
+                throw new SSHRuntimeException("Error obtaining cipher instance", e);
+            } catch (IllegalAccessException e) {
+                throw new SSHRuntimeException("IllegalAccessException", e);
+            } catch (InvocationTargetException e) {
+                throw new SSHRuntimeException("Error updating data through cipher", e.getCause());
+            }
         }
     }
 
@@ -76,8 +94,7 @@ public class GcmCipher extends BaseCipher {
             inputLen += getAuthenticationTagSize();
         }
         try {
-            Cipher cipher = getInitializedCipherInstance();
-            cipher.doFinal(input, inputOffset, inputLen, input, inputOffset);
+            getInitializedCipherInstance().doFinal(input, inputOffset, inputLen, input, inputOffset);
         } catch (GeneralSecurityException e) {
             throw new SSHRuntimeException("Error updating data through cipher", e);
         }
