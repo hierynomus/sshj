@@ -134,3 +134,23 @@ macs umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.
 TrustedUserCAKeys /etc/ssh/trusted_ca_keys
 
 Ciphers 3des-cbc,blowfish-cbc,aes128-cbc,aes192-cbc,aes256-cbc,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com
+
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_dsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+HostKey /etc/ssh/ssh_host_ecdsa_256_key
+HostCertificate /etc/ssh/ssh_host_ecdsa_256_key-cert.pub
+
+HostKey /etc/ssh/ssh_host_ecdsa_384_key
+HostCertificate /etc/ssh/ssh_host_ecdsa_384_key-cert.pub
+
+HostKey /etc/ssh/ssh_host_ecdsa_521_key
+HostCertificate /etc/ssh/ssh_host_ecdsa_521_key-cert.pub
+
+HostKey /etc/ssh/ssh_host_ed25519_384_key
+HostCertificate /etc/ssh/ssh_host_ed25519_384_key-cert.pub
+
+HostKey /etc/ssh/ssh_host_rsa_2048_key
+HostCertificate /etc/ssh/ssh_host_rsa_2048_key-cert.pub
