@@ -40,7 +40,7 @@ repositories {
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.68"
+def bouncycastleVersion = "1.69"
 def sshdVersion = "2.1.0"
 
 dependencies {
