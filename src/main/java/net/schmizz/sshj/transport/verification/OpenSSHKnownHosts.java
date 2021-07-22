@@ -17,6 +17,7 @@ package net.schmizz.sshj.transport.verification;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.transport.verification.KnownHostMatchers;
+import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.schmizz.sshj.common.*;
 import org.slf4j.Logger;
 
@@ -356,18 +357,24 @@ public class OpenSSHKnownHosts
         protected final PublicKey key;
         private final String comment;
         private final KnownHostMatchers.HostMatcher matcher;
+        protected final Logger log;
 
         public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
             this(marker, hostPart, type, key, "");
         }
 
         public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key, String comment) throws SSHException {
+            this(marker, hostPart, type, key, comment, LoggerFactory.DEFAULT);
+        }
+
+        public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key, String comment, LoggerFactory loggerFactory) throws SSHException {
             this.marker = marker;
             this.hostPart = hostPart;
             this.type = type;
             this.key = key;
             this.comment = comment;
             this.matcher = KnownHostMatchers.createMatcher(hostPart);
+            this.log = loggerFactory.getLogger(getClass());
         }
 
         @Override
@@ -387,11 +394,15 @@ public class OpenSSHKnownHosts
 
         @Override
         public boolean appliesTo(KeyType type, String host) throws IOException {
-            return this.type == type && matcher.match(host);
+            return (this.type == type || (marker == Marker.CA_CERT && type.getParent() != null)) && matcher.match(host);
         }
 
         @Override
         public boolean verify(PublicKey key) throws IOException {
+            if (marker == Marker.CA_CERT && key instanceof Certificate<?>) {
+                final PublicKey caKey = new Buffer.PlainBuffer(((Certificate<?>) key).getSignatureKey()).readPublicKey();
+                return this.type == KeyType.fromKey(caKey) && getKeyString(caKey).equals(getKeyString(this.key));
+            }
             return getKeyString(key).equals(getKeyString(this.key)) && marker != Marker.REVOKED;
         }
 

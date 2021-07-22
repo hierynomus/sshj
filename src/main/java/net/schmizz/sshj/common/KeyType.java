@@ -17,12 +17,17 @@ package net.schmizz.sshj.common;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.signature.Ed25519PublicKey;
+import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.Buffer.BufferException;
+import net.schmizz.sshj.signature.Signature;
+import net.schmizz.sshj.signature.SignatureDSA;
+import net.schmizz.sshj.signature.SignatureECDSA;
+import net.schmizz.sshj.signature.SignatureRSA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +41,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /** Type of key e.g. rsa, dsa */
 public enum KeyType {
@@ -417,7 +423,7 @@ public enum KeyType {
         return sType;
     }
 
-    static class CertUtils {
+    public static class CertUtils {
 
         @SuppressWarnings("unchecked")
         static <T extends PublicKey> Certificate<T> readPubKey(Buffer<?> buf, KeyType innerKeyType) throws GeneralSecurityException {
@@ -460,6 +466,122 @@ public enum KeyType {
                 .putBytes(certificate.getSignatureKey())
                 .putBytes(certificate.getSignature());
         }
+
+        /**
+         * @param certRaw Already serialized host certificate that was received as a packet. Can be restored simply by
+         *                calling {@code new Buffer.PlainBuffer().putPublicKey(cert)}
+         * @param cert A key with a certificate received from a server.
+         * @param hostname A hostname of the server. It is juxtaposed to the principals of the certificate.
+         * @return null if the certificate is valid, an error message if it is not valid.
+         * @throws Buffer.BufferException If something from {@code certRaw} or {@code cert} can't be parsed.
+         */
+        public static String verifyHostCertificate(byte[] certRaw, Certificate<?> cert, String hostname)
+                throws Buffer.BufferException, SSHRuntimeException {
+            String signatureType = new Buffer.PlainBuffer(cert.getSignature()).readString();
+            final Signature signature = Factory.Named.Util.create(ALL_SIGNATURES, signatureType);
+            if (signature == null) {
+                return "Unknown signature algorithm `" + signatureType + "`";
+            }
+
+            // Quotes are from
+            // https://cvsweb.openbsd.org/cgi-bin/cvsweb/~checkout~/src/usr.bin/ssh/PROTOCOL.certkeys?rev=1.19&content-type=text/plain
+
+            // "valid principals" is a string containing zero or more principals as
+            // strings packed inside it. These principals list the names for which this
+            // certificate is valid; hostnames for SSH_CERT_TYPE_HOST certificates and
+            // usernames for SSH_CERT_TYPE_USER certificates. As a special case, a
+            // zero-length "valid principals" field means the certificate is valid for
+            // any principal of the specified type.
+            if (cert.getValidPrincipals() != null && !cert.getValidPrincipals().isEmpty()) {
+                boolean ok = false;
+                for (String principal : cert.getValidPrincipals()) {
+                    ok = matchPattern(hostname, principal);
+                    if (ok) {
+                        break;
+                    }
+                }
+                if (!ok) {
+                    StringBuilder error = new StringBuilder()
+                            .append("Hostname `")
+                            .append(hostname)
+                            .append("` doesn't match any of the principals: `");
+                    String delimiter = "";
+                    for (String principal : cert.getValidPrincipals()) {
+                        error.append(delimiter).append(principal);
+                        delimiter = "`, `";
+                    }
+                    error.append("`");
+                    return error.toString();
+                }
+            }
+
+            // "valid after" and "valid before" specify a validity period for the
+            // certificate. Each represents a time in seconds since 1970-01-01
+            // 00:00:00. A certificate is considered valid if:
+            //  valid after <= current time < valid before
+            Date today = new Date();
+            if (cert.getValidAfter() != null && today.before(cert.getValidAfter())) {
+                return "Certificate is valid after " + cert.getValidAfter() + ", today is " + today;
+            }
+            if (cert.getValidBefore() != null && today.after(cert.getValidBefore())) {
+                return "Certificate is valid before " + cert.getValidBefore() + ", today is " + today;
+            }
+
+            // All critical options supported by OpenSSH relate to the client. Nothing to take from host certificates.
+
+            signature.initVerify(new Buffer.PlainBuffer(cert.getSignatureKey()).readPublicKey());
+            // -4 -- minus the length of the integer holding the length of the signature.
+            signature.update(certRaw, 0, certRaw.length - cert.getSignature().length - 4);
+            if (signature.verify(cert.getSignature())) {
+                return null;
+            } else {
+                return "Signature verification failed";
+            }
+        }
+
+        /**
+         * This method must work exactly as match_pattern from match.c of OpenSSH. If it works differently, consider it
+         * as a bug that must be fixed.
+         */
+        public static boolean matchPattern(String target, String pattern) {
+            StringBuilder regex = new StringBuilder();
+            String endEscape = "";
+            for (int i = 0; i < pattern.length(); ++i) {
+                char p = pattern.charAt(i);
+                if (p == '?' || p == '*') {
+                    regex.append(endEscape);
+                    endEscape = "";
+                    if (p == '?') {
+                        regex.append('.');
+                    } else {
+                        regex.append(".*");
+                    }
+                } else {
+                    if (endEscape.isEmpty()) {
+                        regex.append("\\Q");
+                        endEscape = "\\E";
+                    }
+                    regex.append(p);
+                }
+            }
+            return Pattern.compile(regex.toString()).matcher(target).matches();
+        }
+
+        public static final List<Factory.Named<Signature>> ALL_SIGNATURES = Arrays.asList(
+                new SignatureRSA.FactorySSHRSA(),
+                new SignatureRSA.FactoryCERT(),
+                new SignatureRSA.FactoryRSASHA256(),
+                new SignatureRSA.FactoryRSASHA512(),
+                new SignatureDSA.Factory(),
+                new SignatureDSA.Factory(),
+                new SignatureECDSA.Factory256(),
+                new SignatureECDSA.Factory256(),
+                new SignatureECDSA.Factory384(),
+                new SignatureECDSA.Factory384(),
+                new SignatureECDSA.Factory521(),
+                new SignatureECDSA.Factory521(),
+                new SignatureEdDSA.Factory(),
+                new SignatureEdDSA.Factory());
 
         static boolean isCertificateOfType(Key key, KeyType innerKeyType) {
             if (!(key instanceof Certificate)) {

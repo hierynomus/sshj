@@ -47,6 +47,7 @@ public class ConfigImpl
 
     private boolean waitForServerIdentBeforeSendingClientIdent = false;
     private LoggerFactory loggerFactory;
+    private boolean verifyHostKeyCertificates = true;
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
@@ -176,5 +177,15 @@ public class ConfigImpl
     @Override
     public void setLoggerFactory(LoggerFactory loggerFactory) {
         this.loggerFactory = loggerFactory;
+    }
+
+    @Override
+    public boolean isVerifyHostKeyCertificates() {
+        return verifyHostKeyCertificates;
+    }
+
+    @Override
+    public void setVerifyHostKeyCertificates(boolean value) {
+        verifyHostKeyCertificates = value;
     }
 }

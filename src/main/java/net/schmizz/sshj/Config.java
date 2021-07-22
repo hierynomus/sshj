@@ -91,6 +91,13 @@ public interface Config {
     String getVersion();
 
     /**
+     * Returns true if host key certificates should be verified while connecting to the server. It is recommended to
+     * verify them, but can cause connection failures in cases when previous versions of the library could have managed
+     * to connect.
+     */
+    boolean isVerifyHostKeyCertificates();
+
+    /**
      * Set the named factories for {@link Cipher}.
      *
      * @param cipherFactories a list of named factories
@@ -187,4 +194,10 @@ public interface Config {
      * @return The LoggerFactory the SSHClient will use.
      */
     LoggerFactory getLoggerFactory();
+
+    /**
+     * Sets whether the SSH client should verify host key certificates or not.
+     * See {@link #isVerifyHostKeyCertificates()}.
+     */
+    void setVerifyHostKeyCertificates(boolean value);
 }
