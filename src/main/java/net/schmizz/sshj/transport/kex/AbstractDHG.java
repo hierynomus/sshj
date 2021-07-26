@@ -91,6 +91,12 @@ public abstract class AbstractDHG extends AbstractDH {
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
                                          "KeyExchange signature verification failed");
 
+        verifyCertificate(K_S);
+
+        return true;
+    }
+
+    private void verifyCertificate(byte[] K_S) throws TransportException {
         if (hostKey instanceof Certificate<?> && trans.getConfig().isVerifyHostKeyCertificates()) {
             final Certificate<?> hostKey = (Certificate<?>) this.hostKey;
             String signatureType, caKeyType;
@@ -118,7 +124,6 @@ public abstract class AbstractDHG extends AbstractDH {
                                              "KeyExchange certificate check failed", e);
             }
         }
-        return true;
     }
 
     protected abstract void initDH(DHBase dh)
