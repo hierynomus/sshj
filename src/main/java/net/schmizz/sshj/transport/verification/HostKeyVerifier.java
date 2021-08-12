@@ -35,4 +35,12 @@ public interface HostKeyVerifier {
      */
     boolean verify(String hostname, int port, PublicKey key);
 
+    /**
+     * It is necessary to connect with the type of algorithm that matches an existing know_host entry.
+     * This will allow a match when we later verify with the negotiated key {@code HostKeyVerifier.verify}
+     * @param hostname remote hostname
+     * @param port     remote port
+     * @return existing key type or null if not key matches hostname
+     */
+    String findExistingAlgorithm(String hostname, int port);
 }

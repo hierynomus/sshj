@@ -89,6 +89,9 @@ public class OpenSSHKnownHosts
         }
     }
 
+    private String adjustHostname(final String hostname, final int port) {
+        return (port != 22) ? "[" + hostname + "]:" + port : hostname;
+    }
 
     public File getFile() {
         return khFile;
@@ -102,7 +105,7 @@ public class OpenSSHKnownHosts
             return false;
         }
 
-        final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
+        final String adjustedHostname = adjustHostname(hostname, port);
 
         boolean foundApplicableHostEntry = false;
         for (KnownHostEntry e : entries) {
@@ -124,6 +127,19 @@ public class OpenSSHKnownHosts
         }
 
         return hostKeyUnverifiableAction(adjustedHostname, key);
+    }
+
+    @Override
+    public String findExistingAlgorithm(String hostname, int port) {
+        final String adjustedHostname = adjustHostname(hostname, port);
+        for (KnownHostEntry e : entries) {
+            try {
+                if (e.appliesTo(adjustedHostname)) {
+                    return e.getType().toString();
+                }
+            } catch (IOException ioe) {}
+        }
+        return null;
     }
 
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {

@@ -25,4 +25,9 @@ public final class PromiscuousVerifier
         return true;
     }
 
+    @Override
+    public String findExistingAlgorithm(String hostname, int port) {
+        return null;
+    }
+
 }
