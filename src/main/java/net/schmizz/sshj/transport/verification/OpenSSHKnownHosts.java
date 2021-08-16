@@ -90,7 +90,8 @@ public class OpenSSHKnownHosts
     }
 
     private String adjustHostname(final String hostname, final int port) {
-        return (port != 22) ? "[" + hostname + "]:" + port : hostname;
+        String lowerHN = hostname.toLowerCase();
+        return (port != 22) ? "[" + lowerHN + "]:" + port : lowerHN;
     }
 
     public File getFile() {
