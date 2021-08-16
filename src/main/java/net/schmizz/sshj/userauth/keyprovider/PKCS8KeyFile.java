@@ -18,7 +18,10 @@ package net.schmizz.sshj.userauth.keyprovider;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.userauth.keyprovider.pkcs.KeyPairConverter;
+import net.schmizz.sshj.userauth.keyprovider.pkcs.PrivateKeyInfoKeyPairConverter;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.openssl.EncryptionException;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -52,6 +55,7 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
 
     protected char[] passphrase; // for blanking out
 
+    protected KeyPairConverter<PrivateKeyInfo> privateKeyInfoKeyPairConverter = new PrivateKeyInfoKeyPairConverter();
 
     protected KeyPair readKeyPair()
             throws IOException {
@@ -82,8 +86,12 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
                     }
                 } else if (o instanceof PEMKeyPair) {
                     kp = pemConverter.getKeyPair((PEMKeyPair) o);
+                } else if (o instanceof PrivateKeyInfo) {
+                    final PrivateKeyInfo privateKeyInfo = (PrivateKeyInfo) o;
+                    final PEMKeyPair pemKeyPair = privateKeyInfoKeyPairConverter.getKeyPair(privateKeyInfo);
+                    kp = pemConverter.getKeyPair(pemKeyPair);
                 } else {
-                    log.debug("Expected PEMEncryptedKeyPair or PEMKeyPair, got: {}", o);
+                    log.warn("Unexpected PKCS8 PEM Object [{}]", o);
                 }
 
             } catch (EncryptionException e) {
