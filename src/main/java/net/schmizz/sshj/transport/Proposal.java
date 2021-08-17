@@ -134,41 +134,42 @@ class Proposal {
     public NegotiatedAlgorithms negotiate(Proposal other)
             throws TransportException {
         return new NegotiatedAlgorithms(
-                firstMatch(this.getKeyExchangeAlgorithms(), other.getKeyExchangeAlgorithms()),
-                firstMatch(this.getHostKeyAlgorithms(), other.getHostKeyAlgorithms()),
-                firstMatch(this.getClient2ServerCipherAlgorithms(), other.getClient2ServerCipherAlgorithms()),
-                firstMatch(this.getServer2ClientCipherAlgorithms(), other.getServer2ClientCipherAlgorithms()),
-                firstMatch(this.getClient2ServerMACAlgorithms(), other.getClient2ServerMACAlgorithms()),
-                firstMatch(this.getServer2ClientMACAlgorithms(), other.getServer2ClientMACAlgorithms()),
-                firstMatch(this.getClient2ServerCompressionAlgorithms(), other.getClient2ServerCompressionAlgorithms()),
-                firstMatch(this.getServer2ClientCompressionAlgorithms(), other.getServer2ClientCompressionAlgorithms()),
+                firstMatch("KeyExchangeAlgorithms",
+                           this.getKeyExchangeAlgorithms(),
+                           other.getKeyExchangeAlgorithms()),
+                firstMatch("HostKeyAlgorithms",
+                           this.getHostKeyAlgorithms(),
+                           other.getHostKeyAlgorithms()),
+                firstMatch("Client2ServerCipherAlgorithms",
+                           this.getClient2ServerCipherAlgorithms(),
+                           other.getClient2ServerCipherAlgorithms()),
+                firstMatch("Server2ClientCipherAlgorithms",
+                           this.getServer2ClientCipherAlgorithms(),
+                           other.getServer2ClientCipherAlgorithms()),
+                firstMatch("Client2ServerMACAlgorithms",
+                           this.getClient2ServerMACAlgorithms(),
+                           other.getClient2ServerMACAlgorithms()),
+                firstMatch("Server2ClientMACAlgorithms",
+                           this.getServer2ClientMACAlgorithms(),
+                           other.getServer2ClientMACAlgorithms()),
+                firstMatch("Client2ServerCompressionAlgorithms",
+                           this.getClient2ServerCompressionAlgorithms(),
+                           other.getClient2ServerCompressionAlgorithms()),
+                firstMatch("Server2ClientCompressionAlgorithms",
+                           this.getServer2ClientCompressionAlgorithms(),
+                           other.getServer2ClientCompressionAlgorithms()),
                 other.getHostKeyAlgorithms().containsAll(KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS)
         );
     }
 
-    private static String firstMatch(List<String> a, List<String> b)
+    private static String firstMatch(String ofWhat, List<String> a, List<String> b)
             throws TransportException {
         for (String aa : a) {
             if (b.contains(aa)) {
                 return aa;
             }
         }
-        throw new TransportException("Unable to reach a settlement: " + a + " and " + b);
-    }
-
-    private static List<String> allMatch(List<String> a, List<String> b) throws TransportException {
-        List<String> res = new ArrayList<String>();
-        for (String aa : a) {
-            if (b.contains(aa)) {
-                res.add(aa);
-            }
-        }
-
-        if (res.isEmpty()) {
-            throw new TransportException("Unable to reach a settlement: " + a + " and " + b);
-        }
-
-        return res;
+        throw new TransportException("Unable to reach a settlement of " + ofWhat + ": " + a + " and " + b);
     }
 
     private static String toCommaString(List<String> sl) {
