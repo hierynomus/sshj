@@ -27,7 +27,12 @@ import org.bouncycastle.openssl.PEMEncryptedKeyPair;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8DecryptorProviderBuilder;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.operator.InputDecryptorProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
+import org.bouncycastle.pkcs.PKCSException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +58,6 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    protected char[] passphrase; // for blanking out
-
     protected KeyPairConverter<PrivateKeyInfo> privateKeyInfoKeyPairConverter = new PrivateKeyInfoKeyPairConverter();
 
     protected KeyPair readKeyPair()
@@ -74,20 +77,17 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
 
                 if (o instanceof PEMEncryptedKeyPair) {
                     final PEMEncryptedKeyPair encryptedKeyPair = (PEMEncryptedKeyPair) o;
-                    JcePEMDecryptorProviderBuilder decryptorBuilder = new JcePEMDecryptorProviderBuilder();
-                    if (SecurityUtils.getSecurityProvider() != null) {
-                        decryptorBuilder.setProvider(SecurityUtils.getSecurityProvider());
-                    }
-                    try {
-                        passphrase = pwdf == null ? null : pwdf.reqPassword(resource);
-                        kp = pemConverter.getKeyPair(encryptedKeyPair.decryptKeyPair(decryptorBuilder.build(passphrase)));
-                    } finally {
-                        PasswordUtils.blankOut(passphrase);
-                    }
+                    final PEMKeyPair pemKeyPair = readEncryptedKeyPair(encryptedKeyPair);
+                    kp = pemConverter.getKeyPair(pemKeyPair);
                 } else if (o instanceof PEMKeyPair) {
                     kp = pemConverter.getKeyPair((PEMKeyPair) o);
                 } else if (o instanceof PrivateKeyInfo) {
                     final PrivateKeyInfo privateKeyInfo = (PrivateKeyInfo) o;
+                    final PEMKeyPair pemKeyPair = privateKeyInfoKeyPairConverter.getKeyPair(privateKeyInfo);
+                    kp = pemConverter.getKeyPair(pemKeyPair);
+                } else if (o instanceof PKCS8EncryptedPrivateKeyInfo) {
+                    final PKCS8EncryptedPrivateKeyInfo encryptedPrivateKeyInfo = (PKCS8EncryptedPrivateKeyInfo) o;
+                    final PrivateKeyInfo privateKeyInfo = readEncryptedPrivateKeyInfo(encryptedPrivateKeyInfo);
                     final PEMKeyPair pemKeyPair = privateKeyInfoKeyPairConverter.getKeyPair(privateKeyInfo);
                     kp = pemConverter.getKeyPair(pemKeyPair);
                 } else {
@@ -113,5 +113,38 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
     @Override
     public String toString() {
         return "PKCS8KeyFile{resource=" + resource + "}";
+    }
+
+    private PEMKeyPair readEncryptedKeyPair(final PEMEncryptedKeyPair encryptedKeyPair) throws IOException {
+        final JcePEMDecryptorProviderBuilder builder = new JcePEMDecryptorProviderBuilder();
+        if (SecurityUtils.getSecurityProvider() != null) {
+            builder.setProvider(SecurityUtils.getSecurityProvider());
+        }
+        char[] passphrase = null;
+        try {
+            passphrase = pwdf == null ? null : pwdf.reqPassword(resource);
+            return encryptedKeyPair.decryptKeyPair(builder.build(passphrase));
+        } finally {
+            PasswordUtils.blankOut(passphrase);
+        }
+    }
+
+    private PrivateKeyInfo readEncryptedPrivateKeyInfo(final PKCS8EncryptedPrivateKeyInfo encryptedPrivateKeyInfo) throws EncryptionException {
+        final JceOpenSSLPKCS8DecryptorProviderBuilder builder = new JceOpenSSLPKCS8DecryptorProviderBuilder();
+        if (SecurityUtils.getSecurityProvider() != null) {
+            builder.setProvider(SecurityUtils.getSecurityProvider());
+        }
+        char[] passphrase = null;
+        try {
+            passphrase = pwdf == null ? null : pwdf.reqPassword(resource);
+            final InputDecryptorProvider inputDecryptorProvider = builder.build(passphrase);
+            return encryptedPrivateKeyInfo.decryptPrivateKeyInfo(inputDecryptorProvider);
+        } catch (final OperatorCreationException e) {
+            throw new EncryptionException("Loading Password for Encrypted Private Key Failed", e);
+        } catch (final PKCSException e) {
+            throw new EncryptionException("Reading Encrypted Private Key Failed", e);
+        } finally {
+            PasswordUtils.blankOut(passphrase);
+        }
     }
 }
