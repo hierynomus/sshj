@@ -15,13 +15,18 @@
  */
 package net.schmizz.sshj.keyprovider;
 
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.util.KeyUtil;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +39,9 @@ import java.security.GeneralSecurityException;
 import static org.junit.Assert.assertEquals;
 
 public class PKCS8KeyFileTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     static final FileKeyProvider rsa = new PKCS8KeyFile();
 
@@ -68,6 +76,25 @@ public class PKCS8KeyFileTest {
         provider.init(getReader("pkcs8-rsa-2048"));
         assertEquals("RSA", provider.getPublic().getAlgorithm());
         assertEquals("RSA", provider.getPrivate().getAlgorithm());
+    }
+
+    @Test
+    public void testPkcs8RsaEncrypted() throws IOException {
+        final PKCS8KeyFile provider = new PKCS8KeyFile();
+        final PasswordFinder passwordFinder = PasswordUtils.createOneOff("passphrase".toCharArray());
+        provider.init(getReader("pkcs8-rsa-2048-encrypted"), passwordFinder);
+        assertEquals("RSA", provider.getPublic().getAlgorithm());
+        assertEquals("RSA", provider.getPrivate().getAlgorithm());
+    }
+
+    @Test
+    public void testPkcs8RsaEncryptedIncorrectPassword() throws IOException {
+        expectedException.expect(KeyDecryptionFailedException.class);
+
+        final PKCS8KeyFile provider = new PKCS8KeyFile();
+        final PasswordFinder passwordFinder = PasswordUtils.createOneOff(String.class.getSimpleName().toCharArray());
+        provider.init(getReader("pkcs8-rsa-2048-encrypted"), passwordFinder);
+        provider.getPrivate();
     }
 
     @Test
