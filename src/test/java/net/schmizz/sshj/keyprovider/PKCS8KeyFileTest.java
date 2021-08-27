@@ -25,6 +25,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 
@@ -59,4 +62,36 @@ public class PKCS8KeyFileTest {
         assertEquals(rsa.getType(), KeyType.RSA);
     }
 
+    @Test
+    public void testPkcs8Rsa() throws IOException {
+        final PKCS8KeyFile provider = new PKCS8KeyFile();
+        provider.init(getReader("pkcs8-rsa-2048"));
+        assertEquals("RSA", provider.getPublic().getAlgorithm());
+        assertEquals("RSA", provider.getPrivate().getAlgorithm());
+    }
+
+    @Test
+    public void testPkcs8Ecdsa() throws IOException {
+        final PKCS8KeyFile provider = new PKCS8KeyFile();
+        provider.init(getReader("pkcs8-ecdsa"));
+        assertEquals("ECDSA", provider.getPublic().getAlgorithm());
+        assertEquals("ECDSA", provider.getPrivate().getAlgorithm());
+    }
+
+    @Test
+    public void testPkcs8Dsa() throws IOException {
+        final PKCS8KeyFile provider = new PKCS8KeyFile();
+        provider.init(getReader("pkcs8-dsa"));
+        assertEquals("DSA", provider.getPublic().getAlgorithm());
+        assertEquals("DSA", provider.getPrivate().getAlgorithm());
+    }
+
+    private Reader getReader(final String filename) {
+        final String path = String.format("/keyformats/%s", filename);
+        final InputStream inputStream = getClass().getResourceAsStream(path);
+        if (inputStream == null) {
+            throw new IllegalArgumentException(String.format("Key File [%s] not found", path));
+        }
+        return new InputStreamReader(inputStream);
+    }
 }
