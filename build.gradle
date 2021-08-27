@@ -18,6 +18,7 @@ plugins {
 }
 
 group = "com.hierynomus"
+ext.moduleName = "${project.group}.${project.name}"
 
 scmVersion {
   tag {
@@ -100,7 +101,10 @@ task writeSshjVersionProperties {
 
 jar.dependsOn writeSshjVersionProperties
 jar {
+  inputs.property("moduleName", moduleName)
   manifest {
+    attributes 'Automatic-Module-Name': moduleName
+
     // please see http://bnd.bndtools.org/chapters/390-wrapping.html
     instruction "Bundle-Description", "SSHv2 library for Java"
     instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
