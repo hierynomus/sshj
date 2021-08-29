@@ -123,9 +123,13 @@ public class DefaultConfig
 
     protected void initKeyAlgorithms() {
         setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
+                KeyAlgorithms.EdDSA25519CertV01(),
                 KeyAlgorithms.EdDSA25519(),
+                KeyAlgorithms.ECDSASHANistp521CertV01(),
                 KeyAlgorithms.ECDSASHANistp521(),
+                KeyAlgorithms.ECDSASHANistp384CertV01(),
                 KeyAlgorithms.ECDSASHANistp384(),
+                KeyAlgorithms.ECDSASHANistp256CertV01(),
                 KeyAlgorithms.ECDSASHANistp256(),
                 KeyAlgorithms.RSASHA512(),
                 KeyAlgorithms.RSASHA256(),
