@@ -151,9 +151,6 @@
                 </executions>
                 <configuration>
                     <additionalparam>-Xdoclint:none</additionalparam>
-                    <links>
-                        <link>http://download.oracle.com/javase/${maven.compile.target}/docs/api/</link>
-                    </links>
                     <encoding>${source.encoding}</encoding>
                 </configuration>
             </plugin>
