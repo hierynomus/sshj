@@ -374,7 +374,6 @@ public class OpenSSHKnownHosts
             this.key = key;
             this.comment = comment;
             this.matcher = KnownHostMatchers.createMatcher(hostPart);
-            this.log = loggerFactory.getLogger(getClass());
         }
 
         @Override
