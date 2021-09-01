@@ -88,11 +88,16 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
     private byte[] publicKey;
 
     /**
-     * Key type. Either "ssh-rsa" for RSA key, or "ssh-dss" for DSA key.
+     * Key type
      */
     @Override
     public KeyType getType() throws IOException {
-        return KeyType.fromString(headers.get("PuTTY-User-Key-File-2"));
+    	for(String h: headers.keySet()) {
+    		if(h.startsWith("PuTTY-User-Key-File-")) {
+    	        return KeyType.fromString(headers.get(h));
+    		}
+    	}
+        return KeyType.UNKNOWN;
     }
 
     public boolean isEncrypted() {
