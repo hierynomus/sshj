@@ -15,26 +15,21 @@
  */
 package net.schmizz.sshj.signature;
 
-import com.hierynomus.asn1.encodingrules.der.DERDecoder;
-import com.hierynomus.asn1.encodingrules.der.DEREncoder;
-import com.hierynomus.asn1.types.ASN1Object;
-import com.hierynomus.asn1.types.constructed.ASN1Sequence;
-import com.hierynomus.asn1.types.primitive.ASN1Integer;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Sequence;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
-import java.util.ArrayList;
-import java.util.List;
 
 /** ECDSA {@link Signature} */
-public class SignatureECDSA extends AbstractSignature {
+public class SignatureECDSA extends AbstractSignatureDSA {
 
     /** A named factory for ECDSA-256 signature */
     public static class Factory256 implements net.schmizz.sshj.common.Factory.Named<Signature> {
@@ -81,7 +76,7 @@ public class SignatureECDSA extends AbstractSignature {
 
     }
 
-    private String keyTypeName;
+    private final String keyTypeName;
 
     public SignatureECDSA(String algorithm, String keyTypeName) {
         super(algorithm, keyTypeName);
@@ -91,16 +86,18 @@ public class SignatureECDSA extends AbstractSignature {
     @Override
     public byte[] encode(byte[] sig) {
         ByteArrayInputStream bais = new ByteArrayInputStream(sig);
-        com.hierynomus.asn1.ASN1InputStream asn1InputStream = new com.hierynomus.asn1.ASN1InputStream(new DERDecoder(), bais);
+        final ASN1InputStream asn1InputStream = new ASN1InputStream(bais);
         try {
-            ASN1Sequence sequence = asn1InputStream.readObject();
-            ASN1Integer r = (ASN1Integer) sequence.get(0);
-            ASN1Integer s = (ASN1Integer) sequence.get(1);
+            ASN1Sequence sequence = (ASN1Sequence) asn1InputStream.readObject();
+            ASN1Integer r = (ASN1Integer) sequence.getObjectAt(0);
+            ASN1Integer s = (ASN1Integer) sequence.getObjectAt(1);
             Buffer.PlainBuffer buf = new Buffer.PlainBuffer();
             buf.putMPInt(r.getValue());
             buf.putMPInt(s.getValue());
 
             return buf.getCompactData();
+        } catch (final IOException e) {
+            throw new SSHRuntimeException("Signature Encoding Failed", e);
         } finally {
             IOUtils.closeQuietly(asn1InputStream, bais);
         }
@@ -110,35 +107,15 @@ public class SignatureECDSA extends AbstractSignature {
     public boolean verify(byte[] sig) {
         try {
             byte[] sigBlob = extractSig(sig, keyTypeName);
-            return signature.verify(asnEncode(sigBlob));
+            final Buffer.PlainBuffer buffer = new Buffer.PlainBuffer(sigBlob);
+            final BigInteger r = buffer.readMPInt();
+            final BigInteger s = buffer.readMPInt();
+            final byte[] asnEncodedSignature = getAsnEncodedSignature(r, s);
+            return signature.verify(asnEncodedSignature);
         } catch (SignatureException e) {
-            throw new SSHRuntimeException(e);
+            throw new SSHRuntimeException("Signature Verification Failed", e);
         } catch (IOException e) {
             throw new SSHRuntimeException(e);
         }
-    }
-
-    /**
-     * Encodes the signature as a DER sequence (ASN.1 format).
-     */
-    private byte[] asnEncode(byte[] sigBlob) throws IOException {
-        Buffer.PlainBuffer sigbuf = new Buffer.PlainBuffer(sigBlob);
-        BigInteger r = sigbuf.readMPInt();
-        BigInteger s = sigbuf.readMPInt();
-
-
-        List<ASN1Object> vector = new ArrayList<ASN1Object>();
-        vector.add(new ASN1Integer(r));
-        vector.add(new ASN1Integer(s));
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        com.hierynomus.asn1.ASN1OutputStream asn1OutputStream = new com.hierynomus.asn1.ASN1OutputStream(new DEREncoder(), baos);
-        try {
-            asn1OutputStream.writeObject(new ASN1Sequence(vector));
-            asn1OutputStream.flush();
-        } finally {
-            IOUtils.closeQuietly(asn1OutputStream);
-        }
-        return baos.toByteArray();
     }
 }

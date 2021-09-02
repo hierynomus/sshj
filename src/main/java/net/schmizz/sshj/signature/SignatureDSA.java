@@ -15,26 +15,18 @@
  */
 package net.schmizz.sshj.signature;
 
-import com.hierynomus.asn1.encodingrules.der.DEREncoder;
-import com.hierynomus.asn1.types.ASN1Object;
-import com.hierynomus.asn1.types.constructed.ASN1Sequence;
-import com.hierynomus.asn1.types.primitive.ASN1Integer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * DSA {@link Signature}
  */
-public class SignatureDSA
-        extends AbstractSignature {
+public class SignatureDSA extends AbstractSignatureDSA {
 
     /**
      * A named factory for DSA signature
@@ -90,32 +82,14 @@ public class SignatureDSA
     public boolean verify(byte[] sig) {
         try {
             byte[] sigBlob = extractSig(sig, "ssh-dss");
-            return signature.verify(asnEncode(sigBlob));
+            final BigInteger r = new BigInteger(1, Arrays.copyOfRange(sigBlob, 0, 20));
+            final BigInteger s = new BigInteger(1, Arrays.copyOfRange(sigBlob, 20, 40));
+            final byte[] asnEncodedSignature = getAsnEncodedSignature(r, s);
+            return signature.verify(asnEncodedSignature);
         } catch (SignatureException e) {
-            throw new SSHRuntimeException(e);
+            throw new SSHRuntimeException("Signature Verification Failed", e);
         } catch (IOException e) {
             throw new SSHRuntimeException(e);
         }
-    }
-
-    /**
-     * Encodes the signature as a DER sequence (ASN.1 format).
-     */
-    private byte[] asnEncode(byte[] sigBlob) throws IOException {
-        BigInteger r = new BigInteger(1, Arrays.copyOfRange(sigBlob, 0, 20));
-        BigInteger s = new BigInteger(1, Arrays.copyOfRange(sigBlob, 20, 40));
-
-        List<ASN1Object> vector = new ArrayList<ASN1Object>();
-        vector.add(new com.hierynomus.asn1.types.primitive.ASN1Integer(r));
-        vector.add(new ASN1Integer(s));
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        com.hierynomus.asn1.ASN1OutputStream asn1OutputStream = new com.hierynomus.asn1.ASN1OutputStream(new DEREncoder(), baos);
-
-        asn1OutputStream.writeObject(new ASN1Sequence(vector));
-        asn1OutputStream.flush();
-
-
-        return baos.toByteArray();
     }
 }
