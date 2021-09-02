@@ -71,7 +71,7 @@ license {
   mapping {
     java = 'SLASHSTAR_STYLE'
   }
-  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java', '**/org/mindrot/jbcrypt/*.java'])
+  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java', '**/com/hierynomus/sshj/userauth/keyprovider/bcrypt/*.java'])
 }
 
 if (!JavaVersion.current().isJava9Compatible()) {

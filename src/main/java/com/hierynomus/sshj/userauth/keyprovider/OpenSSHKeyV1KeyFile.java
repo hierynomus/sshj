@@ -30,7 +30,7 @@ import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.mindrot.jbcrypt.BCrypt;
+import com.hierynomus.sshj.userauth.keyprovider.bcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
