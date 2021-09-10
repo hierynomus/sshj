@@ -12,19 +12,23 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-package org.mindrot.jbcrypt;
+package com.hierynomus.sshj.userauth.keyprovider.bcrypt;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * JUnit unit tests for BCrypt routines
  * @author Damien Miller
  * @version 0.2
  */
-public class TestBCrypt extends TestCase {
-    String test_vectors[][] = {
+public class BCryptTest {
+    String[][] test_vectors = {
             { "",
                     "$2a$06$DCq7YPn5Rq63x1Lad4cll.",
                     "$2a$06$DCq7YPn5Rq63x1Lad4cll.TV4S6ytwfsfvkgY8jIucDrjc8deX1s." },
@@ -88,16 +92,9 @@ public class TestBCrypt extends TestCase {
     };
 
     /**
-     * Entry point for unit tests
-     * @param args unused
-     */
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(TestBCrypt.class);
-    }
-
-    /**
      * Test method for 'BCrypt.hashpw(String, String)'
      */
+    @Test
     public void testHashpw() {
         System.out.print("BCrypt.hashpw(): ");
         for (int i = 0; i < test_vectors.length; i++) {
@@ -108,16 +105,16 @@ public class TestBCrypt extends TestCase {
             assertEquals(hashed, expected);
             System.out.print(".");
         }
-        System.out.println("");
     }
 
     /**
      * Test method for 'BCrypt.gensalt(int)'
      */
+    @Test
     public void testGensaltInt() {
         System.out.print("BCrypt.gensalt(log_rounds):");
         for (int i = 4; i <= 12; i++) {
-            System.out.print(" " + Integer.toString(i) + ":");
+            System.out.print(" " + i + ":");
             for (int j = 0; j < test_vectors.length; j += 4) {
                 String plain = test_vectors[j][0];
                 String salt = BCrypt.gensalt(i);
@@ -127,12 +124,12 @@ public class TestBCrypt extends TestCase {
                 System.out.print(".");
             }
         }
-        System.out.println("");
     }
 
     /**
      * Test method for 'BCrypt.gensalt()'
      */
+    @Test
     public void testGensalt() {
         System.out.print("BCrypt.gensalt(): ");
         for (int i = 0; i < test_vectors.length; i += 4) {
@@ -143,13 +140,13 @@ public class TestBCrypt extends TestCase {
             assertEquals(hashed1, hashed2);
             System.out.print(".");
         }
-        System.out.println("");
     }
 
     /**
      * Test method for 'BCrypt.checkpw(String, String)'
      * expecting success
      */
+    @Test
     public void testCheckpw_success() {
         System.out.print("BCrypt.checkpw w/ good passwords: ");
         for (int i = 0; i < test_vectors.length; i++) {
@@ -158,13 +155,13 @@ public class TestBCrypt extends TestCase {
             assertTrue(BCrypt.checkpw(plain, expected));
             System.out.print(".");
         }
-        System.out.println("");
     }
 
     /**
      * Test method for 'BCrypt.checkpw(String, String)'
      * expecting failure
      */
+    @Test
     public void testCheckpw_failure() {
         System.out.print("BCrypt.checkpw w/ bad passwords: ");
         for (int i = 0; i < test_vectors.length; i++) {
@@ -174,12 +171,12 @@ public class TestBCrypt extends TestCase {
             assertFalse(BCrypt.checkpw(plain, expected));
             System.out.print(".");
         }
-        System.out.println("");
     }
 
     /**
      * Test for correct hashing of non-US-ASCII passwords
      */
+    @Test
     public void testInternationalChars() {
         System.out.print("BCrypt.hashpw w/ international chars: ");
         String pw1 = "\u2605\u2605\u2605\u2605\u2605\u2605\u2605\u2605";
@@ -192,7 +189,6 @@ public class TestBCrypt extends TestCase {
         String h2 = BCrypt.hashpw(pw2, BCrypt.gensalt());
         assertFalse(BCrypt.checkpw(pw1, h2));
         System.out.print(".");
-        System.out.println("");
     }
 
     private static class BCryptHashTV {
@@ -242,7 +238,8 @@ public class TestBCrypt extends TestCase {
                     }),
     };
 
-    public void testBCryptHashTestVectors() throws Exception {
+    @Test
+    public void testBCryptHashTestVectors() {
         System.out.print("BCrypt.hash w/ known vectors: ");
         for (BCryptHashTV tv : bcrypt_hash_test_vectors) {
             byte[] output = new byte[tv.out.length];
@@ -250,7 +247,6 @@ public class TestBCrypt extends TestCase {
             assertEquals(Arrays.toString(tv.out), Arrays.toString(output));
             System.out.print(".");
         }
-        System.out.println("");
     }
 
     private static class BCryptPbkdfTV {
@@ -281,7 +277,8 @@ public class TestBCrypt extends TestCase {
                     (byte) 0x83, (byte) 0x3c, (byte) 0xf0, (byte) 0xdc, (byte) 0xf5, (byte) 0x6d, (byte) 0xb6, (byte) 0x56, (byte) 0x08, (byte) 0xe8, (byte) 0xf0, (byte) 0xdc, (byte) 0x0c, (byte) 0xe8, (byte) 0x82, (byte) 0xbd}),
     };
 
-    public void testBCryptPbkdfTestVectors() throws Exception {
+    @Test
+    public void testBCryptPbkdfTestVectors() {
         System.out.print("BCrypt.pbkdf w/ known vectors: ");
         for (BCryptPbkdfTV tv : bcrypt_pbkdf_test_vectors) {
             byte[] output = new byte[tv.out.length];
@@ -289,6 +286,5 @@ public class TestBCrypt extends TestCase {
             assertEquals(Arrays.toString(tv.out), Arrays.toString(output));
             System.out.print(".");
         }
-        System.out.println("");
     }
 }
