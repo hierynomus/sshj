@@ -45,6 +45,7 @@ import java.util.Map;
 
 /**
  * <h2>Sample PuTTY file format</h2>
+ *
  * <pre>
  * PuTTY-User-Key-File-2: ssh-rsa
  * Encryption: none
@@ -70,8 +71,7 @@ import java.util.Map;
  */
 public class PuTTYKeyFile extends BaseFileKeyProvider {
 
-    public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
+    public static class Factory implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
         @Override
         public FileKeyProvider create() {
@@ -88,11 +88,16 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
     private byte[] publicKey;
 
     /**
-     * Key type. Either "ssh-rsa" for RSA key, or "ssh-dss" for DSA key.
+     * Key type
      */
     @Override
     public KeyType getType() throws IOException {
-        return KeyType.fromString(headers.get("PuTTY-User-Key-File-2"));
+        for (String h : headers.keySet()) {
+            if (h.startsWith("PuTTY-User-Key-File-")) {
+                return KeyType.fromString(headers.get(h));
+            }
+        }
+        return KeyType.UNKNOWN;
     }
 
     public boolean isEncrypted() {
@@ -100,21 +105,18 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         return "aes256-cbc".equals(headers.get("Encryption"));
     }
 
-    private Map<String, String> payload
-            = new HashMap<String, String>();
+    private Map<String, String> payload = new HashMap<String, String>();
 
     /**
      * For each line that looks like "Xyz: vvv", it will be stored in this map.
      */
-    private final Map<String, String> headers
-            = new HashMap<String, String>();
-
+    private final Map<String, String> headers = new HashMap<String, String>();
 
     protected KeyPair readKeyPair() throws IOException {
         this.parseKeyPair();
         final Buffer.PlainBuffer publicKeyReader = new Buffer.PlainBuffer(publicKey);
         final Buffer.PlainBuffer privateKeyReader = new Buffer.PlainBuffer(privateKey);
-        publicKeyReader.readBytes();  // The first part of the payload is a human-readable key format name.
+        publicKeyReader.readBytes(); // The first part of the payload is a human-readable key format name.
         if (KeyType.RSA.equals(this.getType())) {
             // public key exponent
             BigInteger e = publicKeyReader.readMPInt();
@@ -131,10 +133,8 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 throw new IOException(s.getMessage(), s);
             }
             try {
-                return new KeyPair(
-                        factory.generatePublic(new RSAPublicKeySpec(n, e)),
-                        factory.generatePrivate(new RSAPrivateKeySpec(n, d))
-                );
+                return new KeyPair(factory.generatePublic(new RSAPublicKeySpec(n, e)),
+                        factory.generatePrivate(new RSAPrivateKeySpec(n, d)));
             } catch (InvalidKeySpecException i) {
                 throw new IOException(i.getMessage(), i);
             }
@@ -155,10 +155,8 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 throw new IOException(s.getMessage(), s);
             }
             try {
-                return new KeyPair(
-                        factory.generatePublic(new DSAPublicKeySpec(y, p, q, g)),
-                        factory.generatePrivate(new DSAPrivateKeySpec(x, p, q, g))
-                );
+                return new KeyPair(factory.generatePublic(new DSAPublicKeySpec(y, p, q, g)),
+                        factory.generatePrivate(new DSAPrivateKeySpec(x, p, q, g)));
             } catch (InvalidKeySpecException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -187,8 +185,8 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         if (ecdsaCurve != null) {
             BigInteger s = new BigInteger(1, privateKeyReader.readBytes());
             X9ECParameters ecParams = NISTNamedCurves.getByName(ecdsaCurve);
-            ECNamedCurveSpec ecCurveSpec =
-                    new ECNamedCurveSpec(ecdsaCurve, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
+            ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(ecdsaCurve, ecParams.getCurve(), ecParams.getG(),
+                    ecParams.getN());
             ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
             try {
                 PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
@@ -247,7 +245,8 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
     }
 
     /**
-     * Converts a passphrase into a key, by following the convention that PuTTY uses.
+     * Converts a passphrase into a key, by following the convention that PuTTY
+     * uses.
      * <p/>
      * <p/>
      * This is used to decrypt the private key when it's encrypted.
@@ -256,15 +255,16 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
-            // The encryption key is derived from the passphrase by means of a succession of SHA-1 hashes.
+            // The encryption key is derived from the passphrase by means of a succession of
+            // SHA-1 hashes.
 
             // Sequence number 0
-            digest.update(new byte[]{0, 0, 0, 0});
+            digest.update(new byte[] { 0, 0, 0, 0 });
             digest.update(passphrase.getBytes());
             byte[] key1 = digest.digest();
 
             // Sequence number 1
-            digest.update(new byte[]{0, 0, 0, 1});
+            digest.update(new byte[] { 0, 0, 0, 1 });
             digest.update(passphrase.getBytes());
             byte[] key2 = digest.digest();
 

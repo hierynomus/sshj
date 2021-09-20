@@ -226,6 +226,17 @@ public class PuTTYKeyFileTest {
             "nLEIBzB8WEaMMgDz5qwlqq7eBxLPIIi9uHyjMf7NOsQ=\n" +
             "Private-MAC: b200c6d801fc8dd8f84a14afc3b94d9f9bb2df90\n";
 
+    final static String v3_ecdsa = "PuTTY-User-Key-File-3: ecdsa-sha2-nistp256\n" + 
+    		"Encryption: none\n" + 
+    		"Comment: ecdsa-key-20210819\n" + 
+    		"Public-Lines: 3\n" + 
+    		"AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBP5mbdlgVmkw\n" + 
+    		"LzDkznoY8TXKnok/mlMkpk8FELFNSECnXNdtZ4B8+Bpqnvchhk/jY/0tUU98lFxt\n" + 
+    		"JR0o0l8B5y0=\n" + 
+    		"Private-Lines: 1\n" + 
+    		"AAAAIEblmwyKaGuvc6dLgNeHsc1BuZeQORTSxBF5SBLNyjYc\n" + 
+    		"Private-MAC: e1aed15a209f48fdaa5228640f1109a7740340764a96f97ec6023da7f92d07ea";
+    
     @Test
     public void test2048() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
@@ -341,6 +352,14 @@ public class PuTTYKeyFileTest {
         assertEquals(key.getPublic(), referenceKey.getPublic());
     }
 
+    @Test
+    public void testV3Key() throws Exception {
+    	PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(v3_ecdsa));
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
+    }
+    
     @Test
     public void testCorrectPassphraseRsa() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
