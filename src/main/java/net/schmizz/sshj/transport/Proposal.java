@@ -41,10 +41,15 @@ class Proposal {
     public Proposal(Config config, String knowHostAlg) {
         kex = Factory.Named.Util.getNames(config.getKeyExchangeFactories());
         if (knowHostAlg != null) {
-            ArrayList<String> sigT = new ArrayList<>();
-            sigT.add(knowHostAlg);
-            sigT.addAll(Factory.Named.Util.getNames(config.getKeyAlgorithms()));
-            sig = sigT;
+            List<String> pSig = Factory.Named.Util.getNames(config.getKeyAlgorithms());
+            if (pSig.contains(knowHostAlg)) {
+                ArrayList<String> sigT = new ArrayList<>();
+                sigT.add(knowHostAlg);
+                sigT.addAll(pSig);
+                sig = sigT;
+            } else {
+                sig = pSig;
+            }
         } else {
             sig = Factory.Named.Util.getNames(config.getKeyAlgorithms());
         }
