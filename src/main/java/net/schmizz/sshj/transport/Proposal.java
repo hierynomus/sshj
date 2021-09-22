@@ -38,9 +38,21 @@ class Proposal {
     private final List<String> s2cComp;
     private final SSHPacket packet;
 
-    public Proposal(Config config) {
+    public Proposal(Config config, String knowHostAlg) {
         kex = Factory.Named.Util.getNames(config.getKeyExchangeFactories());
-        sig = Factory.Named.Util.getNames(config.getKeyAlgorithms());
+        if (knowHostAlg != null) {
+            List<String> pSig = Factory.Named.Util.getNames(config.getKeyAlgorithms());
+            if (pSig.contains(knowHostAlg)) {
+                ArrayList<String> sigT = new ArrayList<>();
+                sigT.add(knowHostAlg);
+                sigT.addAll(pSig);
+                sig = sigT;
+            } else {
+                sig = pSig;
+            }
+        } else {
+            sig = Factory.Named.Util.getNames(config.getKeyAlgorithms());
+        }
         c2sCipher = s2cCipher = Factory.Named.Util.getNames(config.getCipherFactories());
         c2sMAC = s2cMAC = Factory.Named.Util.getNames(config.getMACFactories());
         c2sComp = s2cComp = Factory.Named.Util.getNames(config.getCompressionFactories());

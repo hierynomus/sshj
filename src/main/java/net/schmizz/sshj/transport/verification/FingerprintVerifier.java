@@ -74,6 +74,11 @@ public class FingerprintVerifier implements HostKeyVerifier {
                 public boolean verify(String h, int p, PublicKey k) {
                     return SecurityUtils.getFingerprint(k).equals(md5);
                 }
+
+                @Override
+                public String findExistingAlgorithm(String hostname, int port) {
+                    return null;
+                }
             });
         } catch (SSHRuntimeException e) {
             throw e;
@@ -118,6 +123,11 @@ public class FingerprintVerifier implements HostKeyVerifier {
 
         byte[] digestData = digest.digest();
         return Arrays.equals(fingerprintData, digestData);
+    }
+
+    @Override
+    public String findExistingAlgorithm(String hostname, int port) {
+        return null;
     }
 
     @Override
