@@ -16,6 +16,7 @@
 package net.schmizz.sshj.transport.verification;
 
 import java.security.PublicKey;
+import java.util.List;
 
 /** Host key verification interface. */
 public interface HostKeyVerifier {
@@ -40,7 +41,7 @@ public interface HostKeyVerifier {
      * This will allow a match when we later verify with the negotiated key {@code HostKeyVerifier.verify}
      * @param hostname remote hostname
      * @param port     remote port
-     * @return existing key type or null if not key matches hostname
+     * @return existing key types or empty list if no keys known for hostname
      */
-    String findExistingAlgorithm(String hostname, int port);
+    List<String> findExistingAlgorithms(String hostname, int port);
 }

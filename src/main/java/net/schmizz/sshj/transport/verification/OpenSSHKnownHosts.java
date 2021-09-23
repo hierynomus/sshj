@@ -132,16 +132,19 @@ public class OpenSSHKnownHosts
     }
 
     @Override
-    public String findExistingAlgorithm(String hostname, int port) {
+    public List<String> findExistingAlgorithms(String hostname, int port) {
         final String adjustedHostname = adjustHostname(hostname, port);
+        List<String> knownHostAlgorithms = new ArrayList<String>();
         for (KnownHostEntry e : entries) {
             try {
                 if (e.appliesTo(adjustedHostname)) {
-                    return e.getType().toString();
+                    knownHostAlgorithms.add(e.getType().toString());
                 }
-            } catch (IOException ioe) {}
+            } catch (IOException ioe) {
+            }
         }
-        return null;
+
+        return knownHostAlgorithms;
     }
 
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {

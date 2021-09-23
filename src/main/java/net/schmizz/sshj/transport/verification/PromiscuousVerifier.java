@@ -16,6 +16,8 @@
 package net.schmizz.sshj.transport.verification;
 
 import java.security.PublicKey;
+import java.util.Collections;
+import java.util.List;
 
 public final class PromiscuousVerifier
         implements HostKeyVerifier {
@@ -26,8 +28,8 @@ public final class PromiscuousVerifier
     }
 
     @Override
-    public String findExistingAlgorithm(String hostname, int port) {
-        return null;
+    public List<String> findExistingAlgorithms(String hostname, int port) {
+        return Collections.emptyList();
     }
 
 }
