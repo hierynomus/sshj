@@ -170,9 +170,20 @@ final class KeyExchanger
     private void sendKexInit()
             throws TransportException {
         log.debug("Sending SSH_MSG_KEXINIT");
-        clientProposal = new Proposal(transport.getConfig());
+        List<String> knownHostAlgs = findKnownHostAlgs(transport.getRemoteHost(), transport.getRemotePort());
+        clientProposal = new Proposal(transport.getConfig(), knownHostAlgs);
         transport.write(clientProposal.getPacket());
         kexInitSent.set();
+    }
+
+    private List<String> findKnownHostAlgs(String hostname, int port) {
+        for (HostKeyVerifier hkv : hostVerifiers) {
+            List<String> keyTypes = hkv.findExistingAlgorithms(hostname, port);
+            if (keyTypes != null && !keyTypes.isEmpty()) {
+                return keyTypes;
+            }
+        }
+        return Collections.emptyList();
     }
 
     private void sendNewKeys()
