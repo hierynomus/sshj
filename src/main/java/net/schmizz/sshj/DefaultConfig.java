@@ -189,8 +189,7 @@ public class DefaultConfig
                 BlockCiphers.TwofishCBC(),
                 StreamCiphers.Arcfour(),
                 StreamCiphers.Arcfour128(),
-                StreamCiphers.Arcfour256(),
-                ChachaPolyCiphers.CHACHA_POLY_OPENSSH())
+                StreamCiphers.Arcfour256())
         );
 
         boolean warn = false;
