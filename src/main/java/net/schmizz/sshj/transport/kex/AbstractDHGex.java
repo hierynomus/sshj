@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
+import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.Transport;
@@ -30,9 +32,9 @@ import java.security.GeneralSecurityException;
 public abstract class AbstractDHGex extends AbstractDH {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private int minBits = 1024;
-    private int maxBits = 8192;
-    private int preferredBits = 2048;
+    private final int minBits = 1024;
+    private final int maxBits = 8192;
+    private final int preferredBits = 2048;
 
     public AbstractDHGex(Digest digest) {
         super(new DH(), digest);
@@ -56,11 +58,12 @@ public abstract class AbstractDHGex extends AbstractDH {
                     return parseGexGroup(buffer);
                 case KEX_DH_GEX_REPLY:
                     return parseGexReply(buffer);
+                default:
+                    throw new TransportException("Unexpected message " + msg);
             }
         } catch (Buffer.BufferException be) {
             throw new TransportException(be);
         }
-        throw new TransportException("Unexpected message " + msg);
     }
 
     private boolean parseGexReply(SSHPacket buffer) throws Buffer.BufferException, GeneralSecurityException, TransportException {
@@ -84,9 +87,13 @@ public abstract class AbstractDHGex extends AbstractDH {
                 .putMPInt(k);
         digest.update(buf.array(), buf.rpos(), buf.available());
         H = digest.digest();
-        Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(),
-                KeyType.fromKey(hostKey).toString());
-        signature.initVerify(hostKey);
+        KeyAlgorithm keyAlgorithm = trans.getHostKeyAlgorithm();
+        Signature signature = keyAlgorithm.newSignature();
+        if (hostKey instanceof Certificate<?>) {
+            signature.initVerify(((Certificate<?>) hostKey).getKey());
+        } else {
+            signature.initVerify(hostKey);
+        }
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,

@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.transport.random.Random;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -31,7 +32,7 @@ public class Curve25519DH extends DHBase {
     private byte[] secretKey;
 
     public Curve25519DH() {
-        super("ECDSA", "ECDH");
+        super(KeyAlgorithm.ECDSA, "ECDH");
     }
 
     @Override

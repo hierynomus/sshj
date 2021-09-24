@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
+import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.IdentificationStringParser;
 import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
@@ -30,6 +32,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,6 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public final class TransportImpl
         implements Transport, DisconnectListener {
+
 
     private static final class NullService
             extends AbstractService {
@@ -86,6 +90,10 @@ public final class TransportImpl
 
     private final Decoder decoder;
 
+    private KeyAlgorithm hostKeyAlgorithm;
+
+    private boolean rsaSHA2Support;
+
     private final Event<TransportException> serviceAccept;
 
     private final Event<TransportException> close;
@@ -103,6 +111,11 @@ public final class TransportImpl
      * Currently active service e.g. UserAuthService, ConnectionService
      */
     private volatile Service service;
+
+    /**
+     * The next service that will be activated, only set when sending an SSH_MSG_SERVICE_REQUEST
+     */
+    private volatile Service nextService;
 
     private DisconnectListener disconnectListener;
 
@@ -324,8 +337,9 @@ public final class TransportImpl
 
     @Override
     public synchronized void setService(Service service) {
-        if (service == null)
+        if (service == null) {
             service = nullService;
+        }
 
         log.debug("Setting active service to {}", service.getName());
         this.service = service;
@@ -337,11 +351,12 @@ public final class TransportImpl
         serviceAccept.lock();
         try {
             serviceAccept.clear();
+            this.nextService = service;
             sendServiceRequest(service.getName());
             serviceAccept.await(timeoutMs, TimeUnit.MILLISECONDS);
-            setService(service);
         } finally {
             serviceAccept.unlock();
+            this.nextService = null;
         }
     }
 
@@ -485,8 +500,8 @@ public final class TransportImpl
      * This method is called in the context of the {@link #reader} thread via {@link Decoder#received} when a full
      * packet has been decoded.
      *
-     * @param msg the message identifer
-     * @param buf buffer containg rest of the packet
+     * @param msg the message identifier
+     * @param buf buffer containing rest of the packet
      * @throws SSHException if an error occurs during handling (unrecoverable)
      */
     @Override
@@ -496,13 +511,11 @@ public final class TransportImpl
 
         log.trace("Received packet {}", msg);
 
-        if (msg.geq(50)) // not a transport layer packet
+        if (msg.geq(50)) { // not a transport layer packet
             service.handle(msg, buf);
-
-        else if (msg.in(20, 21) || msg.in(30, 49)) // kex packet
+        } else if (msg.in(20, 21) || msg.in(30, 49)) { // kex packet
             kexer.handle(msg, buf);
-
-        else
+        } else {
             switch (msg) {
                 case DISCONNECT:
                     gotDisconnect(buf);
@@ -519,6 +532,9 @@ public final class TransportImpl
                 case SERVICE_ACCEPT:
                     gotServiceAccept();
                     break;
+                case EXT_INFO:
+                    log.debug("Received SSH_MSG_EXT_INFO");
+                    break;
                 case USERAUTH_BANNER:
                     log.debug("Received USERAUTH_BANNER");
                     break;
@@ -526,6 +542,7 @@ public final class TransportImpl
                     sendUnimplemented();
                     break;
             }
+        }
     }
 
     private void gotDebug(SSHPacket buf)
@@ -558,6 +575,8 @@ public final class TransportImpl
             if (!serviceAccept.hasWaiters())
                 throw new TransportException(DisconnectReason.PROTOCOL_ERROR,
                         "Got a service accept notification when none was awaited");
+            // Immediately switch to next service to prevent race condition mentioned in #559
+            setService(nextService);
             serviceAccept.set();
         } finally {
             serviceAccept.unlock();
@@ -641,4 +660,30 @@ public final class TransportImpl
         return connInfo;
     }
 
+    public void setHostKeyAlgorithm(KeyAlgorithm keyAlgorithm) {
+        this.hostKeyAlgorithm = keyAlgorithm;
+    }
+
+    @Override
+    public KeyAlgorithm getHostKeyAlgorithm() {
+        return this.hostKeyAlgorithm;
+    }
+
+    public void setRSASHA2Support(boolean rsaSHA2Support) {
+        this.rsaSHA2Support = rsaSHA2Support;
+    }
+
+    @Override
+    public KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException {
+        if (keyType != KeyType.RSA || !rsaSHA2Support) {
+            return Factory.Named.Util.create(getConfig().getKeyAlgorithms(), keyType.toString());
+        }
+
+        List<Factory.Named<KeyAlgorithm>> factories = getConfig().getKeyAlgorithms();
+        if (factories != null)
+            for (Factory.Named<KeyAlgorithm> f : factories)
+                if (f.getName().equals("ssh-rsa") || KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS.contains(f.getName()))
+                    return f.create();
+        throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
+    }
 }

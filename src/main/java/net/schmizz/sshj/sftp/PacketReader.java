@@ -42,6 +42,7 @@ public class PacketReader extends Thread {
         log = engine.getLoggerFactory().getLogger(getClass());
         this.in = engine.getSubsystem().getInputStream();
         setName("sftp reader");
+        setDaemon(true);
     }
 
     private void readIntoBuffer(byte[] buf, int off, int len)

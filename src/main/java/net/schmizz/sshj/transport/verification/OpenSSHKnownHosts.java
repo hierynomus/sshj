@@ -15,7 +15,9 @@
  */
 package net.schmizz.sshj.transport.verification;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.transport.verification.KnownHostMatchers;
+import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.schmizz.sshj.common.*;
 import org.slf4j.Logger;
 
@@ -40,6 +42,11 @@ public class OpenSSHKnownHosts
     protected final File khFile;
     protected final List<KnownHostEntry> entries = new ArrayList<KnownHostEntry>();
 
+    public OpenSSHKnownHosts(Reader reader) throws IOException {
+        this(reader, LoggerFactory.DEFAULT);
+    }
+
+
     public OpenSSHKnownHosts(File khFile)
             throws IOException {
         this(khFile, LoggerFactory.DEFAULT);
@@ -50,27 +57,42 @@ public class OpenSSHKnownHosts
         this.khFile = khFile;
         log = loggerFactory.getLogger(getClass());
         if (khFile.exists()) {
-            final EntryFactory entryFactory = new EntryFactory();
             final BufferedReader br = new BufferedReader(new FileReader(khFile));
             try {
-                // Read in the file, storing each line as an entry
-                String line;
-                while ((line = br.readLine()) != null) {
-                    try {
-                        KnownHostEntry entry = entryFactory.parseEntry(line);
-                        if (entry != null) {
-                            entries.add(entry);
-                        }
-                    } catch (SSHException ignore) {
-                        log.debug("Bad line ({}): {} ", ignore.toString(), line);
-                    } catch (SSHRuntimeException ignore) {
-                        log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
-                    }
-                }
+                readEntries(br);
             } finally {
                 IOUtils.closeQuietly(br);
             }
         }
+    }
+
+    public OpenSSHKnownHosts(Reader reader, LoggerFactory loggerFactory) throws IOException {
+        this.khFile = null;
+        log = loggerFactory.getLogger(getClass());
+        BufferedReader br = new BufferedReader(reader);
+        readEntries(br);
+    }
+
+    private void readEntries(BufferedReader br) throws IOException {
+        final EntryFactory entryFactory = new EntryFactory();
+        String line;
+        while ((line = br.readLine()) != null) {
+            try {
+                KnownHostEntry entry = entryFactory.parseEntry(line);
+                if (entry != null) {
+                    entries.add(entry);
+                }
+            } catch (SSHException ignore) {
+                log.debug("Bad line ({}): {} ", ignore.toString(), line);
+            } catch (SSHRuntimeException ignore) {
+                log.debug("Failed to process line ({}): {} ", ignore.toString(), line);
+            }
+        }
+    }
+
+    private String adjustHostname(final String hostname, final int port) {
+        String lowerHN = hostname.toLowerCase();
+        return (port != 22) ? "[" + lowerHN + "]:" + port : lowerHN;
     }
 
     public File getFile() {
@@ -85,7 +107,7 @@ public class OpenSSHKnownHosts
             return false;
         }
 
-        final String adjustedHostname = (port != 22) ? "[" + hostname + "]:" + port : hostname;
+        final String adjustedHostname = adjustHostname(hostname, port);
 
         boolean foundApplicableHostEntry = false;
         for (KnownHostEntry e : entries) {
@@ -107,6 +129,22 @@ public class OpenSSHKnownHosts
         }
 
         return hostKeyUnverifiableAction(adjustedHostname, key);
+    }
+
+    @Override
+    public List<String> findExistingAlgorithms(String hostname, int port) {
+        final String adjustedHostname = adjustHostname(hostname, port);
+        List<String> knownHostAlgorithms = new ArrayList<String>();
+        for (KnownHostEntry e : entries) {
+            try {
+                if (e.appliesTo(adjustedHostname)) {
+                    knownHostAlgorithms.add(e.getType().toString());
+                }
+            } catch (IOException ioe) {
+            }
+        }
+
+        return knownHostAlgorithms;
     }
 
     protected boolean hostKeyUnverifiableAction(String hostname, PublicKey key) {
@@ -190,7 +228,7 @@ public class OpenSSHKnownHosts
      * Lines starting with `#' and empty lines are ignored as comments.
      */
     public class EntryFactory {
-        EntryFactory() {
+        public EntryFactory() {
         }
 
         public KnownHostEntry parseEntry(String line)
@@ -199,23 +237,21 @@ public class OpenSSHKnownHosts
                 return new CommentEntry(line);
             }
 
-            final String[] split = line.split("\\s+");
-            if(split.length < 3) {
+            final String trimmed = line.trim();
+            int minComponents = 3;
+            if (trimmed.startsWith("@")) {
+                minComponents = 4;
+            }
+            String[] split = trimmed.split("\\s+", minComponents + 1); // Add 1 for optional comments
+            if(split.length < minComponents) {
                 log.error("Error reading entry `{}`", line);
                 return new BadHostEntry(line);
             }
-
             int i = 0;
-            if (split[i].isEmpty()) {
-                i++;
-            }
+
             final Marker marker = Marker.fromString(split[i]);
             if (marker != null) {
                 i++;
-            }
-            if(split.length < i + 3) {
-                log.error("Error reading entry `{}`", line);
-                return new BadHostEntry(line);
             }
             final String hostnames = split[i++];
             final String sType = split[i++];
@@ -234,11 +270,14 @@ public class OpenSSHKnownHosts
                 }
             } else if (isBits(sType)) {
                 type = KeyType.RSA;
+                minComponents += 1;
+                // re-split
+                split = trimmed.split("\\s+", minComponents + 1); // Add 1 for optional comments
                 // int bits = Integer.valueOf(sType);
                 final BigInteger e = new BigInteger(split[i++]);
                 final BigInteger n = new BigInteger(split[i++]);
                 try {
-                    final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
+                    final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.RSA);
                     key = keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
                 } catch (Exception ex) {
                     log.error("Error reading entry `{}`, could not create key", line, ex);
@@ -249,7 +288,13 @@ public class OpenSSHKnownHosts
                 return new BadHostEntry(line);
             }
 
-            return new HostEntry(marker, hostnames, type, key);
+            final String comment;
+            if (i < split.length) {
+                comment = split[i++];
+            } else {
+                comment = null;
+            }
+            return new HostEntry(marker, hostnames, type, key, comment);
         }
 
         private boolean isBits(String type) {
@@ -330,14 +375,26 @@ public class OpenSSHKnownHosts
         private final String hostPart;
         protected final KeyType type;
         protected final PublicKey key;
+        private final String comment;
         private final KnownHostMatchers.HostMatcher matcher;
+        protected final Logger log;
 
         public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key) throws SSHException {
+            this(marker, hostPart, type, key, "");
+        }
+
+        public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key, String comment) throws SSHException {
+            this(marker, hostPart, type, key, comment, LoggerFactory.DEFAULT);
+        }
+
+        public HostEntry(Marker marker, String hostPart, KeyType type, PublicKey key, String comment, LoggerFactory loggerFactory) throws SSHException {
             this.marker = marker;
             this.hostPart = hostPart;
             this.type = type;
             this.key = key;
+            this.comment = comment;
             this.matcher = KnownHostMatchers.createMatcher(hostPart);
+            this.log = loggerFactory.getLogger(getClass());
         }
 
         @Override
@@ -357,11 +414,15 @@ public class OpenSSHKnownHosts
 
         @Override
         public boolean appliesTo(KeyType type, String host) throws IOException {
-            return this.type == type && matcher.match(host);
+            return (this.type == type || (marker == Marker.CA_CERT && type.getParent() != null)) && matcher.match(host);
         }
 
         @Override
         public boolean verify(PublicKey key) throws IOException {
+            if (marker == Marker.CA_CERT && key instanceof Certificate<?>) {
+                final PublicKey caKey = new Buffer.PlainBuffer(((Certificate<?>) key).getSignatureKey()).readPublicKey();
+                return this.type == KeyType.fromKey(caKey) && getKeyString(caKey).equals(getKeyString(this.key));
+            }
             return getKeyString(key).equals(getKeyString(this.key)) && marker != Marker.REVOKED;
         }
 
@@ -373,6 +434,9 @@ public class OpenSSHKnownHosts
             line.append(getHostPart());
             line.append(" ").append(type.toString());
             line.append(" ").append(getKeyString(key));
+
+            if (comment != null && !comment.isEmpty()) line.append(" ").append(comment);
+
             return line.toString();
         }
 
@@ -383,6 +447,10 @@ public class OpenSSHKnownHosts
 
         protected String getHostPart() {
             return hostPart;
+        }
+
+        public String getComment() {
+            return comment;
         }
     }
 

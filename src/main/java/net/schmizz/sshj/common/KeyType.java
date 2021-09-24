@@ -15,13 +15,19 @@
  */
 package net.schmizz.sshj.common;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.signature.Ed25519PublicKey;
+import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.Buffer.BufferException;
+import net.schmizz.sshj.signature.Signature;
+import net.schmizz.sshj.signature.SignatureDSA;
+import net.schmizz.sshj.signature.SignatureECDSA;
+import net.schmizz.sshj.signature.SignatureRSA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,13 +36,12 @@ import java.security.GeneralSecurityException;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.PublicKey;
-import java.security.interfaces.DSAPrivateKey;
 import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /** Type of key e.g. rsa, dsa */
 public enum KeyType {
@@ -53,7 +58,7 @@ public enum KeyType {
             } catch (Buffer.BufferException be) {
                 throw new GeneralSecurityException(be);
             }
-            final KeyFactory keyFactory = SecurityUtils.getKeyFactory("RSA");
+            final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.RSA);
             return keyFactory.generatePublic(new RSAPublicKeySpec(n, e));
         }
 
@@ -66,7 +71,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return (key instanceof RSAPublicKey || key instanceof RSAPrivateKey);
+            return KeyAlgorithm.RSA.equals(key.getAlgorithm());
         }
     },
 
@@ -84,7 +89,7 @@ public enum KeyType {
             } catch (Buffer.BufferException be) {
                 throw new GeneralSecurityException(be);
             }
-            final KeyFactory keyFactory = SecurityUtils.getKeyFactory("DSA");
+            final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.DSA);
             return keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g));
         }
 
@@ -99,7 +104,7 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
-            return (key instanceof DSAPublicKey || key instanceof DSAPrivateKey);
+            return KeyAlgorithm.DSA.equals(key.getAlgorithm());
         }
 
     },
@@ -221,6 +226,11 @@ public enum KeyType {
         protected boolean isMyType(Key key) {
             return CertUtils.isCertificateOfType(key, RSA);
         }
+
+        @Override
+        public KeyType getParent() {
+            return RSA;
+        }
     },
 
     /** Signed dsa certificate */
@@ -239,6 +249,103 @@ public enum KeyType {
         @Override
         protected boolean isMyType(Key key) {
             return CertUtils.isCertificateOfType(key, DSA);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.DSA;
+        }
+    },
+
+    ED25519_CERT("ssh-ed25519-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ED25519);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ED25519, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ED25519);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ED25519;
+        }
+    },
+
+    ECDSA256_CERT("ecdsa-sha2-nistp256-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ECDSA256);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ECDSA256, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ECDSA256);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ECDSA256;
+        }
+    },
+
+    ECDSA384_CERT("ecdsa-sha2-nistp384-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ECDSA384);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ECDSA384, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ECDSA384);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ECDSA384;
+        }
+    },
+
+    ECDSA521_CERT("ecdsa-sha2-nistp521-cert-v01@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf)
+                throws GeneralSecurityException {
+            return CertUtils.readPubKey(buf, ECDSA521);
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            CertUtils.writePubKeyContentsIntoBuffer(pk, ECDSA521, buf);
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            return CertUtils.isCertificateOfType(key, ECDSA521);
+        }
+
+        @Override
+        public KeyType getParent() {
+            return KeyType.ECDSA521;
         }
     },
 
@@ -284,10 +391,24 @@ public enum KeyType {
     protected abstract boolean isMyType(Key key);
 
     public static KeyType fromKey(Key key) {
+        KeyType result = UNKNOWN;
         for (KeyType kt : values())
-            if (kt.isMyType((key)))
-                return kt;
-        return UNKNOWN;
+            if (kt.isMyType((key)) && (result == UNKNOWN || kt.isSubType(result)))
+                result = kt;
+        return result;
+    }
+
+    private boolean isSubType(KeyType keyType) {
+        for (KeyType node = this; node != null; node = node.getParent()) {
+            if (keyType == node) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public KeyType getParent() {
+        return null;
     }
 
     public static KeyType fromString(String sType) {
@@ -302,7 +423,7 @@ public enum KeyType {
         return sType;
     }
 
-    static class CertUtils {
+    public static class CertUtils {
 
         @SuppressWarnings("unchecked")
         static <T extends PublicKey> Certificate<T> readPubKey(Buffer<?> buf, KeyType innerKeyType) throws GeneralSecurityException {
@@ -346,6 +467,122 @@ public enum KeyType {
                 .putBytes(certificate.getSignature());
         }
 
+        /**
+         * @param certRaw Already serialized host certificate that was received as a packet. Can be restored simply by
+         *                calling {@code new Buffer.PlainBuffer().putPublicKey(cert)}
+         * @param cert A key with a certificate received from a server.
+         * @param hostname A hostname of the server. It is juxtaposed to the principals of the certificate.
+         * @return null if the certificate is valid, an error message if it is not valid.
+         * @throws Buffer.BufferException If something from {@code certRaw} or {@code cert} can't be parsed.
+         */
+        public static String verifyHostCertificate(byte[] certRaw, Certificate<?> cert, String hostname)
+                throws Buffer.BufferException, SSHRuntimeException {
+            String signatureType = new Buffer.PlainBuffer(cert.getSignature()).readString();
+            final Signature signature = Factory.Named.Util.create(ALL_SIGNATURES, signatureType);
+            if (signature == null) {
+                return "Unknown signature algorithm `" + signatureType + "`";
+            }
+
+            // Quotes are from
+            // https://cvsweb.openbsd.org/cgi-bin/cvsweb/~checkout~/src/usr.bin/ssh/PROTOCOL.certkeys?rev=1.19&content-type=text/plain
+
+            // "valid principals" is a string containing zero or more principals as
+            // strings packed inside it. These principals list the names for which this
+            // certificate is valid; hostnames for SSH_CERT_TYPE_HOST certificates and
+            // usernames for SSH_CERT_TYPE_USER certificates. As a special case, a
+            // zero-length "valid principals" field means the certificate is valid for
+            // any principal of the specified type.
+            if (cert.getValidPrincipals() != null && !cert.getValidPrincipals().isEmpty()) {
+                boolean ok = false;
+                for (String principal : cert.getValidPrincipals()) {
+                    ok = matchPattern(hostname, principal);
+                    if (ok) {
+                        break;
+                    }
+                }
+                if (!ok) {
+                    StringBuilder error = new StringBuilder()
+                            .append("Hostname `")
+                            .append(hostname)
+                            .append("` doesn't match any of the principals: `");
+                    String delimiter = "";
+                    for (String principal : cert.getValidPrincipals()) {
+                        error.append(delimiter).append(principal);
+                        delimiter = "`, `";
+                    }
+                    error.append("`");
+                    return error.toString();
+                }
+            }
+
+            // "valid after" and "valid before" specify a validity period for the
+            // certificate. Each represents a time in seconds since 1970-01-01
+            // 00:00:00. A certificate is considered valid if:
+            //  valid after <= current time < valid before
+            Date today = new Date();
+            if (cert.getValidAfter() != null && today.before(cert.getValidAfter())) {
+                return "Certificate is valid after " + cert.getValidAfter() + ", today is " + today;
+            }
+            if (cert.getValidBefore() != null && today.after(cert.getValidBefore())) {
+                return "Certificate is valid before " + cert.getValidBefore() + ", today is " + today;
+            }
+
+            // All critical options supported by OpenSSH relate to the client. Nothing to take from host certificates.
+
+            signature.initVerify(new Buffer.PlainBuffer(cert.getSignatureKey()).readPublicKey());
+            // -4 -- minus the length of the integer holding the length of the signature.
+            signature.update(certRaw, 0, certRaw.length - cert.getSignature().length - 4);
+            if (signature.verify(cert.getSignature())) {
+                return null;
+            } else {
+                return "Signature verification failed";
+            }
+        }
+
+        /**
+         * This method must work exactly as match_pattern from match.c of OpenSSH. If it works differently, consider it
+         * as a bug that must be fixed.
+         */
+        public static boolean matchPattern(String target, String pattern) {
+            StringBuilder regex = new StringBuilder();
+            String endEscape = "";
+            for (int i = 0; i < pattern.length(); ++i) {
+                char p = pattern.charAt(i);
+                if (p == '?' || p == '*') {
+                    regex.append(endEscape);
+                    endEscape = "";
+                    if (p == '?') {
+                        regex.append('.');
+                    } else {
+                        regex.append(".*");
+                    }
+                } else {
+                    if (endEscape.isEmpty()) {
+                        regex.append("\\Q");
+                        endEscape = "\\E";
+                    }
+                    regex.append(p);
+                }
+            }
+            return Pattern.compile(regex.toString()).matcher(target).matches();
+        }
+
+        public static final List<Factory.Named<Signature>> ALL_SIGNATURES = Arrays.asList(
+                new SignatureRSA.FactorySSHRSA(),
+                new SignatureRSA.FactoryCERT(),
+                new SignatureRSA.FactoryRSASHA256(),
+                new SignatureRSA.FactoryRSASHA512(),
+                new SignatureDSA.Factory(),
+                new SignatureDSA.Factory(),
+                new SignatureECDSA.Factory256(),
+                new SignatureECDSA.Factory256(),
+                new SignatureECDSA.Factory384(),
+                new SignatureECDSA.Factory384(),
+                new SignatureECDSA.Factory521(),
+                new SignatureECDSA.Factory521(),
+                new SignatureEdDSA.Factory(),
+                new SignatureEdDSA.Factory());
+
         static boolean isCertificateOfType(Key key, KeyType innerKeyType) {
             if (!(key instanceof Certificate)) {
                 return false;
@@ -373,8 +610,18 @@ public enum KeyType {
             }
         }
 
-        private static long epochFromDate(Date date) {
-            return date.getTime() / 1000;
+        private static BigInteger epochFromDate(Date date) {
+            long time = date.getTime() / 1000;
+            if (time >= Long.MAX_VALUE / 1000) {
+                // Dealing with the signed longs in Java. Since the protocol requires a unix timestamp in milliseconds,
+                // and since Java can store numbers not bigger than 2^63-1 as `long`, we can't distinguish dates
+                // after `new Date(Long.MAX_VALUE / 1000)`. It's unlikely that someone uses certificate valid until
+                // the 10 January of 294247 year. Supposing that such dates are unlimited.
+                // OpenSSH expects to see 0xFF_FF_FF_FF_FF_FF_FF_FF in such cases.
+                return Buffer.MAX_UINT64_VALUE;
+            } else {
+                return BigInteger.valueOf(time);
+            }
         }
 
         private static String unpackString(byte[] packedString) throws BufferException {

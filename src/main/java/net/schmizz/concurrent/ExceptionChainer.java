@@ -26,7 +26,7 @@ package net.schmizz.concurrent;
  *         if (t instanceof SomeException)
  *             return (SomeException) t;
  *         else
- *             return new SomeExcepion(t);
+ *             return new SomeException(t);
  *     }
  * };
  * </pre>

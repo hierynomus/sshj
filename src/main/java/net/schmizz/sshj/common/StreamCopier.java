@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 public class StreamCopier {
 
@@ -125,7 +126,7 @@ public class StreamCopier {
         long count = 0;
         int read = 0;
 
-        final long startTime = System.currentTimeMillis();
+        final long startTime = System.nanoTime();
 
         if (length == -1) {
             while ((read = in.read(buf)) != -1) {
@@ -140,7 +141,7 @@ public class StreamCopier {
         if (!keepFlushing)
             out.flush();
 
-        final double timeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
+        final double timeSeconds = TimeUnit.NANOSECONDS.toMillis (System.nanoTime() - startTime) / 1000.0;
         final double sizeKiB = count / 1024.0;
         log.debug(String.format("%1$,.1f KiB transferred in %2$,.1f seconds (%3$,.2f KiB/s)", sizeKiB, timeSeconds, (sizeKiB / timeSeconds)));
 

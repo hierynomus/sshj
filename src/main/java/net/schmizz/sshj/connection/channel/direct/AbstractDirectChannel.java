@@ -28,7 +28,7 @@ import net.schmizz.sshj.transport.TransportException;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
-/** Base class for direct channels whose open is initated by the client. */
+/** Base class for direct channels whose open is initiated by the client. */
 public abstract class AbstractDirectChannel
         extends AbstractChannel
         implements Channel.Direct {

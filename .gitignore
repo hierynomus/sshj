@@ -21,3 +21,6 @@ sshj.jar
 
 # MacOS X
 .DS_Store
+
+# VSCode
+.metals/

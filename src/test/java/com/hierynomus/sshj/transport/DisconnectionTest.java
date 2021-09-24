@@ -16,17 +16,14 @@
 package com.hierynomus.sshj.transport;
 
 import com.hierynomus.sshj.test.SshFixture;
-import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.DisconnectListener;
 import net.schmizz.sshj.transport.TransportException;
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.theories.suppliers.TestedOn;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

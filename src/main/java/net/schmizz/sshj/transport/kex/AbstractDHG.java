@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.Transport;
@@ -29,8 +30,7 @@ import java.security.GeneralSecurityException;
  * Base class for DHG key exchange algorithms. Implementations will only have to configure the required data on the
  * {@link DH} class in the
  */
-public abstract class AbstractDHG extends AbstractDH
-        implements KeyExchange {
+public abstract class AbstractDHG extends AbstractDH {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -78,14 +78,52 @@ public abstract class AbstractDHG extends AbstractDH
         digest.update(buf.array(), buf.rpos(), buf.available());
         H = digest.digest();
 
-        Signature signature = Factory.Named.Util.create(trans.getConfig().getSignatureFactories(),
-                                                        KeyType.fromKey(hostKey).toString());
-        signature.initVerify(hostKey);
+
+        Signature signature = trans.getHostKeyAlgorithm().newSignature();
+        if (hostKey instanceof Certificate<?>) {
+            signature.initVerify(((Certificate<?>)hostKey).getKey());
+        }
+        else {
+            signature.initVerify(hostKey);
+        }
         signature.update(H, 0, H.length);
         if (!signature.verify(sig))
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
                                          "KeyExchange signature verification failed");
+
+        verifyCertificate(K_S);
+
         return true;
+    }
+
+    private void verifyCertificate(byte[] K_S) throws TransportException {
+        if (hostKey instanceof Certificate<?> && trans.getConfig().isVerifyHostKeyCertificates()) {
+            final Certificate<?> hostKey = (Certificate<?>) this.hostKey;
+            String signatureType, caKeyType;
+            try {
+                signatureType = new Buffer.PlainBuffer(hostKey.getSignature()).readString();
+            } catch (Buffer.BufferException e) {
+                signatureType = null;
+            }
+            try {
+                caKeyType = new Buffer.PlainBuffer(hostKey.getSignatureKey()).readString();
+            } catch (Buffer.BufferException e) {
+                caKeyType = null;
+            }
+            log.debug("Verifying signature of the key with type {} (signature type {}, CA key type {})",
+                      hostKey.getType(), signatureType, caKeyType);
+
+            try {
+                final String certError = KeyType.CertUtils.verifyHostCertificate(K_S, hostKey, trans.getRemoteHost());
+                if (certError != null) {
+                    throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                                                 "KeyExchange certificate check failed: " + certError);
+                }
+            } catch (Buffer.BufferException | SSHRuntimeException e) {
+                throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                                             "KeyExchange certificate check failed", e);
+            }
+        }
     }
 
     protected abstract void initDH(DHBase dh)

@@ -17,9 +17,6 @@ package com.hierynomus.sshj.transport.mac
 
 import com.hierynomus.sshj.IntegrationBaseSpec
 import net.schmizz.sshj.DefaultConfig
-import net.schmizz.sshj.transport.mac.HMACRIPEMD160
-import net.schmizz.sshj.transport.mac.HMACSHA2256
-import spock.lang.AutoCleanup
 import spock.lang.Unroll
 
 class MacSpec extends IntegrationBaseSpec {

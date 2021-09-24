@@ -15,12 +15,14 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithms;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,9 +38,9 @@ class Proposal {
     private final List<String> s2cComp;
     private final SSHPacket packet;
 
-    public Proposal(Config config) {
+    public Proposal(Config config, List<String> knownHostAlgs) {
         kex = Factory.Named.Util.getNames(config.getKeyExchangeFactories());
-        sig = Factory.Named.Util.getNames(config.getSignatureFactories());
+        sig = filterKnownHostKeyAlgorithms(Factory.Named.Util.getNames(config.getKeyAlgorithms()), knownHostAlgs);
         c2sCipher = s2cCipher = Factory.Named.Util.getNames(config.getCipherFactories());
         c2sMAC = s2cMAC = Factory.Named.Util.getNames(config.getMACFactories());
         c2sComp = s2cComp = Factory.Named.Util.getNames(config.getCompressionFactories());
@@ -90,7 +92,7 @@ class Proposal {
         return kex;
     }
 
-    public List<String> getSignatureAlgorithms() {
+    public List<String> getHostKeyAlgorithms() {
         return sig;
     }
 
@@ -125,32 +127,62 @@ class Proposal {
     public NegotiatedAlgorithms negotiate(Proposal other)
             throws TransportException {
         return new NegotiatedAlgorithms(
-                firstMatch(this.getKeyExchangeAlgorithms(), other.getKeyExchangeAlgorithms()),
-                firstMatch(this.getSignatureAlgorithms(), other.getSignatureAlgorithms()),
-                firstMatch(this.getClient2ServerCipherAlgorithms(), other.getClient2ServerCipherAlgorithms()),
-                firstMatch(this.getServer2ClientCipherAlgorithms(), other.getServer2ClientCipherAlgorithms()),
-                firstMatch(this.getClient2ServerMACAlgorithms(), other.getClient2ServerMACAlgorithms()),
-                firstMatch(this.getServer2ClientMACAlgorithms(), other.getServer2ClientMACAlgorithms()),
-                firstMatch(this.getClient2ServerCompressionAlgorithms(), other.getClient2ServerCompressionAlgorithms()),
-                firstMatch(this.getServer2ClientCompressionAlgorithms(), other.getServer2ClientCompressionAlgorithms())
-        );
+                firstMatch("KeyExchangeAlgorithms", this.getKeyExchangeAlgorithms(), other.getKeyExchangeAlgorithms()),
+                firstMatch("HostKeyAlgorithms", this.getHostKeyAlgorithms(), other.getHostKeyAlgorithms()),
+                firstMatch("Client2ServerCipherAlgorithms", this.getClient2ServerCipherAlgorithms(),
+                        other.getClient2ServerCipherAlgorithms()),
+                firstMatch("Server2ClientCipherAlgorithms", this.getServer2ClientCipherAlgorithms(),
+                        other.getServer2ClientCipherAlgorithms()),
+                firstMatch("Client2ServerMACAlgorithms", this.getClient2ServerMACAlgorithms(),
+                        other.getClient2ServerMACAlgorithms()),
+                firstMatch("Server2ClientMACAlgorithms", this.getServer2ClientMACAlgorithms(),
+                        other.getServer2ClientMACAlgorithms()),
+                firstMatch("Client2ServerCompressionAlgorithms", this.getClient2ServerCompressionAlgorithms(),
+                        other.getClient2ServerCompressionAlgorithms()),
+                firstMatch("Server2ClientCompressionAlgorithms", this.getServer2ClientCompressionAlgorithms(),
+                        other.getServer2ClientCompressionAlgorithms()),
+                other.getHostKeyAlgorithms().containsAll(KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS));
     }
 
-    private static String firstMatch(List<String> a, List<String> b)
+    private List<String> filterKnownHostKeyAlgorithms(List<String> configuredKeyAlgorithms, List<String> knownHostKeyAlgorithms) {
+        if (knownHostKeyAlgorithms != null && !knownHostKeyAlgorithms.isEmpty()) {
+            List<String> preferredAlgorithms = new ArrayList<String>();
+            List<String> otherAlgorithms = new ArrayList<String>();
+
+            for (String configuredKeyAlgorithm : configuredKeyAlgorithms) {
+                if (knownHostKeyAlgorithms.contains(configuredKeyAlgorithm)) {
+                    preferredAlgorithms.add(configuredKeyAlgorithm);
+                } else {
+                    otherAlgorithms.add(configuredKeyAlgorithm);
+                }
+            }
+
+            preferredAlgorithms.addAll(otherAlgorithms);
+
+            return preferredAlgorithms;
+        } else {
+            return configuredKeyAlgorithms;
+        }
+
+    }
+
+    private static String firstMatch(String ofWhat, List<String> a, List<String> b)
             throws TransportException {
-        for (String aa : a)
-            for (String bb : b)
-                if (aa.equals(bb))
-                    return aa;
-        throw new TransportException("Unable to reach a settlement: " + a + " and " + b);
+        for (String aa : a) {
+            if (b.contains(aa)) {
+                return aa;
+            }
+        }
+        throw new TransportException("Unable to reach a settlement of " + ofWhat + ": " + a + " and " + b);
     }
 
     private static String toCommaString(List<String> sl) {
         StringBuilder sb = new StringBuilder();
         int i = 0;
         for (String s : sl) {
-            if (i++ != 0)
+            if (i++ != 0) {
                 sb.append(",");
+            }
             sb.append(s);
         }
         return sb.toString();

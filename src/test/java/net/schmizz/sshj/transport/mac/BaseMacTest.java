@@ -21,6 +21,8 @@ import org.junit.Test;
 
 import java.nio.charset.Charset;
 
+import com.hierynomus.sshj.transport.mac.Macs;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -33,7 +35,7 @@ public class BaseMacTest {
 
     @Test
     public void testResizeTooBigKeys() {
-        BaseMAC hmac = new HMACSHA1();
+        BaseMAC hmac = Macs.HMACSHA1().create();
         hmac.init((KEY + "foo").getBytes(CHARSET));
         hmac.update(PLAIN_TEXT);
         assertThat(Hex.toHexString(hmac.doFinal()),  is(EXPECTED_HMAC));
@@ -82,7 +84,7 @@ public class BaseMacTest {
     }
 
     private BaseMAC initHmac() {
-        BaseMAC hmac = new HMACSHA1();
+        BaseMAC hmac = Macs.HMACSHA1().create();
         hmac.init(KEY.getBytes(CHARSET));
         return hmac;
     }

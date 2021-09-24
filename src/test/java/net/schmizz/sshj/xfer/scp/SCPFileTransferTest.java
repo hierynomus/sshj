@@ -28,8 +28,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SCPFileTransferTest {
@@ -55,7 +55,7 @@ public class SCPFileTransferTest {
         sshClient = fixture.setupConnectedDefaultClient();
         sshClient.authPassword("test", "test");
     }
-    
+
     @After
     public void cleanup() {
         if (targetFile.exists()) {

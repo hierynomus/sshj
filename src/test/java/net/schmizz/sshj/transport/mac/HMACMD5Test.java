@@ -20,6 +20,8 @@ import org.junit.Test;
 
 import java.nio.charset.Charset;
 
+import com.hierynomus.sshj.transport.mac.Macs;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -30,28 +32,28 @@ public class HMACMD5Test {
 
     @Test
     public void testUpdateWithDoFinal() {
-        HMACMD5 hmac = initHmac();
+        BaseMAC hmac = initHmac();
         hmac.update(PLAIN_TEXT);
         assertThat(Hex.toHexString(hmac.doFinal()), is(EXPECTED_HMAC));
     }
 
     @Test
     public void testDoFinalWithInput() {
-        HMACMD5 hmac = initHmac();
+        BaseMAC hmac = initHmac();
         assertThat(Hex.toHexString(hmac.doFinal(PLAIN_TEXT)), is(EXPECTED_HMAC));
     }
 
     @Test
     public void testUpdateWithDoFinalWithResultBuffer() {
-        HMACMD5 hmac = initHmac();
+        BaseMAC hmac = initHmac();
         byte[] resultBuf = new byte[16];
         hmac.update(PLAIN_TEXT);
         hmac.doFinal(resultBuf, 0);
         assertThat(Hex.toHexString(resultBuf), is(EXPECTED_HMAC));
     }
 
-    private HMACMD5 initHmac() {
-        HMACMD5 hmac = new HMACMD5();
+    private BaseMAC initHmac() {
+        BaseMAC hmac = Macs.HMACMD5().create();
         hmac.init("ohBahfei6pee5dai".getBytes(CHARSET));
         return hmac;
     }

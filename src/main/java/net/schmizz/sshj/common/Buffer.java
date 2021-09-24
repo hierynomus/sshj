@@ -21,6 +21,7 @@ import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
 
+@SuppressWarnings("serial")
 public class Buffer<T extends Buffer<T>> {
 
     public static class BufferException
@@ -55,10 +56,10 @@ public class Buffer<T extends Buffer<T>> {
     public static final int DEFAULT_SIZE = 256;
 
     /** The maximum valid size of buffer (i.e. biggest power of two that can be represented as an int - 2^30) */
-    public static final int MAX_SIZE = (1 << 30); 
+    public static final int MAX_SIZE = (1 << 30);
 
     /** Maximum size of a uint64 */
-    private static final BigInteger MAX_UINT64_VALUE = BigInteger.ONE
+    public static final BigInteger MAX_UINT64_VALUE = BigInteger.ONE
                                                             .shiftLeft(64)
                                                             .subtract(BigInteger.ONE);
 
@@ -66,7 +67,7 @@ public class Buffer<T extends Buffer<T>> {
         int j = 1;
         while (j < i) {
             j <<= 1;
-            if (j <= 0) throw new IllegalArgumentException("Cannot get next power of 2; "+i+" is too large"); 
+            if (j <= 0) throw new IllegalArgumentException("Cannot get next power of 2; "+i+" is too large");
         }
         return j;
     }
@@ -303,6 +304,23 @@ public class Buffer<T extends Buffer<T>> {
                 data[rpos++] << 16 & 0x00ff0000L |
                 data[rpos++] << 8 & 0x0000ff00L |
                 data[rpos++] & 0x000000ffL;
+    }
+
+    /**
+     * Writes a uint32 integer
+     *
+     * @param uint32
+     *
+     * @return this
+     */
+    @SuppressWarnings("unchecked")
+    public T putUInt32FromInt(int uint32) {
+        ensureCapacity(4);
+        data[wpos++] = (byte) (uint32 >> 24);
+        data[wpos++] = (byte) (uint32 >> 16);
+        data[wpos++] = (byte) (uint32 >> 8);
+        data[wpos++] = (byte) uint32;
+        return (T) this;
     }
 
     /**

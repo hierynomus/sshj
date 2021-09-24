@@ -15,11 +15,12 @@
  */
 package net.schmizz.sshj.userauth.method;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.signature.Signature;
+import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 
@@ -47,9 +48,15 @@ public abstract class KeyedAuthMethod
         }
 
         // public key as 2 strings: [ key type | key blob ]
-        reqBuf.putString(KeyType.fromKey(key).toString())
-              .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
-        return reqBuf;
+        KeyType keyType = KeyType.fromKey(key);
+        try {
+            KeyAlgorithm ka = params.getTransport().getClientKeyAlgorithm(keyType);
+            reqBuf.putString(ka.getKeyAlgorithm())
+                    .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
+            return reqBuf;
+        } catch (IOException ioe) {
+            throw new UserAuthException("No KeyAlgorithm configured for key " + keyType);
+        }
     }
 
     protected SSHPacket putSig(SSHPacket reqBuf)
@@ -61,17 +68,20 @@ public abstract class KeyedAuthMethod
             throw new UserAuthException("Problem getting private key from " + kProv, ioe);
         }
 
-        final String kt = KeyType.fromKey(key).toString();
-        Signature signature = Factory.Named.Util.create(params.getTransport().getConfig().getSignatureFactories(), kt);
-        if (signature == null)
-            throw new UserAuthException("Could not create signature instance for " + kt + " key");
+        final KeyType kt = KeyType.fromKey(key);
+        Signature signature;
+        try {
+            signature = params.getTransport().getClientKeyAlgorithm(kt).newSignature();
+        } catch (TransportException e) {
+            throw new UserAuthException("No KeyAlgorithm configured for key " + kt);
+        }
 
         signature.initSign(key);
         signature.update(new Buffer.PlainBuffer()
                 .putString(params.getTransport().getSessionID())
                 .putBuffer(reqBuf) // & rest of the data for sig
                 .getCompactData());
-        reqBuf.putSignature(kt, signature.encode(signature.sign()));
+        reqBuf.putSignature(signature.getSignatureName(), signature.encode(signature.sign()));
         return reqBuf;
     }
 

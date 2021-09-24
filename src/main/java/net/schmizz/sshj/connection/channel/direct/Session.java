@@ -191,7 +191,7 @@ public interface Session
                    TransportException;
 
     /**
-     * Set an enviornment variable.
+     * Set an environment variable.
      *
      * @param name  name of the variable
      * @param value value to set
