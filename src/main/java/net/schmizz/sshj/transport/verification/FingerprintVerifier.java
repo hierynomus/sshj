@@ -20,6 +20,8 @@ import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import net.schmizz.sshj.common.Base64;
@@ -74,6 +76,11 @@ public class FingerprintVerifier implements HostKeyVerifier {
                 public boolean verify(String h, int p, PublicKey k) {
                     return SecurityUtils.getFingerprint(k).equals(md5);
                 }
+
+                @Override
+                public List<String> findExistingAlgorithms(String hostname, int port) {
+                    return Collections.emptyList();
+                }
             });
         } catch (SSHRuntimeException e) {
             throw e;
@@ -118,6 +125,11 @@ public class FingerprintVerifier implements HostKeyVerifier {
 
         byte[] digestData = digest.digest();
         return Arrays.equals(fingerprintData, digestData);
+    }
+
+    @Override
+    public List<String> findExistingAlgorithms(String hostname, int port) {
+        return Collections.emptyList();
     }
 
     @Override
