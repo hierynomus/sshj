@@ -45,7 +45,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.*;
 import java.security.spec.ECPrivateKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
 
 /**
@@ -245,13 +245,9 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 kp = new KeyPair(publicKey, new EdDSAPrivateKey(new EdDSAPrivateKeySpec(privKey, EdDSANamedCurveTable.getByName("Ed25519"))));
                 break;
             case RSA:
-                BigInteger n = keyBuffer.readMPInt(); // Modulus
-                keyBuffer.readMPInt(); // Public Exponent
-                BigInteger d = keyBuffer.readMPInt(); // Private Exponent
-                keyBuffer.readMPInt(); // iqmp (q^-1 mod p)
-                keyBuffer.readMPInt(); // p (Prime 1)
-                keyBuffer.readMPInt(); // q (Prime 2)
-                kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePrivate(new RSAPrivateKeySpec(n, d)));
+                final RSAPrivateCrtKeySpec rsaPrivateCrtKeySpec = readRsaPrivateKeySpec(keyBuffer);
+                final PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePrivate(rsaPrivateCrtKeySpec);
+                kp = new KeyPair(publicKey, privateKey);
                 break;
             case ECDSA256:
                 kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-256"));
@@ -284,6 +280,35 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
         ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
         return SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
+    }
 
+    /**
+     * Read RSA Private CRT Key Spec according to OpenSSH sshkey_private_deserialize in sshkey.c
+     *
+     * @param buffer Buffer
+     * @return RSA Private CRT Key Specification
+     * @throws Buffer.BufferException Thrown on failure to read from buffer
+     */
+    private RSAPrivateCrtKeySpec readRsaPrivateKeySpec(final PlainBuffer buffer) throws Buffer.BufferException {
+        final BigInteger modulus = buffer.readMPInt();
+        final BigInteger publicExponent = buffer.readMPInt();
+        final BigInteger privateExponent = buffer.readMPInt();
+        final BigInteger crtCoefficient = buffer.readMPInt();
+        final BigInteger primeP = buffer.readMPInt();
+        final BigInteger primeQ = buffer.readMPInt();
+
+        // Calculate Prime Exponent P and Prime Exponent Q according to RFC 8017 Section 3.2
+        final BigInteger primeExponentP = privateExponent.remainder(primeP.subtract(BigInteger.ONE));
+        final BigInteger primeExponentQ = privateExponent.remainder(primeQ.subtract(BigInteger.ONE));
+        return new RSAPrivateCrtKeySpec(
+                modulus,
+                publicExponent,
+                privateExponent,
+                primeP,
+                primeQ,
+                primeExponentP,
+                primeExponentQ,
+                crtCoefficient
+        );
     }
 }
