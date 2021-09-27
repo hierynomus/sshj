@@ -115,7 +115,11 @@ public class SFTPClient
         }
     }
 
-    public void rename(String oldpath, String newpath, RenameFlags... renameFlags)
+    public void rename(String oldpath, String newpath) throws IOException {
+        rename(oldpath, newpath, EnumSet.noneOf(RenameFlags.class));
+    }
+
+    public void rename(String oldpath, String newpath, Set<RenameFlags> renameFlags)
             throws IOException {
         engine.rename(oldpath, newpath, renameFlags);
     }

@@ -230,13 +230,13 @@ public class SFTPEngine
         return stat(PacketType.LSTAT, path);
     }
 
-    public void rename(String oldPath, String newPath, RenameFlags... flags)
+    public void rename(String oldPath, String newPath, Set<RenameFlags> flags)
             throws IOException {
         if (operativeVersion < 1)
             throw new SFTPException("RENAME is not supported in SFTPv" + operativeVersion);
 
         long renameFlagMask = 0L;
-        for (RenameFlags flag: flags) {
+        for (RenameFlags flag : flags) {
             renameFlagMask = renameFlagMask | flag.longValue();
         }
 

@@ -23,10 +23,10 @@ public enum RenameFlags {
     private final long flag;
 
     RenameFlags(long flag) {
-      this.flag = flag;
+        this.flag = flag;
     }
 
     public long longValue() {
-      return flag;
-  }
+        return flag;
+    }
 }
