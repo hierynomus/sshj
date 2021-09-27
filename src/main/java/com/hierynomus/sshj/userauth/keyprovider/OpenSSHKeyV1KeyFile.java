@@ -293,7 +293,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         final BigInteger modulus = buffer.readMPInt();
         final BigInteger publicExponent = buffer.readMPInt();
         final BigInteger privateExponent = buffer.readMPInt();
-        final BigInteger crtCoefficient = buffer.readMPInt();
+        final BigInteger crtCoefficient = buffer.readMPInt(); // iqmp (q^-1 mod p)
         final BigInteger primeP = buffer.readMPInt();
         final BigInteger primeQ = buffer.readMPInt();
 

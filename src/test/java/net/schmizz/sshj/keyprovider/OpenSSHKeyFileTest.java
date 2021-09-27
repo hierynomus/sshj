@@ -26,7 +26,6 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.KeyUtil;
-import org.bouncycastle.util.BigIntegers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -300,7 +299,8 @@ public class OpenSSHKeyFileTest {
         final BigInteger expectedPrimeExponentQ = privateExponent.mod(rsaPrivateCrtKey.getPrimeQ().subtract(BigInteger.ONE));
         assertEquals("Prime Exponent Q not matched", expectedPrimeExponentQ, rsaPrivateCrtKey.getPrimeExponentQ());
 
-        final BigInteger expectedCoefficient = BigIntegers.modOddInverse(rsaPrivateCrtKey.getPrimeP(), rsaPrivateCrtKey.getPrimeQ());
+
+        final BigInteger expectedCoefficient = rsaPrivateCrtKey.getPrimeQ().modInverse(rsaPrivateCrtKey.getPrimeP());
         assertEquals("Prime CRT Coefficient not matched", expectedCoefficient, rsaPrivateCrtKey.getCrtCoefficient());
     }
 
