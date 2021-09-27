@@ -20,6 +20,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.channel.direct.Session;
+
 import static org.junit.Assert.fail;
 
 public class LoadsOfConnects {
@@ -31,15 +34,23 @@ public class LoadsOfConnects {
     @Test
     public void loadsOfConnects() {
         try {
+            fixture.start();
             for (int i = 0; i < 1000; i++) {
                 log.info("Try " + i);
-                fixture.start();
-                fixture.setupConnectedDefaultClient();
+                SSHClient client = fixture.setupConnectedDefaultClient();
+                client.authPassword("test", "test");
+                Session s = client.startSession();
+                Session.Command c = s.exec("ls");
+                IOUtils.readFully(c.getErrorStream());
+                IOUtils.readFully(c.getInputStream());
+                c.close();
+                s.close();
                 fixture.stopClient();
-                fixture.stopServer();
             }
         } catch (Exception e) {
             fail(e.getMessage());
+        } finally {
+            fixture.stopServer();
         }
 
     }
