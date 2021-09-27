@@ -117,9 +117,9 @@ public class StatefulSFTPClient
     }
 
     @Override
-    public void rename(String oldpath, String newpath)
+    public void rename(String oldpath, String newpath, Set<RenameFlags> renameFlags)
             throws IOException {
-        super.rename(cwdify(oldpath), cwdify(newpath));
+        super.rename(cwdify(oldpath), cwdify(newpath), renameFlags);
     }
 
     @Override
