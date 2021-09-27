@@ -113,4 +113,9 @@ public abstract class BaseCipher
         updateAAD(input, offset, aadLen);
         update(input, offset + aadLen, inputLen);
     }
+
+    @Override
+    public void setSequenceNumber(long seq) {
+
+    }
 }

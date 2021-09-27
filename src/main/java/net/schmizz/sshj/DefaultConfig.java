@@ -18,6 +18,7 @@ package net.schmizz.sshj;
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+import com.hierynomus.sshj.transport.cipher.ChachaPolyCiphers;
 import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import com.hierynomus.sshj.transport.cipher.StreamCiphers;
 import com.hierynomus.sshj.transport.kex.DHGroups;
@@ -136,9 +137,13 @@ public class DefaultConfig
 
     protected void initKeyAlgorithms() {
         setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
+                KeyAlgorithms.EdDSA25519CertV01(),
                 KeyAlgorithms.EdDSA25519(),
+                KeyAlgorithms.ECDSASHANistp521CertV01(),
                 KeyAlgorithms.ECDSASHANistp521(),
+                KeyAlgorithms.ECDSASHANistp384CertV01(),
                 KeyAlgorithms.ECDSASHANistp384(),
+                KeyAlgorithms.ECDSASHANistp256CertV01(),
                 KeyAlgorithms.ECDSASHANistp256(),
                 KeyAlgorithms.RSASHA512(),
                 KeyAlgorithms.RSASHA256(),
@@ -166,6 +171,7 @@ public class DefaultConfig
 
     protected void initCipherFactories() {
         List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
+                ChachaPolyCiphers.CHACHA_POLY_OPENSSH(),
                 BlockCiphers.AES128CBC(),
                 BlockCiphers.AES128CTR(),
                 BlockCiphers.AES192CBC(),

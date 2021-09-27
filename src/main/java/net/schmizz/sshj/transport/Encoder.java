@@ -57,8 +57,6 @@ final class Encoder
      * @param buffer the buffer to encode
      *
      * @return the sequence no. of encoded packet
-     *
-     * @throws TransportException
      */
     long encode(SSHPacket buffer) {
         encodeLock.lock();
@@ -140,11 +138,12 @@ final class Encoder
         }
     }
 
-    protected void aeadOutgoingBuffer(Buffer buf, int offset, int len) {
+    protected void aeadOutgoingBuffer(Buffer<?> buf, int offset, int len) {
         if (cipher == null || cipher.getAuthenticationTagSize() == 0) {
             throw new IllegalArgumentException("AEAD mode requires an AEAD cipher");
         }
         byte[] data = buf.array();
+        cipher.setSequenceNumber(seq);
         cipher.updateWithAAD(data, offset, 4, len);
     }
 

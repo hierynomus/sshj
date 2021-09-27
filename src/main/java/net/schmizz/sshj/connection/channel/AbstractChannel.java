@@ -352,7 +352,7 @@ public abstract class AbstractChannel
     }
 
     protected SSHPacket newBuffer(Message cmd) {
-        return new SSHPacket(cmd).putUInt32(recipient);
+        return new SSHPacket(cmd).putUInt32FromInt(recipient);
     }
 
     protected void receiveInto(ChannelInputStream stream, SSHPacket buf)

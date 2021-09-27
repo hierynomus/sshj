@@ -18,6 +18,7 @@ plugins {
 }
 
 group = "com.hierynomus"
+ext.moduleName = "${project.group}.${project.name}"
 
 scmVersion {
   tag {
@@ -40,15 +41,15 @@ repositories {
 
 configurations.compile.transitive = false
 
-def bouncycastleVersion = "1.68"
+def bouncycastleVersion = "1.69"
 def sshdVersion = "2.1.0"
 
 dependencies {
-  implementation "org.slf4j:slf4j-api:1.7.30"
+  implementation "org.slf4j:slf4j-api:1.7.32"
   implementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
   implementation "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
   implementation "com.jcraft:jzlib:1.1.3"
-  implementation "com.hierynomus:asn-one:0.5.0"
+  implementation "com.hierynomus:asn-one:0.6.0"
 
   implementation "net.i2p.crypto:eddsa:0.3.0"
 
@@ -58,7 +59,7 @@ dependencies {
   testImplementation "org.apache.sshd:sshd-core:$sshdVersion"
   testImplementation "org.apache.sshd:sshd-sftp:$sshdVersion"
   testImplementation "org.apache.sshd:sshd-scp:$sshdVersion"
-  testRuntimeOnly "ch.qos.logback:logback-classic:1.2.3"
+  testRuntimeOnly "ch.qos.logback:logback-classic:1.2.6"
   testImplementation 'org.glassfish.grizzly:grizzly-http-server:2.4.4'
   testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
 
@@ -70,7 +71,7 @@ license {
   mapping {
     java = 'SLASHSTAR_STYLE'
   }
-  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java', '**/org/mindrot/jbcrypt/*.java'])
+  excludes(['**/djb/Curve25519.java', '**/sshj/common/Base64.java', '**/com/hierynomus/sshj/userauth/keyprovider/bcrypt/*.java'])
 }
 
 if (!JavaVersion.current().isJava9Compatible()) {
@@ -100,7 +101,10 @@ task writeSshjVersionProperties {
 
 jar.dependsOn writeSshjVersionProperties
 jar {
+  inputs.property("moduleName", moduleName)
   manifest {
+    attributes 'Automatic-Module-Name': moduleName
+
     // please see http://bnd.bndtools.org/chapters/390-wrapping.html
     instruction "Bundle-Description", "SSHv2 library for Java"
     instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
@@ -276,6 +280,15 @@ task startItestContainer(type: DockerStartContainer) {
     targetContainerId createItestContainer.getContainerId()
 }
 
+task logItestContainer(type: DockerLogsContainer) {
+    dependsOn createItestContainer
+    targetContainerId createItestContainer.getContainerId()
+    showTimestamps = true
+    stdErr = true
+    stdOut = true
+    tailAll = true
+}
+
 task stopItestContainer(type: DockerStopContainer) {
     targetContainerId createItestContainer.getContainerId()
 }
@@ -287,6 +300,9 @@ task forkedUploadRelease(type: GradleBuild) {
 
 project.tasks.integrationTest.dependsOn(startItestContainer)
 project.tasks.integrationTest.finalizedBy(stopItestContainer)
+
+// Being enabled, it pollutes logs on CI. Uncomment when debugging some test to get sshd logs.
+// project.tasks.stopItestContainer.dependsOn(logItestContainer)
 
 project.tasks.release.dependsOn([project.tasks.integrationTest, project.tasks.build])
 project.tasks.release.finalizedBy(project.tasks.forkedUploadRelease)

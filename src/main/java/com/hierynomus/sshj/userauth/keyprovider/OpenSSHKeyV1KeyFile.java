@@ -30,19 +30,22 @@ import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.mindrot.jbcrypt.BCrypt;
+import com.hierynomus.sshj.userauth.keyprovider.bcrypt.BCrypt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.security.*;
 import java.security.spec.ECPrivateKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
 
 /**
@@ -56,6 +59,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
     public static final String OPENSSH_PRIVATE_KEY = "OPENSSH PRIVATE KEY-----";
     public static final String BCRYPT = "bcrypt";
+    private PublicKey pubKey;
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -69,6 +73,21 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         public String getName() {
             return KeyFormat.OpenSSHv1.name();
         }
+    }
+
+    protected final Logger log = LoggerFactory.getLogger(getClass());
+
+    @Override
+    public void init(File location) {
+        File pubKey = OpenSSHKeyFileUtil.getPublicKeyFile(location);
+        if (pubKey != null)
+            try {
+                initPubKey(new FileReader(pubKey));
+            } catch (IOException e) {
+                // let super provide both public & private key
+                log.warn("Error reading public key file: {}", e.toString());
+            }
+        super.init(location);
     }
 
     @Override
@@ -91,6 +110,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         }
     }
 
+    private void initPubKey(Reader publicKey) throws IOException {
+        OpenSSHKeyFileUtil.ParsedPubKey parsed = OpenSSHKeyFileUtil.initPubKey(publicKey);
+        type = parsed.getType();
+        pubKey = parsed.getPubKey();
+    }
+
     private KeyPair readDecodedKeyPair(final PlainBuffer keyBuffer) throws IOException, GeneralSecurityException {
         byte[] bytes = new byte[AUTH_MAGIC.length];
         keyBuffer.readRawBytes(bytes); // byte[] AUTH_MAGIC
@@ -106,7 +131,13 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         if (nrKeys != 1) {
             throw new IOException("We don't support having more than 1 key in the file (yet).");
         }
-        PublicKey publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes())); // string publickey1
+        PublicKey publicKey = pubKey;
+        if (publicKey == null) {
+            publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes()));
+        }
+        else {
+            keyBuffer.readBytes();
+        }
         PlainBuffer privateKeyBuffer = new PlainBuffer(keyBuffer.readBytes()); // string (possibly) encrypted, padded list of private keys
         if ("none".equals(cipherName)) {
             logger.debug("Reading unencrypted keypair");
@@ -214,13 +245,9 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 kp = new KeyPair(publicKey, new EdDSAPrivateKey(new EdDSAPrivateKeySpec(privKey, EdDSANamedCurveTable.getByName("Ed25519"))));
                 break;
             case RSA:
-                BigInteger n = keyBuffer.readMPInt(); // Modulus
-                keyBuffer.readMPInt(); // Public Exponent
-                BigInteger d = keyBuffer.readMPInt(); // Private Exponent
-                keyBuffer.readMPInt(); // iqmp (q^-1 mod p)
-                keyBuffer.readMPInt(); // p (Prime 1)
-                keyBuffer.readMPInt(); // q (Prime 2)
-                kp = new KeyPair(publicKey, SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePrivate(new RSAPrivateKeySpec(n, d)));
+                final RSAPrivateCrtKeySpec rsaPrivateCrtKeySpec = readRsaPrivateKeySpec(keyBuffer);
+                final PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePrivate(rsaPrivateCrtKeySpec);
+                kp = new KeyPair(publicKey, privateKey);
                 break;
             case ECDSA256:
                 kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-256"));
@@ -253,6 +280,35 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
         ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
         return SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
+    }
 
+    /**
+     * Read RSA Private CRT Key Spec according to OpenSSH sshkey_private_deserialize in sshkey.c
+     *
+     * @param buffer Buffer
+     * @return RSA Private CRT Key Specification
+     * @throws Buffer.BufferException Thrown on failure to read from buffer
+     */
+    private RSAPrivateCrtKeySpec readRsaPrivateKeySpec(final PlainBuffer buffer) throws Buffer.BufferException {
+        final BigInteger modulus = buffer.readMPInt();
+        final BigInteger publicExponent = buffer.readMPInt();
+        final BigInteger privateExponent = buffer.readMPInt();
+        final BigInteger crtCoefficient = buffer.readMPInt(); // iqmp (q^-1 mod p)
+        final BigInteger primeP = buffer.readMPInt();
+        final BigInteger primeQ = buffer.readMPInt();
+
+        // Calculate Prime Exponent P and Prime Exponent Q according to RFC 8017 Section 3.2
+        final BigInteger primeExponentP = privateExponent.remainder(primeP.subtract(BigInteger.ONE));
+        final BigInteger primeExponentQ = privateExponent.remainder(primeQ.subtract(BigInteger.ONE));
+        return new RSAPrivateCrtKeySpec(
+                modulus,
+                publicExponent,
+                privateExponent,
+                primeP,
+                primeQ,
+                primeExponentP,
+                primeExponentQ,
+                crtCoefficient
+        );
     }
 }
