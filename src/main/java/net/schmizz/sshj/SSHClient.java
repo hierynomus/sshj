@@ -140,7 +140,7 @@ public class SSHClient
         super(DEFAULT_PORT);
 	loggerFactory = config.getLoggerFactory();
 	log = loggerFactory.getLogger(getClass());
-        this.trans = new TransportImpl(config, this);
+        this.trans = new TransportImpl(config);
         this.auth = new UserAuthImpl(trans);
         this.conn = new ConnectionImpl(trans, config.getKeepAliveProvider());
     }

@@ -80,12 +80,6 @@ public final class TransportImpl
 
     private final Reader reader;
 
-    /**
-     * @deprecated Moved to {@link net.schmizz.sshj.SSHClient}
-     */
-    @Deprecated
-    private final SSHClient sshClient;
-
     private final Encoder encoder;
 
     private final Decoder decoder;
@@ -147,29 +141,6 @@ public final class TransportImpl
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
         this.clientID = String.format("SSH-2.0-%s", config.getVersion());
-        this.sshClient = null;
-    }
-
-    /*
-     * Temporary constructor until we remove support for the set/get Heartbeat interval from transport.
-     * @deprecated To be removed in 0.12.0
-     */
-    @Deprecated
-    public TransportImpl(Config config, SSHClient sshClient) {
-        this.config = config;
-        this.loggerFactory = config.getLoggerFactory();
-        this.serviceAccept = new Event<TransportException>("service accept", TransportException.chainer, loggerFactory);
-        this.close = new Event<TransportException>("transport close", TransportException.chainer, loggerFactory);
-        this.log = loggerFactory.getLogger(getClass());
-        this.nullService = new NullService(this);
-        this.service = nullService;
-        this.disconnectListener = this;
-        this.reader = new Reader(this);
-        this.encoder = new Encoder(config.getRandomFactory().create(), writeLock, loggerFactory);
-        this.decoder = new Decoder(this);
-        this.kexer = new KeyExchanger(this);
-        this.clientID = String.format("SSH-2.0-%s", config.getVersion());
-        this.sshClient = sshClient;
     }
 
     @Override
@@ -284,20 +255,6 @@ public final class TransportImpl
     @Override
     public void setTimeoutMs(int timeoutMs) {
         this.timeoutMs = timeoutMs;
-    }
-
-    @Override
-    @Deprecated
-    public int getHeartbeatInterval() {
-        log.warn("**Deprecated**: Please use: sshClient.getConnection().getKeepAlive().getKeepAliveInterval()");
-        return sshClient.getConnection().getKeepAlive().getKeepAliveInterval();
-    }
-
-    @Override
-    @Deprecated
-    public void setHeartbeatInterval(int interval) {
-        log.warn("**Deprecated**: Please use: sshClient.getConnection().getKeepAlive().setKeepAliveInterval()");
-        sshClient.getConnection().getKeepAlive().setKeepAliveInterval(interval);
     }
 
     @Override
