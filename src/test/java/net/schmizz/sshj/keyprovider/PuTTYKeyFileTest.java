@@ -25,10 +25,13 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.security.PrivateKey;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class PuTTYKeyFileTest {
 
@@ -236,7 +239,39 @@ public class PuTTYKeyFileTest {
     		"Private-Lines: 1\n" + 
     		"AAAAIEblmwyKaGuvc6dLgNeHsc1BuZeQORTSxBF5SBLNyjYc\n" + 
     		"Private-MAC: e1aed15a209f48fdaa5228640f1109a7740340764a96f97ec6023da7f92d07ea";
-    
+
+    final static String v3_rsa_encrypted = "PuTTY-User-Key-File-3: ssh-rsa\n" +
+            "Encryption: aes256-cbc\n" +
+            "Comment: rsa-key-20210926\n" +
+            "Public-Lines: 6\n" +
+            "AAAAB3NzaC1yc2EAAAADAQABAAABAQCBjWQHMpKAQnU3vZZF/iHn4RA867Ox+U03\n" +
+            "/GOHivW0SgGIQbhKcSSWvTzYOE+GQdtX9T2KJxr76z/lB4nghkcWkpLoQW91gNBf\n" +
+            "PUagMvaBxKXC8cNqaMm99uw5KpRg8SpTJWxwYPlQtzmyxav0PRFeOMSsiRsnjNuX\n" +
+            "polMDSu6vmkkuKrPzvinPZbsXoZeMybcm1gn2Zq+7ik4us0icaGxRJRuF+nVqYag\n" +
+            "EmO9jmQoytyqoNWzvPYEh/dh85hESwtIKXiaMOjQg52dW5BuELPGV7ZxaKRK7Znw\n" +
+            "RGW6CtoGYulo0mJz5IZslDrRK/EK2bSGDbrlAcYaajROB6aBDyaJ\n" +
+            "Key-Derivation: Argon2id\n" +
+            "Argon2-Memory: 8192\n" +
+            "Argon2-Passes: 21\n" +
+            "Argon2-Parallelism: 1\n" +
+            "Argon2-Salt: baf1530601433715467614d044c0e4a5\n" +
+            "Private-Lines: 14\n" +
+            "QAJl3mq/QJc8/of4xWbgBuE09GdgIuVhRYGAV5yC5C0dpuiJ+yF/6h7mk36s5E3Q\n" +
+            "k32l+ZoWHG/kBc8s6N9rTQnIgC/eieNlN5FK3OSSoI9PBvoAtNEVWsR2T4U6ZkAG\n" +
+            "FbyF3vRWq2h9Ux8flZusySqafQ2AhXP79pr13wvMziv1QbPkPFHWaR1Uvq9w0GJq\n" +
+            "rfR+M6t8/6aPKhnsCTy8MiAoIcjeZmHiG/vOMIBBoWI7KtpD5IrbO4pIgzRK8m9Z\n" +
+            "JqQvgWCPnddwCeiDFOZwf/Bm6g+duQYId4upB1IxSs34j21a7ZkMSExDZyV0d13S\n" +
+            "G59U9pReZ7mHyIjORqeY7ssr/L9aJPPa7YCu4J5a/Bn/ARf/X5XmMnueFZ6H806M\n" +
+            "ZUtHzeG2sZGoHULpwEaY1zRQs1JD5UAeaFzgDpzD4oeaD8v+FS3RdNlgj2gtWNcl\n" +
+            "h8nvWD60XbylR0BdbB553xGuC8HC0482xQCCJUc8SMHZ/k2+FKTaf2m2p4dLyKkk\n" +
+            "Qrw43QcmkgypUPRHKvnVs+6qUYMDHkwtPR1ZGFqHQzlHozvO9NdY/ZXTln/qfPZA\n" +
+            "5w5TKvy0/GvofhISJCMocnPbkqGR6fDcKbpUjAS/RDgsCKKS5hxf6nhsYUgrXA4G\n" +
+            "hXIgqGnMefLemjRG7dD/3XE8NmF6Q8mjIideEOBeP4tRCaDC2n90rZ3yChP9bsel\n" +
+            "yg/TeKxj7OLk+X3ocP3yw2lsp3zOPsptSNtGI7g9VaIPGtxGaqRaIuObdLbBxCeR\n" +
+            "ZgKSIuWtz8W1kT0aWuZ0aXMPagGao0ZsffmroyVpGbzW3QaI9633Krmf7EyphZoy\n" +
+            "6tV3Z/GJ5aQJFeMYPOq69ktXRLAWr800822NwEStcxtQHTWbaTk7dxh8+0xwlCgI\n" +
+            "Private-MAC: 582dea09758afd93a8e248abce358287d384e5ee36d21515ffcc0d42d8c5d86a\n";
+
     @Test
     public void test2048() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
@@ -359,7 +394,36 @@ public class PuTTYKeyFileTest {
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
     }
-    
+
+    /**
+     * Reading an encrypted Putty v3 key requires an Argon2i/Argon2d/Argon2id
+     * implementation.
+     * Putty v3 keys additionally use a different algorithm for generating the "Private-MAC"
+     */
+    @Test
+    public void testRSAv3EncryptedKey() throws Exception {
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(v3_rsa_encrypted), new PasswordFinder() {
+            @Override
+            public char[] reqPassword(Resource<?> resource) {
+                return "changeit".toCharArray();
+            }
+
+            @Override
+            public boolean shouldRetry(Resource<?> resource) {
+                return false;
+            }
+        });
+        try {
+            PrivateKey privateKey = key.getPrivate();
+            fail("IOException expected as encrypted Putty v3 keys are not yet supported");
+        } catch (IOException e) {
+            assertTrue(e.getMessage().startsWith("Unsupported key derivation function"));
+        }
+        // assertNotNull(key.getPrivate());
+        // assertNotNull(key.getPublic());
+    }
+
     @Test
     public void testCorrectPassphraseRsa() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
