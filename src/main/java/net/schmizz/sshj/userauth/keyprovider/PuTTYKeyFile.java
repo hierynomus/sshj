@@ -100,9 +100,16 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         return KeyType.UNKNOWN;
     }
 
-    public boolean isEncrypted() {
-        // Currently the only supported encryption types are "aes256-cbc" and "none".
-        return "aes256-cbc".equals(headers.get("Encryption"));
+    public boolean isEncrypted() throws IOException {
+        // Currently, the only supported encryption types are "aes256-cbc" and "none".
+        String encryption = headers.get("Encryption");
+        if ("none".equals(encryption)) {
+            return false;
+        }
+        if ("aes256-cbc".equals(encryption)) {
+            return true;
+        }
+        throw new IOException(String.format("Unsupported encryption: %s", encryption));
     }
 
     private Map<String, String> payload = new HashMap<String, String>();
@@ -116,8 +123,9 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         this.parseKeyPair();
         final Buffer.PlainBuffer publicKeyReader = new Buffer.PlainBuffer(publicKey);
         final Buffer.PlainBuffer privateKeyReader = new Buffer.PlainBuffer(privateKey);
+        final KeyType keyType = this.getType();
         publicKeyReader.readBytes(); // The first part of the payload is a human-readable key format name.
-        if (KeyType.RSA.equals(this.getType())) {
+        if (KeyType.RSA.equals(keyType)) {
             // public key exponent
             BigInteger e = publicKeyReader.readMPInt();
             // modulus
@@ -139,7 +147,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 throw new IOException(i.getMessage(), i);
             }
         }
-        if (KeyType.DSA.equals(this.getType())) {
+        if (KeyType.DSA.equals(keyType)) {
             BigInteger p = publicKeyReader.readMPInt();
             BigInteger q = publicKeyReader.readMPInt();
             BigInteger g = publicKeyReader.readMPInt();
@@ -161,14 +169,14 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 throw new IOException(e.getMessage(), e);
             }
         }
-        if (KeyType.ED25519.equals(this.getType())) {
+        if (KeyType.ED25519.equals(keyType)) {
             EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("Ed25519");
             EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(publicKeyReader.readBytes(), ed25519);
             EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.readBytes(), ed25519);
             return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
         }
         final String ecdsaCurve;
-        switch (this.getType()) {
+        switch (keyType) {
             case ECDSA256:
                 ecdsaCurve = "P-256";
                 break;
@@ -190,7 +198,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
             try {
                 PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
-                return new KeyPair(getType().readPubKeyFromBuffer(publicKeyReader), privateKey);
+                return new KeyPair(keyType.readPubKeyFromBuffer(publicKeyReader), privateKey);
             } catch (GeneralSecurityException e) {
                 throw new IOException(e.getMessage(), e);
             }
@@ -252,6 +260,12 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
      * This is used to decrypt the private key when it's encrypted.
      */
     private byte[] toKey(final String passphrase) throws IOException {
+        // The field Key-Derivation has been introduced with Putty v3 key file format
+        // The only available formats are "Argon2i" "Argon2d" and "Argon2id"
+        String keyDerivation = headers.get("Key-Derivation");
+        if (keyDerivation != null) {
+            throw new IOException(String.format("Unsupported key derivation function: %s", keyDerivation));
+        }
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
 
@@ -283,7 +297,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
      */
     private void verify(final String passphrase) throws IOException {
         try {
-            // The key to the MAC is itself a SHA-1 hash of:
+            // The key to the MAC is itself a SHA-1 hash of (v1/v2 key only):
             MessageDigest digest = MessageDigest.getInstance("SHA-1");
             digest.update("putty-private-key-file-mac-key".getBytes());
             if (passphrase != null) {
@@ -297,8 +311,9 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
             final DataOutputStream data = new DataOutputStream(out);
             // name of algorithm
-            data.writeInt(this.getType().toString().length());
-            data.writeBytes(this.getType().toString());
+            String keyType = this.getType().toString();
+            data.writeInt(keyType.length());
+            data.writeBytes(keyType);
 
             data.writeInt(headers.get("Encryption").length());
             data.writeBytes(headers.get("Encryption"));
