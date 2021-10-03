@@ -38,8 +38,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.math.BigInteger;
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
@@ -89,33 +87,24 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         }
     }
 
-    public interface PuTTYKeyDerivationFactory {
-
-        /**
-         * @param keyDerivationMethod the requested key derivation algorithm
-         * @return <code>null</code> if the requested algorithm is not supported,
-         * otherwise an {@link PuTTYKeyDerivation} implementation that provides
-         * the requested key derivation algorithm.
-         */
-        PuTTYKeyDerivation getKeyDerivation(String keyDerivationMethod);
-    }
-
     public interface PuTTYKeyDerivation {
 
         /**
          * Decrypt the private key for the currently implemented key derivation function(s).
          *
+         * @param algorithm  the requested algorithm as specified in the PuTTY key file
+         *                   <code>Key-Derivation</code> line
          * @param passphrase passphrase required to decrypt the private key
          * @param headers    contains the <code>key: value</code> lines from the key file
          * @param payload    contains the data entries like <code>"Public-Lines"</code>
          *                   and <code>"Private-Lines"</code>
-         * @return
+         * @return if the algorithm is not supported <code>null</code>
          */
-        byte[] deriveKey(final char[] passphrase, final Map<String, String> headers,
+        byte[] deriveKey(final String algorithm, final char[] passphrase, final Map<String, String> headers,
                          final Map<String, String> payload) throws IOException;
     }
 
-    private List<PuTTYKeyDerivationFactory> keyDerivationFactories = new LinkedList<>();
+    private List<PuTTYKeyDerivation> keyDerivationList = new LinkedList<>();
 
     private Integer keyFileVersion;
     private byte[] privateKey;
@@ -299,19 +288,18 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
     private void initCipher(final char[] passphrase, Cipher cipher) throws IOException, InvalidAlgorithmParameterException, InvalidKeyException {
         // The field Key-Derivation has been introduced with Putty v3 key file format
         // For v3 the algorithms are "Argon2i" "Argon2d" and "Argon2id"
-        String keyDerivation = headers.get("Key-Derivation");
-        if (keyDerivation != null) {
-            PuTTYKeyDerivation keyDerivationImpl = null;
-            for (PuTTYKeyDerivationFactory keyDerivationFactory : keyDerivationFactories) {
-                keyDerivationImpl = keyDerivationFactory.getKeyDerivation(keyDerivation);
-                if (keyDerivationImpl != null) {
+        String kdfAlgorithm = headers.get("Key-Derivation");
+        if (kdfAlgorithm != null) {
+            byte[] hash = null;
+            for (PuTTYKeyDerivation kdf : keyDerivationList) {
+                hash = kdf.deriveKey(kdfAlgorithm, passphrase, headers, payload);
+                if (hash != null) {
                     break;
                 }
             }
-            if (keyDerivationImpl == null) {
-                throw new IOException(String.format("Unsupported key derivation function: %s", keyDerivation));
+            if (hash == null) {
+                throw new IOException(String.format("Unsupported key derivation function: %s", kdfAlgorithm));
             }
-            byte[] hash = keyDerivationImpl.deriveKey(passphrase, headers, payload);
             if (hash.length != 80) {
                 throw new IOException("Invalid key size - expected 80 bytes: " +
                         "32 bytes key + 16 bytes IV + 32 bytes tag");
@@ -334,7 +322,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
             // The encryption key is derived from the passphrase by means of a succession of
             // SHA-1 hashes.
-            byte[] encodedPassphrase = StandardCharsets.UTF_8.encode(CharBuffer.wrap(passphrase)).array();
+            byte[] encodedPassphrase = PasswordUtils.toByteArray(passphrase);
 
             // Sequence number 0
             digest.update(new byte[]{0, 0, 0, 0});
@@ -371,7 +359,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 MessageDigest digest = MessageDigest.getInstance("SHA-1");
                 digest.update("putty-private-key-file-mac-key".getBytes());
                 if (passphrase != null) {
-                    byte[] encodedPassphrase = StandardCharsets.UTF_8.encode(CharBuffer.wrap(passphrase)).array();
+                    byte[] encodedPassphrase = PasswordUtils.toByteArray(passphrase);
                     digest.update(encodedPassphrase);
                     Arrays.fill(encodedPassphrase, (byte) 0);
                 }
@@ -417,24 +405,56 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
     /**
      * Decrypt private key
      *
+     * @param privateKey the SSH private key to be decrypted
      * @param passphrase To decrypt
      */
-    private byte[] decrypt(final byte[] key, final char[] passphrase) throws IOException {
+    private byte[] decrypt(final byte[] privateKey, final char[] passphrase) throws IOException {
         try {
             final Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             this.initCipher(passphrase, cipher);
-            return cipher.doFinal(key);
+            return cipher.doFinal(privateKey);
         } catch (GeneralSecurityException e) {
             throw new IOException(e.getMessage(), e);
         }
     }
 
-    public void addKeyDerivationFactory(PuTTYKeyDerivationFactory keyDerivationFactory) {
-        keyDerivationFactories.add(keyDerivationFactory);
+    public void addKeyDerivation(PuTTYKeyDerivation keyDerivation) {
+        keyDerivationList.add(keyDerivation);
     }
 
     public int getKeyFileVersion() {
         return keyFileVersion;
     }
 
+    public static abstract class PuTTYArgon2 implements PuTTYKeyDerivation {
+
+        @Override
+        public byte[] deriveKey(String algorithm, char[] passphrase, Map<String, String> headers,
+                                Map<String, String> payload) throws IOException {
+            algorithm = algorithm.toLowerCase();
+            if (!algorithm.matches("^argon2(id|i|d)$")) {
+                return null;
+            }
+            byte[] salt = Hex.decode(headers.get("Argon2-Salt"));
+            int iterations = Integer.parseInt(headers.get("Argon2-Passes"));
+            int memory = Integer.parseInt(headers.get("Argon2-Memory"));
+            int parallelism = Integer.parseInt(headers.get("Argon2-Parallelism"));
+            return argon2(algorithm, passphrase, salt, iterations, memory, parallelism, 80);
+        }
+
+        /**
+         *
+         * @param algorithm <code>argon2d</code> or <code>argon2i</code> or <code>argon2id</code>
+         * @param passphrase
+         * @param salt
+         * @param iterations
+         * @param memory
+         * @param parallelism
+         * @param outputSize
+         * @return a byte array of outputSize length
+         * @throws IOException
+         */
+        public abstract byte[] argon2(String algorithm, char[] passphrase, byte[] salt, int iterations, int memory,
+                                      int parallelism, int outputSize) throws IOException;
+    }
 }
