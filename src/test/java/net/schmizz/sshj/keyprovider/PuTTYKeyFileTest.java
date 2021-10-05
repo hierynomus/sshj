@@ -24,6 +24,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -226,17 +228,17 @@ public class PuTTYKeyFileTest {
             "Private-MAC: b200c6d801fc8dd8f84a14afc3b94d9f9bb2df90\n";
 
     final static String v3_ecdsa = "PuTTY-User-Key-File-3: ecdsa-sha2-nistp256\n" +
-    		"Encryption: none\n" +
-    		"Comment: ecdsa-key-20210819\n" +
-    		"Public-Lines: 3\n" +
-    		"AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBP5mbdlgVmkw\n" +
-    		"LzDkznoY8TXKnok/mlMkpk8FELFNSECnXNdtZ4B8+Bpqnvchhk/jY/0tUU98lFxt\n" +
-    		"JR0o0l8B5y0=\n" +
-    		"Private-Lines: 1\n" +
-    		"AAAAIEblmwyKaGuvc6dLgNeHsc1BuZeQORTSxBF5SBLNyjYc\n" +
-    		"Private-MAC: e1aed15a209f48fdaa5228640f1109a7740340764a96f97ec6023da7f92d07ea";
+            "Encryption: none\n" +
+            "Comment: ecdsa-key-20210819\n" +
+            "Public-Lines: 3\n" +
+            "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBP5mbdlgVmkw\n" +
+            "LzDkznoY8TXKnok/mlMkpk8FELFNSECnXNdtZ4B8+Bpqnvchhk/jY/0tUU98lFxt\n" +
+            "JR0o0l8B5y0=\n" +
+            "Private-Lines: 1\n" +
+            "AAAAIEblmwyKaGuvc6dLgNeHsc1BuZeQORTSxBF5SBLNyjYc\n" +
+            "Private-MAC: e1aed15a209f48fdaa5228640f1109a7740340764a96f97ec6023da7f92d07ea";
 
-    final static String v3_rsa_encrypted = "PuTTY-User-Key-File-3: ssh-rsa\n" +
+    final static String v3_rsa_argon2id = "PuTTY-User-Key-File-3: ssh-rsa\n" +
             "Encryption: aes256-cbc\n" +
             "Comment: rsa-key-20210926\n" +
             "Public-Lines: 6\n" +
@@ -267,6 +269,70 @@ public class PuTTYKeyFileTest {
             "ZgKSIuWtz8W1kT0aWuZ0aXMPagGao0ZsffmroyVpGbzW3QaI9633Krmf7EyphZoy\n" +
             "6tV3Z/GJ5aQJFeMYPOq69ktXRLAWr800822NwEStcxtQHTWbaTk7dxh8+0xwlCgI\n" +
             "Private-MAC: 582dea09758afd93a8e248abce358287d384e5ee36d21515ffcc0d42d8c5d86a\n";
+
+    final static String v3_rsa_argon2d = "PuTTY-User-Key-File-3: ssh-rsa\n" +
+            "Encryption: aes256-cbc\n" +
+            "Comment: rsa-key-20210926\n" +
+            "Public-Lines: 6\n" +
+            "AAAAB3NzaC1yc2EAAAADAQABAAABAQCBjWQHMpKAQnU3vZZF/iHn4RA867Ox+U03\n" +
+            "/GOHivW0SgGIQbhKcSSWvTzYOE+GQdtX9T2KJxr76z/lB4nghkcWkpLoQW91gNBf\n" +
+            "PUagMvaBxKXC8cNqaMm99uw5KpRg8SpTJWxwYPlQtzmyxav0PRFeOMSsiRsnjNuX\n" +
+            "polMDSu6vmkkuKrPzvinPZbsXoZeMybcm1gn2Zq+7ik4us0icaGxRJRuF+nVqYag\n" +
+            "EmO9jmQoytyqoNWzvPYEh/dh85hESwtIKXiaMOjQg52dW5BuELPGV7ZxaKRK7Znw\n" +
+            "RGW6CtoGYulo0mJz5IZslDrRK/EK2bSGDbrlAcYaajROB6aBDyaJ\n" +
+            "Key-Derivation: Argon2d\n" +
+            "Argon2-Memory: 2048\n" +
+            "Argon2-Passes: 5\n" +
+            "Argon2-Parallelism: 3\n" +
+            "Argon2-Salt: 5fa1eb89e9eac0cc562c59bc648cacea\n" +
+            "Private-Lines: 14\n" +
+            "CCLbHvtNdkMNqOrSM+CNF874xTjDs01+UanZX7pHmIA94nAbb9ofeEHPcw7pCCWq\n" +
+            "mxj7GK8BnsEQXIS1yCnRT6yCi1d68FpdXN2QvhlbWpEuzrmw4q71XpCwYpZ3KERo\n" +
+            "+/o7X2Pi4qhfaS+fgBAl2VwAiHdN2KQFewj6MWJqP2/GaegKyvnZue/3e+v/Edag\n" +
+            "DCbODfNhfirISUlw5U3SxqmIdrFT+2DKbpVTCLQwTeXL+fmzdYYvjOGQq6Kx7E9L\n" +
+            "iWf1aLoBZCWfN5gpMxD1F1tX1nBXmFMG8aW+lOr3+BxLMUAtjRQVsmc6Lyqb1RdV\n" +
+            "eyZp1W0R2+HKmwm59WUQK46HMnXdkwUqArb28VpBE61gj+KMWna9TJP6aJTF2N6m\n" +
+            "0Wv8D9WCGOrOC+IqnkfkfdSLkupu6PyyhiS69IR9b6vAyDYFxhtlEx6qZpjSKLYr\n" +
+            "X11I223yPAmSoO1X24RNPpo1uU4k8NfZWH0ZICY3YZ0K3PnETNGd5C38OSptQFor\n" +
+            "9aY1oV/1VencX/CmGXaQHsV5UJ/SnV78+PPSv3pEeQmd2ljmSx3kTL1BX91n4/Mc\n" +
+            "jNxE3kMXJ+6DD6OGGU0VbVmYBCrFDD4Mfj8yyLKOjJgEZubCLaZoI7WhDk4qZcui\n" +
+            "hzPt1tshrjIN6VKubqg84BVOWmJ3MmDD76ci9d5ILeAm4zzsliuagSLa+Y6t03hs\n" +
+            "PmRnFSiCv1zrqLl20PcrPEsifGeC/o1839/9E0Gywy/JDjlbucxfU9qHOntnqQJM\n" +
+            "8cAjXyuzgkKC5yzk/Py3VnjWegENrfM5Zf/eXFYFzD0cIA0ou2ap+Dcln14ckGFZ\n" +
+            "kir9AVgxyOiQikD8za+QjZ2rLeuzODe9mKPPKitI4npanpGcWRl+RPCG4t9poacO\n" +
+            "Private-MAC: d08aebc419131c109bbf8c200848f47eafedab9286b372c3155e8dc27e6b84cd\n";
+
+    final static String v3_rsa_argon2i = "PuTTY-User-Key-File-3: ssh-rsa\n" +
+            "Encryption: aes256-cbc\n" +
+            "Comment: rsa-key-20210926\n" +
+            "Public-Lines: 6\n" +
+            "AAAAB3NzaC1yc2EAAAADAQABAAABAQCBjWQHMpKAQnU3vZZF/iHn4RA867Ox+U03\n" +
+            "/GOHivW0SgGIQbhKcSSWvTzYOE+GQdtX9T2KJxr76z/lB4nghkcWkpLoQW91gNBf\n" +
+            "PUagMvaBxKXC8cNqaMm99uw5KpRg8SpTJWxwYPlQtzmyxav0PRFeOMSsiRsnjNuX\n" +
+            "polMDSu6vmkkuKrPzvinPZbsXoZeMybcm1gn2Zq+7ik4us0icaGxRJRuF+nVqYag\n" +
+            "EmO9jmQoytyqoNWzvPYEh/dh85hESwtIKXiaMOjQg52dW5BuELPGV7ZxaKRK7Znw\n" +
+            "RGW6CtoGYulo0mJz5IZslDrRK/EK2bSGDbrlAcYaajROB6aBDyaJ\n" +
+            "Key-Derivation: Argon2i\n" +
+            "Argon2-Memory: 1024\n" +
+            "Argon2-Passes: 5\n" +
+            "Argon2-Parallelism: 2\n" +
+            "Argon2-Salt: 2845c351de77c5aa9604e407ca830136\n" +
+            "Private-Lines: 14\n" +
+            "Ws3CZMJ0xYa/W6s0YZqn4j8ihXK81lw88iuXrmzWu+L88+RVGTBGvOvmE0oqLsMw\n" +
+            "YPIi7/eOaik1jZ+dnnD/PeJbVOqch7z2fSK1cVXMyNggPvFBQVjtxrFRhvGtIC0R\n" +
+            "5py8Z7Cfi0W9N/xyjHIvNrGwuvUQpBKeK1C/zYweQJF/clBSovnV/sGGRbtEd+jk\n" +
+            "rY8svRKSvX0HY0P4xftwH+E40XZhUdG2JetleCNIw0ohShuCSiO1fauxI3Az/i2J\n" +
+            "Ef3pRfMLCE91QW4/3nY2ofK6yyufNhyFSjqIaDkQUNBi4EYG1W2/29mK9zLpfa+Z\n" +
+            "eiujzOZJfI8QPar7gTp2sdrq7ND2YUniatwqpq9+vefTkWvMEhwuNAGvfRWgJ2qq\n" +
+            "IbB/EWtvNj8vA3z3M2j0ksMRvJSGpU1n8MKVdWe5PSjvpMiCaqtOTtrP3iqS+bwJ\n" +
+            "WjhV+JVod5RE0fCXnBcCkE8XdSu20m04aRIVHJvnIaKH7vZXThDdG9AhpSrUcvWM\n" +
+            "OVD5q0L9W9wcVQzN7XtQhTEjm3zja+tOo0gYn0Z/497kkxdL/g/su5kpPQsbbsLF\n" +
+            "0ROS5U2GZX0Le+QVg6hGIfqskBoCQp+ErTXFzIu+0//MoaZSACtW48ljeIpDj0fG\n" +
+            "v2Fhc9tbpTJKvQh6wlm9gkMBSV+XcRWUMh5zBPecmR6/v9O4/MCsOse89MNs4LxL\n" +
+            "sLRUABdjziKnjomq/1FlozlGGfF+v+VLhjjc1xq5ms+BEqkXUsWoJl8NNST6NqkN\n" +
+            "2T4nFzZA6b+RwFJFqYHF+BvgkQ5j0hEbXo1qlqKIf3Vk+/rouPkLyUIiHxZxdX4m\n" +
+            "P/LtnH79FPDQFbFl6826Ui1TPISAf3pTwKFI43HgKRrya3F5GPeQphsZHlu155JO\n" +
+            "Private-MAC: 1be8357d497fd4d641ce50a142c5a91ef3b0279355d2996e0c1f13e376394301\n";
 
     @Test
     public void test2048() throws Exception {
@@ -375,22 +441,56 @@ public class PuTTYKeyFileTest {
     }
 
     @Test
-    public void testV3Key() throws Exception {
-    	PuTTYKeyFile key = new PuTTYKeyFile();
+    public void testV3KeyArgon2id() throws Exception {
+        PuTTYKeyFile key = new PuTTYKeyFile();
         key.init(new StringReader(v3_ecdsa));
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
     }
 
-    /**
-     * Reading an encrypted Putty v3 key requires an Argon2i/Argon2d/Argon2id
-     */
     @Test
-    public void testRSAv3EncryptedKey() throws Exception {
+    public void testRSAv3EncryptedKeyArgon2id() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(v3_rsa_encrypted), new UnitTestPasswordFinder("changeit"));
+        key.init(new StringReader(v3_rsa_argon2id), new UnitTestPasswordFinder("changeit"));
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
+        OpenSSHKeyV1KeyFile referenceKey = new OpenSSHKeyV1KeyFile();
+        referenceKey.init(new File("src/test/resources/keytypes/test_rsa_putty_priv.openssh2"));
+        RSAPrivateKey loadedPrivate = (RSAPrivateKey) key.getPrivate();
+        RSAPrivateKey referencePrivate = (RSAPrivateKey) referenceKey.getPrivate();
+        assertEquals(referencePrivate.getPrivateExponent(), loadedPrivate.getPrivateExponent());
+        assertEquals(referencePrivate.getModulus(), loadedPrivate.getModulus());
+        assertEquals(referencePrivate.getModulus(), ((RSAPublicKey) key.getPublic()).getModulus());
+    }
+
+    @Test
+    public void testRSAv3EncryptedKeyArgon2d() throws Exception {
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(v3_rsa_argon2d), new UnitTestPasswordFinder("changeit"));
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
+        OpenSSHKeyV1KeyFile referenceKey = new OpenSSHKeyV1KeyFile();
+        referenceKey.init(new File("src/test/resources/keytypes/test_rsa_putty_priv.openssh2"));
+        RSAPrivateKey loadedPrivate = (RSAPrivateKey) key.getPrivate();
+        RSAPrivateKey referencePrivate = (RSAPrivateKey) referenceKey.getPrivate();
+        assertEquals(referencePrivate.getPrivateExponent(), loadedPrivate.getPrivateExponent());
+        assertEquals(referencePrivate.getModulus(), loadedPrivate.getModulus());
+        assertEquals(referencePrivate.getModulus(), ((RSAPublicKey) key.getPublic()).getModulus());
+    }
+
+    @Test
+    public void testRSAv3EncryptedKeyArgon2i() throws Exception {
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(v3_rsa_argon2i), new UnitTestPasswordFinder("changeit"));
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
+        OpenSSHKeyV1KeyFile referenceKey = new OpenSSHKeyV1KeyFile();
+        referenceKey.init(new File("src/test/resources/keytypes/test_rsa_putty_priv.openssh2"));
+        RSAPrivateKey loadedPrivate = (RSAPrivateKey) key.getPrivate();
+        RSAPrivateKey referencePrivate = (RSAPrivateKey) referenceKey.getPrivate();
+        assertEquals(referencePrivate.getPrivateExponent(), loadedPrivate.getPrivateExponent());
+        assertEquals(referencePrivate.getModulus(), loadedPrivate.getModulus());
+        assertEquals(referencePrivate.getModulus(), ((RSAPublicKey) key.getPublic()).getModulus());
     }
 
     @Test
