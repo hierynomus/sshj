@@ -18,20 +18,16 @@ package net.schmizz.sshj.keyprovider;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-import net.schmizz.sshj.userauth.password.Resource;
+import net.schmizz.sshj.util.UnitTestPasswordFinder;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.security.PrivateKey;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class PuTTYKeyFileTest {
 
@@ -229,15 +225,15 @@ public class PuTTYKeyFileTest {
             "nLEIBzB8WEaMMgDz5qwlqq7eBxLPIIi9uHyjMf7NOsQ=\n" +
             "Private-MAC: b200c6d801fc8dd8f84a14afc3b94d9f9bb2df90\n";
 
-    final static String v3_ecdsa = "PuTTY-User-Key-File-3: ecdsa-sha2-nistp256\n" + 
-    		"Encryption: none\n" + 
-    		"Comment: ecdsa-key-20210819\n" + 
-    		"Public-Lines: 3\n" + 
-    		"AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBP5mbdlgVmkw\n" + 
-    		"LzDkznoY8TXKnok/mlMkpk8FELFNSECnXNdtZ4B8+Bpqnvchhk/jY/0tUU98lFxt\n" + 
-    		"JR0o0l8B5y0=\n" + 
-    		"Private-Lines: 1\n" + 
-    		"AAAAIEblmwyKaGuvc6dLgNeHsc1BuZeQORTSxBF5SBLNyjYc\n" + 
+    final static String v3_ecdsa = "PuTTY-User-Key-File-3: ecdsa-sha2-nistp256\n" +
+    		"Encryption: none\n" +
+    		"Comment: ecdsa-key-20210819\n" +
+    		"Public-Lines: 3\n" +
+    		"AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBP5mbdlgVmkw\n" +
+    		"LzDkznoY8TXKnok/mlMkpk8FELFNSECnXNdtZ4B8+Bpqnvchhk/jY/0tUU98lFxt\n" +
+    		"JR0o0l8B5y0=\n" +
+    		"Private-Lines: 1\n" +
+    		"AAAAIEblmwyKaGuvc6dLgNeHsc1BuZeQORTSxBF5SBLNyjYc\n" +
     		"Private-MAC: e1aed15a209f48fdaa5228640f1109a7740340764a96f97ec6023da7f92d07ea";
 
     final static String v3_rsa_encrypted = "PuTTY-User-Key-File-3: ssh-rsa\n" +
@@ -319,17 +315,8 @@ public class PuTTYKeyFileTest {
         //     -o src/test/resources/keytypes/test_ed25519_puttygen_protected.ppk \
         //     --new-passphrase <(echo 123456)
         PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new File("src/test/resources/keytypes/test_ed25519_puttygen_protected.ppk"), new PasswordFinder() {
-            @Override
-            public char[] reqPassword(Resource<?> resource) {
-                return "123456".toCharArray();
-            }
-
-            @Override
-            public boolean shouldRetry(Resource<?> resource) {
-                return false;
-            }
-        });
+        key.init(new File("src/test/resources/keytypes/test_ed25519_puttygen_protected.ppk"),
+                new UnitTestPasswordFinder("123456"));
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
 
@@ -397,48 +384,19 @@ public class PuTTYKeyFileTest {
 
     /**
      * Reading an encrypted Putty v3 key requires an Argon2i/Argon2d/Argon2id
-     * implementation.
-     * Putty v3 keys additionally use a different algorithm for generating the "Private-MAC"
      */
     @Test
     public void testRSAv3EncryptedKey() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(v3_rsa_encrypted), new PasswordFinder() {
-            @Override
-            public char[] reqPassword(Resource<?> resource) {
-                return "changeit".toCharArray();
-            }
-
-            @Override
-            public boolean shouldRetry(Resource<?> resource) {
-                return false;
-            }
-        });
-        try {
-            PrivateKey privateKey = key.getPrivate();
-            fail("IOException expected as encrypted Putty v3 keys are not yet supported");
-        } catch (IOException e) {
-            assertTrue(e.getMessage().startsWith("Unsupported key derivation function"));
-        }
-        // assertNotNull(key.getPrivate());
-        // assertNotNull(key.getPublic());
+        key.init(new StringReader(v3_rsa_encrypted), new UnitTestPasswordFinder("changeit"));
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
     }
 
     @Test
     public void testCorrectPassphraseRsa() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(ppk1024_passphrase), new PasswordFinder() {
-            @Override
-            public char[] reqPassword(Resource<?> resource) {
-                // correct passphrase
-                return "123456".toCharArray();
-            }
-
-            @Override
-            public boolean shouldRetry(Resource<?> resource) {
-                return false;
-            }
-        });
+        key.init(new StringReader(ppk1024_passphrase), new UnitTestPasswordFinder("123456"));
         // Install JCE Unlimited Strength Jurisdiction Policy Files if we get java.security.InvalidKeyException: Illegal key size
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
@@ -447,18 +405,8 @@ public class PuTTYKeyFileTest {
     @Test(expected = IOException.class)
     public void testWrongPassphraseRsa() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(ppk1024_passphrase), new PasswordFinder() {
-            @Override
-            public char[] reqPassword(Resource<?> resource) {
-                // wrong passphrase
-                return "egfsdgdfgsdfsdfasfs523534dgdsgdfa".toCharArray();
-            }
-
-            @Override
-            public boolean shouldRetry(Resource<?> resource) {
-                return false;
-            }
-        });
+        key.init(new StringReader(ppk1024_passphrase),
+                new UnitTestPasswordFinder("egfsdgdfgsdfsdfasfs523534dgdsgdfa"));
         assertNotNull(key.getPublic());
         assertNull(key.getPrivate());
     }
@@ -466,18 +414,7 @@ public class PuTTYKeyFileTest {
     @Test
     public void testCorrectPassphraseDsa() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(ppkdsa_passphrase), new PasswordFinder() {
-            @Override
-            public char[] reqPassword(Resource<?> resource) {
-                // correct passphrase
-                return "secret".toCharArray();
-            }
-
-            @Override
-            public boolean shouldRetry(Resource<?> resource) {
-                return false;
-            }
-        });
+        key.init(new StringReader(ppkdsa_passphrase), new UnitTestPasswordFinder("secret"));
         // Install JCE Unlimited Strength Jurisdiction Policy Files if we get java.security.InvalidKeyException: Illegal key size
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
@@ -486,18 +423,8 @@ public class PuTTYKeyFileTest {
     @Test(expected = IOException.class)
     public void testWrongPassphraseDsa() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(ppkdsa_passphrase), new PasswordFinder() {
-            @Override
-            public char[] reqPassword(Resource<?> resource) {
-                // wrong passphrase
-                return "egfsdgdfgsdfsdfasfs523534dgdsgdfa".toCharArray();
-            }
-
-            @Override
-            public boolean shouldRetry(Resource<?> resource) {
-                return false;
-            }
-        });
+        key.init(new StringReader(ppkdsa_passphrase),
+                new UnitTestPasswordFinder("egfsdgdfgsdfsdfasfs523534dgdsgdfa"));
         assertNotNull(key.getPublic());
         assertNull(key.getPrivate());
     }
