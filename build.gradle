@@ -6,18 +6,22 @@ plugins {
   id "java"
   id "groovy"
   id "jacoco"
-  id "com.github.blindpirate.osgi" version '0.0.3'
+  id "com.github.blindpirate.osgi" version '0.0.6'
   id "maven-publish"
-  id 'pl.allegro.tech.build.axion-release' version '1.11.0'
-  id "com.bmuschko.docker-remote-api" version "6.4.0"
-  id "com.github.hierynomus.license" version "0.12.1"
-  id "com.jfrog.bintray" version "1.8.5"
-  id 'ru.vyarus.java-lib' version '1.0.5'
-  // id 'ru.vyarus.pom' version '1.0.3'
-  id 'ru.vyarus.github-info' version '1.1.0'
+  id "signing"
+  id 'pl.allegro.tech.build.axion-release' version '1.13.3'
+  id "com.bmuschko.docker-remote-api" version "7.1.0"
+  id "com.github.hierynomus.license" version "0.16.1"
+  id 'ru.vyarus.github-info' version '1.2.0'
+  id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
+}
+
+repositories {
+  mavenCentral()
 }
 
 group = "com.hierynomus"
+defaultTasks ["build"]
 ext.moduleName = "${project.group}.${project.name}"
 
 scmVersion {
@@ -33,13 +37,7 @@ scmVersion {
 
 project.version = scmVersion.version
 
-defaultTasks "build"
-
-repositories {
-  mavenCentral()
-}
-
-configurations.compile.transitive = false
+configurations.implementation.transitive = false
 
 def bouncycastleVersion = "1.69"
 def sshdVersion = "2.1.0"
@@ -49,7 +47,7 @@ dependencies {
   implementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
   implementation "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
   implementation "com.jcraft:jzlib:1.1.3"
-  implementation "com.hierynomus:asn-one:0.5.0"
+  implementation "com.hierynomus:asn-one:0.6.0"
 
   implementation "net.i2p.crypto:eddsa:0.3.0"
 
@@ -84,7 +82,6 @@ if (JavaVersion.current().isJava8Compatible()) {
     options.addStringOption('Xdoclint:none', '-quiet')
   }
 }
-
 
 compileJava {
   options.compilerArgs.addAll(['--release', '7'])
@@ -121,6 +118,12 @@ jar {
     instruction "Export-Package", "com.hierynomus.sshj.*;version=\"${project.jar.manifest.version}\""
     instruction "Export-Package", "net.schmizz.*;version=\"${project.jar.manifest.version}\""
   }
+}
+
+
+java {
+	withJavadocJar()
+	withSourcesJar()
 }
 
 sourcesJar {
@@ -188,71 +191,82 @@ github {
   license 'Apache'
 }
 
-pom {
-  description "SSHv2 library for Java"
-  url "https://github.com/hierynomus/sshj"
-  inceptionYear "2009"
-  developers {
-    developer {
-      id "hierynomus"
-      name "Jeroen van Erp"
-      email "jeroen@javadude.nl"
-      roles {
-        role "Lead developer"
-      }
-    }
-    developer {
-      id "shikhar"
-      name "Shikhar Bhushan"
-      email "shikhar@schmizz.net"
-      url "http://schmizz.net"
-      roles {
-        role "Previous lead developer"
-      }
-    }
-    developer {
-      id "iterate"
-      name "David Kocher"
-      email "dkocher@iterate.ch"
-      organization "iterage GmbH"
-      organizationUrl "https://iterate.ch"
-      roles {
-        role "Developer"
-      }
-    }
-  }
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from(components.java)
+		}
+	}
 }
 
-if (project.hasProperty("bintrayUsername") && project.hasProperty("bintrayApiKey")) {
-  bintray {
-    user = project.property("bintrayUsername")
-    key = project.property("bintrayApiKey")
-    publish = true
-    publications = ["maven"]
-    pkg {
-      repo = "maven"
-      name = "${project.name}"
-      licenses = ["Apache-2.0"]
-      vcsUrl = "https://github.com/hierynomus/sshj.git"
-      labels = ["ssh", "sftp", "secure-shell", "network", "file-transfer"]
-      githubRepo = "hierynomus/sshj"
-      version {
-        name = "${project.version}"
-        vcsTag = "v${project.version}"
-        released = new SimpleDateFormat('yyyy-MM-dd\'T\'HH:mm:ss.SSSZZ').format(new Date())
-        gpg {
-          sign = true
-          passphrase = project.property("signing.password")
+project.signing {
+  required { project.gradle.taskGraph.hasTask("release") }
+	sign publishing.publications.maven
+
+  if (project.hasProperty("signingKeyId") || project.hasProperty("signingKey")) {
+		def signingKeyId = project.findProperty("signingKeyId")
+		def signingKey = project.findProperty("signingKey")
+		def signingPassword = project.findProperty("signingPassword")
+		if (signingKeyId) {
+			useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+		} else if (signingKey) {
+			useInMemoryPgpKeys(signingKey, signingPassword)
+		}
+	}
+}
+
+project.plugins.withType(MavenPublishPlugin).all {
+	PublishingExtension publishing = project.extensions.getByType(PublishingExtension)
+	publishing.publications.withType(MavenPublication).all { mavenPublication ->
+		mavenPublication.pom {
+			name = "${project.name}"
+      description = 'SSHv2 library for Java'
+      inceptionYear = '2009'
+      url = "https://github.com/hierynomus/${project.name}"
+			licenses {
+				license {
+					name = "The Apache License, Version 2.0"
+					url = "https://www.apache.org/licenses/LICENSE-2.0"
+				}
+			}
+			developers {
+				developer {
+					id = "hierynomus"
+					name = "Jeroen van Erp"
+					email = "jeroen@hierynomus.com"
+				}
+				developer {
+					id = "shikhar"
+					name = "Shikhar Bhushan"
+					email = "shikhar@schmizz.net"
+          url = "http://schmizz.net"
+          roles = ["Previous Lead developer"]
+				}
+        developer {
+          id = "iterate"
+          name = "David Kocher"
+          email = "dkocher@iterate.ch"
+          organization = "iterate GmbH"
+          organizationUrl = "https://iterate.ch"
+          roles = ["Developer"]
         }
-        mavenCentralSync {
-          sync = true
-          user = project.property("sonatypeUsername")
-          password = project.property("sonatypePassword")
-          close = 1
-        }
+			}
+      scm {
+        url = "https://github.com/hierynomus/${project.name}"
+        connection = "scm:git@github.com:hierynomus/${project.name}.git"
+        developerConnection = "scm:git@github.com:hierynomus/${project.name}.git"
       }
-    }
-  }
+		}
+	}
+}
+
+nexusPublishing {
+	repositories {
+		sonatype()    //sonatypeUsername and sonatypePassword properties are used automatically
+	}
+
+	connectTimeout = Duration.ofMinutes(3)
+	clientTimeout = Duration.ofMinutes(3)
 }
 
 jacocoTestReport {
@@ -295,7 +309,7 @@ task stopItestContainer(type: DockerStopContainer) {
 
 task forkedUploadRelease(type: GradleBuild) {
   buildFile = project.buildFile
-  tasks = ["bintrayUpload"]
+  tasks = ["clean", "publishToSonatype", "closeAndReleaseSonatypeStagingRepository"]
 }
 
 project.tasks.integrationTest.dependsOn(startItestContainer)

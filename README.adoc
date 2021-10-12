@@ -104,6 +104,19 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.32.0 (2021-10-12)::
+* Send EOF on channel close (Fixes https://github.com/hierynomus/sshj/issue/143[#143], https://github.com/hierynomus/sshj/issue/496[#496], https://github.com/hierynomus/sshj/issue/553[#553], https://github.com/hierynomus/sshj/issue/554[#554])
+* Merged https://github.com/hierynomus/sshj/pull/726[#726]: Parse OpenSSH v1 keys with full CRT information present
+* Merged https://github.com/hierynomus/sshj/pull/721[#721]: Prefer known host key algorithm for host key verification
+* Merged https://github.com/hierynomus/sshj/pull/716[#716], https://github.com/hierynomus/sshj/pull/729[#729] and https://github.com/hierynomus/sshj/pull/730[#730]: Add full support for PuTTY v3 key files.
+* Merged https://github.com/hierynomus/sshj/pull/708[#708] and https://github.com/hierynomus/sshj/pull/713[#71]: Add support for PKCS#8 private keys
+* Merged https://github.com/hierynomus/sshj/pull/703[#703]: Support host certificate keys
+* Upgraded dependencies BouncyCastle (1.69), SLF4j (1.7.32), Logback (1.2.6), asn-one (0.6.0)
+* Merged https://github.com/hierynomus/sshj/pull/702[#702]: Support Public key authentication using certificates
+* Merged https://github.com/hierynomus/sshj/pull/691[#691]: Fix for writing negative unsigned integers to Buffer
+* Merged https://github.com/hierynomus/sshj/pull/682[#682]: Support for chacha20-poly1305@openssh.com cipher
+* Merged https://github.com/hierynomus/sshj/pull/680[#680]: Configurable preserve mtimes for SCP transfers
+
 SSHJ 0.31.0 (2021-02-08)::
 * Bump dependencies (asn-one 0.5.0, BouncyCastle 1.68, slf4j-api 1.7.30)
 * Merged https://github.com/hierynomus/sshj/pull/660[#660]: Support ED25519 and ECDSA keys in PuTTY format

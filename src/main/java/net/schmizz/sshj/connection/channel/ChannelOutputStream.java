@@ -22,6 +22,7 @@ import net.schmizz.sshj.transport.TransportException;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link OutputStream} for channels. Buffers data upto the remote window's maximum packet size. Data can also be
@@ -36,7 +37,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     private final DataBuffer buffer = new DataBuffer();
     private final byte[] b = new byte[1];
 
-    private boolean closed;
+    private AtomicBoolean closed;
     private SSHException error;
 
     private final class DataBuffer {
@@ -122,6 +123,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         this.chan = chan;
         this.trans = trans;
         this.win = win;
+        this.closed = new AtomicBoolean(false);
     }
 
     @Override
@@ -151,24 +153,21 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
 
     private void checkClose() throws SSHException {
         // Check whether either the Stream is closed, or the underlying channel is closed
-        if (closed || !chan.isOpen()) {
-            if (error != null)
+        if (closed.get() || !chan.isOpen()) {
+            if (error != null) {
                 throw error;
-            else
+            } else {
                 throw new ConnectionException("Stream closed");
+            }
         }
     }
 
     @Override
     public synchronized void close() throws IOException {
         // Not closed yet, and underlying channel is open to flush the data to.
-        if (!closed && chan.isOpen()) {
-            try {
-                buffer.flush(false);
-//                trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
-            } finally {
-                closed = true;
-            }
+        if (!closed.getAndSet(true) && chan.isOpen()) {
+            buffer.flush(false);
+            trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
         }
     }
 

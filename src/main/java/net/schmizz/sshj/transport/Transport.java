@@ -85,22 +85,6 @@ public interface Transport
      */
     void setTimeoutMs(int timeout);
 
-    /**
-     * @return the interval in seconds at which a heartbeat message is sent to the server
-     * @deprecated Moved to {@link net.schmizz.keepalive.KeepAlive#getKeepAliveInterval()}. This is accessible through the {@link net.schmizz.sshj.connection.Connection}.
-     *             Scheduled to be removed in 0.12.0
-     */
-    @Deprecated
-    int getHeartbeatInterval();
-
-    /**
-     * @param interval the interval in seconds, {@code 0} means no heartbeat
-     * @deprecated Moved to {@link net.schmizz.keepalive.KeepAlive#getKeepAliveInterval()}. This is accessible through the {@link net.schmizz.sshj.connection.Connection}.
-     *             Scheduled to be removed in 0.12.0
-     */
-    @Deprecated
-    void setHeartbeatInterval(int interval);
-
     /** @return the hostname to which this transport is connected. */
     String getRemoteHost();
 
