@@ -100,7 +100,13 @@ class KeyWithCertificateSpec extends Specification {
         and:
         def config = new DefaultConfig()
         config.keyAlgorithms = config.keyAlgorithms.stream()
-                .filter { it.name == hostKeyAlgo }
+                .filter {
+                    // This filter is added only because the current integration test infrastructure doesn't allow
+                    // to spawn different sshd on the fly. In reality, few users would specify key algorithms
+                    // explicitly.
+                    // The filter let a bug pass through the tests. Now the filter is as broad as possible.
+                    it.name == hostKeyAlgo || !it.name.contains("cert")
+                }
                 .collect(Collectors.toList())
         SSHClient sshClient = new SSHClient(config)
         sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(knownHosts))
