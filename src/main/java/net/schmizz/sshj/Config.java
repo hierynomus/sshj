@@ -200,4 +200,16 @@ public interface Config {
      * See {@link #isVerifyHostKeyCertificates()}.
      */
     void setVerifyHostKeyCertificates(boolean value);
+
+    /**
+     * Returns the configured name of the Reader thread.
+     * @return 
+     */
+    String getReaderThreadName();
+    
+    /**
+     * Sets the name of the Reader thread.
+     */
+    void setReaderThreadName(String name);
+
 }

@@ -48,6 +48,8 @@ public class ConfigImpl
     private boolean waitForServerIdentBeforeSendingClientIdent = false;
     private LoggerFactory loggerFactory;
     private boolean verifyHostKeyCertificates = true;
+    
+    private String readerThreadName = "reader";
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
@@ -187,5 +189,15 @@ public class ConfigImpl
     @Override
     public void setVerifyHostKeyCertificates(boolean value) {
         verifyHostKeyCertificates = value;
+    }
+    
+    @Override
+    public String getReaderThreadName() {
+        return readerThreadName;
+    }
+    
+    @Override
+    public void setReaderThreadName(String name) {
+        readerThreadName = name;
     }
 }
