@@ -15,22 +15,23 @@
  */
 package com.hierynomus.sshj.signature
 
-import com.hierynomus.sshj.IntegrationBaseSpec
+import com.hierynomus.sshj.IntegrationTestUtil
 import com.hierynomus.sshj.key.KeyAlgorithms
 import net.schmizz.sshj.DefaultConfig
+import spock.lang.Specification
 import spock.lang.Unroll
 
-class SignatureSpec extends IntegrationBaseSpec {
+class SignatureSpec extends Specification {
 
     @Unroll
     def "should correctly connect with #sig Signature"() {
         given:
         def cfg = new DefaultConfig()
         cfg.setKeyAlgorithms(Collections.singletonList(sigFactory))
-        def client = getConnectedClient(cfg)
+        def client = IntegrationTestUtil.getConnectedClient(cfg)
 
         when:
-        client.authPublickey(USERNAME, KEYFILE)
+        client.authPublickey(IntegrationTestUtil.USERNAME, IntegrationTestUtil.KEYFILE)
 
         then:
         client.authenticated

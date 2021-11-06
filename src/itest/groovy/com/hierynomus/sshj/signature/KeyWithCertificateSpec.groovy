@@ -15,10 +15,11 @@
  */
 package com.hierynomus.sshj.signature
 
-import com.hierynomus.sshj.IntegrationBaseSpec
+import com.hierynomus.sshj.IntegrationTestUtil
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts
+import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.nio.file.Files
@@ -29,15 +30,15 @@ import java.util.stream.Collectors
  *
  * Also, take a look at the unit test {@link net.schmizz.sshj.transport.verification.KeyWithCertificateUnitSpec}.
  */
-class KeyWithCertificateSpec extends IntegrationBaseSpec {
+class KeyWithCertificateSpec extends Specification {
 
     @Unroll
     def "authorising with a signed public key #keyName"() {
         given:
-        def client = getConnectedClient()
+        def client = IntegrationTestUtil.getConnectedClient()
 
         when:
-        client.authPublickey(USERNAME, "src/itest/resources/keyfiles/certificates/$keyName")
+        client.authPublickey(IntegrationTestUtil.USERNAME, "src/itest/resources/keyfiles/certificates/$keyName")
 
         then:
         client.authenticated
@@ -83,8 +84,8 @@ class KeyWithCertificateSpec extends IntegrationBaseSpec {
         and:
         File caPubKey = new File("src/itest/resources/keyfiles/certificates/CA_rsa.pem.pub")
         String knownHostsFileContents = "" +
-                "@cert-authority $SERVER_IP ${caPubKey.text}" +
-                "\n@cert-authority [$SERVER_IP]:$DOCKER_PORT ${caPubKey.text}"
+                "@cert-authority ${IntegrationTestUtil.SERVER_IP} ${caPubKey.text}" +
+                "\n@cert-authority [${IntegrationTestUtil.SERVER_IP}]:${IntegrationTestUtil.DOCKER_PORT} ${caPubKey.text}"
         knownHosts.write(knownHostsFileContents)
 
         and:
@@ -94,7 +95,7 @@ class KeyWithCertificateSpec extends IntegrationBaseSpec {
                 .collect(Collectors.toList())
         SSHClient sshClient = new SSHClient(config)
         sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(knownHosts))
-        sshClient.connect(SERVER_IP, DOCKER_PORT)
+        sshClient.connect(IntegrationTestUtil.SERVER_IP, IntegrationTestUtil.DOCKER_PORT)
 
         when:
         sshClient.authPassword("sshj", "ultrapassword")
