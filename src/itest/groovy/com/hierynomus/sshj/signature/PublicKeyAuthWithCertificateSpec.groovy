@@ -18,21 +18,18 @@ package com.hierynomus.sshj.signature
 import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
-import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier
 import org.junit.ClassRule
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.nio.file.Files
-
 /**
  * This is a brief test for verifying connection to a server using keys with certificates.
  *
  * Also, take a look at the unit test {@link net.schmizz.sshj.transport.verification.KeyWithCertificateUnitSpec}.
  */
-class KeyWithCertificateSpec extends Specification {
+class PublicKeyAuthWithCertificateSpec extends Specification {
     @Shared
     @ClassRule
     SshdContainer sshd
@@ -79,57 +76,6 @@ class KeyWithCertificateSpec extends Specification {
                 "id_ed25519_384_rfc4716_signed_by_ecdsa",
                 "id_ed25519_384_rfc4716_signed_by_ed25519",
                 "id_ed25519_384_rfc4716_signed_by_rsa",
-        ]
-    }
-
-    @Unroll
-    def "accepting a signed host public key #hostKey"() {
-        given:
-        SshdContainer sshd = new SshdContainer.Builder()
-            .withSshdConfig("""
-                PasswordAuthentication yes
-                HostKey /etc/ssh/$hostKey
-                HostCertificate /etc/ssh/${hostKey}-cert.pub
-                """.stripMargin())
-            .build()
-        sshd.start()
-
-        and:
-        File knownHosts = Files.createTempFile("known_hosts", "").toFile()
-        knownHosts.deleteOnExit()
-
-        and:
-        File caPubKey = new File("src/itest/resources/keyfiles/certificates/CA_rsa.pem.pub")
-        def address = "127.0.0.1"
-        String knownHostsFileContents = "" +
-                "@cert-authority ${ address} ${caPubKey.text}" +
-                "\n@cert-authority [${address}]:${sshd.firstMappedPort} ${caPubKey.text}"
-        knownHosts.write(knownHostsFileContents)
-
-        and:
-        SSHClient sshClient = new SSHClient(new DefaultConfig())
-        sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(knownHosts))
-        sshClient.connect(address, sshd.firstMappedPort)
-
-        when:
-        sshClient.authPassword("sshj", "ultrapassword")
-
-        then:
-        sshClient.authenticated
-
-        and:
-        knownHosts.getText() == knownHostsFileContents
-
-        cleanup:
-        sshd.stop()
-
-        where:
-        hostKey << [
-                "ssh_host_ecdsa_256_key",
-                "ssh_host_ecdsa_384_key",
-                "ssh_host_ecdsa_521_key",
-                "ssh_host_ed25519_384_key",
-                "ssh_host_rsa_2048_key",
         ]
     }
 }
