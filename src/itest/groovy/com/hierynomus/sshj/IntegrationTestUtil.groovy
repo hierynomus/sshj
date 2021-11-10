@@ -15,26 +15,7 @@
  */
 package com.hierynomus.sshj
 
-import net.schmizz.sshj.Config
-import net.schmizz.sshj.DefaultConfig
-import net.schmizz.sshj.SSHClient
-import net.schmizz.sshj.transport.verification.PromiscuousVerifier
-
 class IntegrationTestUtil {
-    static final int DOCKER_PORT = 2222
     static final String USERNAME = "sshj"
     static final String KEYFILE = "src/itest/resources/keyfiles/id_rsa"
-    final static String SERVER_IP = System.getProperty("serverIP", "127.0.0.1")
-
-    static SSHClient getConnectedClient(Config config) {
-        SSHClient sshClient = new SSHClient(config)
-        sshClient.addHostKeyVerifier(new PromiscuousVerifier())
-        sshClient.connect(SERVER_IP, DOCKER_PORT)
-
-        return sshClient
-    }
-
-    static SSHClient getConnectedClient() throws IOException {
-        return getConnectedClient(new DefaultConfig())
-    }
 }

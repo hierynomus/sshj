@@ -16,14 +16,21 @@
 package com.hierynomus.sshj.signature
 
 import com.hierynomus.sshj.IntegrationTestUtil
+import com.hierynomus.sshj.SshdContainer
+import org.junit.ClassRule
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class RsaSignatureClientKeySpec extends Specification {
+    @Shared
+    @ClassRule
+    SshdContainer sshd
+
     @Unroll
     def "should correctly connect using publickey auth with RSA key with signature"() {
         given:
-        def client = IntegrationTestUtil.getConnectedClient()
+        def client = sshd.getConnectedClient()
 
         when:
         client.authPublickey(IntegrationTestUtil.USERNAME, "src/itest/resources/keyfiles/id_rsa2")

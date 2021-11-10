@@ -15,10 +15,13 @@
  */
 package com.hierynomus.sshj.signature
 
-import com.hierynomus.sshj.IntegrationTestUtil
+import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier
+import org.junit.ClassRule
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -31,14 +34,19 @@ import java.util.stream.Collectors
  * Also, take a look at the unit test {@link net.schmizz.sshj.transport.verification.KeyWithCertificateUnitSpec}.
  */
 class KeyWithCertificateSpec extends Specification {
+    @Shared
+    @ClassRule
+    SshdContainer sshd
 
     @Unroll
     def "authorising with a signed public key #keyName"() {
         given:
-        def client = IntegrationTestUtil.getConnectedClient()
+        SSHClient client = new SSHClient(new DefaultConfig())
+        client.addHostKeyVerifier(new PromiscuousVerifier())
+        client.connect("127.0.0.1", sshd.firstMappedPort)
 
         when:
-        client.authPublickey(IntegrationTestUtil.USERNAME, "src/itest/resources/keyfiles/certificates/$keyName")
+        client.authPublickey("sshj", "src/itest/resources/keyfiles/certificates/$keyName")
 
         then:
         client.authenticated
@@ -83,9 +91,10 @@ class KeyWithCertificateSpec extends Specification {
 
         and:
         File caPubKey = new File("src/itest/resources/keyfiles/certificates/CA_rsa.pem.pub")
+        def address = "127.0.0.1"
         String knownHostsFileContents = "" +
-                "@cert-authority ${IntegrationTestUtil.SERVER_IP} ${caPubKey.text}" +
-                "\n@cert-authority [${IntegrationTestUtil.SERVER_IP}]:${IntegrationTestUtil.DOCKER_PORT} ${caPubKey.text}"
+                "@cert-authority ${ address} ${caPubKey.text}" +
+                "\n@cert-authority [${address}]:${sshd.firstMappedPort} ${caPubKey.text}"
         knownHosts.write(knownHostsFileContents)
 
         and:
@@ -95,7 +104,7 @@ class KeyWithCertificateSpec extends Specification {
                 .collect(Collectors.toList())
         SSHClient sshClient = new SSHClient(config)
         sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(knownHosts))
-        sshClient.connect(IntegrationTestUtil.SERVER_IP, IntegrationTestUtil.DOCKER_PORT)
+        sshClient.connect(address, sshd.firstMappedPort)
 
         when:
         sshClient.authPassword("sshj", "ultrapassword")

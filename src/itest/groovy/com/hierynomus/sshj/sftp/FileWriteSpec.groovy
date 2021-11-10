@@ -16,10 +16,13 @@
 package com.hierynomus.sshj.sftp
 
 import com.hierynomus.sshj.IntegrationTestUtil
+import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.sftp.OpenMode
 import net.schmizz.sshj.sftp.RemoteFile
 import net.schmizz.sshj.sftp.SFTPClient
+import org.junit.ClassRule
+import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
@@ -27,10 +30,13 @@ import java.nio.charset.StandardCharsets
 import static org.codehaus.groovy.runtime.IOGroovyMethods.withCloseable
 
 class FileWriteSpec extends Specification {
+    @Shared
+    @ClassRule
+    SshdContainer sshd
 
     def "should append to file (GH issue #390)"() {
         given:
-        SSHClient client = IntegrationTestUtil.getConnectedClient()
+        SSHClient client = sshd.getConnectedClient()
         client.authPublickey("sshj", "src/test/resources/id_rsa")
         SFTPClient sftp = client.newSFTPClient()
         def file = "/home/sshj/test.txt"

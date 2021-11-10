@@ -16,19 +16,25 @@
 package com.hierynomus.sshj.signature
 
 import com.hierynomus.sshj.IntegrationTestUtil
+import com.hierynomus.sshj.SshdContainer
 import com.hierynomus.sshj.key.KeyAlgorithms
 import net.schmizz.sshj.DefaultConfig
+import org.junit.ClassRule
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class SignatureSpec extends Specification {
+    @Shared
+    @ClassRule
+    SshdContainer sshd
 
     @Unroll
     def "should correctly connect with #sig Signature"() {
         given:
         def cfg = new DefaultConfig()
         cfg.setKeyAlgorithms(Collections.singletonList(sigFactory))
-        def client = IntegrationTestUtil.getConnectedClient(cfg)
+        def client = sshd.getConnectedClient(cfg)
 
         when:
         client.authPublickey(IntegrationTestUtil.USERNAME, IntegrationTestUtil.KEYFILE)

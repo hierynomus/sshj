@@ -16,22 +16,28 @@
 package com.hierynomus.sshj.transport.kex
 
 import com.hierynomus.sshj.IntegrationTestUtil
+import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.transport.kex.Curve25519SHA256
 import net.schmizz.sshj.transport.kex.DHGexSHA1
 import net.schmizz.sshj.transport.kex.DHGexSHA256
 import net.schmizz.sshj.transport.kex.ECDHNistP
+import org.junit.ClassRule
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class KexSpec extends Specification {
+    @Shared
+    @ClassRule
+    SshdContainer sshd
 
     @Unroll
     def "should correctly connect with #kex Key Exchange"() {
         given:
         def cfg = new DefaultConfig()
         cfg.setKeyExchangeFactories(kexFactory)
-        def client = IntegrationTestUtil.getConnectedClient(cfg)
+        def client = sshd.getConnectedClient(cfg)
 
         when:
         client.authPublickey(IntegrationTestUtil.USERNAME, IntegrationTestUtil.KEYFILE)
