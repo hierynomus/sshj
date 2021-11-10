@@ -32,42 +32,85 @@ import java.util.concurrent.Future;
  * A JUnit4 rule for launching a generic SSH server container.
  */
 public class SshdContainer extends GenericContainer<SshdContainer> {
+    public static class Builder {
+        public static final String DEFAULT_SSHD_CONFIG = "" +
+                "PermitRootLogin yes\n" +
+                "AuthorizedKeysFile .ssh/authorized_keys\n" +
+                "Subsystem sftp /usr/lib/ssh/sftp-server\n" +
+                "KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1,diffie-hellman-group-exchange-sha1\n" +
+                "macs umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-ripemd160-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-ripemd160,hmac-ripemd160@openssh.com\n" +
+                "TrustedUserCAKeys /etc/ssh/trusted_ca_keys\n" +
+                "Ciphers 3des-cbc,blowfish-cbc,aes128-cbc,aes192-cbc,aes256-cbc,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com\n" +
+                "HostKey /etc/ssh/ssh_host_rsa_key\n" +
+                "HostKey /etc/ssh/ssh_host_dsa_key\n" +
+                "HostKey /etc/ssh/ssh_host_ecdsa_key\n" +
+                "HostKey /etc/ssh/ssh_host_ed25519_key\n" +
+                "HostKey /etc/ssh/ssh_host_ecdsa_256_key\n" +
+                "HostCertificate /etc/ssh/ssh_host_ecdsa_256_key-cert.pub\n" +
+                "HostKey /etc/ssh/ssh_host_ecdsa_384_key\n" +
+                "HostCertificate /etc/ssh/ssh_host_ecdsa_384_key-cert.pub\n" +
+                "HostKey /etc/ssh/ssh_host_ecdsa_521_key\n" +
+                "HostCertificate /etc/ssh/ssh_host_ecdsa_521_key-cert.pub\n" +
+                "HostKey /etc/ssh/ssh_host_ed25519_384_key\n" +
+                "HostCertificate /etc/ssh/ssh_host_ed25519_384_key-cert.pub\n" +
+                "HostKey /etc/ssh/ssh_host_rsa_2048_key\n" +
+                "HostCertificate /etc/ssh/ssh_host_rsa_2048_key-cert.pub\n" +
+                "LogLevel DEBUG2\n";
+
+        public static void defaultDockerfileBuilder(@NotNull DockerfileBuilder builder) {
+            builder.from("sickp/alpine-sshd:7.5-r2");
+
+            builder.add("authorized_keys", "/home/sshj/.ssh/authorized_keys");
+
+            builder.add("test-container/ssh_host_ecdsa_key", "/etc/ssh/ssh_host_ecdsa_key");
+            builder.add("test-container/ssh_host_ecdsa_key.pub", "/etc/ssh/ssh_host_ecdsa_key.pub");
+            builder.add("test-container/ssh_host_ed25519_key", "/etc/ssh/ssh_host_ed25519_key");
+            builder.add("test-container/ssh_host_ed25519_key.pub", "/etc/ssh/ssh_host_ed25519_key.pub");
+            builder.copy("test-container/trusted_ca_keys", "/etc/ssh/trusted_ca_keys");
+            builder.copy("test-container/host_keys/*", "/etc/ssh/");
+
+            builder.run("apk add --no-cache tini"
+                    + " && echo \"root:smile\" | chpasswd"
+                    + " && adduser -D -s /bin/ash sshj"
+                    + " && passwd -u sshj"
+                    + " && echo \"sshj:ultrapassword\" | chpasswd"
+                    + " && chmod 600 /home/sshj/.ssh/authorized_keys"
+                    + " && chmod 600 /etc/ssh/ssh_host_*_key"
+                    + " && chmod 644 /etc/ssh/*.pub"
+                    + " && chown -R sshj:sshj /home/sshj");
+            builder.entryPoint("/sbin/tini", "/entrypoint.sh", "-o", "LogLevel=DEBUG2");
+
+            builder.add("sshd_config", "/etc/ssh/sshd_config");
+        }
+
+        private @NotNull String sshdConfig = DEFAULT_SSHD_CONFIG;
+
+        public @NotNull Builder withSshdConfig(@NotNull String sshdConfig) {
+            this.sshdConfig = sshdConfig;
+            return this;
+        }
+
+        public @NotNull SshdContainer build() {
+            return new SshdContainer(buildInner());
+        }
+
+        private @NotNull Future<String> buildInner() {
+            return new ImageFromDockerfile()
+                    .withDockerfileFromBuilder(Builder::defaultDockerfileBuilder)
+                    .withFileFromPath(".", Paths.get("src/itest/docker-image"))
+                    .withFileFromString("sshd_config", sshdConfig);
+        }
+    }
+
     @SuppressWarnings("unused")  // Used dynamically by Spock
     public SshdContainer() {
-        this(new ImageFromDockerfile()
-                .withDockerfileFromBuilder(SshdContainer::defaultDockerfileBuilder)
-                .withFileFromPath(".", Paths.get("src/itest/docker-image")));
+        this(new SshdContainer.Builder().buildInner());
     }
 
     public SshdContainer(@NotNull Future<String> future) {
         super(future);
         withExposedPorts(22);
         setWaitStrategy(new SshServerWaitStrategy());
-    }
-
-    public static void defaultDockerfileBuilder(@NotNull DockerfileBuilder builder) {
-        builder.from("sickp/alpine-sshd:7.5-r2");
-
-        builder.add("authorized_keys", "/home/sshj/.ssh/authorized_keys");
-
-        builder.add("test-container/ssh_host_ecdsa_key", "/etc/ssh/ssh_host_ecdsa_key");
-        builder.add("test-container/ssh_host_ecdsa_key.pub", "/etc/ssh/ssh_host_ecdsa_key.pub");
-        builder.add("test-container/ssh_host_ed25519_key", "/etc/ssh/ssh_host_ed25519_key");
-        builder.add("test-container/ssh_host_ed25519_key.pub", "/etc/ssh/ssh_host_ed25519_key.pub");
-        builder.add("test-container/sshd_config", "/etc/ssh/sshd_config");
-        builder.copy("test-container/trusted_ca_keys", "/etc/ssh/trusted_ca_keys");
-        builder.copy("test-container/host_keys/*", "/etc/ssh/");
-
-        builder.run("apk add --no-cache tini"
-                + " && echo \"root:smile\" | chpasswd"
-                + " && adduser -D -s /bin/ash sshj"
-                + " && passwd -u sshj"
-                + " && echo \"sshj:ultrapassword\" | chpasswd"
-                + " && chmod 600 /home/sshj/.ssh/authorized_keys"
-                + " && chmod 600 /etc/ssh/ssh_host_*_key"
-                + " && chmod 644 /etc/ssh/*.pub"
-                + " && chown -R sshj:sshj /home/sshj");
-        builder.entryPoint("/sbin/tini", "/entrypoint.sh", "-o", "LogLevel=DEBUG2");
     }
 
     public SSHClient getConnectedClient(Config config) throws IOException {

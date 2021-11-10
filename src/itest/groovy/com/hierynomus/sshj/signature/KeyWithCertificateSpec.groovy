@@ -26,7 +26,6 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 import java.nio.file.Files
-import java.util.stream.Collectors
 
 /**
  * This is a brief test for verifying connection to a server using keys with certificates.
@@ -84,8 +83,18 @@ class KeyWithCertificateSpec extends Specification {
     }
 
     @Unroll
-    def "accepting a signed host public key with type #hostKeyAlgo"() {
+    def "accepting a signed host public key #hostKey"() {
         given:
+        SshdContainer sshd = new SshdContainer.Builder()
+            .withSshdConfig("""
+                PasswordAuthentication yes
+                HostKey /etc/ssh/$hostKey
+                HostCertificate /etc/ssh/${hostKey}-cert.pub
+                """.stripMargin())
+            .build()
+        sshd.start()
+
+        and:
         File knownHosts = Files.createTempFile("known_hosts", "").toFile()
         knownHosts.deleteOnExit()
 
@@ -98,17 +107,7 @@ class KeyWithCertificateSpec extends Specification {
         knownHosts.write(knownHostsFileContents)
 
         and:
-        def config = new DefaultConfig()
-        config.keyAlgorithms = config.keyAlgorithms.stream()
-                .filter {
-                    // This filter is added only because the current integration test infrastructure doesn't allow
-                    // to spawn different sshd on the fly. In reality, few users would specify key algorithms
-                    // explicitly.
-                    // The filter let a bug pass through the tests. Now the filter is as broad as possible.
-                    it.name == hostKeyAlgo || !it.name.contains("cert")
-                }
-                .collect(Collectors.toList())
-        SSHClient sshClient = new SSHClient(config)
+        SSHClient sshClient = new SSHClient(new DefaultConfig())
         sshClient.addHostKeyVerifier(new OpenSSHKnownHosts(knownHosts))
         sshClient.connect(address, sshd.firstMappedPort)
 
@@ -121,11 +120,16 @@ class KeyWithCertificateSpec extends Specification {
         and:
         knownHosts.getText() == knownHostsFileContents
 
+        cleanup:
+        sshd.stop()
+
         where:
-        hostKeyAlgo << [
-                "ecdsa-sha2-nistp256-cert-v01@openssh.com",
-                "ssh-ed25519-cert-v01@openssh.com",
-                "ssh-rsa-cert-v01@openssh.com",
+        hostKey << [
+                "ssh_host_ecdsa_256_key",
+                "ssh_host_ecdsa_384_key",
+                "ssh_host_ecdsa_521_key",
+                "ssh_host_ed25519_384_key",
+                "ssh_host_rsa_2048_key",
         ]
     }
 }
