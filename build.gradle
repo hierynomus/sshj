@@ -53,7 +53,7 @@ dependencies {
   testImplementation "org.apache.sshd:sshd-core:$sshdVersion"
   testImplementation "org.apache.sshd:sshd-sftp:$sshdVersion"
   testImplementation "org.apache.sshd:sshd-scp:$sshdVersion"
-  testRuntimeOnly "ch.qos.logback:logback-classic:1.2.6"
+  testImplementation "ch.qos.logback:logback-classic:1.2.6"
   testImplementation 'org.glassfish.grizzly:grizzly-http-server:2.4.4'
   testImplementation 'org.apache.httpcomponents:httpclient:4.5.9'
   testImplementation 'org.testcontainers:testcontainers:1.16.2'
