@@ -86,8 +86,6 @@ public final class TransportImpl
 
     private KeyAlgorithm hostKeyAlgorithm;
 
-    private boolean rsaSHA2Support;
-
     private final Event<TransportException> serviceAccept;
 
     private final Event<TransportException> close;
@@ -626,20 +624,15 @@ public final class TransportImpl
         return this.hostKeyAlgorithm;
     }
 
-    public void setRSASHA2Support(boolean rsaSHA2Support) {
-        this.rsaSHA2Support = rsaSHA2Support;
-    }
-
     @Override
     public KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException {
-        if (keyType != KeyType.RSA || !rsaSHA2Support) {
-            return Factory.Named.Util.create(getConfig().getKeyAlgorithms(), keyType.toString());
-        }
-
         List<Factory.Named<KeyAlgorithm>> factories = getConfig().getKeyAlgorithms();
         if (factories != null)
             for (Factory.Named<KeyAlgorithm> f : factories)
-                if (f.getName().equals("ssh-rsa") || KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS.contains(f.getName()))
+                if (
+                        f instanceof KeyAlgorithms.Factory && ((KeyAlgorithms.Factory) f).getKeyType().equals(keyType)
+                        || !(f instanceof KeyAlgorithms.Factory) && f.getName().equals(keyType.toString())
+                )
                     return f.create();
         throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
     }
