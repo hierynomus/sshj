@@ -138,7 +138,19 @@ public class OpenSSHKnownHosts
         for (KnownHostEntry e : entries) {
             try {
                 if (e.appliesTo(adjustedHostname)) {
-                    knownHostAlgorithms.add(e.getType().toString());
+                    final KeyType type = e.getType();
+                    if (e instanceof HostEntry && ((HostEntry) e).marker == Marker.CA_CERT) {
+                        // Only the CA key type is known, but the type of the host key is not.
+                        // Adding all supported types for keys with certificates.
+                        for (final KeyType candidate : KeyType.values()) {
+                            if (candidate.getParent() != null) {
+                                knownHostAlgorithms.add(candidate.toString());
+                            }
+                        }
+                    }
+                    else {
+                        knownHostAlgorithms.add(type.toString());
+                    }
                 }
             } catch (IOException ioe) {
             }
