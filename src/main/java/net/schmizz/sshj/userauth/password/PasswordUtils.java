@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.userauth.password;
 
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -64,6 +65,9 @@ public class PasswordUtils {
      */
     public static byte[] toByteArray(char[] password) {
         CharBuffer charBuffer = CharBuffer.wrap(password);
-        return StandardCharsets.UTF_8.encode(charBuffer).array();
+        final ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(charBuffer);
+        byte[] bytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bytes);
+        return bytes;
     }
 }
