@@ -145,8 +145,14 @@ public class StreamCopier {
         final double sizeKiB = count / 1024.0;
         log.debug(String.format("%1$,.1f KiB transferred in %2$,.1f seconds (%3$,.2f KiB/s)", sizeKiB, timeSeconds, (sizeKiB / timeSeconds)));
 
-        if (length != -1 && read == -1)
-            throw new IOException("Encountered EOF, could not transfer " + length + " bytes");
+        // Did we encounter EOF?
+        if (read == -1) {
+            // If InputStream was closed we should also close OutputStream
+            out.close();
+
+            if (length != -1)
+                throw new IOException("Encountered EOF, could not transfer " + length + " bytes");
+        }
 
         return count;
     }
