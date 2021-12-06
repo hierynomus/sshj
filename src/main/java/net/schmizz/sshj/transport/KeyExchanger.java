@@ -243,7 +243,6 @@ final class KeyExchanger
                                         negotiatedAlgs.getKeyExchangeAlgorithm());
         transport.setHostKeyAlgorithm(Factory.Named.Util.create(transport.getConfig().getKeyAlgorithms(),
                                       negotiatedAlgs.getSignatureAlgorithm()));
-        transport.setRSASHA2Support(negotiatedAlgs.getRSASHA2Support());
 
         try {
             kex.init(transport,

@@ -51,12 +51,15 @@ public abstract class KeyedAuthMethod
         KeyType keyType = KeyType.fromKey(key);
         try {
             KeyAlgorithm ka = params.getTransport().getClientKeyAlgorithm(keyType);
-            reqBuf.putString(ka.getKeyAlgorithm())
-                    .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
-            return reqBuf;
+            if (ka != null) {
+                reqBuf.putString(ka.getKeyAlgorithm())
+                        .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
+                return reqBuf;
+            }
         } catch (IOException ioe) {
-            throw new UserAuthException("No KeyAlgorithm configured for key " + keyType);
+            throw new UserAuthException("No KeyAlgorithm configured for key " + keyType, ioe);
         }
+        throw new UserAuthException("No KeyAlgorithm configured for key " + keyType);
     }
 
     protected SSHPacket putSig(SSHPacket reqBuf)

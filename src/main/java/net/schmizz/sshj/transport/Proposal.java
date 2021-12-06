@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.transport;
 
-import com.hierynomus.sshj.key.KeyAlgorithms;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Factory;
@@ -140,8 +139,8 @@ class Proposal {
                 firstMatch("Client2ServerCompressionAlgorithms", this.getClient2ServerCompressionAlgorithms(),
                         other.getClient2ServerCompressionAlgorithms()),
                 firstMatch("Server2ClientCompressionAlgorithms", this.getServer2ClientCompressionAlgorithms(),
-                        other.getServer2ClientCompressionAlgorithms()),
-                other.getHostKeyAlgorithms().containsAll(KeyAlgorithms.SSH_RSA_SHA2_ALGORITHMS));
+                        other.getServer2ClientCompressionAlgorithms())
+        );
     }
 
     private List<String> filterKnownHostKeyAlgorithms(List<String> configuredKeyAlgorithms, List<String> knownHostKeyAlgorithms) {
