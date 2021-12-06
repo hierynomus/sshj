@@ -43,10 +43,7 @@ class FileKeyProviderSpec extends Specification {
     // `fixture` is backed by Apache SSHD server. Looks like it doesn't support rsa-sha2-512 public key signature.
     // Changing the default config to prioritize the former default implementation of RSA signature.
     def config = new DefaultConfig()
-    def sshRsaFactory = config.keyAlgorithms.find {it.name == "ssh-rsa" }
-    if (sshRsaFactory == null)
-      throw new IllegalStateException("ssh-rsa was removed from the default config, the test should be refactored")
-    config.keyAlgorithms = [sshRsaFactory] + config.keyAlgorithms.grep { it != sshRsaFactory }
+    config.prioritizeSshRsaKeyAlgorithm()
 
     and:
     SSHClient client = fixture.setupClient(config)
@@ -59,7 +56,7 @@ class FileKeyProviderSpec extends Specification {
     client.isAuthenticated()
 
     cleanup:
-    client.disconnect()
+    client?.disconnect()
 
     where:
     format | keyfile
