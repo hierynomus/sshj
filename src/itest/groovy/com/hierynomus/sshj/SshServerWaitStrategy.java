@@ -35,7 +35,7 @@ public class SshServerWaitStrategy implements WaitStrategy {
     @Override
     public void waitUntilReady(WaitStrategyTarget waitStrategyTarget) {
         long expectedEnd = System.nanoTime() + startupTimeout.toNanos();
-        while (true) {
+        while (waitStrategyTarget.isRunning()) {
             long attemptStart = System.nanoTime();
             IOException error = null;
             byte[] buffer = new byte[7];

@@ -26,6 +26,7 @@ import net.schmizz.sshj.transport.mac.MAC;
 import net.schmizz.sshj.transport.random.Random;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -187,5 +188,31 @@ public class ConfigImpl
     @Override
     public void setVerifyHostKeyCertificates(boolean value) {
         verifyHostKeyCertificates = value;
+    }
+
+    /**
+     * Modern servers neglect the key algorithm ssh-rsa. OpenSSH 8.8 even dropped its support by default in favour
+     * of rsa-sha2-*. However, there are legacy servers like Apache SSHD that don't support the newer replacements
+     * for ssh-rsa.
+     *
+     * If ssh-rsa factory is in {@link #getKeyAlgorithms()}, this methods makes ssh-rsa key algorithm more preferred
+     * than any of rsa-sha2-*. Otherwise, nothing happens.
+     */
+    public void prioritizeSshRsaKeyAlgorithm() {
+        List<Factory.Named<KeyAlgorithm>> keyAlgorithms = getKeyAlgorithms();
+        for (int sshRsaIndex = 0; sshRsaIndex < keyAlgorithms.size(); ++ sshRsaIndex) {
+            if ("ssh-rsa".equals(keyAlgorithms.get(sshRsaIndex).getName())) {
+                for (int i = 0; i < sshRsaIndex; ++i) {
+                    final String algo = keyAlgorithms.get(i).getName();
+                    if ("rsa-sha2-256".equals(algo) || "rsa-sha2-512".equals(algo)) {
+                        keyAlgorithms = new ArrayList<>(keyAlgorithms);
+                        keyAlgorithms.add(i, keyAlgorithms.remove(sshRsaIndex));
+                        setKeyAlgorithms(keyAlgorithms);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
     }
 }
