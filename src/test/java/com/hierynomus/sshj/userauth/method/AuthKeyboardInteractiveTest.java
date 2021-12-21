@@ -20,12 +20,8 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.ChallengeResponseProvider;
 import net.schmizz.sshj.userauth.password.Resource;
-import org.apache.sshd.client.auth.keyboard.UserAuthKeyboardInteractiveFactory;
-import org.apache.sshd.common.NamedFactory;
-import org.apache.sshd.server.auth.UserAuth;
-import org.apache.sshd.server.auth.keyboard.UserAuthKeyboardInteractive;
-import org.apache.sshd.server.auth.password.PasswordAuthenticator;
-import org.apache.sshd.server.session.ServerSession;
+import org.apache.sshd.server.auth.keyboard.UserAuthKeyboardInteractiveFactory;
+import org.apache.sshd.server.auth.password.AcceptAllPasswordAuthenticator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,28 +39,8 @@ public class AuthKeyboardInteractiveTest {
 
     @Before
     public void setKeyboardInteractiveAuthenticator() throws IOException {
-        fixture.getServer().setUserAuthFactories(Collections.<NamedFactory<UserAuth>>singletonList(new NamedFactory<UserAuth>() {
-            @Override
-            public String getName() {
-                return UserAuthKeyboardInteractiveFactory.NAME;
-            }
-
-            @Override
-            public UserAuth get() {
-                return new UserAuthKeyboardInteractive();
-            }
-
-            @Override
-            public UserAuth create() {
-                return get();
-            }
-        }));
-        fixture.getServer().setPasswordAuthenticator(new PasswordAuthenticator() {
-            @Override
-            public boolean authenticate(String username, String password, ServerSession session) {
-                return password.equals(username);
-            }
-        });
+        fixture.getServer().setUserAuthFactories(Collections.singletonList(new UserAuthKeyboardInteractiveFactory()));
+        fixture.getServer().setPasswordAuthenticator(AcceptAllPasswordAuthenticator.INSTANCE);
         fixture.getServer().start();
     }
 
@@ -75,7 +51,7 @@ public class AuthKeyboardInteractiveTest {
         sshClient.auth(userAndPassword, new AuthKeyboardInteractive(new ChallengeResponseProvider() {
             @Override
             public List<String> getSubmethods() {
-                return new ArrayList<String>();
+                return new ArrayList<>();
             }
 
             @Override
