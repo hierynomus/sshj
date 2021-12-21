@@ -29,7 +29,7 @@ public final class Reader
     public Reader(TransportImpl trans) {
         this.trans = trans;
         log = trans.getConfig().getLoggerFactory().getLogger(getClass());
-        setName("reader");
+        setName("sshj-Reader");
         setDaemon(true);
     }
 

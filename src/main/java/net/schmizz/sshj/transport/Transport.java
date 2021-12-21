@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.common.RemoteAddressProvider;
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.Service;
@@ -31,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 /** Transport layer of the SSH protocol. */
 public interface Transport
-        extends SSHPacketHandler {
+        extends SSHPacketHandler, RemoteAddressProvider {
 
     /**
      * Sets the host information and the streams to be used by this transport. Identification information is exchanged
@@ -208,7 +209,7 @@ public interface Transport
     /**
      * Specify a {@code listener} that will be notified upon disconnection.
      *
-     * @param listener
+     * @param listener Disconnect Listener to be configured
      */
     void setDisconnectListener(DisconnectListener listener);
 
