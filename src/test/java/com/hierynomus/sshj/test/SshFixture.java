@@ -19,21 +19,17 @@ import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
-import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.keyprovider.ClassLoadableResourceKeyPairProvider;
+import org.apache.sshd.scp.server.ScpCommandFactory;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.auth.password.PasswordAuthenticator;
-import org.apache.sshd.server.command.Command;
-import org.apache.sshd.server.command.CommandFactory;
-import org.apache.sshd.server.scp.ScpCommandFactory;
-import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.shell.ProcessShellFactory;
-import org.apache.sshd.server.subsystem.sftp.SftpSubsystemFactory;
+import org.apache.sshd.sftp.server.SftpSubsystemFactory;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.ServerSocket;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -43,9 +39,9 @@ public class SshFixture extends ExternalResource {
     public static final String hostkey = "hostkey.pem";
     public static final String fingerprint = "ce:a7:c1:cf:17:3f:96:49:6a:53:1a:05:0b:ba:90:db";
 
-    private SshServer server = defaultSshServer();
+    private final SshServer server = defaultSshServer();
     private SSHClient client = null;
-    private AtomicBoolean started = new AtomicBoolean(false);
+    private final AtomicBoolean started = new AtomicBoolean(false);
     private boolean autoStart = true;
 
     public SshFixture(boolean autoStart) {
@@ -108,38 +104,23 @@ public class SshFixture extends ExternalResource {
         sshServer.setPort(randomPort());
         ClassLoadableResourceKeyPairProvider fileKeyPairProvider = new ClassLoadableResourceKeyPairProvider(hostkey);
         sshServer.setKeyPairProvider(fileKeyPairProvider);
-        sshServer.setPasswordAuthenticator(new PasswordAuthenticator() {
-            @Override
-            public boolean authenticate(String username, String password, ServerSession session) {
-                return username.equals(password);
-            }
-        });
+        sshServer.setPasswordAuthenticator((username, password, session) -> username.equals(password));
         sshServer.setGSSAuthenticator(new BogusGSSAuthenticator());
-        sshServer.setSubsystemFactories(Arrays.<NamedFactory<Command>>asList(new SftpSubsystemFactory()));
+        sshServer.setSubsystemFactories(Collections.singletonList(new SftpSubsystemFactory()));
         ScpCommandFactory commandFactory = new ScpCommandFactory();
-        commandFactory.setDelegateCommandFactory(new CommandFactory() {
-            @Override
-            public Command createCommand(String command) {
-                return new ProcessShellFactory(command.split(" ")).create();
-            }
-        });
+        commandFactory.setDelegateCommandFactory((session, command) -> new ProcessShellFactory(command, command.split(" ")).createShell(session));
         sshServer.setCommandFactory(commandFactory);
-        sshServer.setShellFactory(new ProcessShellFactory("ls"));
+        sshServer.setShellFactory(new ProcessShellFactory("ls", "ls"));
         return sshServer;
     }
 
     private int randomPort() {
         try {
-            ServerSocket s = null;
-            try {
-                s = new ServerSocket(0);
+            try (final ServerSocket s = new ServerSocket(0)) {
                 return s.getLocalPort();
-            } finally {
-                if (s != null)
-                    s.close();
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
