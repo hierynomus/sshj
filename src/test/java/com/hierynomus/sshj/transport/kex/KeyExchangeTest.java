@@ -22,9 +22,8 @@ import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
-import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.common.kex.BuiltinDHFactories;
-import org.apache.sshd.common.kex.KeyExchange;
+import org.apache.sshd.common.kex.KeyExchangeFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.kex.DHGEXServer;
 import org.apache.sshd.server.kex.DHGServer;
@@ -38,6 +37,7 @@ import java.util.Collections;
 @RunWith(Parameterized.class)
 public class KeyExchangeTest extends BaseAlgorithmTest {
 
+    @SuppressWarnings("deprecation")
     @Parameterized.Parameters(name = "algorithm={0}")
     public static Collection<Object[]> getParameters() {
         return Arrays.asList(new Object[][]{
@@ -56,10 +56,10 @@ public class KeyExchangeTest extends BaseAlgorithmTest {
         });
     }
 
-    private Factory.Named<net.schmizz.sshj.transport.kex.KeyExchange> clientFactory;
-    private NamedFactory<KeyExchange> serverFactory;
+    private final Factory.Named<net.schmizz.sshj.transport.kex.KeyExchange> clientFactory;
+    private final KeyExchangeFactory serverFactory;
 
-    public KeyExchangeTest(NamedFactory<KeyExchange> serverFactory, Factory.Named<net.schmizz.sshj.transport.kex.KeyExchange> clientFactory) {
+    public KeyExchangeTest(KeyExchangeFactory serverFactory, Factory.Named<net.schmizz.sshj.transport.kex.KeyExchange> clientFactory) {
         this.clientFactory = clientFactory;
         this.serverFactory = serverFactory;
     }

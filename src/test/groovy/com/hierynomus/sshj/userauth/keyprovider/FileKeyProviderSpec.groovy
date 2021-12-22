@@ -16,6 +16,7 @@
 package com.hierynomus.sshj.userauth.keyprovider
 
 import com.hierynomus.sshj.test.SshFixture
+import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator
@@ -39,7 +40,14 @@ class FileKeyProviderSpec extends Specification {
   @Unroll
   def "should have #format FileKeyProvider enabled by default"() {
     given:
-    SSHClient client = fixture.setupConnectedDefaultClient()
+    // `fixture` is backed by Apache SSHD server. Looks like it doesn't support rsa-sha2-512 public key signature.
+    // Changing the default config to prioritize the former default implementation of RSA signature.
+    def config = new DefaultConfig()
+    config.prioritizeSshRsaKeyAlgorithm()
+
+    and:
+    SSHClient client = fixture.setupClient(config)
+    fixture.connectClient(client)
 
     when:
     client.authPublickey("jeroen", keyfile)
@@ -48,7 +56,7 @@ class FileKeyProviderSpec extends Specification {
     client.isAuthenticated()
 
     cleanup:
-    client.disconnect()
+    client?.disconnect()
 
     where:
     format | keyfile

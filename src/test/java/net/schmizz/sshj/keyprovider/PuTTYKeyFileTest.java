@@ -209,6 +209,25 @@ public class PuTTYKeyFileTest {
             "oYhmT2+0DKBuBVCAM4qRdA==\n" +
             "Private-MAC: 40ccc8b9a7291ec64e5be0c99badbc8a012bf220\n";
 
+    final static String ppk1024_umlaut_passphrase = "PuTTY-User-Key-File-2: ssh-rsa\n" +
+            "Encryption: aes256-cbc\n" +
+            "Comment: user@host\n" +
+            "Public-Lines: 4\n" +
+            "AAAAB3NzaC1yc2EAAAADAQABAAAAgQDsQv60HaW0301hX/xV3AUcutbDDAJp7KWc\n" +
+            "6swL+H6jhwe3N7FK/SA4492bK5oHwU3ea3X6moLuapTMawMQbRy1kfQm99wcYc7C\n" +
+            "6PJO3uouzjDatc/aByDejbo5OL9kK4Vy7qm6tw1hC0JIM+TCvItKu+t6Myl7xzv4\n" +
+            "KbSHiMzulQ==\n" +
+            "Private-Lines: 8\n" +
+            "hPS6HYs4t8WChglZzo5G/B0ohnw2DQS19HMPllyVr9XfDyT2Xk8ZSTye84r5CtMP\n" +
+            "xF4Qc0nkoStyw9p9Tm762FhkM0iGghLWeCdTyqXVlAA9l3sr0BMJ9AoMvjQBqqns\n" +
+            "gjfPvmtNPFn8sfApHVOv1qSLSGOMZFm/q6KtGuR+IyTnMuZ71b/cQYYHbsAQxt09\n" +
+            "96I7jDhup/4uoi/tcPYhe998wRFSSldkAtcmYGUnDWCiivlP+gZsXvOI2zs2gCxx\n" +
+            "ECEwZNTR/j3G0muRUMf91iZSMBije+41j345F+ZHJ43gYXW6lxjFtI5jr9LRGWF1\n" +
+            "hTeY6IlLt4EBBGNrO8Rn0oGVuQdFQAZaredlt1V5FsgcSaMgg3rlScoz0IHHD66Q\n" +
+            "Hglp/IYN6Sx6OEGjh3oLGImag+Mz9/9WWGXPLhZ4MUpFAWqcTD4qPK0jYxTCM6QC\n" +
+            "TybFqMeCSEKiHSOiOGf2oQ==\n" +
+            "Private-MAC: 6aec23b6267edcb87b05ddef52a80894e3a246c4";
+
     final static String ppkdsa_passphrase = "PuTTY-User-Key-File-2: ssh-dss\n" +
             "Encryption: aes256-cbc\n" +
             "Comment: dsa-key-20140507\n" +
@@ -497,6 +516,15 @@ public class PuTTYKeyFileTest {
     public void testCorrectPassphraseRsa() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
         key.init(new StringReader(ppk1024_passphrase), new UnitTestPasswordFinder("123456"));
+        // Install JCE Unlimited Strength Jurisdiction Policy Files if we get java.security.InvalidKeyException: Illegal key size
+        assertNotNull(key.getPrivate());
+        assertNotNull(key.getPublic());
+    }
+
+    @Test
+    public void testCorrectPassphraseUmlautRsa() throws Exception {
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(ppk1024_umlaut_passphrase), new UnitTestPasswordFinder("äöü"));
         // Install JCE Unlimited Strength Jurisdiction Policy Files if we get java.security.InvalidKeyException: Illegal key size
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());

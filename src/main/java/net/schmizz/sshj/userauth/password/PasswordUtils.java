@@ -67,7 +67,7 @@ public class PasswordUtils {
         CharBuffer charBuffer = CharBuffer.wrap(password);
         final ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(charBuffer);
         byte[] bytes = new byte[byteBuffer.remaining()];
-        byteBuffer.get(bytes);
+        byteBuffer.get(bytes, 0, bytes.length);
         return bytes;
     }
 }
