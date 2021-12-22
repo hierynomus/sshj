@@ -235,14 +235,17 @@ public class SFTPEngine
         if (operativeVersion < 1)
             throw new SFTPException("RENAME is not supported in SFTPv" + operativeVersion);
 
-        long renameFlagMask = 0L;
-        for (RenameFlags flag : flags) {
-            renameFlagMask = renameFlagMask | flag.longValue();
+        final Request request = newRequest(PacketType.RENAME).putString(oldPath, sub.getRemoteCharset()).putString(newPath, sub.getRemoteCharset());
+        // SFTP Version 5 introduced rename flags according to Section 6.5 of the specification
+        if (operativeVersion >= 5) {
+            long renameFlagMask = 0L;
+            for (RenameFlags flag : flags) {
+                renameFlagMask = renameFlagMask | flag.longValue();
+            }
+            request.putUInt32(renameFlagMask);
         }
 
-        doRequest(
-                newRequest(PacketType.RENAME).putString(oldPath, sub.getRemoteCharset()).putString(newPath, sub.getRemoteCharset()).putUInt32(renameFlagMask)
-        ).ensureStatusPacketIsOK();
+        doRequest(request).ensureStatusPacketIsOK();
     }
 
     public String canonicalize(String path)

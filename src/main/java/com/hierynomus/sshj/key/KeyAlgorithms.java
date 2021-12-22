@@ -27,8 +27,6 @@ import java.util.List;
 
 public class KeyAlgorithms {
 
-    public static List<String> SSH_RSA_SHA2_ALGORITHMS = Arrays.asList("rsa-sha2-512", "rsa-sha2-256");
-
     public static Factory SSHRSA() { return new Factory("ssh-rsa", new SignatureRSA.FactorySSHRSA(), KeyType.RSA); }
     public static Factory SSHRSACertV01() { return new Factory("ssh-rsa-cert-v01@openssh.com", new SignatureRSA.FactoryCERT(), KeyType.RSA_CERT); }
     public static Factory RSASHA256() { return new Factory("rsa-sha2-256", new SignatureRSA.FactoryRSASHA256(), KeyType.RSA); }
@@ -59,6 +57,10 @@ public class KeyAlgorithms {
         @Override
         public String getName() {
             return algorithmName;
+        }
+
+        public KeyType getKeyType() {
+            return keyType;
         }
 
         @Override
