@@ -15,14 +15,18 @@
  */
 package com.hierynomus.sshj;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.images.builder.dockerfile.DockerfileBuilder;
+import org.testcontainers.utility.DockerLoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -32,6 +36,20 @@ import java.util.concurrent.Future;
  * A JUnit4 rule for launching a generic SSH server container.
  */
 public class SshdContainer extends GenericContainer<SshdContainer> {
+    /**
+     * A workaround for strange logger names of testcontainers. They contain no dots, but contain slashes,
+     * square brackets, and even emoji. It's uneasy to set the logging level via the XML file of logback, the
+     * result would be less readable than the code below.
+     */
+    public static class DebugLoggingImageFromDockerfile extends ImageFromDockerfile {
+        public DebugLoggingImageFromDockerfile() {
+            super();
+            Logger logger = (Logger) LoggerFactory.getILoggerFactory()
+                    .getLogger(DockerLoggerFactory.getLogger(getDockerImageName()).getName());
+            logger.setLevel(Level.DEBUG);
+        }
+    }
+
     public static class Builder {
         public static final String DEFAULT_SSHD_CONFIG = "" +
                 "PermitRootLogin yes\n" +
@@ -95,7 +113,7 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
         }
 
         private @NotNull Future<String> buildInner() {
-            return new ImageFromDockerfile()
+            return new DebugLoggingImageFromDockerfile()
                     .withDockerfileFromBuilder(Builder::defaultDockerfileBuilder)
                     .withFileFromPath(".", Paths.get("src/itest/docker-image"))
                     .withFileFromString("sshd_config", sshdConfig);
@@ -111,6 +129,16 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
         super(future);
         withExposedPorts(22);
         setWaitStrategy(new SshServerWaitStrategy());
+        withLogConsumer(outputFrame -> {
+            switch (outputFrame.getType()) {
+                case STDOUT:
+                    logger().info("sshd stdout: {}", outputFrame.getUtf8String().stripTrailing());
+                    break;
+                case STDERR:
+                    logger().info("sshd stderr: {}", outputFrame.getUtf8String().stripTrailing());
+                    break;
+            }
+        });
     }
 
     public SSHClient getConnectedClient(Config config) throws IOException {
