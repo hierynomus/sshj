@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj;
 
+import net.schmizz.keepalive.KeepAlive;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -424,6 +425,7 @@ public class SSHClient
     @Override
     public void disconnect()
             throws IOException {
+        conn.getKeepAlive().interrupt();
         for (LocalPortForwarder forwarder : forwarders) {
             try {
                 forwarder.close();
@@ -791,6 +793,10 @@ public class SSHClient
             throws IOException {
         super.onConnect();
         trans.init(getRemoteHostname(), getRemotePort(), getInputStream(), getOutputStream());
+        final KeepAlive keepAliveThread = conn.getKeepAlive();
+        if (keepAliveThread.isEnabled()) {
+            keepAliveThread.start();
+        }
         doKex();
     }
 
