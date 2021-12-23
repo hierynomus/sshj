@@ -16,6 +16,7 @@
 package net.schmizz.sshj;
 
 import net.schmizz.keepalive.KeepAlive;
+import com.hierynomus.sshj.common.ThreadNameProvider;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -56,6 +57,7 @@ import javax.security.auth.login.LoginContext;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
@@ -444,6 +446,16 @@ public class SSHClient
     }
 
     /**
+     * Get Remote Socket Address from Transport
+     *
+     * @return Remote Socket Address or null when not connected
+     */
+    @Override
+    public InetSocketAddress getRemoteSocketAddress() {
+        return trans.getRemoteSocketAddress();
+    }
+
+    /**
      * Returns the character set used to communicate with the remote machine for certain strings (like paths).
      *
      * @return remote character set
@@ -795,6 +807,7 @@ public class SSHClient
         trans.init(getRemoteHostname(), getRemotePort(), getInputStream(), getOutputStream());
         final KeepAlive keepAliveThread = conn.getKeepAlive();
         if (keepAliveThread.isEnabled()) {
+            ThreadNameProvider.setThreadName(conn.getKeepAlive(), trans);
             keepAliveThread.start();
         }
         doKex();

@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.keepalive;
+package com.hierynomus.sshj.common;
 
-import net.schmizz.sshj.common.Message;
-import net.schmizz.sshj.common.SSHPacket;
-import net.schmizz.sshj.connection.ConnectionImpl;
-import net.schmizz.sshj.transport.TransportException;
+import java.net.InetSocketAddress;
 
-final class Heartbeater
-        extends KeepAlive {
-
-    Heartbeater(ConnectionImpl conn) {
-        super(conn, "sshj-Heartbeater");
-    }
-
-    @Override
-    protected void doKeepAlive() throws TransportException {
-        conn.getTransport().write(new SSHPacket(Message.IGNORE));
-    }
+public interface RemoteAddressProvider {
+    /**
+     * Get Remote Socket Address associated with transport connection
+     *
+     * @return Remote Socket Address or null when not connected
+     */
+    InetSocketAddress getRemoteSocketAddress();
 }

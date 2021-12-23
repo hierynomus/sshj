@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
+import com.hierynomus.sshj.common.ThreadNameProvider;
 import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.LoggerFactory;
@@ -68,6 +69,7 @@ public class SFTPEngine
         sub = session.startSubsystem("sftp");
         out = sub.getOutputStream();
         reader = new PacketReader(this);
+        ThreadNameProvider.setThreadName(reader, ssh);
         pathHelper = new PathHelper(new PathHelper.Canonicalizer() {
             @Override
             public String canonicalize(String path)

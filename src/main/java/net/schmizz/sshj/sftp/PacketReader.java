@@ -41,7 +41,7 @@ public class PacketReader extends Thread {
         this.engine = engine;
         log = engine.getLoggerFactory().getLogger(getClass());
         this.in = engine.getSubsystem().getInputStream();
-        setName("sftp reader");
+        setName("sshj-PacketReader");
         setDaemon(true);
     }
 

@@ -15,10 +15,11 @@
  */
 package net.schmizz.sshj.connection.channel.direct;
 
+import com.hierynomus.sshj.common.RemoteAddressProvider;
 import net.schmizz.sshj.common.SSHException;
 
 /** A factory interface for creating SSH {@link Session session channels}. */
-public interface SessionFactory {
+public interface SessionFactory extends RemoteAddressProvider {
 
     /**
      * Opens a {@code session} channel. The returned {@link Session} instance allows {@link Session#exec(String)
@@ -27,7 +28,7 @@ public interface SessionFactory {
      *
      * @return the opened {@code session} channel
      *
-     * @throws SSHException
+     * @throws SSHException Thrown on session initialization failures
      * @see Session
      */
     Session startSession()

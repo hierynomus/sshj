@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.common.ThreadNameProvider;
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import com.hierynomus.sshj.key.KeyAlgorithms;
 import com.hierynomus.sshj.transport.IdentificationStringParser;
@@ -22,7 +23,6 @@ import net.schmizz.concurrent.ErrorDeliveryUtil;
 import net.schmizz.concurrent.Event;
 import net.schmizz.sshj.AbstractService;
 import net.schmizz.sshj.Config;
-import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.Service;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -128,8 +129,8 @@ public final class TransportImpl
     public TransportImpl(Config config) {
         this.config = config;
         this.loggerFactory = config.getLoggerFactory();
-        this.serviceAccept = new Event<TransportException>("service accept", TransportException.chainer, loggerFactory);
-        this.close = new Event<TransportException>("transport close", TransportException.chainer, loggerFactory);
+        this.serviceAccept = new Event<>("service accept", TransportException.chainer, loggerFactory);
+        this.close = new Event<>("transport close", TransportException.chainer, loggerFactory);
         this.nullService = new NullService(this);
         this.service = nullService;
         this.log = loggerFactory.getLogger(getClass());
@@ -163,7 +164,18 @@ public final class TransportImpl
             throw new TransportException(e);
         }
 
+        ThreadNameProvider.setThreadName(reader, this);
         reader.start();
+    }
+
+    /**
+     * Get Remote Socket Address using Connection Information
+     *
+     * @return Remote Socket Address or null when not connected
+     */
+    @Override
+    public InetSocketAddress getRemoteSocketAddress() {
+        return connInfo == null ? null : new InetSocketAddress(getRemoteHost(), getRemotePort());
     }
 
     /**
@@ -209,7 +221,7 @@ public final class TransportImpl
      *
      * @param buffer The buffer to read from.
      * @return empty string if full ident string has not yet been received
-     * @throws IOException
+     * @throws IOException Thrown when protocol version is not supported
      */
     private String readIdentification(Buffer.PlainBuffer buffer)
             throws IOException {
@@ -542,7 +554,7 @@ public final class TransportImpl
      * Got an SSH_MSG_UNIMPLEMENTED, so lets see where we're at and act accordingly.
      *
      * @param packet The 'unimplemented' packet received
-     * @throws TransportException
+     * @throws TransportException Thrown when key exchange is ongoing
      */
     private void gotUnimplemented(SSHPacket packet)
             throws SSHException {
