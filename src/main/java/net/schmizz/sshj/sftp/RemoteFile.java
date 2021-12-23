@@ -15,17 +15,17 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.concurrent.Promise;
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.sftp.Response.StatusCode;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-
-import net.schmizz.concurrent.Promise;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.sftp.Response.StatusCode;
 
 public class RemoteFile
         extends RemoteResource {
@@ -126,7 +126,7 @@ public class RemoteFile
         public RemoteFileOutputStream(long startingOffset, int maxUnconfirmedWrites) {
             this.fileOffset = startingOffset;
             this.maxUnconfirmedWrites = maxUnconfirmedWrites;
-            this.unconfirmedWrites = new ConcurrentLinkedQueue<Promise<Response, SFTPException>>();
+            this.unconfirmedWrites = new LinkedList<Promise<Response, SFTPException>>();
         }
 
         @Override
@@ -138,7 +138,7 @@ public class RemoteFile
         @Override
         public void write(byte[] buf, int off, int len) throws IOException {
             if (unconfirmedWrites.size() > maxUnconfirmedWrites) {
-                checkWriteResponse(unconfirmedWrites.poll());
+                checkWriteResponse(unconfirmedWrites.remove());
             }
             unconfirmedWrites.add(RemoteFile.this.asyncWrite(fileOffset, buf, off, len));
             fileOffset += len;
@@ -147,7 +147,7 @@ public class RemoteFile
         @Override
         public void flush() throws IOException {
             while (!unconfirmedWrites.isEmpty()) {
-                checkWriteResponse(unconfirmedWrites.poll());
+                checkWriteResponse(unconfirmedWrites.remove());
             }
         }
 
@@ -224,9 +224,9 @@ public class RemoteFile
         private final byte[] b = new byte[1];
 
         private final int maxUnconfirmedReads;
-        private final long maxOffset;
-        private final Queue<Promise<Response, SFTPException>> unconfirmedReads = new ConcurrentLinkedQueue<Promise<Response, SFTPException>>();
-        private final Queue<Long> unconfirmedReadOffsets = new ConcurrentLinkedQueue<Long>();
+        private final long readAheadLimit;
+        private final Queue<Promise<Response, SFTPException>> unconfirmedReads = new LinkedList<Promise<Response, SFTPException>>();
+        private final Queue<Long> unconfirmedReadOffsets = new LinkedList<Long>();
 
         private long requestOffset;
         private long responseOffset;
@@ -240,22 +240,30 @@ public class RemoteFile
          *
          * @param maxUnconfirmedReads Maximum number of unconfirmed requests to send
          * @param fileOffset Initial offset in file to read from
-         * @param maxLength Maximum length to read
+         * @param readAheadLimit Read ahead is disabled after this limit has been reached
          */
-        public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads, long fileOffset, long maxLength) {
+        public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads, long fileOffset, long readAheadLimit) {
             assert 0 <= maxUnconfirmedReads;
             assert 0 <= fileOffset;
 
             this.maxUnconfirmedReads = maxUnconfirmedReads;
             this.requestOffset = this.responseOffset = fileOffset;
-            this.maxOffset = maxLength > 0 ? fileOffset + maxLength : Long.MAX_VALUE;
+            this.readAheadLimit = readAheadLimit > 0 ? fileOffset + readAheadLimit : Long.MAX_VALUE;
         }
 
         private ByteArrayInputStream pending = new ByteArrayInputStream(new byte[0]);
 
-        private boolean retrieveUnconfirmedRead() throws IOException {
-            unconfirmedReadOffsets.poll();
-            final Response res = unconfirmedReads.poll().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
+        private boolean retrieveUnconfirmedRead(boolean blocking) throws IOException {
+            if (unconfirmedReads.size() <= 0) {
+                return false;
+            }
+
+            if (!blocking && !unconfirmedReads.peek().isDelivered()) {
+                return false;
+            }
+
+            unconfirmedReadOffsets.remove();
+            final Response res = unconfirmedReads.remove().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             switch (res.getType()) {
                 case DATA:
                     int recvLen = res.readUInt32AsInt();
@@ -291,10 +299,16 @@ public class RemoteFile
                 while (unconfirmedReads.size() <= maxUnconfirmedReads) {
                     // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
                     int reqLen = Math.max(1024, len); // don't be shy!
+                    if (readAheadLimit > requestOffset) {
+                        long remaining = readAheadLimit - requestOffset;
+                        if (reqLen > remaining) {
+                            reqLen = (int) remaining;
+                        }
+                    }
                     unconfirmedReads.add(RemoteFile.this.asyncRead(requestOffset, reqLen));
                     unconfirmedReadOffsets.add(requestOffset);
                     requestOffset += reqLen;
-                    if (requestOffset >= maxOffset) {
+                    if (requestOffset >= readAheadLimit) {
                         break;
                     }
                 }
@@ -324,8 +338,12 @@ public class RemoteFile
 
                     responseOffset += recvLen;
                     pending = new ByteArrayInputStream(buf, 0, recvLen);
-                } else {
-                    retrieveUnconfirmedRead();
+                } else if (!retrieveUnconfirmedRead(true /*blocking*/)) {
+
+                    // this may happen if we change prefetch strategy
+                    // currently, we should never get here...
+
+                    throw new IllegalStateException("Could not retrieve data for pending read request");
                 }
             }
 
@@ -336,8 +354,7 @@ public class RemoteFile
         public int available() throws IOException {
             boolean lastRead = true;
             while (!eof && (pending.available() <= 0) && lastRead) {
-              // Blocking
-              lastRead = retrieveUnconfirmedRead();
+                lastRead = retrieveUnconfirmedRead(false /*blocking*/);
             }
             return pending.available();
         }
