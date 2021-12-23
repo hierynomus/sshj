@@ -37,7 +37,7 @@ public class KeepAliveRunner extends KeepAlive {
             new LinkedList<Promise<SSHPacket, ConnectionException>>();
 
     KeepAliveRunner(ConnectionImpl conn) {
-        super(conn, "keep-alive");
+        super(conn, "sshj-KeepAliveRunner");
     }
 
     synchronized public int getMaxAliveCount() {
