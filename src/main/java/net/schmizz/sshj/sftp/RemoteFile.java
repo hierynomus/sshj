@@ -224,7 +224,7 @@ public class RemoteFile
         private final byte[] b = new byte[1];
 
         private final int maxUnconfirmedReads;
-        private final long maxOffset;
+        private final long readAheadLimit;
         private final Queue<Promise<Response, SFTPException>> unconfirmedReads = new LinkedList<Promise<Response, SFTPException>>();
         private final Queue<Long> unconfirmedReadOffsets = new LinkedList<Long>();
 
@@ -240,15 +240,15 @@ public class RemoteFile
          *
          * @param maxUnconfirmedReads Maximum number of unconfirmed requests to send
          * @param fileOffset Initial offset in file to read from
-         * @param maxLength Maximum length to read
+         * @param readAheadLimit Read ahead is disabled after this limit has been reached
          */
-        public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads, long fileOffset, long maxLength) {
+        public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads, long fileOffset, long readAheadLimit) {
             assert 0 <= maxUnconfirmedReads;
             assert 0 <= fileOffset;
 
             this.maxUnconfirmedReads = maxUnconfirmedReads;
             this.requestOffset = this.responseOffset = fileOffset;
-            this.maxOffset = maxLength > 0 ? fileOffset + maxLength : Long.MAX_VALUE;
+            this.readAheadLimit = readAheadLimit > 0 ? fileOffset + readAheadLimit : Long.MAX_VALUE;
         }
 
         private ByteArrayInputStream pending = new ByteArrayInputStream(new byte[0]);
@@ -299,10 +299,16 @@ public class RemoteFile
                 while (unconfirmedReads.size() <= maxUnconfirmedReads) {
                     // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
                     int reqLen = Math.max(1024, len); // don't be shy!
+                    if (readAheadLimit > requestOffset) {
+                        long remaining = readAheadLimit - requestOffset;
+                        if (reqLen > remaining) {
+                            reqLen = (int) remaining;
+                        }
+                    }
                     unconfirmedReads.add(RemoteFile.this.asyncRead(requestOffset, reqLen));
                     unconfirmedReadOffsets.add(requestOffset);
                     requestOffset += reqLen;
-                    if (requestOffset >= maxOffset) {
+                    if (requestOffset >= readAheadLimit) {
                         break;
                     }
                 }
