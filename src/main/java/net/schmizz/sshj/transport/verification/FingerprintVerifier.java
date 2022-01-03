@@ -24,12 +24,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import net.schmizz.sshj.common.Base64;
+import com.hierynomus.sshj.common.codec.Base64Decoder;
+import com.hierynomus.sshj.common.codec.Base64Provider;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
 
 public class FingerprintVerifier implements HostKeyVerifier {
+    private static final Base64Decoder BASE_64_DECODER = Base64Provider.getDecoder();
     private static final Pattern MD5_FINGERPRINT_PATTERN = Pattern.compile("[0-9a-f]{2}+(:[0-9a-f]{2}+){15}+");
     /**
      * Valid examples:
@@ -110,7 +112,7 @@ public class FingerprintVerifier implements HostKeyVerifier {
         while (base64FingerprintBuilder.length() % 4 != 0) {
             base64FingerprintBuilder.append("=");
         }
-        fingerprintData = Base64.decode(base64FingerprintBuilder.toString());
+        fingerprintData = BASE_64_DECODER.decode(base64FingerprintBuilder.toString());
     }
 
     @Override

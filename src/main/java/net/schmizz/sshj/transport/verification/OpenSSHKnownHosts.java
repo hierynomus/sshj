@@ -16,6 +16,9 @@
 package net.schmizz.sshj.transport.verification;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
+import com.hierynomus.sshj.common.codec.Base64Decoder;
+import com.hierynomus.sshj.common.codec.Base64Encoder;
+import com.hierynomus.sshj.common.codec.Base64Provider;
 import com.hierynomus.sshj.transport.verification.KnownHostMatchers;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import net.schmizz.sshj.common.*;
@@ -36,7 +39,8 @@ import java.util.List;
  */
 public class OpenSSHKnownHosts
         implements HostKeyVerifier {
-
+    private static final Base64Decoder BASE_64_DECODER = Base64Provider.getDecoder();
+    private static final Base64Encoder BASE_64_ENCODER = Base64Provider.getEncoder();
     protected final Logger log;
 
     protected final File khFile;
@@ -274,7 +278,7 @@ public class OpenSSHKnownHosts
             if (type != KeyType.UNKNOWN) {
                 final String sKey = split[i++];
                 try {
-                    byte[] keyBytes = Base64.decode(sKey);
+                    byte[] keyBytes = BASE_64_DECODER.decode(sKey);
                     key = new Buffer.PlainBuffer(keyBytes).readPublicKey();
                 } catch (IOException ioe) {
                     log.warn("Error decoding Base64 key bytes", ioe);
@@ -453,8 +457,7 @@ public class OpenSSHKnownHosts
         }
 
         private String getKeyString(PublicKey pk) {
-            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(pk);
-            return Base64.encodeBytes(buf.array(), buf.rpos(), buf.available());
+            return BASE_64_ENCODER.encode(pk.getEncoded());
         }
 
         protected String getHostPart() {

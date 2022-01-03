@@ -17,6 +17,8 @@ package com.hierynomus.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
+import com.hierynomus.sshj.common.codec.Base64Decoder;
+import com.hierynomus.sshj.common.codec.Base64Provider;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -53,6 +55,7 @@ import java.util.Arrays;
  * The format is described in the following document: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key
  */
 public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
+    private static final Base64Decoder BASE_64_DECODER = Base64Provider.getDecoder();
     private static final Logger logger = LoggerFactory.getLogger(OpenSSHKeyV1KeyFile.class);
     private static final String BEGIN = "-----BEGIN ";
     private static final String END = "-----END ";
@@ -99,7 +102,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             }
 
             String keyFile = readKeyFile(reader);
-            byte[] decode = Base64.decode(keyFile);
+            byte[] decode = BASE_64_DECODER.decode(keyFile);
             PlainBuffer keyBuffer = new PlainBuffer(decode);
             return readDecodedKeyPair(keyBuffer);
 

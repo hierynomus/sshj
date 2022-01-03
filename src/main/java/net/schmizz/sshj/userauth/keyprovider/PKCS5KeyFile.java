@@ -16,8 +16,9 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
+import com.hierynomus.sshj.common.codec.Base64Decoder;
+import com.hierynomus.sshj.common.codec.Base64Provider;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
-import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.KeyType;
@@ -39,7 +40,7 @@ import java.util.Arrays;
  * Represents a PKCS5-encoded key file. This is the format typically used by OpenSSH, OpenSSL, Amazon, etc.
  */
 public class PKCS5KeyFile extends BaseFileKeyProvider {
-
+    private static final Base64Decoder BASE_64_DECODER = Base64Provider.getDecoder();
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
@@ -138,7 +139,7 @@ public class PKCS5KeyFile extends BaseFileKeyProvider {
             if (type == null) {
                 throw new FormatException("PKCS5 header not found");
             }
-            ASN1Data asn = new ASN1Data(data = decrypt(Base64.decode(sb.toString()), cipher, iv));
+            ASN1Data asn = new ASN1Data(data = decrypt(BASE_64_DECODER.decode(sb.toString()), cipher, iv));
             switch (type) {
                 case RSA: {
                     KeyFactory factory = KeyFactory.getInstance(KeyAlgorithm.RSA);

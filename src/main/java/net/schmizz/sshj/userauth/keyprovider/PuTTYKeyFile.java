@@ -16,13 +16,14 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
+import com.hierynomus.sshj.common.codec.Base64Decoder;
+import com.hierynomus.sshj.common.codec.Base64Provider;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
-import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -44,8 +45,6 @@ import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -75,7 +74,7 @@ import java.util.Map;
  * @version $Id:$
  */
 public class PuTTYKeyFile extends BaseFileKeyProvider {
-
+    private static final Base64Decoder BASE_64_DECODER = Base64Provider.getDecoder();
     public static class Factory implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
         @Override
@@ -243,7 +242,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             throw new IOException("Invalid key file format: missing \"PuTTY-User-Key-File-?\" entry");
         }
         // Retrieve keys from payload
-        publicKey = Base64.decode(payload.get("Public-Lines"));
+        publicKey = BASE_64_DECODER.decode(payload.get("Public-Lines"));
         if (this.isEncrypted()) {
             final char[] passphrase;
             if (pwdf != null) {
@@ -252,7 +251,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 passphrase = "".toCharArray();
             }
             try {
-                privateKey = this.decrypt(Base64.decode(payload.get("Private-Lines")), passphrase);
+                privateKey = this.decrypt(BASE_64_DECODER.decode(payload.get("Private-Lines")), passphrase);
                 Mac mac;
                 if (this.keyFileVersion <= 2) {
                     mac = this.prepareVerifyMacV2(passphrase);
@@ -264,7 +263,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 PasswordUtils.blankOut(passphrase);
             }
         } else {
-            privateKey = Base64.decode(payload.get("Private-Lines"));
+            privateKey = BASE_64_DECODER.decode(payload.get("Private-Lines"));
         }
     }
 
