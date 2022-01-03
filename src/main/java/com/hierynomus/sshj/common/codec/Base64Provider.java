@@ -32,29 +32,11 @@ public class Base64Provider {
     }
 
     static Object getStandardDecoder() {
-        final Class<?> standardClass = getStandardBase64Class();
-        if (standardClass == null) {
-            return null;
-        }
-        try {
-            final Method method = standardClass.getMethod("getDecoder");
-            return method.invoke(null);
-        } catch (final Throwable e) {
-            return null;
-        }
+        return getStandardProperty("getDecoder");
     }
 
     static Object getStandardEncoder() {
-        final Class<?> standardClass = getStandardBase64Class();
-        if (standardClass == null) {
-            return null;
-        }
-        try {
-            final Method method = standardClass.getMethod("getEncoder");
-            return method.invoke(null);
-        } catch (final Throwable e) {
-            return null;
-        }
+        return getStandardProperty("getEncoder");
     }
 
     static boolean isStandardBase64Supported() {
@@ -64,6 +46,19 @@ public class Base64Provider {
     static Class<?> getStandardBase64Class() {
         try {
             return Class.forName("java.util.Base64");
+        } catch (final Throwable e) {
+            return null;
+        }
+    }
+
+    private static Object getStandardProperty(final String methodName) {
+        final Class<?> standardClass = getStandardBase64Class();
+        if (standardClass == null) {
+            return null;
+        }
+        try {
+            final Method method = standardClass.getMethod(methodName);
+            return method.invoke(null);
         } catch (final Throwable e) {
             return null;
         }
