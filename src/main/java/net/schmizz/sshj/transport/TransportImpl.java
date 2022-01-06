@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -637,15 +638,18 @@ public final class TransportImpl
     }
 
     @Override
-    public KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException {
+    public List<KeyAlgorithm> getClientKeyAlgorithms(KeyType keyType) throws TransportException {
         List<Factory.Named<KeyAlgorithm>> factories = getConfig().getKeyAlgorithms();
+        List<KeyAlgorithm> available = new ArrayList<>();
         if (factories != null)
             for (Factory.Named<KeyAlgorithm> f : factories)
                 if (
                         f instanceof KeyAlgorithms.Factory && ((KeyAlgorithms.Factory) f).getKeyType().equals(keyType)
-                        || !(f instanceof KeyAlgorithms.Factory) && f.getName().equals(keyType.toString())
+                                || !(f instanceof KeyAlgorithms.Factory) && f.getName().equals(keyType.toString())
                 )
-                    return f.create();
-        throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
+                    available.add(f.create());
+        if (available.isEmpty())
+            throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
+        return available;
     }
 }
