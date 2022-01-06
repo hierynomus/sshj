@@ -28,6 +28,7 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /** Transport layer of the SSH protocol. */
@@ -224,5 +225,5 @@ public interface Transport
     void die(Exception e);
 
     KeyAlgorithm getHostKeyAlgorithm();
-    KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException;
+    List<KeyAlgorithm> getClientKeyAlgorithms(KeyType keyType) throws TransportException;
 }
