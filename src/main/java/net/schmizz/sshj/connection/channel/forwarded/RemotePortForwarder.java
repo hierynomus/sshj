@@ -142,6 +142,10 @@ public class RemotePortForwarder
                 // Listen on all IPv4
                 return true;
             }
+            if ("0.0.0.0".equals(address) && "0:0:0:0:0:0:0:0".equals(channelForward.address)) {
+                // Handle IPv4 requests on IPv6 channel forward
+                return true;
+            }
             return false;
         }
 

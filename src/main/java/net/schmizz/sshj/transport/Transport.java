@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.common.RemoteAddressProvider;
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.Service;
@@ -27,11 +28,12 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /** Transport layer of the SSH protocol. */
 public interface Transport
-        extends SSHPacketHandler {
+        extends SSHPacketHandler, RemoteAddressProvider {
 
     /**
      * Sets the host information and the streams to be used by this transport. Identification information is exchanged
@@ -208,7 +210,7 @@ public interface Transport
     /**
      * Specify a {@code listener} that will be notified upon disconnection.
      *
-     * @param listener
+     * @param listener Disconnect Listener to be configured
      */
     void setDisconnectListener(DisconnectListener listener);
 
@@ -223,5 +225,5 @@ public interface Transport
     void die(Exception e);
 
     KeyAlgorithm getHostKeyAlgorithm();
-    KeyAlgorithm getClientKeyAlgorithm(KeyType keyType) throws TransportException;
+    List<KeyAlgorithm> getClientKeyAlgorithms(KeyType keyType) throws TransportException;
 }

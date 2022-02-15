@@ -20,6 +20,7 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.OpenMode;
 import net.schmizz.sshj.sftp.RemoteFile;
 import net.schmizz.sshj.sftp.SFTPEngine;
+import net.schmizz.sshj.sftp.SFTPException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -32,6 +33,7 @@ import java.util.Random;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public class RemoteFileTest {
     @Rule
@@ -59,6 +61,94 @@ public class RemoteFileTest {
 
         rf = sftp.open(file.getPath());
         InputStream rs = rf.new ReadAheadRemoteFileInputStream(16 /*maxUnconfirmedReads*/);
+
+        byte[] test = new byte[4097];
+        int n = 0;
+
+        while (n < 2048) {
+            n += rs.read(test, n, 2048 - n);
+        }
+
+        while (n < 3072) {
+            n += rs.read(test, n, 3072 - n);
+        }
+
+        assertThat("buffer overrun", test[3072] == 0);
+
+        n += rs.read(test, n, test.length - n); // --> ArrayIndexOutOfBoundsException
+
+        byte[] test2 = new byte[data.length];
+        System.arraycopy(test, 0, test2, 0, test.length);
+
+        while (n < data.length) {
+            n += rs.read(test2, n, data.length - n);
+        }
+
+        assertThat("The written and received data should match", data, equalTo(test2));
+    }
+
+    @Test
+    public void shouldNotReadAheadAfterLimitInputStream() throws IOException {
+        SSHClient ssh = fixture.setupConnectedDefaultClient();
+        ssh.authPassword("test", "test");
+        SFTPEngine sftp = new SFTPEngine(ssh).init();
+
+        RemoteFile rf;
+        File file = temp.newFile("SftpReadAheadLimitTest.bin");
+        rf = sftp.open(file.getPath(), EnumSet.of(OpenMode.WRITE, OpenMode.CREAT));
+        byte[] data = new byte[8192];
+        new Random(53).nextBytes(data);
+        data[3072] = 1;
+        rf.write(0, data, 0, data.length);
+        rf.close();
+
+        assertThat("The file should exist", file.exists());
+
+        rf = sftp.open(file.getPath());
+        InputStream rs = rf.new ReadAheadRemoteFileInputStream(16 /*maxUnconfirmedReads*/,0, 3072);
+
+        byte[] test = new byte[4097];
+        int n = 0;
+
+        while (n < 2048) {
+            n += rs.read(test, n, 2048 - n);
+        }
+
+        rf.close();
+
+        while (n < 3072) {
+            n += rs.read(test, n, 3072 - n);
+        }
+
+        assertThat("buffer overrun", test[3072] == 0);
+
+        try {
+            rs.read(test, n, test.length - n);
+            fail("Content must not be buffered");
+        } catch (SFTPException e){
+            // expected
+        }
+    }
+
+    @Test
+    public void limitedReadAheadInputStream() throws IOException {
+        SSHClient ssh = fixture.setupConnectedDefaultClient();
+        ssh.authPassword("test", "test");
+        SFTPEngine sftp = new SFTPEngine(ssh).init();
+
+        RemoteFile rf;
+        File file = temp.newFile("SftpReadAheadLimitedTest.bin");
+        rf = sftp.open(file.getPath(), EnumSet.of(OpenMode.WRITE, OpenMode.CREAT));
+        byte[] data = new byte[8192];
+        new Random(53).nextBytes(data);
+        data[3072] = 1;
+        rf.write(0, data, 0, data.length);
+        rf.close();
+
+        assertThat("The file should exist", file.exists());
+
+        rf = sftp.open(file.getPath());
+        InputStream rs = rf.new ReadAheadRemoteFileInputStream(16 /*maxUnconfirmedReads*/,0, 3072);
 
         byte[] test = new byte[4097];
         int n = 0;

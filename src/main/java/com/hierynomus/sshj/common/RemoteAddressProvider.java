@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hierynomus.sshj.backport;
+package com.hierynomus.sshj.common;
 
-public class JavaVersion {
-    public static boolean isJava7OrEarlier() {
-        String property = System.getProperty("java.specification.version");
-        float diff = Float.parseFloat(property) - 1.7f;
+import java.net.InetSocketAddress;
 
-        return diff < 0.01;
-    }
-
+public interface RemoteAddressProvider {
+    /**
+     * Get Remote Socket Address associated with transport connection
+     *
+     * @return Remote Socket Address or null when not connected
+     */
+    InetSocketAddress getRemoteSocketAddress();
 }
