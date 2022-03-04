@@ -220,16 +220,42 @@ public class RemoteFile
 
     public class ReadAheadRemoteFileInputStream
             extends InputStream {
+        private class UnconfirmedRead {
+            private final long offset;
+            private final Promise<Response, SFTPException> promise;
+            private final int length;
+
+            private UnconfirmedRead(long offset, int length, Promise<Response, SFTPException> promise) {
+                this.offset = offset;
+                this.length = length;
+                this.promise = promise;
+            }
+
+            UnconfirmedRead(long offset, int length) throws IOException {
+                this(offset, length, RemoteFile.this.asyncRead(offset, length));
+            }
+
+            public long getOffset() {
+                return offset;
+            }
+
+            public Promise<Response, SFTPException> getPromise() {
+                return promise;
+            }
+
+            public int getLength() {
+                return length;
+            }
+        }
 
         private final byte[] b = new byte[1];
 
         private final int maxUnconfirmedReads;
         private final long readAheadLimit;
-        private final Queue<Promise<Response, SFTPException>> unconfirmedReads = new LinkedList<Promise<Response, SFTPException>>();
-        private final Queue<Long> unconfirmedReadOffsets = new LinkedList<Long>();
+        private final Queue<UnconfirmedRead> unconfirmedReads = new LinkedList<>();
 
-        private long requestOffset;
-        private long responseOffset;
+        private long currentOffset;
+        private int maxReadLength = Integer.MAX_VALUE;
         private boolean eof;
 
         public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads) {
@@ -247,28 +273,42 @@ public class RemoteFile
             assert 0 <= fileOffset;
 
             this.maxUnconfirmedReads = maxUnconfirmedReads;
-            this.requestOffset = this.responseOffset = fileOffset;
+            this.currentOffset = fileOffset;
             this.readAheadLimit = readAheadLimit > 0 ? fileOffset + readAheadLimit : Long.MAX_VALUE;
         }
 
         private ByteArrayInputStream pending = new ByteArrayInputStream(new byte[0]);
 
         private boolean retrieveUnconfirmedRead(boolean blocking) throws IOException {
-            if (unconfirmedReads.size() <= 0) {
+            final UnconfirmedRead unconfirmedRead = unconfirmedReads.peek();
+            if (unconfirmedRead == null || !blocking && !unconfirmedRead.getPromise().isDelivered()) {
                 return false;
             }
+            unconfirmedReads.remove(unconfirmedRead);
 
-            if (!blocking && !unconfirmedReads.peek().isDelivered()) {
-                return false;
-            }
-
-            unconfirmedReadOffsets.remove();
-            final Response res = unconfirmedReads.remove().retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
+            final Response res = unconfirmedRead.promise.retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
             switch (res.getType()) {
                 case DATA:
                     int recvLen = res.readUInt32AsInt();
-                    responseOffset += recvLen;
-                    pending = new ByteArrayInputStream(res.array(), res.rpos(), recvLen);
+                    if (unconfirmedRead.offset == currentOffset) {
+                        currentOffset += recvLen;
+                        pending = new ByteArrayInputStream(res.array(), res.rpos(), recvLen);
+
+                        if (recvLen < unconfirmedRead.length) {
+                            // The server returned a packet smaller than the client had requested.
+                            // It can be caused by at least one of the following:
+                            // * The file has been read fully. Then, few futile read requests can be sent during
+                            //   the next read(), but the file will be downloaded correctly anyway.
+                            // * The server shapes the request length. Then, the read window will be adjusted,
+                            //   and all further read-ahead requests won't be shaped.
+                            // * The file on the server is not a regular file, it is something like fifo.
+                            //   Then, the window will shrink, and the client will start reading the file slower than it
+                            //   hypothetically can. It must be a rare case, and it is not worth implementing a sort of
+                            //   congestion control algorithm here.
+                            maxReadLength = recvLen;
+                            unconfirmedReads.clear();
+                        }
+                    }
                     break;
 
                 case STATUS:
@@ -296,49 +336,24 @@ public class RemoteFile
                 // we also need to go here for len <= 0, because pending may be at
                 // EOF in which case it would return -1 instead of 0
 
+                long requestOffset = currentOffset;
                 while (unconfirmedReads.size() <= maxUnconfirmedReads) {
                     // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
-                    int reqLen = Math.max(1024, len); // don't be shy!
+                    int reqLen = Math.min(Math.max(1024, len), maxReadLength);
                     if (readAheadLimit > requestOffset) {
                         long remaining = readAheadLimit - requestOffset;
                         if (reqLen > remaining) {
                             reqLen = (int) remaining;
                         }
                     }
-                    unconfirmedReads.add(RemoteFile.this.asyncRead(requestOffset, reqLen));
-                    unconfirmedReadOffsets.add(requestOffset);
+                    unconfirmedReads.add(new UnconfirmedRead(requestOffset, reqLen));
                     requestOffset += reqLen;
                     if (requestOffset >= readAheadLimit) {
                         break;
                     }
                 }
 
-                long nextOffset = unconfirmedReadOffsets.peek();
-                if (responseOffset != nextOffset) {
-
-                    // the server could not give us all the data we needed, so
-                    // we try to fill the gap synchronously
-
-                    assert responseOffset < nextOffset;
-                    assert 0 < (nextOffset - responseOffset);
-                    assert (nextOffset - responseOffset) <= Integer.MAX_VALUE;
-
-                    byte[] buf = new byte[(int) (nextOffset - responseOffset)];
-                    int recvLen = RemoteFile.this.read(responseOffset, buf, 0, buf.length);
-
-                    if (recvLen < 0) {
-                        eof = true;
-                        return -1;
-                    }
-
-                    if (0 == recvLen) {
-                        // avoid infinite loops
-                        throw new SFTPException("Unexpected response size (0), bailing out");
-                    }
-
-                    responseOffset += recvLen;
-                    pending = new ByteArrayInputStream(buf, 0, recvLen);
-                } else if (!retrieveUnconfirmedRead(true /*blocking*/)) {
+                if (!retrieveUnconfirmedRead(true /*blocking*/)) {
 
                     // this may happen if we change prefetch strategy
                     // currently, we should never get here...
