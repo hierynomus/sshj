@@ -80,6 +80,7 @@ class IntegrationSpec extends Specification {
         "id_ecdsa_opensshv1" | null
         "id_ed25519_opensshv1" | null
         "id_ed25519_opensshv1_aes256cbc.pem" | "foobar"
+        "id_ed25519_opensshv1_aes128cbc.pem" | "sshjtest"
         "id_ed25519_opensshv1_protected" | "sshjtest"
         "id_rsa" | null
         "id_rsa_opensshv1" | null
