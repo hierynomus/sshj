@@ -177,11 +177,11 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 Arrays.fill(charBuffer.array(), '\u0000');
                 Arrays.fill(byteBuffer.array(), (byte) 0);
             }
-            byte[] keyiv = new byte[48];
+            byte[] keyiv = new byte[cipher.getIVSize()+ cipher.getBlockSize()];
             new BCrypt().pbkdf(passphrase, opts.readBytes(), opts.readUInt32AsInt(), keyiv);
             Arrays.fill(passphrase, (byte) 0);
-            byte[] key = Arrays.copyOfRange(keyiv, 0, 32);
-            byte[] iv = Arrays.copyOfRange(keyiv, 32, 48);
+            byte[] key = Arrays.copyOfRange(keyiv, 0, cipher.getBlockSize());
+            byte[] iv = Arrays.copyOfRange(keyiv, cipher.getBlockSize(), cipher.getIVSize() + cipher.getBlockSize());
             cipher.init(Cipher.Mode.Decrypt, key, iv);
         } else {
             throw new IllegalStateException("No support for KDF '" + kdfName + "'.");
@@ -193,6 +193,8 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             return BlockCiphers.AES256CTR().create();
         } else if (cipherName.equals(BlockCiphers.AES256CBC().getName())) {
             return BlockCiphers.AES256CBC().create();
+        } else if (cipherName.equals(BlockCiphers.AES128CBC().getName())) {
+            return BlockCiphers.AES128CBC().create();
         }
         throw new IllegalStateException("Cipher '" + cipherName + "' not currently implemented for openssh-key-v1 format");
     }
