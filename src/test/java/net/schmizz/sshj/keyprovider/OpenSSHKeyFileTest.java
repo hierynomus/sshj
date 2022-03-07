@@ -247,6 +247,12 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar", true);
     }
 
+    @Test
+    public void shouldLoadProtectedED25519PrivateKeyAes128CBC() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes128cbc.pem", "sshjtest", false);
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes128cbc.pem", "sshjtest", true);
+    }
+
     @Test(expected = KeyDecryptionFailedException.class)
     public void shouldFailOnIncorrectPassphraseAfterRetries() throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
