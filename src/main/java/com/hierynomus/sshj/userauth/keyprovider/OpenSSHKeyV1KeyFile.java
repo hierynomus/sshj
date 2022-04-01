@@ -218,6 +218,9 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         while (line != null && !line.startsWith(BEGIN)) {
             line = reader.readLine();
         }
+        if (line == null) {
+            return false;
+        }
         line = line.substring(BEGIN.length());
         return line.startsWith(OPENSSH_PRIVATE_KEY);
     }
