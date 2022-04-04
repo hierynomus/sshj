@@ -32,6 +32,19 @@ public interface FileTransfer {
             throws IOException;
 
     /**
+     * This is meant to delegate to {@link #upload(LocalSourceFile, String)} with the {@code localPath} wrapped as e.g.
+     * a {@link FileSystemFile}. Attempts to resume with the {@code resume} flag.
+     *
+     * @param localPath
+     * @param remotePath
+     * @param resume
+     *
+     * @throws IOException
+     */
+    void upload(String localPath, String remotePath, boolean resume)
+            throws IOException;
+
+    /**
      * This is meant to delegate to {@link #download(String, LocalDestFile)} with the {@code localPath} wrapped as e.g.
      * a {@link FileSystemFile}.
      *
@@ -41,6 +54,19 @@ public interface FileTransfer {
      * @throws IOException
      */
     void download(String remotePath, String localPath)
+            throws IOException;
+
+    /**
+     * This is meant to delegate to {@link #download(String, LocalDestFile)} with the {@code localPath} wrapped as e.g.
+     * a {@link FileSystemFile}. Attempts to resume with the {@code resume} flag.
+     *
+     * @param localPath
+     * @param remotePath
+     * @param resume
+     *
+     * @throws IOException
+     */
+    void download(String remotePath, String localPath, boolean resume)
             throws IOException;
 
     /**
@@ -55,6 +81,18 @@ public interface FileTransfer {
             throws IOException;
 
     /**
+     * Upload {@code localFile} to {@code remotePath}. Attempts to resume with the {@code resume} flag.
+     *
+     * @param localFile
+     * @param remotePath
+     * @param resume
+     *
+     * @throws IOException
+     */
+    void upload(LocalSourceFile localFile, String remotePath, boolean resume)
+            throws IOException;
+
+    /**
      * Download {@code remotePath} to {@code localFile}.
      *
      * @param localFile
@@ -63,6 +101,18 @@ public interface FileTransfer {
      * @throws IOException
      */
     void download(String remotePath, LocalDestFile localFile)
+            throws IOException;
+
+    /**
+     * Download {@code remotePath} to {@code localFile}. Attempts to resume with the {@code resume} flag.
+     *
+     * @param localFile
+     * @param remotePath
+     * @param resume
+     *
+     * @throws IOException
+     */
+    void download(String remotePath, LocalDestFile localFile, boolean resume)
             throws IOException;
 
     TransferListener getTransferListener();

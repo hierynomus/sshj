@@ -52,24 +52,49 @@ public class SCPFileTransfer
     @Override
     public void upload(String localPath, String remotePath)
             throws IOException {
-        newSCPUploadClient().copy(new FileSystemFile(localPath), remotePath);
+        upload(localPath, remotePath, false);
+    }
+
+    @Override
+    public void upload(String localFile, String remotePath, boolean resume)
+            throws IOException {
+        upload(new FileSystemFile(localFile), remotePath, resume);
     }
 
     @Override
     public void download(String remotePath, String localPath)
             throws IOException {
-        download(remotePath, new FileSystemFile(localPath));
+        download(remotePath, localPath, false);
+    }
+
+    @Override
+    public void download(String remotePath, String localPath, boolean resume) throws IOException {
+        download(remotePath, new FileSystemFile(localPath), resume);
     }
 
     @Override
     public void download(String remotePath, LocalDestFile localFile)
             throws IOException {
+        download(remotePath, localFile, false);
+    }
+    
+    @Override
+    public void download(String remotePath, LocalDestFile localFile, boolean resume)
+            throws IOException {
+        checkResumeSupport(resume);
         newSCPDownloadClient().copy(remotePath, localFile);
     }
 
     @Override
     public void upload(LocalSourceFile localFile, String remotePath)
             throws IOException {
+        upload(localFile, remotePath, false);
+    }
+
+    @Override
+    public void upload(LocalSourceFile localFile, String remotePath, boolean resume)
+            throws IOException {
+        checkResumeSupport(resume);
         newSCPUploadClient().copy(localFile, remotePath);
     }
 
@@ -78,5 +103,14 @@ public class SCPFileTransfer
             this.bandwidthLimit = limit;
         }
         return this;
+    }
+    
+    private void checkResumeSupport(boolean resume) throws IOException {
+        // TODO - implement resume on SCP. Not needed for my use case but the FileTransfer interface will expose it to other users.
+        if (resume) {
+            log.warn("SCP does not support resuming file transfers. Falling back to replacement.");
+            // TODO - more preferable to throw exception until it is implemented?
+//            throw new IOException("SCP does not support resuming file transfers. Falling back to replacement.");
+        } 
     }
 }
