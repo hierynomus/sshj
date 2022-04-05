@@ -39,4 +39,8 @@ public class FileUtil {
             IOUtils.closeQuietly(fileInputStream);
         }
     }
+    
+    public static boolean compareFileContents(File f1, File f2) throws IOException {
+        return readFromFile(f1).equals(readFromFile(f2));
+    }
 }
