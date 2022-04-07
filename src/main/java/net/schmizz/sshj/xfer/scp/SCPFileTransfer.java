@@ -106,11 +106,9 @@ public class SCPFileTransfer
     }
     
     private void checkResumeSupport(boolean resume) throws IOException {
-        // TODO - implement resume on SCP. Not needed for my use case but the FileTransfer interface will expose it to other users.
+        // TODO - implement resume on SCP, if possible.
         if (resume) {
-            log.warn("SCP does not support resuming file transfers. Falling back to replacement.");
-            // TODO - more preferable to throw exception until it is implemented?
-//            throw new IOException("SCP does not support resuming file transfers. Falling back to replacement.");
+            throw new SCPException("Resuming SCP file transfers is not supported.");
         } 
     }
 }
