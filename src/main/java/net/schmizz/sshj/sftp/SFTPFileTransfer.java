@@ -159,8 +159,8 @@ public class SFTPFileTransfer
             final RemoteFile rf = engine.open(remote.getPath());
             long byteOffset = 0;
             try {
-                if (resume && adjusted.getLength() != 0 && adjusted.getLength() < remote.getAttributes().getSize()) {
-                    // resume requested AND there's already at least one byte there AND the existing file isn't as long as the incoming remote
+                if (resume && adjusted.getLength() != 0 && adjusted.getLength() <= remote.getAttributes().getSize()) {
+                    // resume requested AND there's already at least one byte there AND the existing file isn't longer than the incoming remote
                     // we can honor the request to resume by setting the offset
                     byteOffset = adjusted.getLength();
                 }
