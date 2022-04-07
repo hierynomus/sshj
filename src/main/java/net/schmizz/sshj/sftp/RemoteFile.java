@@ -23,6 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
@@ -252,7 +254,7 @@ public class RemoteFile
 
         private final int maxUnconfirmedReads;
         private final long readAheadLimit;
-        private final Queue<UnconfirmedRead> unconfirmedReads = new LinkedList<>();
+        private final Deque<UnconfirmedRead> unconfirmedReads = new ArrayDeque<>();
 
         private long currentOffset;
         private int maxReadLength = Integer.MAX_VALUE;
@@ -336,7 +338,14 @@ public class RemoteFile
                 // we also need to go here for len <= 0, because pending may be at
                 // EOF in which case it would return -1 instead of 0
 
-                long requestOffset = currentOffset;
+                long requestOffset;
+                if (unconfirmedReads.isEmpty()) {
+                    requestOffset = currentOffset;
+                }
+                else {
+                    final UnconfirmedRead lastRequest = unconfirmedReads.getLast();
+                    requestOffset = lastRequest.offset + lastRequest.length;
+                }
                 while (unconfirmedReads.size() <= maxUnconfirmedReads) {
                     // Send read requests as long as there is no EOF and we have not reached the maximum parallelism
                     int reqLen = Math.min(Math.max(1024, len), maxReadLength);
