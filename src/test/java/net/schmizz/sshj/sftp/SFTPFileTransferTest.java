@@ -30,10 +30,6 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- *
- * @author Brent Tyler
- */
 public class SFTPFileTransferTest {
     
     public static final String TARGET_FILE_NAME = "target.txt";
