@@ -20,6 +20,8 @@ import com.hierynomus.sshj.test.util.FileUtil;
 import java.io.File;
 import java.io.IOException;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.StreamCopier;
+import net.schmizz.sshj.xfer.TransferListener;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,6 +46,7 @@ public class SFTPFileTransferTest {
     
     SSHClient sshClient;
     SFTPFileTransfer xfer;
+    ByteCounter listener;
     
     @Rule
     public SshFixture fixture = new SshFixture();
@@ -62,6 +65,7 @@ public class SFTPFileTransferTest {
         sshClient   = fixture.setupConnectedDefaultClient();
         sshClient.authPassword("test", "test");
         xfer = sshClient.newSFTPClient().getFileTransfer();
+        xfer.setTransferListener(listener = new ByteCounter());
     }
     
     @After
@@ -76,24 +80,38 @@ public class SFTPFileTransferTest {
     }
     
     private void performDownload(boolean resume) throws IOException {
+        assertTrue(listener.getBytesTransferred() == 0);
+        
+        long expectedBytes = 0;
+        
         // Using the resume param this way to call the different entry points into the FileTransfer interface
         if (resume) {
+            expectedBytes = sourceFile.length() - targetFile.length(); // only the difference between what is there and what should be
             xfer.download(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath(), true);
         } else {
+            expectedBytes = sourceFile.length(); // the entire source file should be transferred
             xfer.download(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath());
         }
         
         assertTrue(FileUtil.compareFileContents(sourceFile, targetFile));
+        assertTrue(listener.getBytesTransferred() == expectedBytes);
     }
     
     private void performUpload(boolean resume) throws IOException {
+        assertTrue(listener.getBytesTransferred() == 0);
+        
+        long expectedBytes = 0;
+        
         // Using the resume param this way to call the different entry points into the FileTransfer interface
         if (resume) {
+            expectedBytes = sourceFile.length() - targetFile.length(); // only the difference between what is there and what should be
             xfer.upload(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath(), true);
         } else {
+            expectedBytes = sourceFile.length(); // the entire source file should be transferred
             xfer.upload(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath());
         }
         assertTrue(FileUtil.compareFileContents(sourceFile, targetFile));
+        assertTrue(listener.getBytesTransferred() == expectedBytes);
     }
     
     @Test
@@ -144,5 +162,28 @@ public class SFTPFileTransferTest {
         FileUtil.writeToFile(targetFile, FileUtil.readFromFile(sourceFile));
         assertTrue(FileUtil.compareFileContents(sourceFile, targetFile));
         performUpload(true);
+    }
+    
+    public class ByteCounter implements TransferListener, StreamCopier.Listener {
+        long bytesTransferred;
+
+        public long getBytesTransferred() {
+            return bytesTransferred;
+        }
+        
+        @Override
+        public TransferListener directory(String name) {
+            return this;
+        }
+
+        @Override
+        public StreamCopier.Listener file(String name, long size) {
+            return this;
+        }
+
+        @Override
+        public void reportProgress(long transferred) throws IOException {
+            bytesTransferred = transferred;
+        }
     }
 }
