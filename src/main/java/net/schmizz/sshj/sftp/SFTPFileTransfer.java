@@ -124,6 +124,7 @@ public class SFTPFileTransfer
                 case UNKNOWN:
                     log.warn("Server did not supply information about the type of file at `{}` " +
                                      "-- assuming it is a regular file!", remote.getPath());
+                    // fall through
                 case REGULAR:
                     adjustedFile = downloadFile(listener.file(remote.getName(), remote.getAttributes().getSize()), remote, local, resume);
                     break;
