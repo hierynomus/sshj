@@ -52,49 +52,49 @@ public class SCPFileTransfer
     @Override
     public void upload(String localPath, String remotePath)
             throws IOException {
-        upload(localPath, remotePath, false);
+        upload(localPath, remotePath, 0);
     }
 
     @Override
-    public void upload(String localFile, String remotePath, boolean resume)
+    public void upload(String localFile, String remotePath, long byteOffset)
             throws IOException {
-        upload(new FileSystemFile(localFile), remotePath, resume);
+        upload(new FileSystemFile(localFile), remotePath, byteOffset);
     }
 
     @Override
     public void download(String remotePath, String localPath)
             throws IOException {
-        download(remotePath, localPath, false);
+        download(remotePath, localPath, 0);
     }
 
     @Override
-    public void download(String remotePath, String localPath, boolean resume) throws IOException {
-        download(remotePath, new FileSystemFile(localPath), resume);
+    public void download(String remotePath, String localPath, long byteOffset) throws IOException {
+        download(remotePath, new FileSystemFile(localPath), byteOffset);
     }
 
     @Override
     public void download(String remotePath, LocalDestFile localFile)
             throws IOException {
-        download(remotePath, localFile, false);
+        download(remotePath, localFile, 0);
     }
     
     @Override
-    public void download(String remotePath, LocalDestFile localFile, boolean resume)
+    public void download(String remotePath, LocalDestFile localFile, long byteOffset)
             throws IOException {
-        checkResumeSupport(resume);
+        checkByteOffsetSupport(byteOffset);
         newSCPDownloadClient().copy(remotePath, localFile);
     }
 
     @Override
     public void upload(LocalSourceFile localFile, String remotePath)
             throws IOException {
-        upload(localFile, remotePath, false);
+        upload(localFile, remotePath, 0);
     }
 
     @Override
-    public void upload(LocalSourceFile localFile, String remotePath, boolean resume)
+    public void upload(LocalSourceFile localFile, String remotePath, long byteOffset)
             throws IOException {
-        checkResumeSupport(resume);
+        checkByteOffsetSupport(byteOffset);
         newSCPUploadClient().copy(localFile, remotePath);
     }
 
@@ -105,10 +105,10 @@ public class SCPFileTransfer
         return this;
     }
     
-    private void checkResumeSupport(boolean resume) throws IOException {
-        // TODO - implement resume on SCP, if possible.
-        if (resume) {
-            throw new SCPException("Resuming SCP file transfers is not supported.");
+    private void checkByteOffsetSupport(long byteOffset) throws IOException {
+        // TODO - implement byte offsets on SCP, if possible.
+        if (byteOffset > 0) {
+            throw new SCPException("Byte offset on SCP file transfers is not supported.");
         } 
     }
 }

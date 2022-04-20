@@ -233,9 +233,9 @@ public class SFTPClient
         xfer.download(source, dest);
     }
     
-    public void get(String source, String dest, boolean resume)
+    public void get(String source, String dest, long byteOffset)
             throws IOException {
-        xfer.download(source, dest, resume);
+        xfer.download(source, dest, byteOffset);
     }
 
     public void put(String source, String dest)
@@ -243,9 +243,9 @@ public class SFTPClient
         xfer.upload(source, dest);
     }
 
-    public void put(String source, String dest, boolean resume)
+    public void put(String source, String dest, long byteOffset)
             throws IOException {
-        xfer.upload(source, dest, resume);
+        xfer.upload(source, dest, byteOffset);
     }
 
     public void get(String source, LocalDestFile dest)
@@ -253,9 +253,9 @@ public class SFTPClient
         xfer.download(source, dest);
     }
     
-    public void get(String source, LocalDestFile dest, boolean resume)
+    public void get(String source, LocalDestFile dest, long byteOffset)
             throws IOException {
-        xfer.download(source, dest, resume);
+        xfer.download(source, dest, byteOffset);
     }
 
     public void put(LocalSourceFile source, String dest)
@@ -263,9 +263,9 @@ public class SFTPClient
         xfer.upload(source, dest);
     }
     
-    public void put(LocalSourceFile source, String dest, boolean resume)
+    public void put(LocalSourceFile source, String dest, long byteOffset)
             throws IOException {
-        xfer.upload(source, dest, resume);
+        xfer.upload(source, dest, byteOffset);
     }
 
     @Override

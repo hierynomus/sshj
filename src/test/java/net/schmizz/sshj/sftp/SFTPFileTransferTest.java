@@ -75,15 +75,15 @@ public class SFTPFileTransferTest {
         }
     }
     
-    private void performDownload(boolean resume) throws IOException {
+    private void performDownload(long byteOffset) throws IOException {
         assertTrue(listener.getBytesTransferred() == 0);
         
         long expectedBytes = 0;
         
         // Using the resume param this way to call the different entry points into the FileTransfer interface
-        if (resume) {
+        if (byteOffset > 0) {
             expectedBytes = sourceFile.length() - targetFile.length(); // only the difference between what is there and what should be
-            xfer.download(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath(), true);
+            xfer.download(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath(), byteOffset);
         } else {
             expectedBytes = sourceFile.length(); // the entire source file should be transferred
             xfer.download(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath());
@@ -93,15 +93,15 @@ public class SFTPFileTransferTest {
         assertTrue(listener.getBytesTransferred() == expectedBytes);
     }
     
-    private void performUpload(boolean resume) throws IOException {
+    private void performUpload(long byteOffset) throws IOException {
         assertTrue(listener.getBytesTransferred() == 0);
         
         long expectedBytes = 0;
         
         // Using the resume param this way to call the different entry points into the FileTransfer interface
-        if (resume) {
+        if (byteOffset > 0) {
             expectedBytes = sourceFile.length() - targetFile.length(); // only the difference between what is there and what should be
-            xfer.upload(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath(), true);
+            xfer.upload(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath(), byteOffset);
         } else {
             expectedBytes = sourceFile.length(); // the entire source file should be transferred
             xfer.upload(sourceFile.getAbsolutePath(), targetFile.getAbsolutePath());
@@ -112,52 +112,52 @@ public class SFTPFileTransferTest {
     
     @Test
     public void testDownload() throws IOException {
-        performDownload(false);
+        performDownload(0);
     }
     
     @Test
     public void testDownloadResumePartial() throws IOException {
         FileUtil.writeToFile(targetFile, FileUtil.readFromFile(partialFile));
         assertFalse(FileUtil.compareFileContents(sourceFile, targetFile));
-        performDownload(true);
+        performDownload(targetFile.length());
     }
     
     @Test
     public void testDownloadResumeNothing() throws IOException {
         assertFalse(targetFile.exists());
-        performDownload(true);
+        performDownload(targetFile.length());
     }
     
     @Test
     public void testDownloadResumePreviouslyCompleted() throws IOException {
         FileUtil.writeToFile(targetFile, FileUtil.readFromFile(sourceFile));
         assertTrue(FileUtil.compareFileContents(sourceFile, targetFile));
-        performDownload(true);
+        performDownload(targetFile.length());
     }
     
     @Test
     public void testUpload() throws IOException {
-        performUpload(false);
+        performUpload(0);
     }
     
     @Test
     public void testUploadResumePartial() throws IOException {
         FileUtil.writeToFile(targetFile, FileUtil.readFromFile(partialFile));
         assertFalse(FileUtil.compareFileContents(sourceFile, targetFile));
-        performUpload(true);
+        performUpload(targetFile.length());
     }
     
     @Test
     public void testUploadResumeNothing() throws IOException {
         assertFalse(targetFile.exists());
-        performUpload(true);
+        performUpload(targetFile.length());
     }
     
     @Test
     public void testUploadResumePreviouslyCompleted() throws IOException {
         FileUtil.writeToFile(targetFile, FileUtil.readFromFile(sourceFile));
         assertTrue(FileUtil.compareFileContents(sourceFile, targetFile));
-        performUpload(true);
+        performUpload(targetFile.length());
     }
     
     public class ByteCounter implements TransferListener, StreamCopier.Listener {

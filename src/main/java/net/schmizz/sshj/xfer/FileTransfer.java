@@ -33,15 +33,15 @@ public interface FileTransfer {
 
     /**
      * This is meant to delegate to {@link #upload(LocalSourceFile, String)} with the {@code localPath} wrapped as e.g.
-     * a {@link FileSystemFile}. Attempts to resume with the {@code resume} flag.
+     * a {@link FileSystemFile}. Appends to existing if {@code byteOffset} &gt; 0.
      *
      * @param localPath
      * @param remotePath
-     * @param resume
+     * @param byteOffset
      *
      * @throws IOException
      */
-    void upload(String localPath, String remotePath, boolean resume)
+    void upload(String localPath, String remotePath, long byteOffset)
             throws IOException;
 
     /**
@@ -58,15 +58,15 @@ public interface FileTransfer {
 
     /**
      * This is meant to delegate to {@link #download(String, LocalDestFile)} with the {@code localPath} wrapped as e.g.
-     * a {@link FileSystemFile}. Attempts to resume with the {@code resume} flag.
+     * a {@link FileSystemFile}. Appends to existing if {@code byteOffset} &gt; 0.
      *
      * @param localPath
      * @param remotePath
-     * @param resume
+     * @param byteOffset
      *
      * @throws IOException
      */
-    void download(String remotePath, String localPath, boolean resume)
+    void download(String remotePath, String localPath, long byteOffset)
             throws IOException;
 
     /**
@@ -81,15 +81,15 @@ public interface FileTransfer {
             throws IOException;
 
     /**
-     * Upload {@code localFile} to {@code remotePath}. Attempts to resume with the {@code resume} flag.
+     * Upload {@code localFile} to {@code remotePath}. Appends to existing if {@code byteOffset} &gt; 0.
      *
      * @param localFile
      * @param remotePath
-     * @param resume
+     * @param byteOffset
      *
      * @throws IOException
      */
-    void upload(LocalSourceFile localFile, String remotePath, boolean resume)
+    void upload(LocalSourceFile localFile, String remotePath, long byteOffset)
             throws IOException;
 
     /**
@@ -104,15 +104,15 @@ public interface FileTransfer {
             throws IOException;
 
     /**
-     * Download {@code remotePath} to {@code localFile}. Attempts to resume with the {@code resume} flag.
+     * Download {@code remotePath} to {@code localFile}. Appends to existing if {@code byteOffset} &gt; 0.
      *
      * @param localFile
      * @param remotePath
-     * @param resume
+     * @param byteOffset
      *
      * @throws IOException
      */
-    void download(String remotePath, LocalDestFile localFile, boolean resume)
+    void download(String remotePath, LocalDestFile localFile, long byteOffset)
             throws IOException;
 
     TransferListener getTransferListener();
