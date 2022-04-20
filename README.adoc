@@ -104,6 +104,23 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.33.0 (2022-04-22)::
+* Upgraded dependencies BouncyCastle (1.70)
+* Merged https://github.com/hierynomus/sshj/pull/687[#687]: Correctly close connection when remote closes connection.
+* Merged https://github.com/hierynomus/sshj/pull/741[#741]: Add support for testcontainers in test setup to test more scenarios
+* Merged https://github.com/hierynomus/sshj/pull/733[#733]: Send correct key proposal if client knows CA key
+* Merged https://github.com/hierynomus/sshj/pull/746[#746]: Fix bug in reading Putty private key file with passphrase
+* Merged https://github.com/hierynomus/sshj/pull/742[#742]: Use Config.keyAlgorithms to determine rsa-sha2 support
+* Merged https://github.com/hierynomus/sshj/pull/754[#754]: Use SFTP protocol version to set FXP rename flags conditionally
+* Merged https://github.com/hierynomus/sshj/pull/752[#752]: Correctly start and terminate KeepAlive thread
+* Merged https://github.com/hierynomus/sshj/pull/753[#753]: Provide better thread names
+* Merged https://github.com/hierynomus/sshj/pull/724[#724]: Add parameter to limit read ahead length
+* Merged https://github.com/hierynomus/sshj/pull/763[#763]: Try all public key algorithms for a specific key type
+* Merged https://github.com/hierynomus/sshj/pull/756[#756]: Remove deprecated proxy connect methods
+* Merged https://github.com/hierynomus/sshj/pull/770[#770]: Add support for `ed25519` `aes-128-cbc` keys
+* Merged https://github.com/hierynomus/sshj/pull/773[#773]: Fix NPE when reading empty OpenSSHKeyV1KeyFile
+* Merged https://github.com/hierynomus/sshj/pull/777[#777]: Don't request too many read-ahead packets
+
 SSHJ 0.32.0 (2021-10-12)::
 * Send EOF on channel close (Fixes https://github.com/hierynomus/sshj/issues/143[#143], https://github.com/hierynomus/sshj/issues/496[#496], https://github.com/hierynomus/sshj/issues/553[#553], https://github.com/hierynomus/sshj/issues/554[#554])
 * Merged https://github.com/hierynomus/sshj/pull/726[#726]: Parse OpenSSH v1 keys with full CRT information present
