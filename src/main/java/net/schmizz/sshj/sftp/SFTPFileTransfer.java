@@ -253,7 +253,7 @@ public class SFTPFileTransfer
                                   final String remote,
                                   final long byteOffset)
                 throws IOException {
-            final RemoteResourceInfo remoteFileInfo = prepareFile(local, remote, byteOffset);
+            final String adjusted = prepareFile(local, remote, byteOffset);
             RemoteFile rf = null;
             InputStream fis = null;
             RemoteFile.RemoteFileOutputStream rfos = null;
@@ -268,7 +268,7 @@ public class SFTPFileTransfer
                 }
                 
                 log.debug("Attempting to upload {} with offset={}", local.getName(), byteOffset);
-                rf = engine.open(remoteFileInfo.getPath(), modes);
+                rf = engine.open(adjusted, modes);
                 fis = local.getInputStream();
                 fis.skip(byteOffset);
                 rfos = rf.new RemoteFileOutputStream(byteOffset, 16);
@@ -297,7 +297,7 @@ public class SFTPFileTransfer
                     }
                 }
             }
-            return remoteFileInfo.getPath();
+            return adjusted;
         }
 
         private boolean makeDirIfNotExists(final String remote) throws IOException {
@@ -332,17 +332,16 @@ public class SFTPFileTransfer
                 }
             }
         }
-        
-        private RemoteResourceInfo prepareFile(final LocalSourceFile local, final String remote, final long byteOffset)
+
+        private String prepareFile(final LocalSourceFile local, final String remote, final long byteOffset)
                 throws IOException {
-            final PathComponents pathComponents = engine.getPathHelper().getComponents(remote);
             final FileAttributes attrs;
             try {
                 attrs = engine.stat(remote);
             } catch (SFTPException e) {
                 if (e.getStatusCode() == StatusCode.NO_SUCH_FILE) {
                     log.debug("probeFile: {} does not exist", remote);
-                    return new RemoteResourceInfo(pathComponents, null);
+                    return remote;
                 } else
                     throw e;
             }
@@ -350,7 +349,7 @@ public class SFTPFileTransfer
                 throw new IOException("Trying to upload file " + local.getName() + " to path " + remote + " but that is a directory");
             } else {
                 log.debug("probeFile: {} is a {} file that will be {}", remote, attrs.getMode().getType(), byteOffset > 0 ? "resumed" : "replaced");
-                return new RemoteResourceInfo(pathComponents, attrs);
+                return remote;
             }
         }
 
