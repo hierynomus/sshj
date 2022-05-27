@@ -20,7 +20,12 @@ import java.io.OutputStream;
 
 public interface LocalDestFile {
 
+    long getLength();
+
     OutputStream getOutputStream()
+            throws IOException;
+    
+    OutputStream getOutputStream(boolean append)
             throws IOException;
 
     /** @return A child file/directory of this directory with given {@code name}. */

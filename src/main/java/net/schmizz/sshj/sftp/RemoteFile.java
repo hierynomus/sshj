@@ -261,7 +261,16 @@ public class RemoteFile
         private boolean eof;
 
         public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads) {
-            this(maxUnconfirmedReads, 0L, -1L);
+            this(maxUnconfirmedReads, 0L);
+        }
+        
+        /**
+         *
+         * @param maxUnconfirmedReads Maximum number of unconfirmed requests to send
+         * @param fileOffset Initial offset in file to read from
+         */
+        public ReadAheadRemoteFileInputStream(int maxUnconfirmedReads, long fileOffset) {
+            this(maxUnconfirmedReads, fileOffset, -1L);
         }
 
         /**

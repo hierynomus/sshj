@@ -52,24 +52,49 @@ public class SCPFileTransfer
     @Override
     public void upload(String localPath, String remotePath)
             throws IOException {
-        newSCPUploadClient().copy(new FileSystemFile(localPath), remotePath);
+        upload(localPath, remotePath, 0);
+    }
+
+    @Override
+    public void upload(String localFile, String remotePath, long byteOffset)
+            throws IOException {
+        upload(new FileSystemFile(localFile), remotePath, byteOffset);
     }
 
     @Override
     public void download(String remotePath, String localPath)
             throws IOException {
-        download(remotePath, new FileSystemFile(localPath));
+        download(remotePath, localPath, 0);
+    }
+
+    @Override
+    public void download(String remotePath, String localPath, long byteOffset) throws IOException {
+        download(remotePath, new FileSystemFile(localPath), byteOffset);
     }
 
     @Override
     public void download(String remotePath, LocalDestFile localFile)
             throws IOException {
+        download(remotePath, localFile, 0);
+    }
+    
+    @Override
+    public void download(String remotePath, LocalDestFile localFile, long byteOffset)
+            throws IOException {
+        checkByteOffsetSupport(byteOffset);
         newSCPDownloadClient().copy(remotePath, localFile);
     }
 
     @Override
     public void upload(LocalSourceFile localFile, String remotePath)
             throws IOException {
+        upload(localFile, remotePath, 0);
+    }
+
+    @Override
+    public void upload(LocalSourceFile localFile, String remotePath, long byteOffset)
+            throws IOException {
+        checkByteOffsetSupport(byteOffset);
         newSCPUploadClient().copy(localFile, remotePath);
     }
 
@@ -78,5 +103,12 @@ public class SCPFileTransfer
             this.bandwidthLimit = limit;
         }
         return this;
+    }
+    
+    private void checkByteOffsetSupport(long byteOffset) throws IOException {
+        // TODO - implement byte offsets on SCP, if possible.
+        if (byteOffset > 0) {
+            throw new SCPException("Byte offset on SCP file transfers is not supported.");
+        } 
     }
 }
