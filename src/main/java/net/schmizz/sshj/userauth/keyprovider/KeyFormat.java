@@ -16,10 +16,9 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 /**
-* @version $Id:$
+* Key File Formats
 */
 public enum KeyFormat {
-    PKCS5,
     PKCS8,
     OpenSSH,
     OpenSSHv1,
