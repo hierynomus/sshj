@@ -35,14 +35,29 @@ public abstract class KeepAlive extends Thread {
         setDaemon(true);
     }
 
+    /**
+     * KeepAlive enabled based on KeepAlive interval
+     *
+     * @return Enabled when KeepInterval is greater than 0
+     */
     public boolean isEnabled() {
         return keepAliveInterval > 0;
     }
 
+    /**
+     * Get KeepAlive interval in seconds
+     *
+     * @return KeepAlive interval in seconds defaults to 0
+     */
     public synchronized int getKeepAliveInterval() {
         return keepAliveInterval;
     }
 
+    /**
+     * Set KeepAlive interval in seconds
+     *
+     * @param keepAliveInterval KeepAlive interval in seconds
+     */
     public synchronized void setKeepAliveInterval(int keepAliveInterval) {
         this.keepAliveInterval = keepAliveInterval;
     }
