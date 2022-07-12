@@ -19,8 +19,9 @@ public class KeepAlive {
         final SSHClient ssh = new SSHClient(defaultConfig);
         try {
             ssh.addHostKeyVerifier(new PromiscuousVerifier());
+            // Set interval to enable keep-alive before connecting
+            ssh.getConnection().getKeepAlive().setKeepAliveInterval(5);
             ssh.connect(args[0]);
-            ssh.getConnection().getKeepAlive().setKeepAliveInterval(5); //every 60sec
             ssh.authPassword(args[1], args[2]);
             Session session = ssh.startSession();
             session.allocateDefaultPTY();
