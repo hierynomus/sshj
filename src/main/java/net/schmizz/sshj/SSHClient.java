@@ -551,7 +551,7 @@ public class SSHClient
      * Creates a {@link KeyProvider} instance from given location on the file system. Currently the following private key files are supported:
      * <ul>
      *     <li>PKCS8 (OpenSSH uses this format)</li>
-     *     <li>PKCS5</li>
+     *     <li>PEM-encoded PKCS1</li>
      *     <li>Putty keyfile</li>
      *     <li>openssh-key-v1 (New OpenSSH keyfile format)</li>
      * </ul>

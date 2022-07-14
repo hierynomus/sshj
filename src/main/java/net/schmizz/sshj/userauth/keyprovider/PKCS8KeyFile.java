@@ -39,7 +39,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.security.KeyPair;
 
-/** Represents a PKCS8-encoded key file. This is the format used by (old-style) OpenSSH and OpenSSL. */
+/**
+ * Key File implementation supporting PEM-encoded PKCS8 and PKCS1 formats with or without password-based encryption
+ */
 public class PKCS8KeyFile extends BaseFileKeyProvider {
 
     public static class Factory
