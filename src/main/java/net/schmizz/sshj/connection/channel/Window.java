@@ -93,6 +93,7 @@ public abstract class Window {
                             throw new ConnectionException("Timeout when trying to expand the window size");
                         }
                     } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
                         throw new ConnectionException(ie);
                     }
                 }
