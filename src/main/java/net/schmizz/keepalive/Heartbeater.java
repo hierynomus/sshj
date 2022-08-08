@@ -24,7 +24,7 @@ final class Heartbeater
         extends KeepAlive {
 
     Heartbeater(ConnectionImpl conn) {
-        super(conn, "heartbeater");
+        super(conn, "sshj-Heartbeater");
     }
 
     @Override

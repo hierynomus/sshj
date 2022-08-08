@@ -27,9 +27,9 @@ public class KeyProviderUtil {
      * <p/>
      * Return values are consistent with the {@code NamedFactory} implementations in the {@code keyprovider} package.
      *
-     * @param location
+     * @param location File Path to key
      * @return name of the key file format
-     * @throws java.io.IOException
+     * @throws java.io.IOException Thrown on file processing failures
      */
     public static KeyFormat detectKeyFileFormat(File location)
             throws IOException {
@@ -45,7 +45,7 @@ public class KeyProviderUtil {
      * @param privateKey     Private key stored in a string
      * @param separatePubKey Is the public key stored separately from the private key
      * @return name of the key file format
-     * @throws java.io.IOException
+     * @throws java.io.IOException Thrown on file processing failures
      */
     public static KeyFormat detectKeyFileFormat(String privateKey, boolean separatePubKey)
             throws IOException {
@@ -60,7 +60,7 @@ public class KeyProviderUtil {
      * @param privateKey     Private key accessible through a {@code Reader}
      * @param separatePubKey Is the public key stored separately from the private key
      * @return name of the key file format
-     * @throws java.io.IOException
+     * @throws java.io.IOException Thrown on file processing failures
      */
     public static KeyFormat detectKeyFileFormat(Reader privateKey, boolean separatePubKey)
             throws IOException {
@@ -94,10 +94,8 @@ public class KeyProviderUtil {
             } else if (separatePubKey) {
                 // Can delay asking for password since have unencrypted pubkey
                 return KeyFormat.OpenSSH;
-            } else if (header.contains("BEGIN PRIVATE KEY") || header.contains("BEGIN ENCRYPTED PRIVATE KEY")) {
-                return KeyFormat.PKCS8;
             } else {
-                return KeyFormat.PKCS5;
+                return KeyFormat.PKCS8;
             }
         } else if (header.startsWith("PuTTY-User-Key-File-")) {
             return KeyFormat.PuTTY;

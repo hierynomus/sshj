@@ -13,14 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hierynomus.sshj.backport;
+package net.schmizz.sshj.sftp;
 
-public class JavaVersion {
-    public static boolean isJava7OrEarlier() {
-        String property = System.getProperty("java.specification.version");
-        float diff = Float.parseFloat(property) - 1.7f;
+public enum RenameFlags {
+    OVERWRITE(1),
+    ATOMIC(2),
+    NATIVE(4);
 
-        return diff < 0.01;
+    private final long flag;
+
+    RenameFlags(long flag) {
+        this.flag = flag;
     }
 
+    public long longValue() {
+        return flag;
+    }
 }

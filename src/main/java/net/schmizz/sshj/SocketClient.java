@@ -15,8 +15,6 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.backport.JavaVersion;
-import com.hierynomus.sshj.backport.Jdk7HttpProxySocket;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.direct.DirectConnection;
 
@@ -26,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.Socket;
 
 public abstract class SocketClient {
@@ -55,73 +52,6 @@ public abstract class SocketClient {
 
     protected InetSocketAddress makeInetSocketAddress(String hostname, int port) {
         return new InetSocketAddress(hostname, port);
-    }
-
-    /**
-     * Connect to a host via a proxy.
-     * @param hostname The host name to connect to.
-     * @param proxy The proxy to connect via.
-     * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
-     */
-    @Deprecated
-    public void connect(String hostname, Proxy proxy) throws IOException {
-        connect(hostname, defaultPort, proxy);
-    }
-
-    /**
-     * Connect to a host via a proxy.
-     * @param hostname The host name to connect to.
-     * @param port The port to connect to.
-     * @param proxy The proxy to connect via.
-     * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
-     */
-    @Deprecated
-    public void connect(String hostname, int port, Proxy proxy) throws IOException {
-        this.hostname = hostname;
-        this.port = port;
-        if (JavaVersion.isJava7OrEarlier() && proxy.type() == Proxy.Type.HTTP) {
-            // Java7 and earlier have no support for HTTP Connect proxies, return our custom socket.
-            socket = new Jdk7HttpProxySocket(proxy);
-        } else {
-            socket = new Socket(proxy);
-        }
-        socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
-        onConnect();
-    }
-
-    /**
-     * Connect to a host via a proxy.
-     * @param host The host address to connect to.
-     * @param proxy The proxy to connect via.
-     * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
-     */
-    @Deprecated
-    public void connect(InetAddress host, Proxy proxy) throws IOException {
-        connect(host, defaultPort, proxy);
-    }
-
-    /**
-     * Connect to a host via a proxy.
-     * @param host The host address to connect to.
-     * @param port The port to connect to.
-     * @param proxy The proxy to connect via.
-     * @deprecated This method will be removed after v0.12.0. If you want to connect via a proxy, you can do this by injecting a {@link javax.net.SocketFactory}
-     *             into the SocketClient. The SocketFactory should create sockets using the {@link java.net.Socket#Socket(java.net.Proxy)} constructor.
-     */
-    @Deprecated
-    public void connect(InetAddress host, int port, Proxy proxy) throws IOException {
-        this.port = port;
-        if (JavaVersion.isJava7OrEarlier() && proxy.type() == Proxy.Type.HTTP) {
-            // Java7 and earlier have no support for HTTP Connect proxies, return our custom socket.
-            socket = new Jdk7HttpProxySocket(proxy);
-        } else {
-            socket = new Socket(proxy);
-        }
-        socket.connect(new InetSocketAddress(host, port), connectTimeout);
-        onConnect();
     }
 
     public void connect(String hostname) throws IOException {

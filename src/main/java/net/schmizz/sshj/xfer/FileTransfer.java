@@ -32,6 +32,19 @@ public interface FileTransfer {
             throws IOException;
 
     /**
+     * This is meant to delegate to {@link #upload(LocalSourceFile, String)} with the {@code localPath} wrapped as e.g.
+     * a {@link FileSystemFile}. Appends to existing if {@code byteOffset} &gt; 0.
+     *
+     * @param localPath
+     * @param remotePath
+     * @param byteOffset
+     *
+     * @throws IOException
+     */
+    void upload(String localPath, String remotePath, long byteOffset)
+            throws IOException;
+
+    /**
      * This is meant to delegate to {@link #download(String, LocalDestFile)} with the {@code localPath} wrapped as e.g.
      * a {@link FileSystemFile}.
      *
@@ -41,6 +54,19 @@ public interface FileTransfer {
      * @throws IOException
      */
     void download(String remotePath, String localPath)
+            throws IOException;
+
+    /**
+     * This is meant to delegate to {@link #download(String, LocalDestFile)} with the {@code localPath} wrapped as e.g.
+     * a {@link FileSystemFile}. Appends to existing if {@code byteOffset} &gt; 0.
+     *
+     * @param localPath
+     * @param remotePath
+     * @param byteOffset
+     *
+     * @throws IOException
+     */
+    void download(String remotePath, String localPath, long byteOffset)
             throws IOException;
 
     /**
@@ -55,6 +81,18 @@ public interface FileTransfer {
             throws IOException;
 
     /**
+     * Upload {@code localFile} to {@code remotePath}. Appends to existing if {@code byteOffset} &gt; 0.
+     *
+     * @param localFile
+     * @param remotePath
+     * @param byteOffset
+     *
+     * @throws IOException
+     */
+    void upload(LocalSourceFile localFile, String remotePath, long byteOffset)
+            throws IOException;
+
+    /**
      * Download {@code remotePath} to {@code localFile}.
      *
      * @param localFile
@@ -63,6 +101,18 @@ public interface FileTransfer {
      * @throws IOException
      */
     void download(String remotePath, LocalDestFile localFile)
+            throws IOException;
+
+    /**
+     * Download {@code remotePath} to {@code localFile}. Appends to existing if {@code byteOffset} &gt; 0.
+     *
+     * @param localFile
+     * @param remotePath
+     * @param byteOffset
+     *
+     * @throws IOException
+     */
+    void download(String remotePath, LocalDestFile localFile, long byteOffset)
             throws IOException;
 
     TransferListener getTransferListener();

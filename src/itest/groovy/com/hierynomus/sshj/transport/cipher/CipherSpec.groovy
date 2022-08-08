@@ -15,21 +15,28 @@
  */
 package com.hierynomus.sshj.transport.cipher
 
-import com.hierynomus.sshj.IntegrationBaseSpec
+import com.hierynomus.sshj.IntegrationTestUtil
+import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
+import org.junit.ClassRule
+import spock.lang.Shared
+import spock.lang.Specification
 import spock.lang.Unroll
 
-class CipherSpec extends IntegrationBaseSpec {
+class CipherSpec extends Specification {
+    @Shared
+    @ClassRule
+    SshdContainer sshd
 
     @Unroll
     def "should correctly connect with #cipher Cipher"() {
         given:
         def cfg = new DefaultConfig()
         cfg.setCipherFactories(cipherFactory)
-        def client = getConnectedClient(cfg)
+        def client = sshd.getConnectedClient(cfg)
 
         when:
-        client.authPublickey(USERNAME, KEYFILE)
+        client.authPublickey(IntegrationTestUtil.USERNAME, IntegrationTestUtil.KEYFILE)
 
         then:
         client.authenticated

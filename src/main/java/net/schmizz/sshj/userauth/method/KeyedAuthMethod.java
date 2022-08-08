@@ -27,15 +27,34 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public abstract class KeyedAuthMethod
         extends AbstractAuthMethod {
 
     protected final KeyProvider kProv;
+    private Queue<KeyAlgorithm> available;
 
     public KeyedAuthMethod(String name, KeyProvider kProv) {
         super(name);
         this.kProv = kProv;
+    }
+
+    private KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
+        if (available == null) {
+            available = new LinkedList<>(params.getTransport().getClientKeyAlgorithms(keyType));
+        }
+        return available.peek();
+    }
+
+    @Override
+    public boolean shouldRetry() {
+        if (available != null) {
+            available.poll();
+            return !available.isEmpty();
+        }
+        return false;
     }
 
     protected SSHPacket putPubKey(SSHPacket reqBuf)
@@ -50,13 +69,16 @@ public abstract class KeyedAuthMethod
         // public key as 2 strings: [ key type | key blob ]
         KeyType keyType = KeyType.fromKey(key);
         try {
-            KeyAlgorithm ka = params.getTransport().getClientKeyAlgorithm(keyType);
-            reqBuf.putString(ka.getKeyAlgorithm())
-                    .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
-            return reqBuf;
+            KeyAlgorithm ka = getPublicKeyAlgorithm(keyType);
+            if (ka != null) {
+                reqBuf.putString(ka.getKeyAlgorithm())
+                        .putString(new Buffer.PlainBuffer().putPublicKey(key).getCompactData());
+                return reqBuf;
+            }
         } catch (IOException ioe) {
-            throw new UserAuthException("No KeyAlgorithm configured for key " + keyType);
+            throw new UserAuthException("No KeyAlgorithm configured for key " + keyType, ioe);
         }
+        throw new UserAuthException("No KeyAlgorithm configured for key " + keyType);
     }
 
     protected SSHPacket putSig(SSHPacket reqBuf)
@@ -71,7 +93,7 @@ public abstract class KeyedAuthMethod
         final KeyType kt = KeyType.fromKey(key);
         Signature signature;
         try {
-            signature = params.getTransport().getClientKeyAlgorithm(kt).newSignature();
+            signature = getPublicKeyAlgorithm(kt).newSignature();
         } catch (TransportException e) {
             throw new UserAuthException("No KeyAlgorithm configured for key " + kt);
         }

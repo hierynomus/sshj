@@ -39,10 +39,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -103,7 +105,7 @@ public class OpenSSHKeyFileTest {
                 assertArrayEquals(new char[passwordChars.length], passwordChars);
             }
         }
-    };
+    }
 
     final PasswordFinder onlyGivesWhenReady = new PasswordFinder() {
         @Override
@@ -187,7 +189,7 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
-    public void shouldHaveCorrectFingerprintForECDSA256() throws IOException, GeneralSecurityException {
+    public void shouldHaveCorrectFingerprintForECDSA256() throws IOException {
         OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ecdsa_nistp256"));
         String expected = "256 MD5:53:ae:db:ed:8f:2d:02:d4:d5:6c:24:bc:a4:66:88:79 root@itgcpkerberosstack-cbgateway-0-20151117031915 (ECDSA)\n";
@@ -197,7 +199,7 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
-    public void shouldHaveCorrectFingerprintForECDSA384() throws IOException, GeneralSecurityException {
+    public void shouldHaveCorrectFingerprintForECDSA384() throws IOException {
         OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ecdsa_nistp384"));
         String expected = "384 MD5:ee:9b:82:d1:47:01:16:1b:27:da:f5:27:fd:b2:eb:e2";
@@ -207,7 +209,7 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
-    public void shouldHaveCorrectFingerprintForECDSA521() throws IOException, GeneralSecurityException {
+    public void shouldHaveCorrectFingerprintForECDSA521() throws IOException {
         OpenSSHKeyFile keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ecdsa_nistp521"));
         String expected = "521 MD5:22:e2:f4:3c:61:ae:e9:85:a1:4d:d9:6c:13:aa:eb:00";
@@ -246,6 +248,12 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256cbc.pem", "foobar", true);
     }
 
+    @Test
+    public void shouldLoadProtectedED25519PrivateKeyAes128CBC() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes128cbc.pem", "sshjtest", false);
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes128cbc.pem", "sshjtest", true);
+    }
+
     @Test(expected = KeyDecryptionFailedException.class)
     public void shouldFailOnIncorrectPassphraseAfterRetries() throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
@@ -272,6 +280,35 @@ public class OpenSSHKeyFileTest {
         keyFile.init(new File("src/test/resources/keyformats/rsa_opensshv1"));
         PrivateKey aPrivate = keyFile.getPrivate();
         assertThat(aPrivate.getAlgorithm(), equalTo("RSA"));
+    }
+
+    @Test
+    public void shouldLoadRSAPrivateCrtKeyAsOpenSSHV1() throws IOException {
+        final OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keyformats/rsa_opensshv1"));
+        final PrivateKey privateKey = keyFile.getPrivate();
+        final PublicKey publicKey = keyFile.getPublic();
+
+        assertTrue(publicKey instanceof RSAPublicKey);
+        final RSAPublicKey rsaPublicKey = (RSAPublicKey) publicKey;
+
+        assertTrue(privateKey instanceof RSAPrivateCrtKey);
+        final RSAPrivateCrtKey rsaPrivateCrtKey = (RSAPrivateCrtKey) privateKey;
+
+        assertEquals("Public Key Exponent not matched", rsaPublicKey.getPublicExponent(), rsaPrivateCrtKey.getPublicExponent());
+        assertEquals("Public Key Modulus not matched", rsaPublicKey.getModulus(), rsaPrivateCrtKey.getModulus());
+
+        final BigInteger privateExponent = rsaPrivateCrtKey.getPrivateExponent();
+
+        final BigInteger expectedPrimeExponentP = privateExponent.mod(rsaPrivateCrtKey.getPrimeP().subtract(BigInteger.ONE));
+        assertEquals("Prime Exponent P not matched", expectedPrimeExponentP, rsaPrivateCrtKey.getPrimeExponentP());
+
+        final BigInteger expectedPrimeExponentQ = privateExponent.mod(rsaPrivateCrtKey.getPrimeQ().subtract(BigInteger.ONE));
+        assertEquals("Prime Exponent Q not matched", expectedPrimeExponentQ, rsaPrivateCrtKey.getPrimeExponentQ());
+
+
+        final BigInteger expectedCoefficient = rsaPrivateCrtKey.getPrimeQ().modInverse(rsaPrivateCrtKey.getPrimeP());
+        assertEquals("Prime CRT Coefficient not matched", expectedCoefficient, rsaPrivateCrtKey.getCrtCoefficient());
     }
 
     @Test
@@ -405,6 +442,14 @@ public class OpenSSHKeyFileTest {
                      corruptedKeyFile.getPrivate());
         assertEquals(initialKeyFile.getPublic(),
                      corruptedKeyFile.getPublic());
+    }
+
+    @Test
+    public void emptyPrivateKey() {
+        FileKeyProvider keyProvider = new OpenSSHKeyV1KeyFile();
+        keyProvider.init(new StringReader(""));
+
+        assertThrows("This key is not in 'openssh-key-v1' format", IOException.class, keyProvider::getPrivate);
     }
 
     @Before

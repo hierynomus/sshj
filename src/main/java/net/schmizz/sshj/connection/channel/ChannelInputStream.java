@@ -105,6 +105,7 @@ public final class ChannelInputStream
                 try {
                     buf.wait();
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     throw (IOException) new InterruptedIOException().initCause(e);
                 }
             }

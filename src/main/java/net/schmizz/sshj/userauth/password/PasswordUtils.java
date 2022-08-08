@@ -15,6 +15,9 @@
  */
 package net.schmizz.sshj.userauth.password;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /** Static utility method and factories */
@@ -54,4 +57,17 @@ public class PasswordUtils {
             };
     }
 
+    /**
+     * Converts a password to a UTF-8 encoded byte array
+     *
+     * @param password
+     * @return
+     */
+    public static byte[] toByteArray(char[] password) {
+        CharBuffer charBuffer = CharBuffer.wrap(password);
+        final ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(charBuffer);
+        byte[] bytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(bytes, 0, bytes.length);
+        return bytes;
+    }
 }

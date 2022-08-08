@@ -20,9 +20,15 @@ import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.TransportException
 import net.schmizz.sshj.userauth.UserAuthException
+import org.junit.ClassRule
+import spock.lang.Shared
+import spock.lang.Specification
 import spock.lang.Unroll
 
-class IntegrationSpec extends IntegrationBaseSpec {
+class IntegrationSpec extends Specification {
+    @Shared
+    @ClassRule
+    SshdContainer sshd
 
     @Unroll
     def "should accept correct key for #signatureName"() {
@@ -33,7 +39,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
         sshClient.addHostKeyVerifier(fingerprint) // test-containers/ssh_host_ecdsa_key's fingerprint
 
         when:
-        sshClient.connect(SERVER_IP, DOCKER_PORT)
+        sshClient.connect(sshd.containerIpAddress, sshd.firstMappedPort)
 
         then:
         sshClient.isConnected()
@@ -50,7 +56,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
         sshClient.addHostKeyVerifier("d4:6a:a9:52:05:ab:b5:48:dd:73:60:18:0c:3a:f0:a3")
 
         when:
-        sshClient.connect(SERVER_IP, DOCKER_PORT)
+        sshClient.connect(sshd.containerIpAddress, sshd.firstMappedPort)
 
         then:
         thrown(TransportException.class)
@@ -59,11 +65,11 @@ class IntegrationSpec extends IntegrationBaseSpec {
     @Unroll
     def "should authenticate with key #key"() {
         given:
-        SSHClient client = getConnectedClient()
+        SSHClient client = sshd.getConnectedClient()
 
         when:
         def keyProvider = passphrase != null ? client.loadKeys("src/itest/resources/keyfiles/$key", passphrase) : client.loadKeys("src/itest/resources/keyfiles/$key")
-        client.authPublickey(USERNAME, keyProvider)
+        client.authPublickey(IntegrationTestUtil.USERNAME, keyProvider)
 
         then:
         client.isAuthenticated()
@@ -74,6 +80,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
         "id_ecdsa_opensshv1" | null
         "id_ed25519_opensshv1" | null
         "id_ed25519_opensshv1_aes256cbc.pem" | "foobar"
+        "id_ed25519_opensshv1_aes128cbc.pem" | "sshjtest"
         "id_ed25519_opensshv1_protected" | "sshjtest"
         "id_rsa" | null
         "id_rsa_opensshv1" | null
@@ -83,7 +90,7 @@ class IntegrationSpec extends IntegrationBaseSpec {
 
    def "should not authenticate with wrong key"() {
         given:
-        SSHClient client = getConnectedClient()
+        SSHClient client = sshd.getConnectedClient()
 
         when:
         client.authPublickey("sshj", "src/itest/resources/keyfiles/id_unknown_key")

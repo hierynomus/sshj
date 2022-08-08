@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj;
 
+import net.schmizz.keepalive.KeepAlive;
+import com.hierynomus.sshj.common.ThreadNameProvider;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.connection.Connection;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -55,6 +57,7 @@ import javax.security.auth.login.LoginContext;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
@@ -140,7 +143,7 @@ public class SSHClient
         super(DEFAULT_PORT);
 	loggerFactory = config.getLoggerFactory();
 	log = loggerFactory.getLogger(getClass());
-        this.trans = new TransportImpl(config, this);
+        this.trans = new TransportImpl(config);
         this.auth = new UserAuthImpl(trans);
         this.conn = new ConnectionImpl(trans, config.getKeepAliveProvider());
     }
@@ -424,6 +427,7 @@ public class SSHClient
     @Override
     public void disconnect()
             throws IOException {
+        conn.getKeepAlive().interrupt();
         for (LocalPortForwarder forwarder : forwarders) {
             try {
                 forwarder.close();
@@ -439,6 +443,16 @@ public class SSHClient
     /** @return the associated {@link Connection} instance. */
     public Connection getConnection() {
         return conn;
+    }
+
+    /**
+     * Get Remote Socket Address from Transport
+     *
+     * @return Remote Socket Address or null when not connected
+     */
+    @Override
+    public InetSocketAddress getRemoteSocketAddress() {
+        return trans.getRemoteSocketAddress();
     }
 
     /**
@@ -537,7 +551,7 @@ public class SSHClient
      * Creates a {@link KeyProvider} instance from given location on the file system. Currently the following private key files are supported:
      * <ul>
      *     <li>PKCS8 (OpenSSH uses this format)</li>
-     *     <li>PKCS5</li>
+     *     <li>PEM-encoded PKCS1</li>
      *     <li>Putty keyfile</li>
      *     <li>openssh-key-v1 (New OpenSSH keyfile format)</li>
      * </ul>
@@ -791,6 +805,11 @@ public class SSHClient
             throws IOException {
         super.onConnect();
         trans.init(getRemoteHostname(), getRemotePort(), getInputStream(), getOutputStream());
+        final KeepAlive keepAliveThread = conn.getKeepAlive();
+        if (keepAliveThread.isEnabled()) {
+            ThreadNameProvider.setThreadName(conn.getKeepAlive(), trans);
+            keepAliveThread.start();
+        }
         doKex();
     }
 

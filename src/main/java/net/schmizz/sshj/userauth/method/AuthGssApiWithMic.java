@@ -84,8 +84,7 @@ public class AuthGssApiWithMic
 
         @Override
         public GSSContext run() throws GSSException {
-            GSSName clientName = manager.createName(params.getUsername(), GSSName.NT_USER_NAME);
-            GSSCredential clientCreds = manager.createCredential(clientName, GSSContext.DEFAULT_LIFETIME, selectedOid, GSSCredential.INITIATE_ONLY);
+            GSSCredential clientCreds = manager.createCredential(GSSCredential.INITIATE_ONLY);
             GSSName peerName = manager.createName("host@" + params.getTransport().getRemoteHost(), GSSName.NT_HOSTBASED_SERVICE);
 
             GSSContext context = manager.createContext(peerName, selectedOid, clientCreds, GSSContext.DEFAULT_LIFETIME);
