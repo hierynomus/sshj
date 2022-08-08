@@ -19,6 +19,7 @@ public class RemotePF {
         client.loadKnownHosts();
 
         client.connect("localhost");
+        client.getConnection().getKeepAlive().setKeepAliveInterval(5);
         try {
 
             client.authPublickey(System.getProperty("user.name"));
@@ -32,8 +33,6 @@ public class RemotePF {
                     new Forward(8080),
                     // what we do with incoming connections that are forwarded to us
                     new SocketForwardingConnectListener(new InetSocketAddress("google.com", 80)));
-
-            client.getTransport().setHeartbeatInterval(30);
 
             // Something to hang on to so that the forwarding stays
             client.getTransport().join();

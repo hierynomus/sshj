@@ -232,20 +232,40 @@ public class SFTPClient
             throws IOException {
         xfer.download(source, dest);
     }
+    
+    public void get(String source, String dest, long byteOffset)
+            throws IOException {
+        xfer.download(source, dest, byteOffset);
+    }
 
     public void put(String source, String dest)
             throws IOException {
         xfer.upload(source, dest);
     }
 
+    public void put(String source, String dest, long byteOffset)
+            throws IOException {
+        xfer.upload(source, dest, byteOffset);
+    }
+
     public void get(String source, LocalDestFile dest)
             throws IOException {
         xfer.download(source, dest);
+    }
+    
+    public void get(String source, LocalDestFile dest, long byteOffset)
+            throws IOException {
+        xfer.download(source, dest, byteOffset);
     }
 
     public void put(LocalSourceFile source, String dest)
             throws IOException {
         xfer.upload(source, dest);
+    }
+    
+    public void put(LocalSourceFile source, String dest, long byteOffset)
+            throws IOException {
+        xfer.upload(source, dest, byteOffset);
     }
 
     @Override

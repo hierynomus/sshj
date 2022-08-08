@@ -60,7 +60,7 @@ class FileKeyProviderSpec extends Specification {
 
     where:
     format | keyfile
-    KeyFormat.PKCS5 | "src/test/resources/keyformats/pkcs5"
+    KeyFormat.PKCS8 | "src/test/resources/keyformats/pkcs8"
     KeyFormat.OpenSSH | "src/test/resources/keyformats/openssh"
   }
 }

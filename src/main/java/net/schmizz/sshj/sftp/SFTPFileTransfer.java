@@ -50,25 +50,47 @@ public class SFTPFileTransfer
     @Override
     public void upload(String source, String dest)
             throws IOException {
-        upload(new FileSystemFile(source), dest);
+        upload(source, dest, 0);
+    }
+    
+    @Override
+    public void upload(String source, String dest, long byteOffset)
+            throws IOException {
+        upload(new FileSystemFile(source), dest, byteOffset);
     }
 
     @Override
     public void download(String source, String dest)
             throws IOException {
-        download(source, new FileSystemFile(dest));
+        download(source, dest, 0);
+    }
+    
+    @Override
+    public void download(String source, String dest, long byteOffset)
+            throws IOException {
+        download(source, new FileSystemFile(dest), byteOffset);
     }
 
     @Override
     public void upload(LocalSourceFile localFile, String remotePath) throws IOException {
-        new Uploader(localFile, remotePath).upload(getTransferListener());
+        upload(localFile, remotePath, 0);
+    }
+    
+    @Override
+    public void upload(LocalSourceFile localFile, String remotePath, long byteOffset) throws IOException {
+        new Uploader(localFile, remotePath).upload(getTransferListener(), byteOffset);
     }
 
     @Override
     public void download(String source, LocalDestFile dest) throws IOException {
+        download(source, dest, 0);
+    }
+    
+    @Override
+    public void download(String source, LocalDestFile dest, long byteOffset) throws IOException {
         final PathComponents pathComponents = engine.getPathHelper().getComponents(source);
         final FileAttributes attributes = engine.stat(source);
-        new Downloader().download(getTransferListener(), new RemoteResourceInfo(pathComponents, attributes), dest);
+        new Downloader().download(getTransferListener(), new RemoteResourceInfo(pathComponents, attributes), dest, byteOffset);
     }
 
     public void setUploadFilter(LocalFileFilter uploadFilter) {
@@ -92,7 +114,8 @@ public class SFTPFileTransfer
         @SuppressWarnings("PMD.MissingBreakInSwitch")
         private void download(final TransferListener listener,
                               final RemoteResourceInfo remote,
-                              final LocalDestFile local) throws IOException {
+                              final LocalDestFile local,
+                              final long byteOffset) throws IOException {
             final LocalDestFile adjustedFile;
             switch (remote.getAttributes().getType()) {
                 case DIRECTORY:
@@ -101,8 +124,9 @@ public class SFTPFileTransfer
                 case UNKNOWN:
                     log.warn("Server did not supply information about the type of file at `{}` " +
                                      "-- assuming it is a regular file!", remote.getPath());
+                    // fall through
                 case REGULAR:
-                    adjustedFile = downloadFile(listener.file(remote.getName(), remote.getAttributes().getSize()), remote, local);
+                    adjustedFile = downloadFile(listener.file(remote.getName(), remote.getAttributes().getSize()), remote, local, byteOffset);
                     break;
                 default:
                     throw new IOException(remote + " is not a regular file or directory");
@@ -119,7 +143,7 @@ public class SFTPFileTransfer
             final RemoteDirectory rd = engine.openDir(remote.getPath());
             try {
                 for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
-                    download(listener, rri, adjusted.getChild(rri.getName()));
+                    download(listener, rri, adjusted.getChild(rri.getName()), 0); // not supporting individual byte offsets for these files
             } finally {
                 rd.close();
             }
@@ -128,13 +152,15 @@ public class SFTPFileTransfer
 
         private LocalDestFile downloadFile(final StreamCopier.Listener listener,
                                            final RemoteResourceInfo remote,
-                                           final LocalDestFile local)
+                                           final LocalDestFile local,
+                                           final long byteOffset)
                 throws IOException {
             final LocalDestFile adjusted = local.getTargetFile(remote.getName());
             final RemoteFile rf = engine.open(remote.getPath());
             try {
-                final RemoteFile.ReadAheadRemoteFileInputStream rfis = rf.new ReadAheadRemoteFileInputStream(16);
-                final OutputStream os = adjusted.getOutputStream();
+                log.debug("Attempting to download {} with offset={}", remote.getPath(), byteOffset);
+                final RemoteFile.ReadAheadRemoteFileInputStream rfis = rf.new ReadAheadRemoteFileInputStream(16, byteOffset);
+                final OutputStream os = adjusted.getOutputStream(byteOffset != 0);
                 try {
                     new StreamCopier(rfis, os, engine.getLoggerFactory())
                             .bufSize(engine.getSubsystem().getLocalMaxPacketSize())
@@ -173,17 +199,17 @@ public class SFTPFileTransfer
             this.remote = remote;
         }
 
-        private void upload(final TransferListener listener) throws IOException {
+        private void upload(final TransferListener listener, long byteOffset) throws IOException {
             if (source.isDirectory()) {
                 makeDirIfNotExists(remote); // Ensure that the directory exists
                 uploadDir(listener.directory(source.getName()), source, remote);
                 setAttributes(source, remote);
             } else if (source.isFile() && isDirectory(remote)) {
                 String adjustedRemote = engine.getPathHelper().adjustForParent(this.remote, source.getName());
-                uploadFile(listener.file(source.getName(), source.getLength()), source, adjustedRemote);
+                uploadFile(listener.file(source.getName(), source.getLength()), source, adjustedRemote, byteOffset);
                 setAttributes(source, adjustedRemote);
             } else if (source.isFile()) {
-                uploadFile(listener.file(source.getName(), source.getLength()), source, remote);
+                uploadFile(listener.file(source.getName(), source.getLength()), source, remote, byteOffset);
                 setAttributes(source, remote);
             } else {
                 throw new IOException(source + " is not a file or directory");
@@ -192,13 +218,14 @@ public class SFTPFileTransfer
 
         private void upload(final TransferListener listener,
                             final LocalSourceFile local,
-                            final String remote)
+                            final String remote,
+                            final long byteOffset)
                 throws IOException {
             final String adjustedPath;
             if (local.isDirectory()) {
                 adjustedPath = uploadDir(listener.directory(local.getName()), local, remote);
             } else if (local.isFile()) {
-                adjustedPath = uploadFile(listener.file(local.getName(), local.getLength()), local, remote);
+                adjustedPath = uploadFile(listener.file(local.getName(), local.getLength()), local, remote, byteOffset);
             } else {
                 throw new IOException(local + " is not a file or directory");
             }
@@ -217,22 +244,34 @@ public class SFTPFileTransfer
                 throws IOException {
             makeDirIfNotExists(remote);
             for (LocalSourceFile f : local.getChildren(getUploadFilter()))
-                upload(listener, f, engine.getPathHelper().adjustForParent(remote, f.getName()));
+                upload(listener, f, engine.getPathHelper().adjustForParent(remote, f.getName()), 0); // not supporting individual byte offsets for these files
             return remote;
         }
 
         private String uploadFile(final StreamCopier.Listener listener,
                                   final LocalSourceFile local,
-                                  final String remote)
+                                  final String remote,
+                                  final long byteOffset)
                 throws IOException {
-            final String adjusted = prepareFile(local, remote);
+            final String adjusted = prepareFile(local, remote, byteOffset);
             RemoteFile rf = null;
             InputStream fis = null;
             RemoteFile.RemoteFileOutputStream rfos = null;
+            EnumSet<OpenMode> modes;
             try {
-                rf = engine.open(adjusted, EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC));
+                if (byteOffset == 0) {
+                    // Starting at the beginning, overwrite/create
+                    modes = EnumSet.of(OpenMode.WRITE, OpenMode.CREAT, OpenMode.TRUNC);
+                } else {
+                    // Starting at some offset, append
+                    modes = EnumSet.of(OpenMode.WRITE, OpenMode.APPEND);
+                }
+                
+                log.debug("Attempting to upload {} with offset={}", local.getName(), byteOffset);
+                rf = engine.open(adjusted, modes);
                 fis = local.getInputStream();
-                rfos = rf.new RemoteFileOutputStream(0, 16);
+                fis.skip(byteOffset);
+                rfos = rf.new RemoteFileOutputStream(byteOffset, 16);
                 new StreamCopier(fis, rfos, engine.getLoggerFactory())
                         .bufSize(engine.getSubsystem().getRemoteMaxPacketSize() - rf.getOutgoingPacketOverhead())
                         .keepFlushing(false)
@@ -294,7 +333,7 @@ public class SFTPFileTransfer
             }
         }
 
-        private String prepareFile(final LocalSourceFile local, final String remote)
+        private String prepareFile(final LocalSourceFile local, final String remote, final long byteOffset)
                 throws IOException {
             final FileAttributes attrs;
             try {
@@ -309,7 +348,7 @@ public class SFTPFileTransfer
             if (attrs.getMode().getType() == FileMode.Type.DIRECTORY) {
                 throw new IOException("Trying to upload file " + local.getName() + " to path " + remote + " but that is a directory");
             } else {
-                log.debug("probeFile: {} is a {} file that will be replaced", remote, attrs.getMode().getType());
+                log.debug("probeFile: {} is a {} file that will be {}", remote, attrs.getMode().getType(), byteOffset > 0 ? "resumed" : "replaced");
                 return remote;
             }
         }

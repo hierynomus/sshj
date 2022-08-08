@@ -39,6 +39,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
@@ -441,6 +442,14 @@ public class OpenSSHKeyFileTest {
                      corruptedKeyFile.getPrivate());
         assertEquals(initialKeyFile.getPublic(),
                      corruptedKeyFile.getPublic());
+    }
+
+    @Test
+    public void emptyPrivateKey() {
+        FileKeyProvider keyProvider = new OpenSSHKeyV1KeyFile();
+        keyProvider.init(new StringReader(""));
+
+        assertThrows("This key is not in 'openssh-key-v1' format", IOException.class, keyProvider::getPrivate);
     }
 
     @Before

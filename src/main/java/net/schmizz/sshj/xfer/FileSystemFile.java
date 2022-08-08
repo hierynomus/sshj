@@ -71,7 +71,13 @@ public class FileSystemFile
     @Override
     public OutputStream getOutputStream()
             throws IOException {
-        return new FileOutputStream(file);
+        return getOutputStream(false);
+    }
+    
+    @Override
+    public OutputStream getOutputStream(boolean append)
+            throws IOException {
+        return new FileOutputStream(file, append);
     }
 
     @Override
