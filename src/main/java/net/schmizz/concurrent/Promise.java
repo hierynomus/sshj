@@ -176,6 +176,7 @@ public class Promise<V, T extends Throwable> {
             }
             return val;
         } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
             throw chainer.chain(ie);
         } finally {
             lock.unlock();
