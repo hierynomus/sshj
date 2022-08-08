@@ -75,6 +75,8 @@ public abstract class KeepAlive extends Thread {
                 TimeUnit.SECONDS.sleep(interval);
             }
         } catch (InterruptedException e) {
+            // this is almost certainly a planned interruption, but even so, no harm in setting the interrupt flag
+            Thread.currentThread().interrupt();
             log.trace("{} Interrupted while sleeping", getClass().getSimpleName());
         } catch (Exception e) {
             // If we weren't interrupted, kill the transport, then this exception was unexpected.
