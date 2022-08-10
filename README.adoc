@@ -104,6 +104,13 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.34.0 (2022-08-10)::
+* Merged https://github.com/hierynomus/sshj/pull/743[#743]: Use default client credentials for AuthGssApiWithMic
+* Merged https://github.com/hierynomus/sshj/pull/801[#801]: Restore thread interrupt status after catching InterruptedException
+* Merged https://github.com/hierynomus/sshj/pull/793[#793]: Merge PKCS5 and PKCS8 classes
+* Upgraded dependencies SLF4J (1.7.36) and Logback (1.2.11)
+* Merged https://github.com/hierynomus/sshj/pull/791[#791]: Update KeepAlive examples
+* Merged https://github.com/hierynomus/sshj/pull/775[#775]: Add SFTP resume support
 SSHJ 0.33.0 (2022-04-22)::
 * Upgraded dependencies BouncyCastle (1.70)
 * Merged https://github.com/hierynomus/sshj/pull/687[#687]: Correctly close connection when remote closes connection.
