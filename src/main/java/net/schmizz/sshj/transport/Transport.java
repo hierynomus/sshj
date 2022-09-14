@@ -71,6 +71,13 @@ public interface Transport
     void doKex()
             throws TransportException;
 
+    /**
+     * Is Key Exchange required based on current transport status
+     *
+     * @return Key Exchange required status
+     */
+    boolean isKeyExchangeRequired();
+
     /** @return the version string used by this client to identify itself to an SSH server, e.g. "SSHJ_3_0" */
     String getClientVersion();
 

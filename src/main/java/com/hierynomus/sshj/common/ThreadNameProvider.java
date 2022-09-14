@@ -29,7 +29,8 @@ public class ThreadNameProvider {
     public static void setThreadName(final Thread thread, final RemoteAddressProvider remoteAddressProvider) {
         final InetSocketAddress remoteSocketAddress = remoteAddressProvider.getRemoteSocketAddress();
         final String address = remoteSocketAddress == null ? DISCONNECTED : remoteSocketAddress.toString();
-        final String threadName = String.format("sshj-%s-%s", thread.getClass().getSimpleName(), address);
+        final long started = System.currentTimeMillis();
+        final String threadName = String.format("sshj-%s-%s-%d", thread.getClass().getSimpleName(), address, started);
         thread.setName(threadName);
     }
 }
