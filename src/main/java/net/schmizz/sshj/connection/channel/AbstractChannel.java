@@ -304,6 +304,25 @@ public abstract class AbstractChannel
         }
     }
 
+    // Prevent CHANNEL_CLOSE to be sent between isOpen and a Transport.write call in the runnable, otherwise
+    // a disconnect with a "packet referred to nonexistent channel" message can occur.
+    //
+    // This particularly happens when the transport.Reader thread passes an eof from the server to the
+    // ChannelInputStream, the reading library-user thread returns, and closes the channel at the same time as the
+    // transport.Reader thread receives the subsequent CHANNEL_CLOSE from the server.
+    boolean whileOpen(TransportRunnable runnable) throws TransportException, ConnectionException {
+        openCloseLock.lock();
+        try {
+            if (isOpen()) {
+                runnable.run();
+                return true;
+            }
+        } finally {
+            openCloseLock.unlock();
+        }
+        return false;
+    }
+
     private void gotChannelRequest(SSHPacket buf)
             throws ConnectionException, TransportException {
         final String reqType;
@@ -427,5 +446,8 @@ public abstract class AbstractChannel
                 + rwin + " >";
     }
 
+    public interface TransportRunnable {
+        void run() throws TransportException, ConnectionException;
+    }
 
 }

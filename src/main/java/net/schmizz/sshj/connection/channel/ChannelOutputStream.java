@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class ChannelOutputStream extends OutputStream implements ErrorNotifiable {
 
-    private final Channel chan;
+    private final AbstractChannel chan;
     private final Transport trans;
     private final Window.Remote win;
 
@@ -47,6 +47,12 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
 
         private final SSHPacket packet = new SSHPacket(Message.CHANNEL_DATA);
         private final Buffer.PlainBuffer leftOvers = new Buffer.PlainBuffer();
+        private final AbstractChannel.TransportRunnable packetWriteRunnable = new AbstractChannel.TransportRunnable() {
+            @Override
+            public void run() throws TransportException {
+                trans.write(packet);
+            }
+        };
 
         DataBuffer() {
             headerOffset = packet.rpos();
@@ -99,8 +105,9 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
                 if (leftOverBytes > 0) {
                     leftOvers.putRawBytes(packet.array(), packet.wpos(), leftOverBytes);
                 }
-
-                trans.write(packet);
+                if (!chan.whileOpen(packetWriteRunnable)) {
+                    throwStreamClosed();
+                }
                 win.consume(writeNow);
 
                 packet.rpos(headerOffset);
@@ -119,7 +126,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
 
     }
 
-    public ChannelOutputStream(Channel chan, Transport trans, Window.Remote win) {
+    public ChannelOutputStream(AbstractChannel chan, Transport trans, Window.Remote win) {
         this.chan = chan;
         this.trans = trans;
         this.win = win;
@@ -157,7 +164,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
             if (error != null) {
                 throw error;
             } else {
-                throw new ConnectionException("Stream closed");
+                throwStreamClosed();
             }
         }
     }
@@ -165,9 +172,14 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     @Override
     public synchronized void close() throws IOException {
         // Not closed yet, and underlying channel is open to flush the data to.
-        if (!closed.getAndSet(true) && chan.isOpen()) {
-            buffer.flush(false);
-            trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
+        if (!closed.getAndSet(true)) {
+            chan.whileOpen(new AbstractChannel.TransportRunnable() {
+                @Override
+                public void run() throws TransportException, ConnectionException {
+                    buffer.flush(false);
+                    trans.write(new SSHPacket(Message.CHANNEL_EOF).putUInt32(chan.getRecipient()));
+                }
+            });
         }
     }
 
@@ -188,4 +200,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
         return "< ChannelOutputStream for Channel #" + chan.getID() + " >";
     }
 
+    private static void throwStreamClosed() throws ConnectionException {
+        throw new ConnectionException("Stream closed");
+    }
 }
