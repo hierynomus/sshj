@@ -254,6 +254,16 @@ public final class TransportImpl
         kexer.startKex(true);
     }
 
+    /**
+     * Is Key Exchange required returns true when Key Exchange is not done and when Key Exchange is not ongoing
+     *
+     * @return Key Exchange required status
+     */
+    @Override
+    public boolean isKeyExchangeRequired() {
+        return !kexer.isKexDone() && !kexer.isKexOngoing();
+    }
+
     public boolean isKexDone() {
         return kexer.isKexDone();
     }
