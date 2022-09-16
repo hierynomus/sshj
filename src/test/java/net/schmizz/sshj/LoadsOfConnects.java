@@ -40,7 +40,7 @@ public class LoadsOfConnects {
                 SSHClient client = fixture.setupConnectedDefaultClient();
                 client.authPassword("test", "test");
                 Session s = client.startSession();
-                Session.Command c = s.exec("ls");
+                Session.Command c = s.exec(SshFixture.listCommand);
                 IOUtils.readFully(c.getErrorStream());
                 IOUtils.readFully(c.getInputStream());
                 c.close();
