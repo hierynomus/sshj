@@ -59,9 +59,10 @@ public class KeepAliveThreadTerminationTest {
         assertEquals(Thread.State.NEW, keepAlive.getState());
 
         fixture.connectClient(sshClient);
-        assertEquals(Thread.State.TIMED_WAITING, keepAlive.getState());
 
         assertThrows(UserAuthException.class, () -> sshClient.authPassword("bad", "credentials"));
+
+        assertEquals(Thread.State.TIMED_WAITING, keepAlive.getState());
 
         fixture.stopClient();
         Thread.sleep(STOP_SLEEP);
