@@ -20,6 +20,7 @@ import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.util.gss.BogusGSSAuthenticator;
 import org.apache.sshd.common.keyprovider.ClassLoadableResourceKeyPairProvider;
+import org.apache.sshd.common.util.OsUtils;
 import org.apache.sshd.scp.server.ScpCommandFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.shell.ProcessShellFactory;
@@ -38,6 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SshFixture extends ExternalResource {
     public static final String hostkey = "hostkey.pem";
     public static final String fingerprint = "ce:a7:c1:cf:17:3f:96:49:6a:53:1a:05:0b:ba:90:db";
+    public static final String listCommand = OsUtils.isWin32() ? "cmd.exe /C dir" : "ls";
 
     private final SshServer server = defaultSshServer();
     private SSHClient client = null;
@@ -110,7 +112,7 @@ public class SshFixture extends ExternalResource {
         ScpCommandFactory commandFactory = new ScpCommandFactory();
         commandFactory.setDelegateCommandFactory((session, command) -> new ProcessShellFactory(command, command.split(" ")).createShell(session));
         sshServer.setCommandFactory(commandFactory);
-        sshServer.setShellFactory(new ProcessShellFactory("ls", "ls"));
+        sshServer.setShellFactory(new ProcessShellFactory(listCommand, listCommand.split(" ")));
         return sshServer;
     }
 
