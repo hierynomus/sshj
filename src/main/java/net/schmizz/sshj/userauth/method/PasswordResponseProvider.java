@@ -27,7 +27,8 @@ import java.util.regex.Pattern;
 public class PasswordResponseProvider
         implements ChallengeResponseProvider {
 
-    public static final Pattern DEFAULT_PROMPT_PATTERN = Pattern.compile(".*[pP]assword:\\s?\\z", Pattern.DOTALL);
+    // FreeBSD prompt is "Password for user@host:"
+    public static final Pattern DEFAULT_PROMPT_PATTERN = Pattern.compile(".*[pP]assword(?: for .*)?:\\s?\\z", Pattern.DOTALL);
 
     private static final char[] EMPTY_RESPONSE = new char[0];
 
