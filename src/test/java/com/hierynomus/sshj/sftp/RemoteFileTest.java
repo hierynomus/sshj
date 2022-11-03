@@ -249,7 +249,7 @@ public class RemoteFileTest {
             IoUtils.copy(new ByteArrayInputStream(targetBytes), fStream);
         }
 
-        // atomic rename with overwrite
+        // rename with overwrite
         Set<RenameFlags> flags = EnumSet.of(RenameFlags.OVERWRITE);
         sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
 
@@ -285,7 +285,7 @@ public class RemoteFileTest {
             IoUtils.copy(new ByteArrayInputStream(targetBytes), fStream);
         }
 
-        // atomic rename with overwrite
+        // rename without overwrite -> should fail
         Boolean exceptionThrown = false;
         try {
             Set<RenameFlags> flags = new HashSet<>();
