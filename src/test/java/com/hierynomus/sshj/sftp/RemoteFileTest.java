@@ -18,10 +18,7 @@ package com.hierynomus.sshj.sftp;
 import com.hierynomus.sshj.test.SshFixture;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.ByteArrayUtils;
-import net.schmizz.sshj.sftp.OpenMode;
-import net.schmizz.sshj.sftp.RemoteFile;
-import net.schmizz.sshj.sftp.SFTPEngine;
-import net.schmizz.sshj.sftp.SFTPException;
+import net.schmizz.sshj.sftp.*;
 import org.apache.sshd.common.util.io.IoUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,7 +27,9 @@ import org.junit.rules.TemporaryFolder;
 import java.io.*;
 import java.security.SecureRandom;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -224,5 +223,83 @@ public class RemoteFileTest {
         assertEquals("The file should be fully read", expected.length, actual.length);
         assertThat("The file should be read correctly",
                 ByteArrayUtils.equals(expected, 0, actual, 0, expected.length));
+    }
+
+    @Test
+    public void shouldOverwriteFileWhenRequested() throws IOException {
+        SSHClient ssh = fixture.setupConnectedDefaultClient();
+        ssh.authPassword("test", "test");
+        SFTPEngine sftp = new SFTPEngine(ssh).init();
+
+        // create source file
+        final byte[] sourceBytes = new byte[32];
+        new SecureRandom(new byte[]{31}).nextBytes(sourceBytes);
+
+        File sourceFile = temp.newFile("shouldOverwriteFileWhenRequested-source.bin");
+        try (OutputStream fStream = new FileOutputStream(sourceFile)) {
+            IoUtils.copy(new ByteArrayInputStream(sourceBytes), fStream);
+        }
+
+        // create target file
+        final byte[] targetBytes = new byte[32];
+        new SecureRandom(new byte[]{31}).nextBytes(targetBytes);
+
+        File targetFile = temp.newFile("shouldOverwriteFileWhenRequested-target.bin");
+        try (OutputStream fStream = new FileOutputStream(targetFile)) {
+            IoUtils.copy(new ByteArrayInputStream(targetBytes), fStream);
+        }
+
+        // atomic rename with overwrite
+        Set<RenameFlags> flags = EnumSet.of(RenameFlags.OVERWRITE);
+        sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+
+        // check if rename was successful
+        assertThat("The source file should not exist anymore", !sourceFile.exists());
+        assertThat("The contents of the target file should be equal to the contents previously written " +
+                        "to the source file",
+                ByteArrayUtils.equals(IoUtils.toByteArray(new FileInputStream(targetFile)), 0,
+                        sourceBytes, 0, sourceBytes.length));
+    }
+
+    @Test
+    public void shouldNotOverwriteFileWhenNotRequested() throws IOException {
+        SSHClient ssh = fixture.setupConnectedDefaultClient();
+        ssh.authPassword("test", "test");
+        SFTPEngine sftp = new SFTPEngine(ssh).init();
+
+        // create source file
+        final byte[] sourceBytes = new byte[32];
+        new SecureRandom(new byte[]{31}).nextBytes(sourceBytes);
+
+        File sourceFile = temp.newFile("shouldOverwriteFileWhenRequested-source.bin");
+        try (OutputStream fStream = new FileOutputStream(sourceFile)) {
+            IoUtils.copy(new ByteArrayInputStream(sourceBytes), fStream);
+        }
+
+        // create target file
+        final byte[] targetBytes = new byte[32];
+        new SecureRandom(new byte[]{31}).nextBytes(targetBytes);
+
+        File targetFile = temp.newFile("shouldOverwriteFileWhenRequested-target.bin");
+        try (OutputStream fStream = new FileOutputStream(targetFile)) {
+            IoUtils.copy(new ByteArrayInputStream(targetBytes), fStream);
+        }
+
+        // atomic rename with overwrite
+        Boolean exceptionThrown = false;
+        try {
+            Set<RenameFlags> flags = new HashSet<>();
+            sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+        }
+        catch (net.schmizz.sshj.sftp.SFTPException e) {
+            exceptionThrown = true;
+        }
+
+        // check if rename failed as it should
+        assertThat("The source file should still exist", sourceFile.exists());
+        assertThat("The contents of the target file should be equal to the contents previously written to it",
+                ByteArrayUtils.equals(IoUtils.toByteArray(new FileInputStream(targetFile)), 0,
+                        targetBytes, 0, targetBytes.length));
+        assertThat("An appropriate exception should have been thrown", exceptionThrown);
     }
 }
