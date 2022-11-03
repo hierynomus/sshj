@@ -234,8 +234,9 @@ public class SFTPEngine
 
     public void rename(String oldPath, String newPath, Set<RenameFlags> flags)
             throws IOException {
-        if (operativeVersion < 1)
+        if (operativeVersion < 1) {
             throw new SFTPException("RENAME is not supported in SFTPv" + operativeVersion);
+        }
 
         // request variables to be determined
         PacketType type = PacketType.RENAME; // Default
@@ -286,21 +287,25 @@ public class SFTPEngine
             }
 
             // finally: let the user know that the server does not support what was asked
-            else throw new SFTPException("RENAME-FLAGS are not supported in SFTPv" + operativeVersion + " and no " +
+            else {
+                throw new SFTPException("RENAME-FLAGS are not supported in SFTPv" + operativeVersion + " and no " +
                         "supported server extension could be found to achieve a similar result.");
+            }
         }
 
         // build and send request
         final Request request = newRequest(type);
 
-        if (serverExtension != null)
+        if (serverExtension != null) {
             request.putString(serverExtension);
+        }
 
         request.putString(oldPath, sub.getRemoteCharset())
                 .putString(newPath, sub.getRemoteCharset());
 
-        if (renameFlagMask != 0L)
+        if (renameFlagMask != 0L) {
             request.putUInt32(renameFlagMask);
+        }
 
         doRequest(request).ensureStatusPacketIsOK();
     }
