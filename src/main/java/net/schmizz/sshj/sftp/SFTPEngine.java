@@ -271,8 +271,7 @@ public class SFTPEngine
                     !flags.contains(RenameFlags.OVERWRITE) &&
                     !flags.contains(RenameFlags.NATIVE) && // see next case below
                     supportsServerExtension("posix-rename","openssh.com")) {
-
-                    throw new SFTPException("RENAME-FLAGS are not supported in SFTPv" + operativeVersion + " but " +
+                throw new SFTPException("RENAME-FLAGS are not supported in SFTPv" + operativeVersion + " but " +
                             "the \"posix-rename@openssh.com\" extension could be used as fallback if OVERWRITE " +
                             "behaviour is acceptable (needs to be activated via RenameFlags.OVERWRITE).");
             }
