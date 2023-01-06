@@ -136,7 +136,7 @@ public class Promise<V, T extends Throwable> {
             throws T {
         final V value = tryRetrieve(timeout, unit);
         if (value == null)
-            throw chainer.chain(new TimeoutException("Timeout expired"));
+            throw chainer.chain(new TimeoutException("Timeout expired: " + timeout + " " + unit));
         else
             return value;
     }
