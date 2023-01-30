@@ -104,6 +104,11 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.35.0 (2023-01-30)::
+* Merged https://github.com/hierynomus/sshj/pull/835[#835]: TimeoutException message improved
+* Merged https://github.com/hierynomus/sshj/pull/815[#815]: Support authPassword on FreeBSD
+* Merged https://github.com/hierynomus/sshj/pull/813[#813]: Prevent `CHANNEL_CLOSE` between isOpen and write call.
+* Merged https://github.com/hierynomus/sshj/pull/811[#811]: Add `Transport.isKeyExchangeREquired` to prevent unnecessary KEXINIT
 SSHJ 0.34.0 (2022-08-10)::
 * Merged https://github.com/hierynomus/sshj/pull/743[#743]: Use default client credentials for AuthGssApiWithMic
 * Merged https://github.com/hierynomus/sshj/pull/801[#801]: Restore thread interrupt status after catching InterruptedException
