@@ -66,7 +66,6 @@ license {
     java = 'SLASHSTAR_STYLE'
   }
   excludes([
-    '**/djb/Curve25519.java',
     '**/sshj/common/Base64.java',
     '**/com/hierynomus/sshj/userauth/keyprovider/bcrypt/*.java',
     '**/files/test_file_*.txt',
