@@ -15,50 +15,89 @@
  */
 package net.schmizz.sshj.transport.kex;
 
-import com.hierynomus.sshj.common.KeyAlgorithm;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.random.Random;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.crypto.ec.CustomNamedCurves;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.PublicKey;
 import java.security.spec.AlgorithmParameterSpec;
-import java.util.Arrays;
+import java.security.spec.KeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
+/**
+ * Key Exchange Method using Curve25519 as defined in RFC 8731
+ */
 public class Curve25519DH extends DHBase {
 
-    private byte[] secretKey;
+    private static final String ALGORITHM = "X25519";
+
+    private static final int ENCODED_ALGORITHM_ID_KEY_LENGTH = 44;
+
+    private static final int ALGORITHM_ID_LENGTH = 12;
+
+    private static final int KEY_LENGTH = 32;
+
+    private final byte[] algorithmId = new byte[ALGORITHM_ID_LENGTH];
 
     public Curve25519DH() {
-        super(KeyAlgorithm.ECDSA, "ECDH");
-    }
-
-    @Override
-    void computeK(byte[] f) throws GeneralSecurityException {
-        byte[] k = new byte[32];
-        djb.Curve25519.curve(k, secretKey, f);
-        setK(new BigInteger(1, k));
-    }
-
-    @Override
-    public void init(AlgorithmParameterSpec params, Factory<Random> randomFactory) throws GeneralSecurityException {
-        Random random = randomFactory.create();
-        byte[] secretBytes =  new byte[32];
-        random.fill(secretBytes);
-        byte[] publicBytes = new byte[32];
-        djb.Curve25519.keygen(publicBytes, null, secretBytes);
-        this.secretKey = Arrays.copyOf(secretBytes, secretBytes.length);
-        setE(publicBytes);
+        super(ALGORITHM, ALGORITHM);
     }
 
     /**
-     * TODO want to figure out why BouncyCastle does not work.
-     * @return The initialized curve25519 parameter spec
+     * Compute Shared Secret Key using Diffie-Hellman Curve25519 known as X25519
+     *
+     * @param peerPublicKey Peer public key bytes
+     * @throws GeneralSecurityException Thrown on key agreement failures
      */
-    public static AlgorithmParameterSpec getCurve25519Params() {
-        X9ECParameters ecP = CustomNamedCurves.getByName("curve25519");
-        return new ECParameterSpec(ecP.getCurve(), ecP.getG(), ecP.getN(), ecP.getH(), ecP.getSeed());
+    @Override
+    void computeK(final byte[] peerPublicKey) throws GeneralSecurityException {
+        final KeyFactory keyFactory = SecurityUtils.getKeyFactory(ALGORITHM);
+        final KeySpec peerPublicKeySpec = getPeerPublicKeySpec(peerPublicKey);
+        final PublicKey generatedPeerPublicKey = keyFactory.generatePublic(peerPublicKeySpec);
+
+        agreement.doPhase(generatedPeerPublicKey, true);
+        final byte[] sharedSecretKey = agreement.generateSecret();
+        final BigInteger sharedSecretNumber = new BigInteger(BigInteger.ONE.signum(), sharedSecretKey);
+        setK(sharedSecretNumber);
+    }
+
+    /**
+     * Initialize Key Agreement with generated Public and Private Key Pair
+     *
+     * @param params Parameters not used
+     * @param randomFactory Random Factory not used
+     * @throws GeneralSecurityException Thrown on key agreement initialization failures
+     */
+    @Override
+    public void init(final AlgorithmParameterSpec params, final Factory<Random> randomFactory) throws GeneralSecurityException {
+        final KeyPair keyPair = generator.generateKeyPair();
+        agreement.init(keyPair.getPrivate());
+        setPublicKey(keyPair.getPublic());
+    }
+
+    private void setPublicKey(final PublicKey publicKey) {
+        final byte[] encoded = publicKey.getEncoded();
+
+        // Encoded public key consists of the algorithm identifier and public key
+        if (encoded.length == ENCODED_ALGORITHM_ID_KEY_LENGTH) {
+            final byte[] publicKeyEncoded = new byte[KEY_LENGTH];
+            System.arraycopy(encoded, ALGORITHM_ID_LENGTH, publicKeyEncoded, 0, KEY_LENGTH);
+            setE(publicKeyEncoded);
+
+            // Save Algorithm Identifier byte array
+            System.arraycopy(encoded, 0, algorithmId, 0, ALGORITHM_ID_LENGTH);
+        } else {
+            throw new IllegalArgumentException(String.format("X25519 unsupported public key length [%d]", encoded.length));
+        }
+    }
+
+    private KeySpec getPeerPublicKeySpec(final byte[] peerPublicKey) {
+        final byte[] encodedKeySpec = new byte[ENCODED_ALGORITHM_ID_KEY_LENGTH];
+        System.arraycopy(algorithmId, 0, encodedKeySpec, 0, ALGORITHM_ID_LENGTH);
+        System.arraycopy(peerPublicKey, 0, encodedKeySpec, ALGORITHM_ID_LENGTH, KEY_LENGTH);
+        return new X509EncodedKeySpec(encodedKeySpec);
     }
 }

@@ -56,6 +56,6 @@ public class Curve25519SHA256 extends AbstractDHG {
 
     @Override
     protected void initDH(DHBase dh) throws GeneralSecurityException {
-        dh.init(Curve25519DH.getCurve25519Params(), trans.getConfig().getRandomFactory());
+        dh.init(null, trans.getConfig().getRandomFactory());
     }
 }
