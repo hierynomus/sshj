@@ -42,7 +42,6 @@ dependencies {
   implementation "org.slf4j:slf4j-api:1.7.36"
   implementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
   implementation "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
-  implementation "com.jcraft:jzlib:1.1.3"
   implementation "com.hierynomus:asn-one:0.6.0"
 
   implementation "net.i2p.crypto:eddsa:0.3.0"
