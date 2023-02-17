@@ -276,13 +276,13 @@ public class SecurityUtils {
 
     private static void register() {
         if (!registrationDone) {
-            if (securityProvider == null && (registerBouncyCastle == null || registerBouncyCastle)) {
+            if (System.getProperty("org.graalvm.nativeimage.imagecode") == null && securityProvider == null && (registerBouncyCastle == null || registerBouncyCastle)) {
                 registerSecurityProvider("org.bouncycastle.jce.provider.BouncyCastleProvider");
                 if (securityProvider == null && registerBouncyCastle == null) {
                     LOG.info("BouncyCastle not registered, using the default JCE provider");
                 } else if (securityProvider == null) {
-                    LOG.error("Failed to register BouncyCastle as the defaut JCE provider");
-                    throw new SSHRuntimeException("Failed to register BouncyCastle as the defaut JCE provider");
+                    LOG.error("Failed to register BouncyCastle as the default JCE provider");
+                    throw new SSHRuntimeException("Failed to register BouncyCastle as the default JCE provider");
                 }
             }
             registrationDone = true;
