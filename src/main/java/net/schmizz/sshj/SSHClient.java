@@ -40,6 +40,7 @@ import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.FingerprintVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import net.schmizz.sshj.userauth.AuthResult;
 import net.schmizz.sshj.userauth.UserAuth;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.UserAuthImpl;
@@ -218,13 +219,30 @@ public class SSHClient
             throws UserAuthException, TransportException {
         checkConnected();
         final Deque<UserAuthException> savedEx = new LinkedList<UserAuthException>();
-        for (AuthMethod method: methods) {
+        final List<AuthMethod> tried = new LinkedList<AuthMethod>();
+
+        for (Iterator<AuthMethod> it = methods.iterator(); it.hasNext();) {
+            AuthMethod method = it.next();
             method.setLoggerFactory(loggerFactory);
+
             try {
-                if (auth.authenticate(username, (Service) conn, method, trans.getTimeoutMs()))
+                AuthResult result = auth.authenticate(username, (Service) conn, method, trans.getTimeoutMs());
+
+                if (result == AuthResult.SUCCESS) {
                     return;
+                } else if (result == AuthResult.PARTIAL) {
+                    // Put all remaining methods in the tried list, so that we can try them for the second round of authentication
+                    while (it.hasNext()) {
+                        tried.add(it.next());
+                    }
+
+                    auth(username, tried);
+                    return;
+                }
+                tried.add(method);
             } catch (UserAuthException e) {
                 savedEx.push(e);
+                tried.add(method);
             }
         }
         throw new UserAuthException("Exhausted available authentication methods", savedEx.peek());

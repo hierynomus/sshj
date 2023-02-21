@@ -37,12 +37,12 @@ public interface UserAuth {
      * @param nextService the service to set on successful authentication
      * @param methods     the {@link AuthMethod}'s to try
      *
-     * @return whether authentication was successful
+     * @return whether authentication was successful, failed, or partially successful
      *
      * @throws UserAuthException  in case of authentication failure
      * @throws TransportException if there was a transport-layer error
      */
-    boolean authenticate(String username, Service nextService, AuthMethod methods, int timeoutMs)
+    AuthResult authenticate(String username, Service nextService, AuthMethod methods, int timeoutMs)
             throws UserAuthException, TransportException;
 
     /**

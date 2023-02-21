@@ -40,7 +40,7 @@ public class UserAuthImpl
         extends AbstractService
         implements UserAuth {
 
-    private final Promise<Boolean, UserAuthException> authenticated;
+    private final Promise<AuthResult, UserAuthException> authenticated;
 
     // Externally available
     private volatile String banner = "";
@@ -53,13 +53,13 @@ public class UserAuthImpl
 
     public UserAuthImpl(Transport trans) {
         super("ssh-userauth", trans);
-        authenticated = new Promise<Boolean, UserAuthException>("authenticated", UserAuthException.chainer, trans.getConfig().getLoggerFactory());
+        authenticated = new Promise<AuthResult, UserAuthException>("authenticated", UserAuthException.chainer, trans.getConfig().getLoggerFactory());
     }
 
     @Override
-    public boolean authenticate(String username, Service nextService, AuthMethod method, int timeoutMs)
+    public AuthResult authenticate(String username, Service nextService, AuthMethod method, int timeoutMs)
             throws UserAuthException, TransportException {
-        final boolean outcome;
+        final AuthResult outcome;
 
         authenticated.lock();
         try {
@@ -73,8 +73,10 @@ public class UserAuthImpl
             currentMethod.request();
             outcome = authenticated.retrieve(timeoutMs, TimeUnit.MILLISECONDS);
 
-            if (outcome) {
+            if (outcome == AuthResult.SUCCESS) {
                 log.debug("`{}` auth successful", method.getName());
+            }  else if (outcome == AuthResult.PARTIAL) {
+                log.debug("`{}` auth partially successful", method.getName());
             } else {
                 log.debug("`{}` auth failed", method.getName());
             }
@@ -124,7 +126,7 @@ public class UserAuthImpl
                     // Should fix https://github.com/hierynomus/sshj/issues/237
                     trans.setAuthenticated(); // So it can put delayed compression into force if applicable
                     trans.setService(nextService); // We aren't in charge anymore, next service is
-                    authenticated.deliver(true);
+                    authenticated.deliver(AuthResult.SUCCESS);
                     break;
 
                 case USERAUTH_FAILURE:
@@ -133,7 +135,7 @@ public class UserAuthImpl
                     if (allowedMethods.contains(currentMethod.getName()) && currentMethod.shouldRetry()) {
                         currentMethod.request();
                     } else {
-                        authenticated.deliver(false);
+                        authenticated.deliver(partialSuccess ? AuthResult.PARTIAL : AuthResult.FAILURE);
                     }
                     break;
 
