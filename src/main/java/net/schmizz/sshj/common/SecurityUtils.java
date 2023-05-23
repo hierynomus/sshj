@@ -259,6 +259,11 @@ public class SecurityUtils {
         return false;
     }
 
+    /**
+     * Configure whether to register the Bouncy Castle Security Provider. Must be called prior to other methods
+     *
+     * @param registerBouncyCastle Enable or disable Bouncy Castle Provider registration on subsequent method invocation
+     */
     public static synchronized void setRegisterBouncyCastle(boolean registerBouncyCastle) {
         SecurityUtils.registerBouncyCastle = registerBouncyCastle;
         registrationDone = false;
