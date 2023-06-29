@@ -22,28 +22,23 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 
 public class RemotePortForwarderTest {
-    private static final Logger log = LoggerFactory.getLogger(RemotePortForwarderTest.class);
-
     private static final PortRange RANGE = new PortRange(9000, 9999);
     private static final String LOCALHOST = "127.0.0.1";
+    private static final String LOCALHOST_URL_FORMAT = "http://127.0.0.1:%d";
     private static final InetSocketAddress HTTP_SERVER_SOCKET_ADDR = new InetSocketAddress(LOCALHOST, 8080);
 
     @Rule
@@ -61,8 +56,7 @@ public class RemotePortForwarderTest {
 
     @Test
     public void shouldHaveWorkingHttpServer() throws IOException {
-        // Just to check that we have a working http server...
-        assertEquals(200, httpGet( 8080));
+        assertEquals(200, httpGet(8080));
     }
 
     @Test
@@ -127,12 +121,12 @@ public class RemotePortForwarderTest {
         }
     }
 
-    private int httpGet(int port) throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
-        String urlString = "http://" + LOCALHOST + ":" + port;
-        log.info("Trying: GET " + urlString);
-        HttpResponse execute = client.execute(new HttpGet(urlString));
-        return execute.getStatusLine().getStatusCode();
+    private int httpGet(final int port) throws IOException {
+        final URL url = new URL(String.format(LOCALHOST_URL_FORMAT, port));
+        final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setConnectTimeout(3000);
+        urlConnection.setRequestMethod("GET");
+        return urlConnection.getResponseCode();
     }
 
     private SSHClient getFixtureClient() throws IOException {

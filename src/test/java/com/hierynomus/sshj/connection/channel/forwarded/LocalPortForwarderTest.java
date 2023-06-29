@@ -21,28 +21,28 @@ import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class LocalPortForwarderTest {
-    private static final Logger log = LoggerFactory.getLogger(LocalPortForwarderTest.class);
+    private static final String LOCALHOST_URL = "http://127.0.0.1:8080";
 
     @Rule
     public SshFixture fixture = new SshFixture();
@@ -59,8 +59,7 @@ public class LocalPortForwarderTest {
 
     @Test
     public void shouldHaveWorkingHttpServer() throws IOException {
-        // Just to check that we have a working http server...
-        assertThat(httpGet("127.0.0.1", 8080), equalTo(200));
+        assertEquals(200, httpGet());
     }
 
     @Test
@@ -93,7 +92,6 @@ public class LocalPortForwarderTest {
     }
 
     public static void httpGetAndAssertConnectionClosedByServer(int port) throws IOException {
-        System.out.println("HTTP GET to port: " + port);
         try (Socket socket = new Socket("localhost", port)) {
             // Send a basic HTTP GET
             // It returns 400 Bad Request because it's missing a bunch of info, but the HTTP response doesn't matter, we just want to test the connection closing.
@@ -107,12 +105,8 @@ public class LocalPortForwarderTest {
             InputStream inputStream = socket.getInputStream();
             InputStreamReader reader = new InputStreamReader(inputStream);
             int buf = -2;
-            while (true) {
+            while (buf != -1) {
                 buf = reader.read();
-                System.out.print((char)buf);
-                if (buf == -1) {
-                    break;
-                }
             }
 
             // Attempt to read more. If the server has closed the connection this will return -1
@@ -123,12 +117,12 @@ public class LocalPortForwarderTest {
         }
     }
 
-    private int httpGet(String server, int port) throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
-        String urlString = "http://" + server + ":" + port;
-        log.info("Trying: GET " + urlString);
-        HttpResponse execute = client.execute(new HttpGet(urlString));
-        return execute.getStatusLine().getStatusCode();
+    private int httpGet() throws IOException {
+        final URL url = new URL(LOCALHOST_URL);
+        final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setConnectTimeout(3000);
+        urlConnection.setRequestMethod("GET");
+        return urlConnection.getResponseCode();
     }
 
     private SSHClient getFixtureClient() throws IOException {
