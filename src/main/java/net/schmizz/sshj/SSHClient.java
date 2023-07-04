@@ -742,7 +742,7 @@ public class SSHClient
      *
      * @throws IOException if there is an error starting the {@code sftp} subsystem
      */
-    public SFTPClient newStatefulSFTPClient()
+    public StatefulSFTPClient newStatefulSFTPClient()
             throws IOException {
         checkConnected();
         checkAuthenticated();
