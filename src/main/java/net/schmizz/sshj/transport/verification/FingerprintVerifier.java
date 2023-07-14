@@ -15,16 +15,15 @@
  */
 package net.schmizz.sshj.transport.verification;
 
-import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -46,48 +45,40 @@ public class FingerprintVerifier implements HostKeyVerifier {
      *
      * @param fingerprint of an SSH fingerprint in MD5 (hex), SHA-1 (base64) or SHA-256(base64) format
      *
-     * @return
+     * @return Host Key Verifier
      */
     public static HostKeyVerifier getInstance(String fingerprint) {
-
-        try {
-            if (fingerprint.startsWith("SHA1:")) {
-                return new FingerprintVerifier("SHA-1", fingerprint.substring(5));
-            }
-
-            if (fingerprint.startsWith("SHA256:")) {
-                return new FingerprintVerifier("SHA-256", fingerprint.substring(7));
-            }
-
-            final String md5;
-            if (fingerprint.startsWith("MD5:")) {
-                md5 = fingerprint.substring(4); // remove the MD5: prefix
-            } else {
-                md5 = fingerprint;
-            }
-
-            if (!MD5_FINGERPRINT_PATTERN.matcher(md5).matches()) {
-                throw new SSHRuntimeException("Invalid MD5 fingerprint: " + fingerprint);
-            }
-
-            // Use the old default fingerprint verifier for md5 fingerprints
-            return (new HostKeyVerifier() {
-                @Override
-                public boolean verify(String h, int p, PublicKey k) {
-                    return SecurityUtils.getFingerprint(k).equals(md5);
-                }
-
-                @Override
-                public List<String> findExistingAlgorithms(String hostname, int port) {
-                    return Collections.emptyList();
-                }
-            });
-        } catch (SSHRuntimeException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new SSHRuntimeException(e);
+        if (fingerprint.startsWith("SHA1:")) {
+            return new FingerprintVerifier("SHA-1", fingerprint.substring(5));
         }
 
+        if (fingerprint.startsWith("SHA256:")) {
+            return new FingerprintVerifier("SHA-256", fingerprint.substring(7));
+        }
+
+        final String md5;
+        if (fingerprint.startsWith("MD5:")) {
+            md5 = fingerprint.substring(4); // remove the MD5: prefix
+        } else {
+            md5 = fingerprint;
+        }
+
+        if (!MD5_FINGERPRINT_PATTERN.matcher(md5).matches()) {
+            throw new SSHRuntimeException("Invalid MD5 fingerprint: " + fingerprint);
+        }
+
+        // Use the old default fingerprint verifier for md5 fingerprints
+        return (new HostKeyVerifier() {
+            @Override
+            public boolean verify(String h, int p, PublicKey k) {
+                return SecurityUtils.getFingerprint(k).equals(md5);
+            }
+
+            @Override
+            public List<String> findExistingAlgorithms(String hostname, int port) {
+                return Collections.emptyList();
+            }
+        });
     }
 
     private final String digestAlgorithm;
@@ -99,10 +90,8 @@ public class FingerprintVerifier implements HostKeyVerifier {
      *            the used digest algorithm
      * @param base64Fingerprint
      *            base64 encoded fingerprint data
-     *
-     * @throws IOException
      */
-    private FingerprintVerifier(String digestAlgorithm, String base64Fingerprint) throws IOException {
+    private FingerprintVerifier(String digestAlgorithm, String base64Fingerprint) {
         this.digestAlgorithm = digestAlgorithm;
 
         // if the length is not padded with "=" chars at the end so that it is divisible by 4 the SSHJ Base64 implementation does not work correctly
@@ -110,7 +99,7 @@ public class FingerprintVerifier implements HostKeyVerifier {
         while (base64FingerprintBuilder.length() % 4 != 0) {
             base64FingerprintBuilder.append("=");
         }
-        fingerprintData = Base64.decode(base64FingerprintBuilder.toString());
+        fingerprintData = Base64.getDecoder().decode(base64FingerprintBuilder.toString());
     }
 
     @Override

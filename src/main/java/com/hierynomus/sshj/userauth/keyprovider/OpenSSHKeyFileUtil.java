@@ -15,7 +15,6 @@
  */
 package com.hierynomus.sshj.userauth.keyprovider;
 
-import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 
@@ -24,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.security.PublicKey;
+import java.util.Base64;
 
 public class OpenSSHKeyFileUtil {
     private OpenSSHKeyFileUtil() {
@@ -56,7 +56,7 @@ public class OpenSSHKeyFileUtil {
                     if (parts.length >= 2) {
                         return new ParsedPubKey(
                                 KeyType.fromString(parts[0]),
-                                new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey()
+                                new Buffer.PlainBuffer(Base64.getDecoder().decode(parts[1])).readPublicKey()
                         );
                     } else {
                         throw new IOException("Got line with only one column");

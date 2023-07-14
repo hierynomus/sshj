@@ -21,8 +21,13 @@ import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
-import net.schmizz.sshj.common.*;
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
+import net.schmizz.sshj.common.ByteArrayUtils;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.SSHRuntimeException;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
@@ -47,6 +52,7 @@ import java.security.*;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 
 /**
  * Reads a key file in the new OpenSSH format.
@@ -99,7 +105,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             }
 
             String keyFile = readKeyFile(reader);
-            byte[] decode = Base64.decode(keyFile);
+            byte[] decode = Base64.getDecoder().decode(keyFile);
             PlainBuffer keyBuffer = new PlainBuffer(decode);
             return readDecodedKeyPair(keyBuffer);
 
