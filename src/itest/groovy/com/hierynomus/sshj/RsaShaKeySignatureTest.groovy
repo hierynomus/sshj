@@ -38,7 +38,7 @@ class RsaShaKeySignatureTest extends Specification {
 
     private static void dockerfileBuilder(DockerfileBuilder it, String hostKey, String pubkeyAcceptedAlgorithms) {
         it.from("archlinux:base")
-        it.run('yes | pacman -Sy core/openssh' +
+        it.run('pacman -Sy --noconfirm core/openssh core/openssl' +
                 ' && (' +
                 '  V=$(echo $(/usr/sbin/sshd -h 2>&1) | grep -o \'OpenSSH_[0-9][0-9]*[.][0-9][0-9]*p[0-9]\');' +
                 '  if [[ "$V" < OpenSSH_8.8p1 ]]; then' +
@@ -61,7 +61,6 @@ class RsaShaKeySignatureTest extends Specification {
                 '-D',
                 '-e',
                 '-f', '/dev/null',
-                '-o', 'LogLevel=DEBUG2',
                 '-o', "HostKey=/etc/ssh/$hostKey",
         ]
         if (pubkeyAcceptedAlgorithms != null) {
@@ -130,7 +129,7 @@ class RsaShaKeySignatureTest extends Specification {
     }
 
     @Unroll
-    def "connect to a server with host key #hostkey that supports only ssh-rsa"() {
+    def "connect to a server with host key #hostKey that supports only ssh-rsa"() {
         given:
         SshdContainer sshd = makeSshdContainer(hostKey, "ssh-rsa,ssh-ed25519")
         sshd.start()

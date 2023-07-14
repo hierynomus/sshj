@@ -95,7 +95,11 @@ If you need something that is not included, it shouldn't be too hard to add (do 
 http://ssh-comparison.quendi.de/comparison.html[SSH Implementation Comparison]
 
 == Dependencies
-Java 7+. http://www.slf4j.org/download.html[slf4j] is required. http://www.bouncycastle.org/java.html[bouncycastle] is highly recommended and required for using some of the crypto algorithms.
+
+- Java 8 or higher
+- https://www.slf4j.org/[SLF4J 2.0.0]
+- https://www.bouncycastle.org[Bouncy Castle]
+
 
 == Reporting bugs
 Issue tracker: https://github.com/hierynomus/sshj/issues
