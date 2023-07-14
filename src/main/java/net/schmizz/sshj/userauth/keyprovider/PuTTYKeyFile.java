@@ -22,7 +22,6 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
-import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SecurityUtils;
@@ -43,9 +42,8 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -243,7 +241,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             throw new IOException("Invalid key file format: missing \"PuTTY-User-Key-File-?\" entry");
         }
         // Retrieve keys from payload
-        publicKey = Base64.decode(payload.get("Public-Lines"));
+        publicKey = Base64.getDecoder().decode(payload.get("Public-Lines"));
         if (this.isEncrypted()) {
             final char[] passphrase;
             if (pwdf != null) {
@@ -252,7 +250,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 passphrase = "".toCharArray();
             }
             try {
-                privateKey = this.decrypt(Base64.decode(payload.get("Private-Lines")), passphrase);
+                privateKey = this.decrypt(Base64.getDecoder().decode(payload.get("Private-Lines")), passphrase);
                 Mac mac;
                 if (this.keyFileVersion <= 2) {
                     mac = this.prepareVerifyMacV2(passphrase);
@@ -264,7 +262,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 PasswordUtils.blankOut(passphrase);
             }
         } else {
-            privateKey = Base64.decode(payload.get("Private-Lines"));
+            privateKey = Base64.getDecoder().decode(payload.get("Private-Lines"));
         }
     }
 
