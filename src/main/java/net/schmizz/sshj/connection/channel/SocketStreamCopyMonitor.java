@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
-import static com.hierynomus.sshj.backport.Sockets.asCloseable;
-
 public class SocketStreamCopyMonitor
         extends Thread {
 
@@ -43,7 +41,7 @@ public class SocketStreamCopyMonitor
                     await(y);
                 } catch (IOException ignored) {
                 } finally {
-                    IOUtils.closeQuietly(channel, asCloseable(socket));
+                    IOUtils.closeQuietly(channel, socket);
                 }
             }
 
