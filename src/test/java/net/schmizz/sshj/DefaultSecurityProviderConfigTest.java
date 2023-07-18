@@ -16,22 +16,23 @@
 package net.schmizz.sshj;
 
 import net.schmizz.sshj.common.SecurityUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.security.Provider;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.junit.Assert.assertFalse;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 public class DefaultSecurityProviderConfigTest {
 
     private static Provider bouncyCastleProvider;
 
-    @BeforeClass
+    @BeforeAll
     public static void removeProviders() {
         bouncyCastleProvider = Security.getProvider(SecurityUtils.BOUNCY_CASTLE);
         if (bouncyCastleProvider != null) {
@@ -39,7 +40,7 @@ public class DefaultSecurityProviderConfigTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void addProviders() {
         if (bouncyCastleProvider != null) {
             Security.addProvider(bouncyCastleProvider);
