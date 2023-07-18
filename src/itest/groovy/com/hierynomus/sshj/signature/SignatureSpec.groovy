@@ -29,7 +29,7 @@ import spock.lang.Unroll
 class SignatureSpec extends Specification {
     @Shared
     @Container
-    static SshdContainer sshd
+    static SshdContainer sshd = new SshdContainer()
 
     @Unroll
     def "should correctly connect with #sig Signature"() {
