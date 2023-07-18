@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.keepalive;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.keepalive.KeepAlive;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
@@ -38,7 +38,7 @@ public class KeepAliveThreadTerminationTest {
     private static final long STOP_SLEEP = 1500;
 
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     @Test
     public void shouldNotStartThreadOnSetKeepAliveInterval() {

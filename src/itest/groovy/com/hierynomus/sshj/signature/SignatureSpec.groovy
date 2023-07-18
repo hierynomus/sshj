@@ -20,14 +20,17 @@ import com.hierynomus.sshj.SshdContainer
 import com.hierynomus.sshj.key.KeyAlgorithms
 import net.schmizz.sshj.DefaultConfig
 import org.junit.ClassRule
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+@Testcontainers
 class SignatureSpec extends Specification {
     @Shared
-    @ClassRule
-    SshdContainer sshd
+    @Container
+    static SshdContainer sshd
 
     @Unroll
     def "should correctly connect with #sig Signature"() {

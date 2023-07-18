@@ -37,7 +37,7 @@ public abstract class BaseAlgorithmTest {
     private SingletonRandomFactory randomFactory = new SingletonRandomFactory(new JCERandom.Factory());
     private DefaultConfig config = new DefaultConfig();
     @Rule
-    public SshFixture fixture = new SshFixture(false);
+    public SshServerExtension fixture = new SshServerExtension(false);
 
     @After
     public void stopServer() {

@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.userauth;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
 import net.schmizz.sshj.util.gss.BogusGSSManager;
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 public class GssApiTest {
 
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     private static final String LOGIN_CONTEXT_NAME = "TestLoginContext";
 

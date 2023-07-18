@@ -16,7 +16,9 @@
 package com.hierynomus.sshj.test;
 
 import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
+import org.testcontainers.shaded.com.google.common.io.Files;
+
+import java.io.File;
 
 /**
  * Can be used to setup a test HTTP server
@@ -25,12 +27,13 @@ public class HttpServer extends ExternalResource {
 
     private org.glassfish.grizzly.http.server.HttpServer httpServer;
 
-    private TemporaryFolder docRoot = new TemporaryFolder();
+
+    private File docRoot ;
 
     @Override
     protected void before() throws Throwable {
-        docRoot.create();
-        httpServer = org.glassfish.grizzly.http.server.HttpServer.createSimpleServer(docRoot.getRoot().getAbsolutePath());
+        docRoot = Files.createTempDir();
+        httpServer = org.glassfish.grizzly.http.server.HttpServer.createSimpleServer(docRoot.getAbsolutePath());
         httpServer.start();
     }
 
@@ -49,7 +52,7 @@ public class HttpServer extends ExternalResource {
         return httpServer;
     }
 
-    public TemporaryFolder getDocRoot() {
+    public File getDocRoot() {
         return docRoot;
     }
 }

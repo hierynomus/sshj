@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.userauth.method;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertThrows;
 public class AuthPasswordTest {
 
     @Rule
-    public SshFixture fixture = new SshFixture(false);
+    public SshServerExtension fixture = new SshServerExtension(false);
 
     @Before
     public void setPasswordAuthenticator() throws IOException {

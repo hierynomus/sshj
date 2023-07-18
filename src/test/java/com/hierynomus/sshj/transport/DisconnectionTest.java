@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.transport;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -36,7 +36,7 @@ public class DisconnectionTest {
     private AtomicBoolean disconnected = null;
 
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     @Before
     public void setupFlag() throws IOException {

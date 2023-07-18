@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.connection.channel.direct;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.SFTPClient;
@@ -31,7 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class CommandTest {
 
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();

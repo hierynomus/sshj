@@ -15,7 +15,7 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
 import org.junit.After;
@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
 /* Kinda basic right now */
 public class SmokeTest {
 
-    private final SshFixture fixture = new SshFixture();
+    private final SshServerExtension fixture = new SshServerExtension();
 
     @Before
     public void setUp()

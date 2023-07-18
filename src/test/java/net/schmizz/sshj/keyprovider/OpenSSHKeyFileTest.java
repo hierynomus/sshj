@@ -27,9 +27,8 @@ import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.KeyUtil;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -141,8 +140,8 @@ public class OpenSSHKeyFileTest {
         }
     };
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     @Test
     public void blankingOut()
@@ -411,7 +410,9 @@ public class OpenSSHKeyFileTest {
     public void notTrimmedKeys() throws IOException {
         File initialPrivateKey = new File("src/test/resources/id_rsa");
         File initialPublicKey = new File("src/test/resources/id_rsa.pub");
-        File corruptedPrivateKey = new File(temporaryFolder.newFolder(), "id_rsa");
+        File folder = new File(temporaryFolder, "keys");
+        assertTrue(folder.mkdir());
+        File corruptedPrivateKey = new File(folder, "id_rsa");
         File corruptedPublicKey = new File(corruptedPrivateKey.getParent(), "id_rsa.pub");
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(initialPrivateKey)));

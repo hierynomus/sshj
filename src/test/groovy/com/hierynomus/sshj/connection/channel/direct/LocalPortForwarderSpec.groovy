@@ -15,18 +15,18 @@
  */
 package com.hierynomus.sshj.connection.channel.direct
 
-import com.hierynomus.sshj.test.SshFixture
+import com.hierynomus.sshj.test.SshServerExtension
 import net.schmizz.sshj.connection.channel.direct.Parameters
-import org.junit.Rule
+import org.junit.jupiter.api.extension.RegisterExtension
 import spock.lang.Specification
 import spock.util.concurrent.PollingConditions
 
 class LocalPortForwarderSpec extends Specification {
-  @Rule
-  SshFixture tunnelFixture = new SshFixture()
+  @RegisterExtension
+  SshServerExtension tunnelFixture = new SshServerExtension()
 
-  @Rule
-  SshFixture realServer = new SshFixture()
+  @RegisterExtension
+  SshServerExtension realServer = new SshServerExtension()
 
   def "should not hang when disconnect tunnel"() {
     given:

@@ -23,14 +23,16 @@ import net.schmizz.sshj.transport.kex.DHGexSHA1
 import net.schmizz.sshj.transport.kex.DHGexSHA256
 import net.schmizz.sshj.transport.kex.ECDHNistP
 import org.junit.ClassRule
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+@Testcontainers
 class KexSpec extends Specification {
-    @Shared
-    @ClassRule
-    SshdContainer sshd
+    @Container
+    static SshdContainer sshd = new SshdContainer()
 
     @Unroll
     def "should correctly connect with #kex Key Exchange"() {

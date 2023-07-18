@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.connection.channel;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ChannelCloseEofTest {
 
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     @Test
     public void shouldCorrectlyHandleSessionChannelEof() throws IOException, InterruptedException {

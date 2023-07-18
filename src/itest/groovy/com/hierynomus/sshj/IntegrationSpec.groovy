@@ -21,14 +21,17 @@ import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.TransportException
 import net.schmizz.sshj.userauth.UserAuthException
 import org.junit.ClassRule
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+@Testcontainers
 class IntegrationSpec extends Specification {
     @Shared
-    @ClassRule
-    SshdContainer sshd
+    @Container
+    static SshdContainer sshd = new SshdContainer()
 
     @Unroll
     def "should accept correct key for #signatureName"() {

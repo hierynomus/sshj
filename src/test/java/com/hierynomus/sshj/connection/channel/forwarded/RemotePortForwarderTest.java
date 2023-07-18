@@ -16,7 +16,7 @@
 package com.hierynomus.sshj.connection.channel.forwarded;
 
 import com.hierynomus.sshj.test.HttpServer;
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.ConnectionException;
@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
 
@@ -42,7 +43,7 @@ public class RemotePortForwarderTest {
     private static final InetSocketAddress HTTP_SERVER_SOCKET_ADDR = new InetSocketAddress(LOCALHOST, 8080);
 
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     @Rule
     public HttpServer httpServer = new HttpServer();
@@ -50,7 +51,7 @@ public class RemotePortForwarderTest {
     @Before
     public void setUp() throws IOException {
         fixture.getServer().setForwardingFilter(new AcceptAllForwardingFilter());
-        File file = httpServer.getDocRoot().newFile("index.html");
+        File file = Files.createFile(httpServer.getDocRoot().toPath().resolve("index.html")).toFile();
         FileUtil.writeToFile(file, "<html><head/><body><h1>Hi!</h1></body></html>");
     }
 

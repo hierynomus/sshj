@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.sftp;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.sftp.OpenMode;
@@ -39,7 +39,7 @@ import static org.junit.Assert.fail;
 
 public class RemoteFileTest {
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();

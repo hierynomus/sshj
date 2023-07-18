@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.userauth.method;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.ChallengeResponseProvider;
@@ -35,7 +35,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class AuthKeyboardInteractiveTest {
     @Rule
-    public SshFixture fixture = new SshFixture(false);
+    public SshServerExtension fixture = new SshServerExtension(false);
 
     @Before
     public void setKeyboardInteractiveAuthenticator() throws IOException {

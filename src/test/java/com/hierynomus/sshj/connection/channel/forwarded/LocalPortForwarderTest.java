@@ -16,7 +16,7 @@
 package com.hierynomus.sshj.connection.channel.forwarded;
 
 import com.hierynomus.sshj.test.HttpServer;
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
@@ -38,6 +38,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,7 +46,7 @@ public class LocalPortForwarderTest {
     private static final String LOCALHOST_URL = "http://127.0.0.1:8080";
 
     @Rule
-    public SshFixture fixture = new SshFixture();
+    public SshServerExtension fixture = new SshServerExtension();
 
     @Rule
     public HttpServer httpServer = new HttpServer();
@@ -53,7 +54,7 @@ public class LocalPortForwarderTest {
     @Before
     public void setUp() throws IOException {
         fixture.getServer().setForwardingFilter(new AcceptAllForwardingFilter());
-        File file = httpServer.getDocRoot().newFile("index.html");
+        File file = Files.createFile(httpServer.getDocRoot().toPath().resolve("index.html")).toFile();
         FileUtil.writeToFile(file, "<html><head/><body><h1>Hi!</h1></body></html>");
     }
 
