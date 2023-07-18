@@ -15,21 +15,20 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.test.SshFixture;
-import org.junit.Test;
+import com.hierynomus.sshj.test.SshServerExtension;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.channel.direct.Session;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.channel.direct.Session;
-
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LoadsOfConnects {
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final SshFixture fixture = new SshFixture();
+    private final SshServerExtension fixture = new SshServerExtension();
 
     @Test
     public void loadsOfConnects() {
@@ -40,7 +39,7 @@ public class LoadsOfConnects {
                 SSHClient client = fixture.setupConnectedDefaultClient();
                 client.authPassword("test", "test");
                 Session s = client.startSession();
-                Session.Command c = s.exec(SshFixture.listCommand);
+                Session.Command c = s.exec(SshServerExtension.listCommand);
                 IOUtils.readFully(c.getErrorStream());
                 IOUtils.readFully(c.getInputStream());
                 c.close();

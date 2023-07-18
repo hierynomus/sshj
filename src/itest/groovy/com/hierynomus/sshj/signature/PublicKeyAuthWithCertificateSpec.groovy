@@ -19,7 +19,8 @@ import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier
-import org.junit.ClassRule
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -29,10 +30,11 @@ import spock.lang.Unroll
  *
  * Also, take a look at the unit test {@link net.schmizz.sshj.transport.verification.KeyWithCertificateUnitSpec}.
  */
+@Testcontainers
 class PublicKeyAuthWithCertificateSpec extends Specification {
     @Shared
-    @ClassRule
-    SshdContainer sshd
+    @Container
+    static SshdContainer sshd = new SshdContainer()
 
     @Unroll
     def "authorising with a signed public key #keyName"() {

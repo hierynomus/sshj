@@ -31,20 +31,12 @@
 package net.schmizz.sshj.signature
 
 import com.hierynomus.sshj.common.KeyAlgorithm
-import spock.lang.Unroll;
-
-import java.math.BigInteger;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.spec.DSAPublicKeySpec;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import spock.lang.Specification
+import spock.lang.Unroll
+
+import java.security.KeyFactory
+import java.security.PublicKey
+import java.security.spec.DSAPublicKeySpec
 
 class SignatureDSASpec extends Specification {
 

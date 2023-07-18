@@ -17,11 +17,11 @@ package net.schmizz.sshj.common;
 
 import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BufferTest {
 
@@ -162,7 +162,7 @@ public class BufferTest {
         for (long value : values) {
             byte[] bytesBigInt = new PlainBuffer().putUInt64(BigInteger.valueOf(value)).getCompactData();
             byte[] bytesLong = new PlainBuffer().putUInt64(value).getCompactData();
-            assertArrayEquals("Value: " + value, bytesLong, bytesBigInt);
+            assertArrayEquals(bytesLong, bytesBigInt, "Value: " + value);
         }
     }
 

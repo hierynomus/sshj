@@ -15,16 +15,16 @@
  */
 package com.hierynomus.sshj.userauth.method;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.method.AuthKeyboardInteractive;
 import net.schmizz.sshj.userauth.method.ChallengeResponseProvider;
 import net.schmizz.sshj.userauth.password.Resource;
 import org.apache.sshd.server.auth.keyboard.UserAuthKeyboardInteractiveFactory;
 import org.apache.sshd.server.auth.password.AcceptAllPasswordAuthenticator;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,10 +34,10 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class AuthKeyboardInteractiveTest {
-    @Rule
-    public SshFixture fixture = new SshFixture(false);
+    @RegisterExtension
+    public SshServerExtension fixture = new SshServerExtension(false);
 
-    @Before
+    @BeforeEach
     public void setKeyboardInteractiveAuthenticator() throws IOException {
         fixture.getServer().setUserAuthFactories(Collections.singletonList(new UserAuthKeyboardInteractiveFactory()));
         fixture.getServer().setPasswordAuthenticator(AcceptAllPasswordAuthenticator.INSTANCE);

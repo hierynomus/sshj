@@ -18,17 +18,16 @@ package com.hierynomus.sshj.transport.verification
 import net.schmizz.sshj.common.Buffer
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts
 import net.schmizz.sshj.util.KeyUtil
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.TempDir
 import spock.lang.Unroll
 
+import java.nio.file.Files
 import java.security.PublicKey
 
 class OpenSSHKnownHostsSpec extends Specification {
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @TempDir def temp
 
     def "should parse and verify hashed host entry"() {
         given:
@@ -215,7 +214,7 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
     }
 
     def knownHosts(String s) {
-        def f = temp.newFile("known_hosts")
+        def f = Files.createFile(temp.resolve("known_hosts")).toFile()
         f.write(s)
         return f
     }
