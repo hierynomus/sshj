@@ -29,6 +29,7 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.ServerSocket;
@@ -38,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Can be used as a rule to ensure the server is teared down after each test.
  */
-public class SshServerExtension implements BeforeEachCallback, AfterEachCallback {
+public class SshServerExtension implements BeforeEachCallback, AfterEachCallback, Closeable {
     public static final String hostkey = "hostkey.pem";
     public static final String fingerprint = "ce:a7:c1:cf:17:3f:96:49:6a:53:1a:05:0b:ba:90:db";
     public static final String listCommand = OsUtils.isWin32() ? "cmd.exe /C dir" : "ls";
@@ -57,8 +58,7 @@ public class SshServerExtension implements BeforeEachCallback, AfterEachCallback
 
     @Override
     public void afterEach(ExtensionContext context) throws Exception {
-        stopClient();
-        stopServer();
+        close();
     }
 
     @Override
@@ -66,6 +66,13 @@ public class SshServerExtension implements BeforeEachCallback, AfterEachCallback
         if (autoStart) {
             start();
         }
+    }
+
+
+    @Override
+    public void close() throws IOException {
+        stopClient();
+        stopServer();
     }
 
     public void start() throws IOException {

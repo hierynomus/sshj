@@ -15,15 +15,14 @@
  */
 package net.schmizz.sshj.transport.mac;
 
+import com.hierynomus.sshj.transport.mac.Macs;
 import org.bouncycastle.util.encoders.Hex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.Charset;
 
-import com.hierynomus.sshj.transport.mac.Macs;
-
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HMACSHA1Test {
     private static final Charset CHARSET = Charset.forName("US-ASCII");

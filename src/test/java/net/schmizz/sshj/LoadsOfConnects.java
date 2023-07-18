@@ -16,14 +16,13 @@
 package net.schmizz.sshj;
 
 import com.hierynomus.sshj.test.SshServerExtension;
-import org.junit.Test;
+import net.schmizz.sshj.common.IOUtils;
+import net.schmizz.sshj.connection.channel.direct.Session;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.connection.channel.direct.Session;
-
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class LoadsOfConnects {
 

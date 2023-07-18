@@ -20,7 +20,6 @@ import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.TransportException
 import net.schmizz.sshj.userauth.UserAuthException
-import org.junit.ClassRule
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared

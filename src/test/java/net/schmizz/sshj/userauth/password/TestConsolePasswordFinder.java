@@ -15,11 +15,12 @@
  */
 package net.schmizz.sshj.userauth.password;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.Console;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestConsolePasswordFinder {
 
@@ -36,8 +37,7 @@ public class TestConsolePasswordFinder {
         Resource resource = Mockito.mock(Resource.class);
         char[] password = new ConsolePasswordFinder(console).reqPassword(resource);
 
-        Assert.assertArrayEquals("Password should match mocked return value",
-                expectedPassword, password);
+        assertArrayEquals(expectedPassword, password, "Password should match mocked return value");
         Mockito.verifyNoMoreInteractions(resource);
     }
 
@@ -46,7 +46,7 @@ public class TestConsolePasswordFinder {
         Resource<?> resource = Mockito.mock(Resource.class);
         char[] password = new ConsolePasswordFinder(null, FORMAT, 1).reqPassword(resource);
 
-        Assert.assertNull("Password should be null with null console", password);
+        assertNull(password, "Password should be null with null console");
         Mockito.verifyNoMoreInteractions(resource);
     }
 
@@ -54,30 +54,28 @@ public class TestConsolePasswordFinder {
     public void testShouldRetry() {
         Resource<String> resource = new PrivateKeyStringResource("");
         ConsolePasswordFinder finder = new ConsolePasswordFinder(null, FORMAT, 1);
-        Assert.assertTrue("Should allow a retry at first", finder.shouldRetry(resource));
+        assertTrue(finder.shouldRetry(resource), "Should allow a retry at first");
 
         finder.reqPassword(resource);
-        Assert.assertFalse("Should stop allowing retries after one interaction", finder.shouldRetry(resource));
+        assertFalse(finder.shouldRetry(resource), "Should stop allowing retries after one interaction");
     }
 
     @Test
     public void testPromptFormat() {
-        Assert.assertNotNull(
-                "Empty format should create valid ConsolePasswordFinder",
-                new ConsolePasswordFinder(null, "", 1));
-        Assert.assertNotNull(
-                "Single-string format should create valid ConsolePasswordFinder",
-                new ConsolePasswordFinder(null, FORMAT, 1));
+        assertNotNull(
+                new ConsolePasswordFinder(null, "", 1), "Empty format should create valid ConsolePasswordFinder");
+        assertNotNull(
+                new ConsolePasswordFinder(null, FORMAT, 1), "Single-string format should create valid ConsolePasswordFinder");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPromptFormatTooManyMarkers() {
-        new ConsolePasswordFinder(null, "%s%s", 1);
+        assertThrows(IllegalArgumentException.class, () -> new ConsolePasswordFinder(null, "%s%s", 1));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testPromptFormatWrongMarkerType() {
-        new ConsolePasswordFinder(null, "%d", 1);
+        assertThrows(IllegalArgumentException.class, () -> new ConsolePasswordFinder(null, "%d", 1));
     }
 
 }

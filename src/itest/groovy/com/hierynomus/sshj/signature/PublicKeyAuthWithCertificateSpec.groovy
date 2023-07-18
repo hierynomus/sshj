@@ -19,7 +19,6 @@ import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier
-import org.junit.ClassRule
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared

@@ -19,10 +19,10 @@ import com.hierynomus.sshj.test.SshServerExtension;
 import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SCPFileTransferTest {
 
@@ -42,13 +42,13 @@ public class SCPFileTransferTest {
     Path targetFile;
     SSHClient sshClient;
 
-    @Rule
+    @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension();
 
     @TempDir
     public File tempFolder;
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         sourceFile = Files.createFile(tempFolder.toPath().resolve(DEFAULT_FILE_NAME));
         FileUtil.writeToFile(sourceFile.toFile(), "This is my file");
@@ -58,7 +58,7 @@ public class SCPFileTransferTest {
         sshClient.authPassword("test", "test");
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         if (Files.exists(targetFile)) {
             try {

@@ -21,15 +21,12 @@ import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.UserAuthException;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class KeepAliveThreadTerminationTest {
 
@@ -37,7 +34,7 @@ public class KeepAliveThreadTerminationTest {
 
     private static final long STOP_SLEEP = 1500;
 
-    @Rule
+    @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension();
 
     @Test

@@ -17,19 +17,20 @@ package net.schmizz.sshj.sftp;
 
 import com.hierynomus.sshj.test.SshServerExtension;
 import com.hierynomus.sshj.test.util.FileUtil;
-import java.io.File;
-import java.io.IOException;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.xfer.TransferListener;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.io.File;
+import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SFTPFileTransferTest {
 
@@ -45,13 +46,13 @@ public class SFTPFileTransferTest {
     SFTPFileTransfer xfer;
     ByteCounter listener;
 
-    @Rule
+    @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension();
 
     @TempDir
     public File tempFolder;
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
         targetDir   = new File(tempFolder, "targetDir");
         assertTrue(targetDir.mkdir());
@@ -66,7 +67,7 @@ public class SFTPFileTransferTest {
         xfer.setTransferListener(listener = new ByteCounter());
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
         if (targetFile.exists()) {
             targetFile.delete();

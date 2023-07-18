@@ -21,24 +21,24 @@ import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.DisconnectListener;
 import net.schmizz.sshj.transport.TransportException;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DisconnectionTest {
     private AtomicBoolean disconnected = null;
 
-    @Rule
+    @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension();
 
-    @Before
+    @BeforeEach
     public void setupFlag() throws IOException {
         disconnected = new AtomicBoolean(false);
         // Initialize the client

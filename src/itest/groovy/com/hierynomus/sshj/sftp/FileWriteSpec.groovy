@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.sftp
 
-import com.hierynomus.sshj.IntegrationTestUtil
+
 import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.sftp.OpenMode

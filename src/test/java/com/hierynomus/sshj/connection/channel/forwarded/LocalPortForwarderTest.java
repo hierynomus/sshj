@@ -22,36 +22,27 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.nio.file.Files;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LocalPortForwarderTest {
     private static final String LOCALHOST_URL = "http://127.0.0.1:8080";
 
-    @Rule
+    @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension();
 
-    @Rule
+    @RegisterExtension
     public HttpServer httpServer = new HttpServer();
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         fixture.getServer().setForwardingFilter(new AcceptAllForwardingFilter());
         File file = Files.createFile(httpServer.getDocRoot().toPath().resolve("index.html")).toFile();
@@ -69,7 +60,8 @@ public class LocalPortForwarderTest {
         httpGetAndAssertConnectionClosedByServer(8080);
     }
 
-    @Test(timeout = 10_000)
+    @Test
+    @Timeout(10_000)
     public void shouldCloseConnectionWhenRemoteServerClosesConnection() throws IOException {
         SSHClient sshClient = getFixtureClient();
 
@@ -114,7 +106,7 @@ public class LocalPortForwarderTest {
             int read = inputStream.read();
 
             // Assert input stream was closed by server.
-            Assert.assertEquals(-1, read);
+            assertEquals(-1, read);
         }
     }
 

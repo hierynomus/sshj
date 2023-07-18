@@ -15,17 +15,17 @@
  */
 package net.schmizz.sshj.transport.mac;
 
+import com.hierynomus.sshj.transport.mac.Macs;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import org.bouncycastle.util.encoders.Hex;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.Charset;
 
-import com.hierynomus.sshj.transport.mac.Macs;
-
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class BaseMacTest {
     private static final Charset CHARSET = Charset.forName("US-ASCII");
@@ -41,11 +41,13 @@ public class BaseMacTest {
         assertThat(Hex.toHexString(hmac.doFinal()),  is(EXPECTED_HMAC));
     }
 
-    @Test(expected = SSHRuntimeException.class)
+    @Test
     public void testUnknownAlgorithm() {
-        BaseMAC hmac = new BaseMAC("AlgorithmThatDoesNotExist", 20, 20, false);
-        hmac.init((KEY + "foo").getBytes(CHARSET));
-        fail("Should not initialize a non-existent MAC");
+        assertThrows(SSHRuntimeException.class, () -> {
+            BaseMAC hmac = new BaseMAC("AlgorithmThatDoesNotExist", 20, 20, false);
+            hmac.init((KEY + "foo").getBytes(CHARSET));
+            fail("Should not initialize a non-existent MAC");
+        });
     }
 
     @Test

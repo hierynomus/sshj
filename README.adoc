@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.32.0
+:sshj_version: 0.36.0
 :source-highlighter: pygments
 
 image:https://github.com/hierynomus/sshj/actions/workflows/gradle.yml/badge.svg[link="https://github.com/hierynomus/sshj/actions/workflows/gradle.yml"]
@@ -108,6 +108,12 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.36.0 (2023-07-14)::
+* Merged https://github.com/hierynomus/sshj/pull/874[#874]: Java 8 minimum version + dependency upgrades
+* Merged https://github.com/hierynomus/sshj/pull/876[#876]: Change `newStatefulSFTPClient` to return `StatefulSFTPClient`
+* Merged https://github.com/hierynomus/sshj/pull/860[#860]: Upgrade to Gradle 7.6.1
+* Merged https://github.com/hierynomus/sshj/pull/838[#838]: Replaced Curve25519 class with X25519 Key agreement
+* Merged https://github.com/hierynomus/sshj/pull/772[#772]: Remove dependency on jzlib
 SSHJ 0.35.0 (2023-01-30)::
 * Merged https://github.com/hierynomus/sshj/pull/835[#835]: TimeoutException message improved
 * Merged https://github.com/hierynomus/sshj/pull/815[#815]: Support authPassword on FreeBSD

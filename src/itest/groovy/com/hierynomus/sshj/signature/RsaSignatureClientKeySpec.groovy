@@ -17,7 +17,6 @@ package com.hierynomus.sshj.signature
 
 import com.hierynomus.sshj.IntegrationTestUtil
 import com.hierynomus.sshj.SshdContainer
-import org.junit.ClassRule
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared

@@ -18,7 +18,6 @@ package com.hierynomus.sshj.transport.mac
 import com.hierynomus.sshj.IntegrationTestUtil
 import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
-import org.junit.ClassRule
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared

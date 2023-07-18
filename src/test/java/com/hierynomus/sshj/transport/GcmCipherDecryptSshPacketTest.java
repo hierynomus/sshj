@@ -20,48 +20,58 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.BeforeClass;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.security.Security;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 /**
  * Unit test to decrypt SSH traffic with OpenSSH and Apache Mina SSHD (master) using AES-GCM ciphers, for verifying
  * cipher behaviour.
  */
-@RunWith(Theories.class)
+
 public class GcmCipherDecryptSshPacketTest {
 
-    @DataPoints
-    public static final String sets[][] = new String[][]{{"mina-sshd", "3"}, {"openssh", "4"}};
+    public static Stream<Arguments> sets() {
+        return Stream.of(Arguments.of("mina-sshd", 3), Arguments.of("openssh", 4));
+    }
 
-    @BeforeClass
+    @BeforeAll
     public static void setupBeforeClass() {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    @Theory
-    public void testDecryptPacket(String[] args) throws Exception {
+    @ParameterizedTest
+    @MethodSource("sets")
+    public void testDecryptPacket(String ssh, int nr) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
-        byte[] iv = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/"+args[0]+"/s2c.iv.bin")).toByteArray();
-        byte[] key = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/"+args[0]+"/s2c.key.bin")).toByteArray();
+        byte[] iv = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/" + ssh + "/s2c.iv.bin"))
+                .toByteArray();
+        byte[] key = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/" + ssh + "/s2c.key.bin"))
+                .toByteArray();
         Cipher cipher = GcmCiphers.AES128GCM().create();
         cipher.init(Cipher.Mode.Decrypt, key, iv);
-        for(int i=1; i<=Integer.parseInt(args[1]); i++) {
-            byte[] data = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/"+args[0]+"/client.receive."+i+".bin")).toByteArray();
+        for (int i = 1; i <= nr; i++) {
+            byte[] data = IOUtils
+                    .readFully(classLoader
+                            .getResourceAsStream("ssh-packets/gcm/" + ssh + "/client.receive." + i + ".bin"))
+                    .toByteArray();
             SSHPacket inputBuffer = new SSHPacket(data);
             cipher.updateAAD(inputBuffer.array(), 0, 4);
             int size = inputBuffer.readUInt32AsInt();
             cipher.update(inputBuffer.array(), 4, size);
-            byte[] expected = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/"+args[0]+"/client.decrypted."+i+".bin")).toByteArray();
-            assertArrayEquals(Arrays.copyOfRange(expected, 0, size+4),
-                    Arrays.copyOfRange(inputBuffer.array(), 0, size+4));
+            byte[] expected = IOUtils
+                    .readFully(classLoader
+                            .getResourceAsStream("ssh-packets/gcm/" + ssh + "/client.decrypted." + i + ".bin"))
+                    .toByteArray();
+            assertArrayEquals(Arrays.copyOfRange(expected, 0, size + 4),
+                    Arrays.copyOfRange(inputBuffer.array(), 0, size + 4));
         }
     }
 }

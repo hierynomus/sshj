@@ -23,9 +23,9 @@ import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +34,7 @@ import java.net.InetSocketAddress;
 import java.net.URL;
 import java.nio.file.Files;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RemotePortForwarderTest {
     private static final PortRange RANGE = new PortRange(9000, 9999);
@@ -42,13 +42,13 @@ public class RemotePortForwarderTest {
     private static final String LOCALHOST_URL_FORMAT = "http://127.0.0.1:%d";
     private static final InetSocketAddress HTTP_SERVER_SOCKET_ADDR = new InetSocketAddress(LOCALHOST, 8080);
 
-    @Rule
+    @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension();
 
-    @Rule
+    @RegisterExtension
     public HttpServer httpServer = new HttpServer();
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         fixture.getServer().setForwardingFilter(new AcceptAllForwardingFilter());
         File file = Files.createFile(httpServer.getDocRoot().toPath().resolve("index.html")).toFile();

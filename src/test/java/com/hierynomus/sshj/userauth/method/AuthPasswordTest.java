@@ -25,23 +25,23 @@ import org.apache.sshd.server.auth.password.PasswordAuthenticator;
 import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.auth.password.UserAuthPasswordFactory;
 import org.apache.sshd.server.session.ServerSession;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Stack;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AuthPasswordTest {
 
-    @Rule
+    @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension(false);
 
-    @Before
+    @BeforeEach
     public void setPasswordAuthenticator() throws IOException {
         fixture.getServer().setUserAuthFactories(Collections.singletonList(new UserAuthPasswordFactory()));
         fixture.getServer().setPasswordAuthenticator(new PasswordAuthenticator() {
