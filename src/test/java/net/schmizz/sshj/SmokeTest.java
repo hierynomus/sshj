@@ -15,30 +15,30 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /* Kinda basic right now */
 public class SmokeTest {
 
-    private final SshFixture fixture = new SshFixture();
+    private final SshServerExtension fixture = new SshServerExtension();
 
-    @Before
+    @BeforeEach
     public void setUp()
             throws IOException {
         fixture.start();
         fixture.setupConnectedDefaultClient();
     }
 
-    @After
+    @AfterEach
     public void tearDown()
             throws IOException, InterruptedException {
         fixture.stopClient();

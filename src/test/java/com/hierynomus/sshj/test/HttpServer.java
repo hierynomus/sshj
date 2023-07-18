@@ -15,27 +15,25 @@
  */
 package com.hierynomus.sshj.test;
 
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+
+import java.io.File;
+import java.nio.file.Files;
 
 /**
  * Can be used to setup a test HTTP server
  */
-public class HttpServer extends ExternalResource {
+public class HttpServer implements BeforeEachCallback, AfterEachCallback {
 
     private org.glassfish.grizzly.http.server.HttpServer httpServer;
 
-    private TemporaryFolder docRoot = new TemporaryFolder();
+
+    private File docRoot ;
 
     @Override
-    protected void before() throws Throwable {
-        docRoot.create();
-        httpServer = org.glassfish.grizzly.http.server.HttpServer.createSimpleServer(docRoot.getRoot().getAbsolutePath());
-        httpServer.start();
-    }
-
-    @Override
-    protected void after() {
+    public void afterEach(ExtensionContext context) throws Exception {
         try {
             httpServer.shutdownNow();
         } catch (Exception e) {}
@@ -45,11 +43,18 @@ public class HttpServer extends ExternalResource {
 
     }
 
+    @Override
+    public void beforeEach(ExtensionContext context) throws Exception {
+        docRoot = Files.createTempDirectory("sshj").toFile();
+        httpServer = org.glassfish.grizzly.http.server.HttpServer.createSimpleServer(docRoot.getAbsolutePath());
+        httpServer.start();
+    }
+
     public org.glassfish.grizzly.http.server.HttpServer getHttpServer() {
         return httpServer;
     }
 
-    public TemporaryFolder getDocRoot() {
+    public File getDocRoot() {
         return docRoot;
     }
 }

@@ -15,97 +15,103 @@
  */
 package net.schmizz.sshj.xfer.scp;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SCPFileTransferTest {
 
     public static final String DEFAULT_FILE_NAME = "my_file.txt";
-    File targetDir;
-    File sourceFile;
-    File targetFile;
+    Path targetDir;
+    Path sourceFile;
+    Path targetFile;
     SSHClient sshClient;
 
-    @Rule
-    public SshFixture fixture = new SshFixture();
+    @RegisterExtension
+    public SshServerExtension fixture = new SshServerExtension();
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    @TempDir
+    public File tempFolder;
 
-    @Before
+    @BeforeEach
     public void init() throws IOException {
-        sourceFile = tempFolder.newFile(DEFAULT_FILE_NAME);
-        FileUtil.writeToFile(sourceFile, "This is my file");
-        targetDir = tempFolder.newFolder();
-        targetFile = new File(targetDir, DEFAULT_FILE_NAME);
+        sourceFile = Files.createFile(tempFolder.toPath().resolve(DEFAULT_FILE_NAME));
+        FileUtil.writeToFile(sourceFile.toFile(), "This is my file");
+        targetDir = Files.createDirectory(tempFolder.toPath().resolve("folder"));
+        targetFile = targetDir.resolve(DEFAULT_FILE_NAME);
         sshClient = fixture.setupConnectedDefaultClient();
         sshClient.authPassword("test", "test");
     }
 
-    @After
+    @AfterEach
     public void cleanup() {
-        if (targetFile.exists()) {
-            targetFile.delete();
+        if (Files.exists(targetFile)) {
+            try {
+                Files.delete(targetFile);
+            } catch (IOException ioe) {
+                // ok
+            }
         }
     }
 
     @Test
     public void shouldSCPUploadFile() throws IOException {
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer();
-        assertFalse(targetFile.exists());
-        assertTrue(targetDir.exists());
-        scpFileTransfer.upload(sourceFile.getAbsolutePath(), targetDir.getAbsolutePath());
-        assertTrue(targetFile.exists());
+        assertFalse(Files.exists(targetFile));
+        assertTrue(Files.exists(targetDir));
+        scpFileTransfer.upload(sourceFile.toAbsolutePath().toString(), targetDir.toAbsolutePath().toString());
+        assertTrue(Files.exists(targetFile));
     }
 
     @Test
     public void shouldSCPUploadFileWithBandwidthLimit() throws IOException {
         // Limit upload transfer at 2Mo/s
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer().bandwidthLimit(16000);
-        assertFalse(targetFile.exists());
-        scpFileTransfer.upload(sourceFile.getAbsolutePath(), targetDir.getAbsolutePath());
-        assertTrue(targetFile.exists());
+        assertFalse(Files.exists(targetFile));
+        scpFileTransfer.upload(sourceFile.toAbsolutePath().toString(), targetDir.toAbsolutePath().toString());
+        assertTrue(Files.exists(targetFile));
     }
 
     @Test
     public void shouldSCPDownloadFile() throws IOException {
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer();
-        assertFalse(targetFile.exists());
-        scpFileTransfer.download(sourceFile.getAbsolutePath(), targetDir.getAbsolutePath());
-        assertTrue(targetFile.exists());
+        assertFalse(Files.exists(targetFile));
+        scpFileTransfer.download(sourceFile.toAbsolutePath().toString(), targetDir.toAbsolutePath().toString());
+        assertTrue(Files.exists(targetFile));
     }
 
     @Test
     public void shouldSCPDownloadFileWithBandwidthLimit() throws IOException {
         // Limit download transfer at 128Ko/s
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer().bandwidthLimit(1024);
-        assertFalse(targetFile.exists());
-        scpFileTransfer.download(sourceFile.getAbsolutePath(), targetDir.getAbsolutePath());
-        assertTrue(targetFile.exists());
+        assertFalse(Files.exists(targetFile));
+        scpFileTransfer.download(sourceFile.toAbsolutePath().toString(), targetDir.toAbsolutePath().toString());
+        assertTrue(Files.exists(targetFile));
     }
 
     @Test
     public void shouldSCPDownloadFileWithoutPathEscaping() throws IOException {
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer();
-        assertFalse(targetFile.exists());
-        File file = tempFolder.newFile("new file.txt");
-        FileUtil.writeToFile(file, "Some content");
-        scpFileTransfer.download(tempFolder.getRoot().getAbsolutePath() + "/new file.txt", targetFile.getAbsolutePath());
-        assertTrue(targetFile.exists());
-        assertThat(FileUtil.readFromFile(targetFile), CoreMatchers.containsString("Some content"));
+        assertFalse(Files.exists(targetFile));
+        Path file = tempFolder.toPath().resolve("new file.txt");
+        FileUtil.writeToFile(file.toFile(), "Some content");
+        scpFileTransfer.download(tempFolder.toPath().toAbsolutePath() + "/new file.txt", targetFile.toAbsolutePath().toString());
+        assertTrue(Files.exists(targetFile));
+        assertThat(FileUtil.readFromFile(targetFile.toFile()), CoreMatchers.containsString("Some content"));
     }
 }

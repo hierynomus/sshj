@@ -16,13 +16,13 @@
 package net.schmizz.sshj.transport.kex;
 
 import net.schmizz.sshj.transport.random.JCERandom;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class Curve25519DHTest {
 

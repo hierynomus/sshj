@@ -19,12 +19,12 @@ import net.schmizz.sshj.userauth.method.PasswordResponseProvider;
 import net.schmizz.sshj.userauth.password.AccountResource;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.Resource;
-import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PasswordResponseProviderTest {
     private static final char[] PASSWORD = "the_password".toCharArray();
@@ -64,13 +64,13 @@ public class PasswordResponseProviderTest {
 
     @Test
     public void shouldPassRetry() {
-        Assert.assertFalse(createDefaultResponseProvider(false).shouldRetry());
-        Assert.assertTrue(createDefaultResponseProvider(true).shouldRetry());
+        assertFalse(createDefaultResponseProvider(false).shouldRetry());
+        assertTrue(createDefaultResponseProvider(true).shouldRetry());
     }
 
     @Test
     public void shouldHaveNoSubmethods() {
-        Assert.assertEquals(createDefaultResponseProvider(true).getSubmethods(), Collections.emptyList());
+        assertEquals(createDefaultResponseProvider(true).getSubmethods(), Collections.emptyList());
     }
 
     @Test
@@ -91,10 +91,9 @@ public class PasswordResponseProviderTest {
     }
 
     private static void checkPrompt(PasswordResponseProvider responseProvider, String prompt, char[] expected) {
-        Assert.assertArrayEquals("Prompt '" + prompt + "'", expected, responseProvider.getResponse(prompt, false));
+        assertArrayEquals(expected, responseProvider.getResponse(prompt, false), "Prompt '" + prompt + "'");
     }
 
-    @NotNull
     private static PasswordResponseProvider createDefaultResponseProvider(final boolean shouldRetry) {
         PasswordFinder passwordFinder = new TestPasswordFinder(shouldRetry);
         PasswordResponseProvider responseProvider = new PasswordResponseProvider(passwordFinder);
@@ -111,13 +110,13 @@ public class PasswordResponseProviderTest {
 
         @Override
         public char[] reqPassword(Resource<?> resource) {
-            Assert.assertEquals(resource, ACCOUNT_RESOURCE);
+            assertEquals(resource, ACCOUNT_RESOURCE);
             return PASSWORD;
         }
 
         @Override
         public boolean shouldRetry(Resource<?> resource) {
-            Assert.assertEquals(resource, ACCOUNT_RESOURCE);
+            assertEquals(resource, ACCOUNT_RESOURCE);
             return shouldRetry;
         }
     }

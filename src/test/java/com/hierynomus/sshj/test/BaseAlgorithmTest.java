@@ -21,9 +21,8 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import org.apache.sshd.server.SshServer;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +35,8 @@ public abstract class BaseAlgorithmTest {
 
     private SingletonRandomFactory randomFactory = new SingletonRandomFactory(new JCERandom.Factory());
     private DefaultConfig config = new DefaultConfig();
-    @Rule
-    public SshFixture fixture = new SshFixture(false);
-
-    @After
-    public void stopServer() {
-        fixture.stopServer();
-    }
+    @RegisterExtension
+    public SshServerExtension fixture = new SshServerExtension(false);
 
     @Test
     public void shouldVerifyAlgorithm() throws IOException {

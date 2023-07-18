@@ -15,24 +15,24 @@
  */
 package com.hierynomus.sshj.userauth;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.userauth.method.AuthGssApiWithMic;
 import net.schmizz.sshj.util.gss.BogusGSSManager;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import java.util.Collections;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GssApiTest {
 
-    @Rule
-    public SshFixture fixture = new SshFixture();
+    @RegisterExtension
+    public SshServerExtension fixture = new SshServerExtension();
 
     private static final String LOGIN_CONTEXT_NAME = "TestLoginContext";
 

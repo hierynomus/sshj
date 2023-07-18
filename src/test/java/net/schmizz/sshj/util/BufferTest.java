@@ -32,15 +32,14 @@ package net.schmizz.sshj.util;
 
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /** Tests {@link Buffer} functionality */
 public class BufferTest {
@@ -48,7 +47,7 @@ public class BufferTest {
     private Buffer.PlainBuffer posBuf;
     private Buffer.PlainBuffer handyBuf;
 
-    @Before
+    @BeforeEach
     public void setUp()
             throws UnsupportedEncodingException, GeneralSecurityException {
         // for position test
@@ -113,14 +112,15 @@ public class BufferTest {
         // TODO stub
     }
 
-    @Test(expected = Buffer.BufferException.class)
-    public void testUnderflow()
-            throws Buffer.BufferException {
-        // exhaust the buffer
-        for (int i = 0; i < 5; ++i)
+    @Test
+    public void testUnderflow() throws Buffer.BufferException {
+        assertThrows(Buffer.BufferException.class, () -> {
+            // exhaust the buffer
+            for (int i = 0; i < 5; ++i)
+                posBuf.readByte();
+            // underflow
             posBuf.readByte();
-        // underflow
-        posBuf.readByte();
+        });
     }
 
 }
