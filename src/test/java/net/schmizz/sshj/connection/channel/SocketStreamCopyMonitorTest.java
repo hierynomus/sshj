@@ -18,7 +18,7 @@ package net.schmizz.sshj.connection.channel;
 import net.schmizz.concurrent.Event;
 import net.schmizz.concurrent.ExceptionChainer;
 import net.schmizz.sshj.common.LoggerFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.Socket;

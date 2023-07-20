@@ -16,7 +16,6 @@
 package com.hierynomus.sshj.common
 
 import com.hierynomus.sshj.userauth.certificate.Certificate
-import net.schmizz.sshj.common.Base64
 import net.schmizz.sshj.common.Buffer
 import net.schmizz.sshj.common.KeyType
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile
@@ -110,7 +109,7 @@ f26VSnEypH3G3cmPYfpVcXL63bCb0E4sNJwENM4tQGZa5YGz3CxMdgIVAJUv4z9+
         def keyType = KeyType.fromString(parts[0])
 
         when:
-        def pubKey = new Buffer.PlainBuffer(Base64.decode(parts[1])).readPublicKey()
+        def pubKey = new Buffer.PlainBuffer(Base64.getDecoder().decode(parts[1])).readPublicKey()
 
         then:
         KeyType.fromKey(pubKey) == keyType

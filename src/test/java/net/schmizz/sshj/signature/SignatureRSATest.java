@@ -16,10 +16,11 @@
 package net.schmizz.sshj.signature;
 
 import net.schmizz.sshj.common.Buffer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.security.PublicKey;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class SignatureRSATest {
@@ -36,7 +37,7 @@ public class SignatureRSATest {
         signature.initVerify(hostKey);
         signature.update(msg, 0, msg.length);
 
-        Assert.assertTrue("RSACERT signature verifies", signature.verify(sig));
+        assertTrue(signature.verify(sig), "RSACERT signature verifies");
     }
 
     private byte[] fromString(String string) {

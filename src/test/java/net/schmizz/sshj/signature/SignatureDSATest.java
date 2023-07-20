@@ -15,6 +15,12 @@
  */
 package net.schmizz.sshj.signature;
 
+import com.hierynomus.sshj.common.KeyAlgorithm;
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -22,19 +28,13 @@ import java.security.spec.DSAPrivateKeySpec;
 import java.security.spec.DSAPublicKeySpec;
 import java.util.Arrays;
 
-import com.hierynomus.sshj.common.KeyAlgorithm;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SignatureDSATest {
 
     private KeyFactory keyFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() throws NoSuchAlgorithmException {
         keyFactory = KeyFactory.getInstance(KeyAlgorithm.DSA);
     }
@@ -61,9 +61,9 @@ public class SignatureDSATest {
         SignatureDSA signatureForVerifying = new SignatureDSA();
         signatureForVerifying.initVerify(keyFactory.generatePublic(new DSAPublicKeySpec(y, p, q, g)));
         signatureForVerifying.update(data);
-        Assert.assertTrue("Failed to verify signature: " + Arrays.toString(sigFull), signatureForVerifying.verify(sigFull));
+        assertTrue(signatureForVerifying.verify(sigFull), "Failed to verify signature: " + Arrays.toString(sigFull));
         signatureForVerifying.update(data);
-        Assert.assertTrue("Failed to verify signature: " + Arrays.toString(dataSig), signatureForVerifying.verify(dataSig));
+        assertTrue(signatureForVerifying.verify(dataSig), "Failed to verify signature: " + Arrays.toString(dataSig));
     }
 
 }

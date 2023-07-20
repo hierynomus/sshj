@@ -19,7 +19,7 @@ import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import net.schmizz.sshj.util.UnitTestPasswordFinder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,9 +27,7 @@ import java.io.StringReader;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PuTTYKeyFileTest {
 
@@ -530,13 +528,15 @@ public class PuTTYKeyFileTest {
         assertNotNull(key.getPublic());
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWrongPassphraseRsa() throws Exception {
-        PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(ppk1024_passphrase),
-                new UnitTestPasswordFinder("egfsdgdfgsdfsdfasfs523534dgdsgdfa"));
-        assertNotNull(key.getPublic());
-        assertNull(key.getPrivate());
+        assertThrows(IOException.class, () -> {
+            PuTTYKeyFile key = new PuTTYKeyFile();
+            key.init(new StringReader(ppk1024_passphrase),
+                    new UnitTestPasswordFinder("egfsdgdfgsdfsdfasfs523534dgdsgdfa"));
+            assertNotNull(key.getPublic());
+            assertNull(key.getPrivate());
+        });
     }
 
     @Test
@@ -548,12 +548,14 @@ public class PuTTYKeyFileTest {
         assertNotNull(key.getPublic());
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testWrongPassphraseDsa() throws Exception {
-        PuTTYKeyFile key = new PuTTYKeyFile();
-        key.init(new StringReader(ppkdsa_passphrase),
-                new UnitTestPasswordFinder("egfsdgdfgsdfsdfasfs523534dgdsgdfa"));
-        assertNotNull(key.getPublic());
-        assertNull(key.getPrivate());
+        assertThrows(IOException.class, () -> {
+            PuTTYKeyFile key = new PuTTYKeyFile();
+            key.init(new StringReader(ppkdsa_passphrase),
+                    new UnitTestPasswordFinder("egfsdgdfgsdfsdfasfs523534dgdsgdfa"));
+            assertNotNull(key.getPublic());
+            assertNull(key.getPrivate());
+        });
     }
 }

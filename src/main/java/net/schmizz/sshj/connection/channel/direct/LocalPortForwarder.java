@@ -29,8 +29,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.TimeUnit;
 
-import static com.hierynomus.sshj.backport.Sockets.asCloseable;
-
 public class LocalPortForwarder {
 
     public static class ForwardedChannel
@@ -78,7 +76,7 @@ public class LocalPortForwarder {
             chan.open();
             chan.start();
         } catch (IOException e) {
-            IOUtils.closeQuietly(chan, asCloseable(socket));
+            IOUtils.closeQuietly(chan, socket);
             throw e;
         }
     }

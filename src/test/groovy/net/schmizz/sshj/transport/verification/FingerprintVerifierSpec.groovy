@@ -15,7 +15,6 @@
  */
 package net.schmizz.sshj.transport.verification
 
-import net.schmizz.sshj.common.Base64
 import net.schmizz.sshj.common.Buffer
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -63,6 +62,6 @@ class FingerprintVerifierSpec extends Specification {
     def getPublicKey() {
         def lines = new File("src/test/resources/keytypes/test_ed25519.pub").readLines()
         def keystring = lines[0].split(" ")[1]
-        return new Buffer.PlainBuffer(Base64.decode(keystring)).readPublicKey()
+        return new Buffer.PlainBuffer(Base64.getDecoder().decode(keystring)).readPublicKey()
     }
 }

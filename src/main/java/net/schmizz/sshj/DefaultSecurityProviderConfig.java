@@ -15,29 +15,14 @@
  */
 package net.schmizz.sshj;
 
-import com.hierynomus.sshj.key.KeyAlgorithm;
-import com.hierynomus.sshj.key.KeyAlgorithms;
-import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
 
-import java.util.Arrays;
-
 /**
- * Registers SpongyCastle as JCE provider.
+ * SSHJ Configuration that uses the default Security Provider configuration from java.security and disables Bouncy Castle registration
  */
-public class AndroidConfig
-        extends DefaultConfig {
-
+public class DefaultSecurityProviderConfig extends DefaultConfig {
     static {
-        SecurityUtils.registerSecurityProvider("org.spongycastle.jce.provider.BouncyCastleProvider");
-    }
-
-    @Override
-    protected void initKeyAlgorithms() {
-        setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
-                KeyAlgorithms.EdDSA25519(),
-                KeyAlgorithms.SSHRSA(),
-                KeyAlgorithms.SSHDSA()
-        ));
+        // Disable Bouncy Castle Provider registration prior to invoking constructors
+        SecurityUtils.setRegisterBouncyCastle(false);
     }
 }

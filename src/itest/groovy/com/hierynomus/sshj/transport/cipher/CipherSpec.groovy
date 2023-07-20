@@ -18,15 +18,17 @@ package com.hierynomus.sshj.transport.cipher
 import com.hierynomus.sshj.IntegrationTestUtil
 import com.hierynomus.sshj.SshdContainer
 import net.schmizz.sshj.DefaultConfig
-import org.junit.ClassRule
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 
+@Testcontainers
 class CipherSpec extends Specification {
     @Shared
-    @ClassRule
-    SshdContainer sshd
+    @Container
+    static SshdContainer sshd = new SshdContainer()
 
     @Unroll
     def "should correctly connect with #cipher Cipher"() {

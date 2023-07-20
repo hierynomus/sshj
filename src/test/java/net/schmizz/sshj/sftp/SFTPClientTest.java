@@ -16,8 +16,8 @@
 package net.schmizz.sshj.sftp;
 
 import net.schmizz.sshj.common.LoggerFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 public class SFTPClientTest {
     private final SFTPEngine sftpEngine = mock(SFTPEngine.class);
 
-    @Before
+    @BeforeEach
     public void setPathHelper() throws Exception {
         PathHelper helper = new PathHelper(new PathHelper.Canonicalizer() {
             /**
@@ -48,7 +48,7 @@ public class SFTPClientTest {
         when(sftpEngine.getLoggerFactory()).thenReturn(LoggerFactory.DEFAULT);
     }
 
-    @Before
+    @BeforeEach
     public void setRemoteWorkingDirectory() throws IOException {
         FileAttributes isADirectory = new FileAttributes.Builder().withType(FileMode.Type.DIRECTORY).build();
         when(sftpEngine.stat("/workingdirectory")).thenReturn(isADirectory);

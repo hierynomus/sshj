@@ -18,23 +18,21 @@ package com.hierynomus.sshj.transport;
 import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.transport.cipher.Cipher;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.crypto.AEADBadTagException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@RunWith(Theories.class)
 public class GcmCipherTest {
 
-    public static final @DataPoints
-    GcmCiphers.Factory[] cipherFactories = { GcmCiphers.AES128GCM(), GcmCiphers.AES256GCM() };
+    public static GcmCiphers.Factory[] cipherFactories() {
+        return new GcmCiphers.Factory[] { GcmCiphers.AES128GCM(), GcmCiphers.AES256GCM() }; };
 
-    @Theory
+    @ParameterizedTest
+    @MethodSource("cipherFactories")
     public void testEncryptDecrypt(GcmCiphers.Factory factory) throws Exception {
         Cipher enc = factory.create();
         byte[] key = new byte[enc.getBlockSize()];

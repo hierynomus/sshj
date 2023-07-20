@@ -15,13 +15,13 @@
  */
 package com.hierynomus.sshj.transport.verification;
 
-import net.schmizz.sshj.common.Base64;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.transport.mac.MAC;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -85,12 +85,12 @@ public class KnownHostMatchers {
 
         private String hashHost(String host) throws IOException {
             sha1.init(getSaltyBytes());
-            return "|1|" + salt + "|" + Base64.encodeBytes(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
+            return "|1|" + salt + "|" + Base64.getEncoder().encodeToString(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
         }
 
-        private byte[] getSaltyBytes() throws IOException {
+        private byte[] getSaltyBytes() {
             if (saltyBytes == null) {
-                saltyBytes = Base64.decode(salt);
+                saltyBytes = Base64.getDecoder().decode(salt);
             }
             return saltyBytes;
         }

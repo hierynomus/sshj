@@ -15,21 +15,19 @@
  */
 package com.hierynomus.sshj.transport.verification
 
-import net.schmizz.sshj.common.Base64
 import net.schmizz.sshj.common.Buffer
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts
 import net.schmizz.sshj.util.KeyUtil
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.TempDir
 import spock.lang.Unroll
 
+import java.nio.file.Files
 import java.security.PublicKey
 
 class OpenSSHKnownHostsSpec extends Specification {
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @TempDir def temp
 
     def "should parse and verify hashed host entry"() {
         given:
@@ -65,7 +63,7 @@ class OpenSSHKnownHostsSpec extends Specification {
 host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBCiYp2IDgzDFhl8T4TRLIhEljvEixz1YN0XWh4dYh0REGK9T4QKiyb28EztPMdcOtz1uyX5rUGYXX9hj99S4SiU=
 host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck=
 """)
-        def pk = new Buffer.PlainBuffer(Base64.decode("AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck=")).readPublicKey()
+        def pk = new Buffer.PlainBuffer(Base64.getDecoder().decode("AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck=")).readPublicKey()
         when:
         def knownhosts = new OpenSSHKnownHosts(f)
 
@@ -79,7 +77,7 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
 host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTIDgzDFhl8T4TRLIhEljvEixz1YN0XWh4dYh0REGK9T4QKiyb28EztPMdcOtz1uyX5rUGYXX9hj99S4SiU=
 host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck=
 """)
-        def pk = new Buffer.PlainBuffer(Base64.decode("AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck=")).readPublicKey()
+        def pk = new Buffer.PlainBuffer(Base64.getDecoder().decode("AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck=")).readPublicKey()
         when:
         def knownhosts = new OpenSSHKnownHosts(f)
 
@@ -150,7 +148,7 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
     def "should match any host name from multi-host line"() {
         given:
         def f = knownHosts("schmizz.net,69.163.155.180 ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ==")
-        def pk = new Buffer.PlainBuffer(Base64.decode("AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ==")).readPublicKey()
+        def pk = new Buffer.PlainBuffer(Base64.getDecoder().decode("AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ==")).readPublicKey()
 
         when:
         def knownHosts = new OpenSSHKnownHosts(f)
@@ -184,7 +182,7 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
           |\t\t\t\t\t
           |\t@revoked   host3\tssh-ed25519\t \t$key\t
           """.stripMargin())
-        def pk = new Buffer.PlainBuffer(Base64.decode(key)).readPublicKey()
+        def pk = new Buffer.PlainBuffer(Base64.getDecoder().decode(key)).readPublicKey()
 
         when:
         def knownhosts = new OpenSSHKnownHosts(f)
@@ -212,11 +210,11 @@ host1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBL
         def knownhosts = new OpenSSHKnownHosts(f)
 
         then:
-        knownhosts.verify("good-host", 22, new Buffer.PlainBuffer(Base64.decode(key)).readPublicKey())
+        knownhosts.verify("good-host", 22, new Buffer.PlainBuffer(Base64.getDecoder().decode(key)).readPublicKey())
     }
 
     def knownHosts(String s) {
-        def f = temp.newFile("known_hosts")
+        def f = Files.createFile(temp.resolve("known_hosts")).toFile()
         f.write(s)
         return f
     }
