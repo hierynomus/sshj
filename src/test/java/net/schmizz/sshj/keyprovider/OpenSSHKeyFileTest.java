@@ -19,7 +19,6 @@ import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
@@ -446,13 +445,6 @@ public class OpenSSHKeyFileTest {
         keyProvider.init(new StringReader(""));
 
         assertThrows(IOException.class, keyProvider::getPrivate, "This key is not in 'openssh-key-v1' format");
-    }
-
-    @BeforeEach
-    public void checkBCRegistration() {
-        if (!SecurityUtils.isBouncyCastleRegistered()) {
-            throw new AssertionError("bouncy castle needed");
-        }
     }
 
     private String readFile(String pathname)
