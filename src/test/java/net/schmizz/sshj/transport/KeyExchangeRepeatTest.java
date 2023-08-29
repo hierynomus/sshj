@@ -15,24 +15,24 @@
  */
 package net.schmizz.sshj.transport;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.util.Collections;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.kex.KeyExchange;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 public class KeyExchangeRepeatTest {
 
@@ -40,14 +40,14 @@ public class KeyExchangeRepeatTest {
     private DefaultConfig config;
     private KeyExchanger keyExchanger;
 
-    @Before
+    @BeforeEach
     public void setup() throws GeneralSecurityException, TransportException {
         KeyExchange kex = mock(KeyExchange.class, Mockito.RETURNS_DEEP_STUBS);
         transport = mock(TransportImpl.class, Mockito.RETURNS_DEEP_STUBS);
         config = new DefaultConfig() {
             @Override
-            protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
-                setKeyExchangeFactories(ImmutableList.of(new Factory.Named<>() {
+            protected void initKeyExchangeFactories() {
+                setKeyExchangeFactories(Collections.singletonList(new Factory.Named<>() {
                     @Override
                     public KeyExchange create() {
                         return kex;
@@ -112,7 +112,7 @@ public class KeyExchangeRepeatTest {
     }
 
     private SSHPacket getKexinitPacket() {
-        SSHPacket kexinitPacket = new Proposal(config, ImmutableList.of()).getPacket();
+        SSHPacket kexinitPacket = new Proposal(config, Collections.emptyList()).getPacket();
         kexinitPacket.rpos(kexinitPacket.rpos() + 1);
         return kexinitPacket;
     }
