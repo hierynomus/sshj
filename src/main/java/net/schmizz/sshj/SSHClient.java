@@ -810,12 +810,7 @@ public class SSHClient
             ThreadNameProvider.setThreadName(conn.getKeepAlive(), trans);
             keepAliveThread.start();
         }
-        if (trans.isKeyExchangeRequired()) {
-            log.debug("Initiating Key Exchange for new connection");
-            doKex();
-        } else {
-            log.debug("Key Exchange already completed for new connection");
-        }
+        doKex();
     }
 
     /**
