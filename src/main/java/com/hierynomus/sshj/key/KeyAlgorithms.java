@@ -67,5 +67,10 @@ public class KeyAlgorithms {
         public KeyAlgorithm create() {
             return new BaseKeyAlgorithm(algorithmName, signatureFactory, keyType);
         }
+
+        @Override
+        public String toString() {
+            return algorithmName;
+        }
     }
 }
