@@ -109,6 +109,7 @@ Fork away!
 
 == Release history
 SSHJ 0.36.0 (2023-07-18)::
+* Merged https://github.com/hierynomus/sshj/pull/861[#861]: Add DefaultSecurityProviderConfig with has BouncyCastle disabled
 * Merged https://github.com/hierynomus/sshj/pull/881[#881]: Rewrote test classes to JUnit Jupiter engine
 * Merged https://github.com/hierynomus/sshj/pull/880[#880]: Removed Java 7 backport Socket utilities
 * Merged https://github.com/hierynomus/sshj/pull/879[#879]: Replaced custom Base64 with java.util.Base64
