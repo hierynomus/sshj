@@ -108,7 +108,9 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
-SSHJ 0.36.0 (2023-07-18)::
+SSHJ 0.36.0 (2023-09-04)::
+* Rewrote Integration tests to JUnit5
+* Merged https://github.com/hierynomus/sshj/pull/851[#851]: Fix race condition in key exchange causing intermittent SSH_MSG_UNIMPLEMENTED
 * Merged https://github.com/hierynomus/sshj/pull/861[#861]: Add DefaultSecurityProviderConfig with has BouncyCastle disabled
 * Merged https://github.com/hierynomus/sshj/pull/881[#881]: Rewrote test classes to JUnit Jupiter engine
 * Merged https://github.com/hierynomus/sshj/pull/880[#880]: Removed Java 7 backport Socket utilities
