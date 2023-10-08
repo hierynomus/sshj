@@ -98,19 +98,19 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     protected KeyPair readKeyPair() throws IOException {
-        BufferedReader reader = new BufferedReader(resource.getReader());
+        final BufferedReader reader = new BufferedReader(resource.getReader());
         try {
-            if (!checkHeader(reader)) {
-                throw new IOException("This key is not in 'openssh-key-v1' format");
+            if (checkHeader(reader)) {
+                final String encodedPrivateKey = readEncodedKey(reader);
+                byte[] decodedPrivateKey = Base64.getDecoder().decode(encodedPrivateKey);
+                final PlainBuffer bufferedPrivateKey = new PlainBuffer(decodedPrivateKey);
+                return readDecodedKeyPair(bufferedPrivateKey);
+            } else {
+                final String message = String.format("File header not found [%s%s]", BEGIN, OPENSSH_PRIVATE_KEY);
+                throw new IOException(message);
             }
-
-            String keyFile = readKeyFile(reader);
-            byte[] decode = Base64.getDecoder().decode(keyFile);
-            PlainBuffer keyBuffer = new PlainBuffer(decode);
-            return readDecodedKeyPair(keyBuffer);
-
-        } catch (GeneralSecurityException e) {
-            throw new SSHRuntimeException(e);
+        } catch (final GeneralSecurityException e) {
+            throw new SSHRuntimeException("Read OpenSSH Version 1 Key failed", e);
         } finally {
             IOUtils.closeQuietly(reader);
         }
@@ -149,7 +149,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             logger.debug("Reading unencrypted keypair");
             return readUnencrypted(privateKeyBuffer, publicKey);
         } else {
-            logger.info("Keypair is encrypted with: " + cipherName + ", " + kdfName + ", " + Arrays.toString(kdfOptions));
+            logger.info("Keypair is encrypted with: {}, {}, {}", cipherName, kdfName, Arrays.toString(kdfOptions));
             while (true) {
                 PlainBuffer decryptionBuffer = new PlainBuffer(privateKeyBuffer);
                 PlainBuffer decrypted = decryptBuffer(decryptionBuffer, cipherName, kdfName, kdfOptions);
@@ -209,14 +209,26 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         return KeyType.fromString(plainBuffer.readString()).readPubKeyFromBuffer(plainBuffer);
     }
 
-    private String readKeyFile(final BufferedReader reader) throws IOException {
-        StringBuilder sb = new StringBuilder();
+    private String readEncodedKey(final BufferedReader reader) throws IOException {
+        final StringBuilder builder = new StringBuilder();
+
+        boolean footerFound = false;
         String line = reader.readLine();
-        while (!line.startsWith(END)) {
-            sb.append(line);
+        while (line != null) {
+            if (line.startsWith(END)) {
+                footerFound = true;
+                break;
+            }
+            builder.append(line);
             line = reader.readLine();
         }
-        return sb.toString();
+
+        if (footerFound) {
+            return builder.toString();
+        } else {
+            final String message = String.format("File footer not found [%s%s]", END, OPENSSH_PRIVATE_KEY);
+            throw new IOException(message);
+        }
     }
 
     private boolean checkHeader(final BufferedReader reader) throws IOException {
@@ -244,7 +256,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         // The private key section contains both the public key and the private key
         String keyType = keyBuffer.readString(); // string keytype
         KeyType kt = KeyType.fromString(keyType);
-        logger.info("Read key type: {}", keyType, kt);
+
         KeyPair kp;
         switch (kt) {
             case ED25519:

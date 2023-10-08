@@ -25,7 +25,6 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.KeyUtil;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -227,6 +226,22 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldHandlePrivateKeyMissingHeader() {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keyformats/pkcs8"));
+        final IOException exception = assertThrows(IOException.class, keyFile::getPrivate);
+        assertTrue(exception.getMessage().contains("header not found"));
+    }
+
+    @Test
+    public void shouldHandlePrivateKeyMissingFooter() {
+        final OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/test_ed25519_missing_footer"));
+        final IOException exception = assertThrows(IOException.class, keyFile::getPrivate);
+        assertTrue(exception.getMessage().contains("footer not found"));
+    }
+
+    @Test
     public void shouldLoadProtectedED25519PrivateKeyAes256CTR() throws IOException {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest", false);
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest", true);
@@ -245,7 +260,7 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
-    public void shouldFailOnIncorrectPassphraseAfterRetries() throws IOException {
+    public void shouldFailOnIncorrectPassphraseAfterRetries() {
         assertThrows(KeyDecryptionFailedException.class, () -> {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keytypes/ed25519_aes256cbc.pem"), new PasswordFinder() {
