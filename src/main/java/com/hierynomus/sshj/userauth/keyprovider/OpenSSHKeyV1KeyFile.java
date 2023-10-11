@@ -18,6 +18,7 @@ package com.hierynomus.sshj.userauth.keyprovider;
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
@@ -36,6 +37,7 @@ import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import com.hierynomus.sshj.userauth.keyprovider.bcrypt.BCrypt;
+import org.bouncycastle.openssl.EncryptionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,24 +49,42 @@ import java.io.Reader;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Reads a key file in the new OpenSSH format.
  * The format is described in the following document: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key
  */
 public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
-    private static final Logger logger = LoggerFactory.getLogger(OpenSSHKeyV1KeyFile.class);
     private static final String BEGIN = "-----BEGIN ";
     private static final String END = "-----END ";
     private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
     public static final String OPENSSH_PRIVATE_KEY = "OPENSSH PRIVATE KEY-----";
     public static final String BCRYPT = "bcrypt";
+
+    private static final String NONE_CIPHER = "none";
+
+    private static final Map<String, Factory.Named<Cipher>> SUPPORTED_CIPHERS = new HashMap<>();
+
+    static {
+        SUPPORTED_CIPHERS.put(BlockCiphers.TripleDESCBC().getName(), BlockCiphers.TripleDESCBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES128CBC().getName(), BlockCiphers.AES128CBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES192CBC().getName(), BlockCiphers.AES192CBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES256CBC().getName(), BlockCiphers.AES256CBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES128CTR().getName(), BlockCiphers.AES128CTR());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES192CTR().getName(), BlockCiphers.AES192CTR());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES256CTR().getName(), BlockCiphers.AES256CTR());
+        SUPPORTED_CIPHERS.put(GcmCiphers.AES256GCM().getName(), GcmCiphers.AES256GCM());
+        SUPPORTED_CIPHERS.put(GcmCiphers.AES128GCM().getName(), GcmCiphers.AES128GCM());
+    }
+
     private PublicKey pubKey;
 
     public static class Factory
@@ -135,74 +155,117 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
         int nrKeys = keyBuffer.readUInt32AsInt(); // int number of keys N; Should be 1
         if (nrKeys != 1) {
-            throw new IOException("We don't support having more than 1 key in the file (yet).");
+            final String message = String.format("OpenSSH Private Key number of keys not supported [%d]", nrKeys);
+            throw new IOException(message);
         }
         PublicKey publicKey = pubKey;
         if (publicKey == null) {
             publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes()));
-        }
-        else {
+        } else {
             keyBuffer.readBytes();
         }
-        PlainBuffer privateKeyBuffer = new PlainBuffer(keyBuffer.readBytes()); // string (possibly) encrypted, padded list of private keys
-        if ("none".equals(cipherName)) {
-            logger.debug("Reading unencrypted keypair");
+
+        final byte[] privateKeyEncoded = keyBuffer.readBytes();
+        final PlainBuffer privateKeyBuffer = new PlainBuffer(privateKeyEncoded);
+
+        if (NONE_CIPHER.equals(cipherName)) {
             return readUnencrypted(privateKeyBuffer, publicKey);
         } else {
-            logger.info("Keypair is encrypted with: {}, {}, {}", cipherName, kdfName, Arrays.toString(kdfOptions));
+            final byte[] encryptedPrivateKey = readEncryptedPrivateKey(privateKeyEncoded, keyBuffer);
             while (true) {
-                PlainBuffer decryptionBuffer = new PlainBuffer(privateKeyBuffer);
-                PlainBuffer decrypted = decryptBuffer(decryptionBuffer, cipherName, kdfName, kdfOptions);
+                final byte[] encrypted = encryptedPrivateKey.clone();
                 try {
+                    final PlainBuffer decrypted = decryptPrivateKey(encrypted, privateKeyEncoded.length, cipherName, kdfName, kdfOptions);
                     return readUnencrypted(decrypted, publicKey);
                 } catch (KeyDecryptionFailedException e) {
                     if (pwdf == null || !pwdf.shouldRetry(resource))
                         throw e;
                 }
             }
-//            throw new IOException("Cannot read encrypted keypair with " + cipherName + " yet.");
         }
     }
 
-    private PlainBuffer decryptBuffer(PlainBuffer privateKeyBuffer, String cipherName, String kdfName, byte[] kdfOptions) throws IOException {
-        Cipher cipher = createCipher(cipherName);
-        initializeCipher(kdfName, kdfOptions, cipher);
-        byte[] array = privateKeyBuffer.array();
-        cipher.update(array, 0, privateKeyBuffer.available());
-        return new PlainBuffer(array);
+    private byte[] readEncryptedPrivateKey(final byte[] privateKeyEncoded, final PlainBuffer inputBuffer) throws Buffer.BufferException {
+        final byte[] encryptedPrivateKey;
+
+        final int bufferRemaining = inputBuffer.available();
+        if (bufferRemaining == 0) {
+            encryptedPrivateKey = privateKeyEncoded;
+        } else {
+            // Read Authentication Tag for AES-GCM
+            final byte[] authenticationTag = new byte[bufferRemaining];
+            inputBuffer.readRawBytes(authenticationTag);
+
+            final int encryptedBufferLength = privateKeyEncoded.length + authenticationTag.length;
+            final PlainBuffer encryptedBuffer = new PlainBuffer(encryptedBufferLength);
+            encryptedBuffer.putRawBytes(privateKeyEncoded);
+            encryptedBuffer.putRawBytes(authenticationTag);
+
+            encryptedPrivateKey = new byte[encryptedBufferLength];
+            encryptedBuffer.readRawBytes(encryptedPrivateKey);
+        }
+
+        return encryptedPrivateKey;
     }
 
-    private void initializeCipher(String kdfName, byte[] kdfOptions, Cipher cipher) throws Buffer.BufferException {
+    private PlainBuffer decryptPrivateKey(final byte[] privateKey, final int privateKeyLength, final String cipherName, final String kdfName, final byte[] kdfOptions) throws IOException {
+        try {
+            final Cipher cipher = createCipher(cipherName);
+            initializeCipher(kdfName, kdfOptions, cipher);
+            cipher.update(privateKey, 0, privateKeyLength);
+        } catch (final SSHRuntimeException e) {
+            final String message = String.format("OpenSSH Private Key decryption failed with cipher [%s]", cipherName);
+            throw new KeyDecryptionFailedException(new EncryptionException(message, e));
+        }
+        final PlainBuffer decryptedPrivateKey = new PlainBuffer(privateKeyLength);
+        decryptedPrivateKey.putRawBytes(privateKey, 0, privateKeyLength);
+        return decryptedPrivateKey;
+    }
+
+    private void initializeCipher(final String kdfName, final byte[] kdfOptions, final Cipher cipher) throws Buffer.BufferException {
         if (kdfName.equals(BCRYPT)) {
-            PlainBuffer opts = new PlainBuffer(kdfOptions);
+            final PlainBuffer bufferedOptions = new PlainBuffer(kdfOptions);
             byte[] passphrase = new byte[0];
             if (pwdf != null) {
-                CharBuffer charBuffer = CharBuffer.wrap(pwdf.reqPassword(null));
-                ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
+                final CharBuffer charBuffer = CharBuffer.wrap(pwdf.reqPassword(null));
+                final ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(charBuffer);
                 passphrase = Arrays.copyOfRange(byteBuffer.array(), byteBuffer.position(), byteBuffer.limit());
                 Arrays.fill(charBuffer.array(), '\u0000');
                 Arrays.fill(byteBuffer.array(), (byte) 0);
             }
-            byte[] keyiv = new byte[cipher.getIVSize()+ cipher.getBlockSize()];
-            new BCrypt().pbkdf(passphrase, opts.readBytes(), opts.readUInt32AsInt(), keyiv);
+
+            final int ivSize = cipher.getIVSize();
+            final int blockSize = cipher.getBlockSize();
+            final int parameterSize = ivSize + blockSize;
+            final byte[] keyIvParameters = new byte[parameterSize];
+
+            final byte[] salt = bufferedOptions.readBytes();
+            final int iterations = bufferedOptions.readUInt32AsInt();
+            new BCrypt().pbkdf(passphrase, salt, iterations, keyIvParameters);
             Arrays.fill(passphrase, (byte) 0);
-            byte[] key = Arrays.copyOfRange(keyiv, 0, cipher.getBlockSize());
-            byte[] iv = Arrays.copyOfRange(keyiv, cipher.getBlockSize(), cipher.getIVSize() + cipher.getBlockSize());
+
+            final byte[] key = Arrays.copyOfRange(keyIvParameters, 0, blockSize);
+            final byte[] iv = Arrays.copyOfRange(keyIvParameters, blockSize, parameterSize);
+
             cipher.init(Cipher.Mode.Decrypt, key, iv);
         } else {
-            throw new IllegalStateException("No support for KDF '" + kdfName + "'.");
+            final String message = String.format("OpenSSH Private Key encryption KDF not supported [%s]", kdfName);
+            throw new IllegalStateException(message);
         }
     }
 
-    private Cipher createCipher(String cipherName) {
-        if (cipherName.equals(BlockCiphers.AES256CTR().getName())) {
-            return BlockCiphers.AES256CTR().create();
-        } else if (cipherName.equals(BlockCiphers.AES256CBC().getName())) {
-            return BlockCiphers.AES256CBC().create();
-        } else if (cipherName.equals(BlockCiphers.AES128CBC().getName())) {
-            return BlockCiphers.AES128CBC().create();
+    private Cipher createCipher(final String cipherName) {
+        final Cipher cipher;
+
+        if (SUPPORTED_CIPHERS.containsKey(cipherName)) {
+            final Factory.Named<Cipher> cipherFactory = SUPPORTED_CIPHERS.get(cipherName);
+            cipher = cipherFactory.create();
+        } else {
+            final String message = String.format("OpenSSH Key encryption cipher not supported [%s]", cipherName);
+            throw new IllegalStateException(message);
         }
-        throw new IllegalStateException("Cipher '" + cipherName + "' not currently implemented for openssh-key-v1 format");
+
+        return cipher;
     }
 
     private PublicKey readPublicKey(final PlainBuffer plainBuffer) throws Buffer.BufferException, GeneralSecurityException {
