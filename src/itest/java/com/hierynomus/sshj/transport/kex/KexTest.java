@@ -26,7 +26,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.hierynomus.sshj.SshdContainer;
-import com.hierynomus.sshj.transport.mac.Macs;
 
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;

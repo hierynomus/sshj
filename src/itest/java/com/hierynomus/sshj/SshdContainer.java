@@ -214,6 +214,9 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
                 case STDERR:
                     logger().info("sshd stderr: {}", outputFrame.getUtf8String().stripTrailing());
                     break;
+                case END:
+                    break;
+
             }
         });
     }

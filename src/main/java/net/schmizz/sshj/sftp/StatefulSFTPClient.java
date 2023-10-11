@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.LocalDestFile;
 import net.schmizz.sshj.xfer.LocalSourceFile;
 
@@ -30,6 +31,12 @@ public class StatefulSFTPClient
     public StatefulSFTPClient(SFTPEngine engine)
             throws IOException {
         super(engine);
+        this.cwd = getSFTPEngine().canonicalize(".");
+        log.debug("Start dir = {}", cwd);
+    }
+
+    public StatefulSFTPClient(SessionFactory sessionFactory) throws IOException {
+        super(sessionFactory);
         this.cwd = getSFTPEngine().canonicalize(".");
         log.debug("Start dir = {}", cwd);
     }

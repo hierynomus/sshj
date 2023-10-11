@@ -22,9 +22,6 @@ import net.schmizz.sshj.signature.SignatureDSA;
 import net.schmizz.sshj.signature.SignatureECDSA;
 import net.schmizz.sshj.signature.SignatureRSA;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class KeyAlgorithms {
 
     public static Factory SSHRSA() { return new Factory("ssh-rsa", new SignatureRSA.FactorySSHRSA(), KeyType.RSA); }
