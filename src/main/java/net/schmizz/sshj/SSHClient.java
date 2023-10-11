@@ -28,7 +28,6 @@ import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder.Forward
 import net.schmizz.sshj.connection.channel.forwarded.X11Forwarder;
 import net.schmizz.sshj.connection.channel.forwarded.X11Forwarder.X11Channel;
 import net.schmizz.sshj.sftp.SFTPClient;
-import net.schmizz.sshj.sftp.SFTPEngine;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
@@ -733,7 +732,7 @@ public class SSHClient
             throws IOException {
         checkConnected();
         checkAuthenticated();
-        return new SFTPClient(new SFTPEngine(this).init());
+        return new SFTPClient(this);
     }
 
     /**
@@ -746,7 +745,7 @@ public class SSHClient
             throws IOException {
         checkConnected();
         checkAuthenticated();
-        return new StatefulSFTPClient(new SFTPEngine(this).init());
+        return new StatefulSFTPClient(this);
     }
 
     /**

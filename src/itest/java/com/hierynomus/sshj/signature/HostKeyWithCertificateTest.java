@@ -26,7 +26,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import com.hierynomus.sshj.SshdContainer;
 import com.hierynomus.sshj.SshdContainer.SshdConfigBuilder;
 
-import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
