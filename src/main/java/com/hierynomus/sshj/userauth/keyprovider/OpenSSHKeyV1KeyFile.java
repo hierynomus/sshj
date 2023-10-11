@@ -71,21 +71,18 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     private static final String NONE_CIPHER = "none";
 
-    private static final Map<String, BlockCiphers.Factory> BLOCK_CIPHERS = new HashMap<>();
-
-    private static final Map<String, GcmCiphers.Factory> GCM_CIPHERS = new HashMap<>();
+    private static final Map<String, Factory.Named<Cipher>> SUPPORTED_CIPHERS = new HashMap<>();
 
     static {
-        BLOCK_CIPHERS.put(BlockCiphers.TripleDESCBC().getName(), BlockCiphers.TripleDESCBC());
-        BLOCK_CIPHERS.put(BlockCiphers.AES128CBC().getName(), BlockCiphers.AES128CBC());
-        BLOCK_CIPHERS.put(BlockCiphers.AES192CBC().getName(), BlockCiphers.AES192CBC());
-        BLOCK_CIPHERS.put(BlockCiphers.AES256CBC().getName(), BlockCiphers.AES256CBC());
-        BLOCK_CIPHERS.put(BlockCiphers.AES128CTR().getName(), BlockCiphers.AES128CTR());
-        BLOCK_CIPHERS.put(BlockCiphers.AES192CTR().getName(), BlockCiphers.AES192CTR());
-        BLOCK_CIPHERS.put(BlockCiphers.AES256CTR().getName(), BlockCiphers.AES256CTR());
-
-        GCM_CIPHERS.put(GcmCiphers.AES256GCM().getName(), GcmCiphers.AES256GCM());
-        GCM_CIPHERS.put(GcmCiphers.AES128GCM().getName(), GcmCiphers.AES128GCM());
+        SUPPORTED_CIPHERS.put(BlockCiphers.TripleDESCBC().getName(), BlockCiphers.TripleDESCBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES128CBC().getName(), BlockCiphers.AES128CBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES192CBC().getName(), BlockCiphers.AES192CBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES256CBC().getName(), BlockCiphers.AES256CBC());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES128CTR().getName(), BlockCiphers.AES128CTR());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES192CTR().getName(), BlockCiphers.AES192CTR());
+        SUPPORTED_CIPHERS.put(BlockCiphers.AES256CTR().getName(), BlockCiphers.AES256CTR());
+        SUPPORTED_CIPHERS.put(GcmCiphers.AES256GCM().getName(), GcmCiphers.AES256GCM());
+        SUPPORTED_CIPHERS.put(GcmCiphers.AES128GCM().getName(), GcmCiphers.AES128GCM());
     }
 
     private PublicKey pubKey;
@@ -260,11 +257,8 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     private Cipher createCipher(final String cipherName) {
         final Cipher cipher;
 
-        if (BLOCK_CIPHERS.containsKey(cipherName)) {
-            final BlockCiphers.Factory cipherFactory = BLOCK_CIPHERS.get(cipherName);
-            cipher = cipherFactory.create();
-        } else if (GCM_CIPHERS.containsKey(cipherName)) {
-            final GcmCiphers.Factory cipherFactory = GCM_CIPHERS.get(cipherName);
+        if (SUPPORTED_CIPHERS.containsKey(cipherName)) {
+            final Factory.Named<Cipher> cipherFactory = SUPPORTED_CIPHERS.get(cipherName);
             cipher = cipherFactory.create();
         } else {
             final String message = String.format("OpenSSH Key encryption cipher not supported [%s]", cipherName);
