@@ -24,7 +24,7 @@
     <groupId>com.hierynomus</groupId>
     <artifactId>sshj-examples</artifactId>
     <packaging>jar</packaging>
-    <version>0.33.0</version>
+    <version>0.37.0</version>
 
     <name>sshj-examples</name>
     <description>Examples for SSHv2 library for Java</description>
