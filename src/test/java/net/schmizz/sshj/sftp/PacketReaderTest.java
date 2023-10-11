@@ -18,8 +18,8 @@ package net.schmizz.sshj.sftp;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session.Subsystem;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.DataOutputStream;
@@ -27,14 +27,14 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PacketReaderTest {
 
     private DataOutputStream dataout;
     private PacketReader reader;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         PipedOutputStream pipedout = new PipedOutputStream();
         PipedInputStream pipedin = new PipedInputStream(pipedout);
@@ -59,7 +59,7 @@ public class PacketReaderTest {
 
         SFTPPacket<Response> packet = reader.readPacket();
         assertEquals(packet.available(), 10);
-        assertTrue("actual=" + Arrays.toString(packet.array()), Arrays.equals(bytes, subArray(packet.array(), 0, 10)));
+        assertTrue(Arrays.equals(bytes, subArray(packet.array(), 0, 10)), "actual=" + Arrays.toString(packet.array()));
     }
 
     @Test

@@ -136,11 +136,23 @@ final class KeyExchanger
     void startKex(boolean waitForDone)
             throws TransportException {
         if (!kexOngoing.getAndSet(true)) {
-            done.clear();
-            sendKexInit();
+            if (isKeyExchangeAllowed()) {
+                log.debug("Initiating key exchange");
+                done.clear();
+                sendKexInit();
+            } else {
+                kexOngoing.set(false);
+            }
         }
         if (waitForDone)
             waitForDone();
+    }
+
+    /**
+     * Key exchange can be initiated exactly once while connecting or later after authentication when re-keying.
+     */
+    private boolean isKeyExchangeAllowed() {
+        return !isKexDone() || transport.isAuthenticated();
     }
 
     void waitForDone()

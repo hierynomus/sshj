@@ -15,25 +15,29 @@
  */
 package com.hierynomus.sshj.sftp
 
-import com.hierynomus.sshj.test.SshFixture
+import com.hierynomus.sshj.test.SshServerExtension
 import com.hierynomus.sshj.test.util.FileUtil
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.sftp.FileMode
 import net.schmizz.sshj.sftp.SFTPClient
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
+import org.junit.jupiter.api.extension.RegisterExtension
 import spock.lang.Specification
+import spock.lang.TempDir
 import spock.lang.Unroll
+
+import java.nio.file.Files
+import java.nio.file.Path
 
 import static org.codehaus.groovy.runtime.IOGroovyMethods.withCloseable
 
 class SFTPClientSpec extends Specification {
 
-    @Rule
-    public SshFixture fixture = new SshFixture()
+    @RegisterExtension
+    public SshServerExtension fixture = new SshServerExtension()
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder()
+
+    @TempDir
+    public Path temp
 
     @Unroll
     def "should copy #sourceType->#targetType if #targetExists with #named name"() {
@@ -79,11 +83,11 @@ class SFTPClientSpec extends Specification {
 
     def "should not throw exception on close before disconnect"() {
         given:
-        File file = temp.newFile("source.txt")
+        File file = Files.createFile(temp.resolve("source.txt")).toFile()
         FileUtil.writeToFile(file, "This is the source")
 
         when:
-        doUpload(file, temp.newFile("dest.txt"))
+        doUpload(file, temp.resolve("dest.txt").toFile())
 
         then:
         noExceptionThrown()
@@ -147,10 +151,10 @@ class SFTPClientSpec extends Specification {
 
     def "should not merge same name subdirs (GH #252)"() {
         given:
-        File toto = temp.newFolder("toto")
+        File toto = Files.createDirectory(temp.resolve("toto")).toFile()
         File tutu = mkdir(toto, "tutu")
         File toto2 = mkdir(toto, "toto")
-        File dest = temp.newFolder("dest")
+        File dest = Files.createDirectory(temp.resolve("dest")).toFile()
         FileUtil.writeToFile(new File(toto, "toto.txt"), "Toto file")
         FileUtil.writeToFile(new File(tutu, "tototutu.txt"), "Toto/Tutu file")
         FileUtil.writeToFile(new File(toto2, "totototo.txt"), "Toto/Toto file")

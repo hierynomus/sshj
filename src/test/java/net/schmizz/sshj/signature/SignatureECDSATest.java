@@ -17,10 +17,11 @@ package net.schmizz.sshj.signature;
 
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Buffer.BufferException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.security.PublicKey;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SignatureECDSATest {
 
@@ -35,10 +36,10 @@ public class SignatureECDSATest {
         Signature signature = new SignatureECDSA.Factory256().create();
         signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
-        
-        Assert.assertTrue("ECDSA256 signature verifies", signature.verify(sig));
+
+        assertTrue(signature.verify(sig), "ECDSA256 signature verifies");
     }
-    
+
     @Test
     public void testECDSA384Verifies() throws BufferException {
         byte[] K_S = fromString("0, 0, 0, 19, 101, 99, 100, 115, 97, 45, 115, 104, 97, 50, 45, 110, 105, 115, 116, 112, 51, 56, 52, 0, 0, 0, 8, 110, 105, 115, 116, 112, 51, 56, 52, 0, 0, 0, 97, 4, 105, 52, -67, 89, 21, 53, -125, -26, -23, -125, 48, 119, -63, -66, 30, -46, -110, 21, 14, -96, -28, 40, -108, 60, 120, 110, 58, 30, -56, 37, 6, -17, -25, 109, 84, 67, -19, 0, -30, -33, 54, 94, -121, 49, 68, -66, 14, 6, 76, -51, 102, -123, 59, -24, -34, 79, -51, 64, -48, -45, 21, -42, -96, -123, -27, -21, 15, 56, -96, -12, 73, -10, 113, -20, -22, 38, 100, 38, -85, -113, 46, 36, 17, -30, 89, 40, 16, 104, 123, 50, 8, 122, 49, -41, -97, 95");
@@ -50,10 +51,10 @@ public class SignatureECDSATest {
         Signature signature = new SignatureECDSA.Factory384().create();
         signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
-        
-        Assert.assertTrue("ECDSA384 signature verifies", signature.verify(sig));
+
+        assertTrue(signature.verify(sig), "ECDSA384 signature verifies");
     }
-    
+
     @Test
     public void testECDSA521Verifies() throws BufferException {
         byte[] K_S = fromString("0, 0, 0, 19, 101, 99, 100, 115, 97, 45, 115, 104, 97, 50, 45, 110, 105, 115, 116, 112, 53, 50, 49, 0, 0, 0, 8, 110, 105, 115, 116, 112, 53, 50, 49, 0, 0, 0, -123, 4, 1, -56, 55, 64, -73, -109, 95, 94, -107, -116, -46, -16, 119, -66, -68, 41, -103, -66, 102, -123, -69, 59, -8, 106, 72, 75, 7, 56, -79, 109, -88, 77, 12, -97, -109, -32, -60, 64, -75, -48, 50, -51, -68, -81, 75, 110, -7, -79, -32, -36, -73, -7, -65, -24, 40, -74, 58, 43, -26, -5, -55, 125, -32, -89, -54, -111, 0, 81, 37, -73, 60, 69, 107, -108, 115, 60, -61, 22, 6, -128, -69, -28, 122, -26, -37, -117, 121, -106, -126, 23, -90, 127, 73, -58, -113, -61, 105, 68, 116, 85, -115, -47, 90, 122, 109, -21, 127, 39, -75, -58, -109, 73, -82, -122, -11, -44, -87, 85, -100, -4, -123, -31, 126, -94, 127, 96, 9, -30, 70, -113, -42, 28");
@@ -65,17 +66,17 @@ public class SignatureECDSATest {
         Signature signature = new SignatureECDSA.Factory521().create();
         signature.initVerify(hostKey);
         signature.update(H, 0, H.length);
-        
-        Assert.assertTrue("ECDSA521 signature verifies", signature.verify(sig));
+
+        assertTrue(signature.verify(sig), "ECDSA521 signature verifies");
     }
 
     private byte[] fromString(String string) {
         String[] split = string.split(", ");
         byte[] res = new byte[split.length];
-        
+
         for (int i = 0; i < split.length; i++)
             res[i] = Byte.parseByte(split[i]);
-        
+
         return res;
     }
 }

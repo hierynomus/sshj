@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
+import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.FilePermission;
 import net.schmizz.sshj.xfer.LocalDestFile;
 import net.schmizz.sshj.xfer.LocalSourceFile;
@@ -35,6 +36,13 @@ public class SFTPClient
 
     public SFTPClient(SFTPEngine engine) {
         this.engine = engine;
+        log = engine.getLoggerFactory().getLogger(getClass());
+        this.xfer = new SFTPFileTransfer(engine);
+    }
+
+    public SFTPClient(SessionFactory sessionFactory) throws IOException {
+        this.engine = new SFTPEngine(sessionFactory);
+        this.engine.init();
         log = engine.getLoggerFactory().getLogger(getClass());
         this.xfer = new SFTPFileTransfer(engine);
     }
@@ -232,7 +240,7 @@ public class SFTPClient
             throws IOException {
         xfer.download(source, dest);
     }
-    
+
     public void get(String source, String dest, long byteOffset)
             throws IOException {
         xfer.download(source, dest, byteOffset);
@@ -252,7 +260,7 @@ public class SFTPClient
             throws IOException {
         xfer.download(source, dest);
     }
-    
+
     public void get(String source, LocalDestFile dest, long byteOffset)
             throws IOException {
         xfer.download(source, dest, byteOffset);
@@ -262,7 +270,7 @@ public class SFTPClient
             throws IOException {
         xfer.upload(source, dest);
     }
-    
+
     public void put(LocalSourceFile source, String dest, long byteOffset)
             throws IOException {
         xfer.upload(source, dest, byteOffset);

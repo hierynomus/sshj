@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hierynomus.sshj
+package net.schmizz.sshj;
 
-class IntegrationTestUtil {
-    static final String USERNAME = "sshj"
-    static final String KEYFILE = "src/itest/resources/keyfiles/id_rsa"
+import net.schmizz.sshj.common.SecurityUtils;
+
+/**
+ * SSHJ Configuration that uses the default Security Provider configuration from java.security and disables Bouncy Castle registration
+ */
+public class DefaultSecurityProviderConfig extends DefaultConfig {
+    static {
+        // Disable Bouncy Castle Provider registration prior to invoking constructors
+        SecurityUtils.setRegisterBouncyCastle(false);
+    }
 }

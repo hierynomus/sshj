@@ -19,27 +19,16 @@ import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.KeyUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
@@ -54,7 +43,7 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OpenSSHKeyFileTest {
 
@@ -141,8 +130,8 @@ public class OpenSSHKeyFileTest {
         }
     };
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    public File temporaryFolder;
 
     @Test
     public void blankingOut()
@@ -237,6 +226,22 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldHandlePrivateKeyMissingHeader() {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keyformats/pkcs8"));
+        final IOException exception = assertThrows(IOException.class, keyFile::getPrivate);
+        assertTrue(exception.getMessage().contains("header not found"));
+    }
+
+    @Test
+    public void shouldHandlePrivateKeyMissingFooter() {
+        final OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/test_ed25519_missing_footer"));
+        final IOException exception = assertThrows(IOException.class, keyFile::getPrivate);
+        assertTrue(exception.getMessage().contains("footer not found"));
+    }
+
+    @Test
     public void shouldLoadProtectedED25519PrivateKeyAes256CTR() throws IOException {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest", false);
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_protected", "sshjtest", true);
@@ -254,8 +259,9 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes128cbc.pem", "sshjtest", true);
     }
 
-    @Test(expected = KeyDecryptionFailedException.class)
-    public void shouldFailOnIncorrectPassphraseAfterRetries() throws IOException {
+    @Test
+    public void shouldFailOnIncorrectPassphraseAfterRetries() {
+        assertThrows(KeyDecryptionFailedException.class, () -> {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keytypes/ed25519_aes256cbc.pem"), new PasswordFinder() {
             private int reqCounter = 0;
@@ -272,6 +278,8 @@ public class OpenSSHKeyFileTest {
             }
         });
         keyFile.getPrivate();
+
+        });
     }
 
     @Test
@@ -295,20 +303,20 @@ public class OpenSSHKeyFileTest {
         assertTrue(privateKey instanceof RSAPrivateCrtKey);
         final RSAPrivateCrtKey rsaPrivateCrtKey = (RSAPrivateCrtKey) privateKey;
 
-        assertEquals("Public Key Exponent not matched", rsaPublicKey.getPublicExponent(), rsaPrivateCrtKey.getPublicExponent());
-        assertEquals("Public Key Modulus not matched", rsaPublicKey.getModulus(), rsaPrivateCrtKey.getModulus());
+        assertEquals(rsaPublicKey.getPublicExponent(), rsaPrivateCrtKey.getPublicExponent(), "Public Key Exponent not matched");
+        assertEquals(rsaPublicKey.getModulus(), rsaPrivateCrtKey.getModulus(), "Public Key Modulus not matched");
 
         final BigInteger privateExponent = rsaPrivateCrtKey.getPrivateExponent();
 
         final BigInteger expectedPrimeExponentP = privateExponent.mod(rsaPrivateCrtKey.getPrimeP().subtract(BigInteger.ONE));
-        assertEquals("Prime Exponent P not matched", expectedPrimeExponentP, rsaPrivateCrtKey.getPrimeExponentP());
+        assertEquals(expectedPrimeExponentP, rsaPrivateCrtKey.getPrimeExponentP(), "Prime Exponent P not matched");
 
         final BigInteger expectedPrimeExponentQ = privateExponent.mod(rsaPrivateCrtKey.getPrimeQ().subtract(BigInteger.ONE));
-        assertEquals("Prime Exponent Q not matched", expectedPrimeExponentQ, rsaPrivateCrtKey.getPrimeExponentQ());
+        assertEquals(expectedPrimeExponentQ, rsaPrivateCrtKey.getPrimeExponentQ(), "Prime Exponent Q not matched");
 
 
         final BigInteger expectedCoefficient = rsaPrivateCrtKey.getPrimeQ().modInverse(rsaPrivateCrtKey.getPrimeP());
-        assertEquals("Prime CRT Coefficient not matched", expectedCoefficient, rsaPrivateCrtKey.getCrtCoefficient());
+        assertEquals(expectedCoefficient, rsaPrivateCrtKey.getCrtCoefficient(), "Prime CRT Coefficient not matched");
     }
 
     @Test
@@ -411,7 +419,9 @@ public class OpenSSHKeyFileTest {
     public void notTrimmedKeys() throws IOException {
         File initialPrivateKey = new File("src/test/resources/id_rsa");
         File initialPublicKey = new File("src/test/resources/id_rsa.pub");
-        File corruptedPrivateKey = new File(temporaryFolder.newFolder(), "id_rsa");
+        File folder = new File(temporaryFolder, "keys");
+        assertTrue(folder.mkdir());
+        File corruptedPrivateKey = new File(folder, "id_rsa");
         File corruptedPublicKey = new File(corruptedPrivateKey.getParent(), "id_rsa.pub");
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(initialPrivateKey)));
@@ -449,14 +459,7 @@ public class OpenSSHKeyFileTest {
         FileKeyProvider keyProvider = new OpenSSHKeyV1KeyFile();
         keyProvider.init(new StringReader(""));
 
-        assertThrows("This key is not in 'openssh-key-v1' format", IOException.class, keyProvider::getPrivate);
-    }
-
-    @Before
-    public void checkBCRegistration() {
-        if (!SecurityUtils.isBouncyCastleRegistered()) {
-            throw new AssertionError("bouncy castle needed");
-        }
+        assertThrows(IOException.class, keyProvider::getPrivate, "This key is not in 'openssh-key-v1' format");
     }
 
     private String readFile(String pathname)

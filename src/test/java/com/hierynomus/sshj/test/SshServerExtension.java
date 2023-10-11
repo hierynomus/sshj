@@ -25,8 +25,11 @@ import org.apache.sshd.scp.server.ScpCommandFactory;
 import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.shell.ProcessShellFactory;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
-import org.junit.rules.ExternalResource;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.ServerSocket;
@@ -36,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Can be used as a rule to ensure the server is teared down after each test.
  */
-public class SshFixture extends ExternalResource {
+public class SshServerExtension implements BeforeEachCallback, AfterEachCallback, Closeable {
     public static final String hostkey = "hostkey.pem";
     public static final String fingerprint = "ce:a7:c1:cf:17:3f:96:49:6a:53:1a:05:0b:ba:90:db";
     public static final String listCommand = OsUtils.isWin32() ? "cmd.exe /C dir" : "ls";
@@ -46,22 +49,28 @@ public class SshFixture extends ExternalResource {
     private final AtomicBoolean started = new AtomicBoolean(false);
     private boolean autoStart = true;
 
-    public SshFixture(boolean autoStart) {
+    public SshServerExtension(boolean autoStart) {
         this.autoStart = autoStart;
     }
 
-    public SshFixture() {
+    public SshServerExtension() {
     }
 
     @Override
-    protected void before() throws Throwable {
+    public void afterEach(ExtensionContext context) throws Exception {
+        close();
+    }
+
+    @Override
+    public void beforeEach(ExtensionContext context) throws Exception {
         if (autoStart) {
             start();
         }
     }
 
+
     @Override
-    protected void after() {
+    public void close() throws IOException {
         stopClient();
         stopServer();
     }

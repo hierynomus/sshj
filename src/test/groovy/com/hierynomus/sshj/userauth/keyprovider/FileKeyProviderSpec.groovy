@@ -15,18 +15,18 @@
  */
 package com.hierynomus.sshj.userauth.keyprovider
 
-import com.hierynomus.sshj.test.SshFixture
+import com.hierynomus.sshj.test.SshServerExtension
 import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator
-import org.junit.Rule
+import org.junit.jupiter.api.extension.RegisterExtension
 import spock.lang.Specification
 import spock.lang.Unroll
 
 class FileKeyProviderSpec extends Specification {
-  @Rule
-  SshFixture fixture = new SshFixture(false)
+  @RegisterExtension
+  SshServerExtension fixture = new SshServerExtension(false)
 
   def setup() {
     fixture.getServer().setPublickeyAuthenticator(AcceptAllPublickeyAuthenticator.INSTANCE)

@@ -15,17 +15,15 @@
  */
 package com.hierynomus.sshj.transport;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 import com.hierynomus.sshj.transport.cipher.ChachaPolyCiphers;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.transport.cipher.Cipher;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ChachaPolyCipherTest {
 

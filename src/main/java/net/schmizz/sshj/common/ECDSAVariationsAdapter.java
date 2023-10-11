@@ -57,9 +57,6 @@ class ECDSAVariationsAdapter {
 
     static PublicKey readPubKeyFromBuffer(Buffer<?> buf, String variation) throws GeneralSecurityException {
         String algorithm = BASE_ALGORITHM_NAME + variation;
-        if (!SecurityUtils.isBouncyCastleRegistered()) {
-            throw new GeneralSecurityException("BouncyCastle is required to read a key of type " + algorithm);
-        }
         try {
             // final String algo = buf.readString(); it has been already read
             final String curveName = buf.readString();

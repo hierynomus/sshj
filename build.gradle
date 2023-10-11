@@ -1,24 +1,26 @@
 plugins {
   id "java"
+  id "jvm-test-suite"
   id "groovy"
   id "jacoco"
   id "com.github.blindpirate.osgi" version '0.0.6'
   id "maven-publish"
   id "signing"
-  id 'pl.allegro.tech.build.axion-release' version '1.13.3'
-  id "com.bmuschko.docker-remote-api" version "7.1.0"
+  id 'pl.allegro.tech.build.axion-release' version '1.15.3'
   id "com.github.hierynomus.license" version "0.16.1"
-  id 'ru.vyarus.github-info' version '1.2.0'
-  id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
+  id "com.bmuschko.docker-remote-api" version "9.2.1"
+  id 'ru.vyarus.github-info' version '1.5.0'
+  id "io.github.gradle-nexus.publish-plugin" version "1.3.0"
 }
+
+group = "com.hierynomus"
+ext.moduleName = "${project.group}.${project.name}"
+
+defaultTasks "build"
 
 repositories {
   mavenCentral()
 }
-
-group = "com.hierynomus"
-defaultTasks ["build"]
-ext.moduleName = "${project.group}.${project.name}"
 
 scmVersion {
   tag {
@@ -33,30 +35,21 @@ scmVersion {
 
 project.version = scmVersion.version
 
+compileJava {
+  options.release = 8
+}
+
 configurations.implementation.transitive = false
 
-def bouncycastleVersion = "1.70"
-def sshdVersion = "2.8.0"
+def bouncycastleVersion = "1.75"
+def sshdVersion = "2.10.0"
 
 dependencies {
-  implementation "org.slf4j:slf4j-api:1.7.36"
-  implementation "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
-  implementation "org.bouncycastle:bcpkix-jdk15on:$bouncycastleVersion"
-  implementation "com.jcraft:jzlib:1.1.3"
+  implementation "org.slf4j:slf4j-api:2.0.7"
+  implementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
+  implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
   implementation "com.hierynomus:asn-one:0.6.0"
-
   implementation "net.i2p.crypto:eddsa:0.3.0"
-
-  testImplementation "junit:junit:4.13.2"
-  testImplementation 'org.spockframework:spock-core:1.3-groovy-2.4'
-  testImplementation "org.mockito:mockito-core:4.2.0"
-  testImplementation "org.apache.sshd:sshd-core:$sshdVersion"
-  testImplementation "org.apache.sshd:sshd-sftp:$sshdVersion"
-  testImplementation "org.apache.sshd:sshd-scp:$sshdVersion"
-  testImplementation "ch.qos.logback:logback-classic:1.2.11"
-  testImplementation 'org.glassfish.grizzly:grizzly-http-server:2.4.4'
-  testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
-  testImplementation 'org.testcontainers:testcontainers:1.16.2'
 }
 
 license {
@@ -66,11 +59,15 @@ license {
     java = 'SLASHSTAR_STYLE'
   }
   excludes([
-    '**/djb/Curve25519.java',
     '**/sshj/common/Base64.java',
     '**/com/hierynomus/sshj/userauth/keyprovider/bcrypt/*.java',
     '**/files/test_file_*.txt',
   ])
+}
+
+java {
+	withJavadocJar()
+	withSourcesJar()
 }
 
 if (!JavaVersion.current().isJava9Compatible()) {
@@ -84,9 +81,81 @@ if (JavaVersion.current().isJava8Compatible()) {
   }
 }
 
-compileJava {
-  options.compilerArgs.addAll(['--release', '7'])
+testing {
+  suites {
+    configureEach {
+      useJUnitJupiter()
+      dependencies {
+        implementation "org.slf4j:slf4j-api:2.0.7"
+        implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+        implementation "org.mockito:mockito-core:4.11.0"
+        implementation "org.assertj:assertj-core:3.24.2"
+        implementation "ru.vyarus:spock-junit5:1.2.0"
+        implementation "org.apache.sshd:sshd-core:$sshdVersion"
+        implementation "org.apache.sshd:sshd-sftp:$sshdVersion"
+        implementation "org.apache.sshd:sshd-scp:$sshdVersion"
+        implementation "ch.qos.logback:logback-classic:1.3.8"
+        implementation 'org.glassfish.grizzly:grizzly-http-server:3.0.1'
+      }
+
+      targets {
+        all {
+          testTask.configure {
+            testLogging {
+              showStandardStreams = false
+              exceptionFormat = 'full'
+            }
+            include "**/*Test.*"
+            include "**/*Spec.*"
+            afterSuite { descriptor, result ->
+              def indicator = "\u001B[32m✓\u001b[0m"
+              if (result.failedTestCount > 0) {
+                indicator = "\u001B[31m✘\u001b[0m"
+              }
+              logger.lifecycle("$indicator Test ${descriptor.name}; Executed: ${result.testCount}/\u001B[32m${result.successfulTestCount}\u001B[0m/\u001B[31m${result.failedTestCount}\u001B[0m")
+            }
+          }
+        }
+      }
+    }
+
+    test {
+      sources {
+        groovy {
+          srcDirs = ['src/test/groovy']
+        }
+      }
+    }
+
+    integrationTest(JvmTestSuite) {
+      dependencies {
+        implementation project()
+        implementation 'org.testcontainers:testcontainers:1.18.3'
+        implementation 'org.testcontainers:junit-jupiter:1.18.3'
+      }
+
+      sources {
+        java {
+          srcDirs = ['src/itest/java']
+        }
+
+        resources {
+          srcDirs = ['src/itest/resources']
+        }
+      }
+
+      targets {
+        all {
+          testTask.configure {
+            shouldRunAfter(test)
+          }
+        }
+      }
+    }
+  }
 }
+
+project.tasks.compileGroovy.onlyIf { false }
 
 task writeSshjVersionProperties {
   doLast {
@@ -121,12 +190,6 @@ jar {
   }
 }
 
-
-java {
-	withJavadocJar()
-	withSourcesJar()
-}
-
 sourcesJar {
   manifest {
     attributes(
@@ -139,53 +202,6 @@ sourcesJar {
     )
   }
 }
-
-configurations {
-  integrationTestImplementation.extendsFrom testImplementation
-  integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
-}
-
-sourceSets {
-  integrationTest {
-    groovy {
-      compileClasspath += sourceSets.main.output + sourceSets.test.output
-      runtimeClasspath += sourceSets.main.output + sourceSets.test.output
-      srcDir file('src/itest/groovy')
-    }
-    resources.srcDir file('src/itest/resources')
-  }
-}
-
-task integrationTest(type: Test) {
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-}
-
-tasks.withType(Test) {
-  testLogging {
-    exceptionFormat = 'full'
-  }
-  include "**/*Test.*"
-  include "**/*Spec.*"
-  if (!project.hasProperty("allTests")) {
-    useJUnit {
-      excludeCategories 'com.hierynomus.sshj.test.SlowTests'
-      excludeCategories 'com.hierynomus.sshj.test.KnownFailingTests'
-    }
-  }
-
-  afterSuite { descriptor, result ->
-    if (descriptor.className != null) {
-      def indicator = "\u001B[32m✓\u001b[0m"
-      if (result.failedTestCount > 0) {
-        indicator = "\u001B[31m✘\u001b[0m"
-      }
-      logger.lifecycle("$indicator Test ${descriptor.name}; Executed: ${result.testCount}/\u001B[32m${result.successfulTestCount}\u001B[0m/\u001B[31m${result.failedTestCount}\u001B[0m")
-    }
-  }
-}
-
-project.tasks.compileGroovy.onlyIf { false }
 
 github {
   user 'hierynomus'
@@ -272,17 +288,11 @@ nexusPublishing {
 
 jacocoTestReport {
     reports {
-        xml.enabled true
-        html.enabled true
+        xml.required = true
+        html.required = true
     }
 }
 
-task forkedUploadRelease(type: GradleBuild) {
-  buildFile = project.buildFile
-  tasks = ["clean", "publishToSonatype", "closeAndReleaseSonatypeStagingRepository"]
-}
-
 project.tasks.release.dependsOn([project.tasks.integrationTest, project.tasks.build])
-project.tasks.release.finalizedBy(project.tasks.forkedUploadRelease)
 project.tasks.jacocoTestReport.dependsOn(project.tasks.test)
 project.tasks.check.dependsOn(project.tasks.jacocoTestReport)

@@ -29,7 +29,6 @@ import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.keepalive.KeepAliveProvider;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.LoggerFactory;
-import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.transport.compression.NoneCompression;
 import net.schmizz.sshj.transport.kex.Curve25519SHA256;
@@ -43,7 +42,11 @@ import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import org.slf4j.Logger;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.ListIterator;
+import java.util.Properties;
 
 /**
  * A {@link net.schmizz.sshj.Config} that is initialized as follows. Items marked with an asterisk are added to the config only if
@@ -62,8 +65,6 @@ import java.util.*;
  * <li>{@link net.schmizz.sshj.ConfigImpl#setVersion Client version}: {@code "NET_3_0"}</li>
  * </ul>
  * <p/>
- * [1] It is worth noting that Sun's JRE does not have the unlimited cryptography extension enabled by default. This
- * prevents using ciphers with strength greater than 128.
  */
 public class DefaultConfig
         extends ConfigImpl {
@@ -73,11 +74,10 @@ public class DefaultConfig
     public DefaultConfig() {
         setLoggerFactory(LoggerFactory.DEFAULT);
         setVersion(readVersionFromProperties());
-        final boolean bouncyCastleRegistered = SecurityUtils.isBouncyCastleRegistered();
-        initKeyExchangeFactories(bouncyCastleRegistered);
+        initKeyExchangeFactories();
         initKeyAlgorithms();
-        initRandomFactory(bouncyCastleRegistered);
-        initFileKeyProviderFactories(bouncyCastleRegistered);
+        initRandomFactory();
+        initFileKeyProviderFactories();
         initCipherFactories();
         initCompressionFactories();
         initMACFactories();
@@ -102,35 +102,32 @@ public class DefaultConfig
         log = loggerFactory.getLogger(getClass());
     }
 
-    protected void initKeyExchangeFactories(boolean bouncyCastleRegistered) {
-        if (bouncyCastleRegistered) {
-            setKeyExchangeFactories(
-                    new Curve25519SHA256.Factory(),
-                    new Curve25519SHA256.FactoryLibSsh(),
-                    new DHGexSHA256.Factory(),
-                    new ECDHNistP.Factory521(),
-                    new ECDHNistP.Factory384(),
-                    new ECDHNistP.Factory256(),
-                    new DHGexSHA1.Factory(),
-                    DHGroups.Group1SHA1(),
-                    DHGroups.Group14SHA1(),
-                    DHGroups.Group14SHA256(),
-                    DHGroups.Group15SHA512(),
-                    DHGroups.Group16SHA512(),
-                    DHGroups.Group17SHA512(),
-                    DHGroups.Group18SHA512(),
-                    ExtendedDHGroups.Group14SHA256AtSSH(),
-                    ExtendedDHGroups.Group15SHA256(),
-                    ExtendedDHGroups.Group15SHA256AtSSH(),
-                    ExtendedDHGroups.Group15SHA384AtSSH(),
-                    ExtendedDHGroups.Group16SHA256(),
-                    ExtendedDHGroups.Group16SHA384AtSSH(),
-                    ExtendedDHGroups.Group16SHA512AtSSH(),
-                    ExtendedDHGroups.Group18SHA512AtSSH(),
-                    new ExtInfoClientFactory());
-        } else {
-            setKeyExchangeFactories(DHGroups.Group1SHA1(), new DHGexSHA1.Factory());
-        }
+    protected void initKeyExchangeFactories() {
+        setKeyExchangeFactories(
+                new Curve25519SHA256.Factory(),
+                new Curve25519SHA256.FactoryLibSsh(),
+                new DHGexSHA256.Factory(),
+                new ECDHNistP.Factory521(),
+                new ECDHNistP.Factory384(),
+                new ECDHNistP.Factory256(),
+                new DHGexSHA1.Factory(),
+                DHGroups.Group1SHA1(),
+                DHGroups.Group14SHA1(),
+                DHGroups.Group14SHA256(),
+                DHGroups.Group15SHA512(),
+                DHGroups.Group16SHA512(),
+                DHGroups.Group17SHA512(),
+                DHGroups.Group18SHA512(),
+                ExtendedDHGroups.Group14SHA256AtSSH(),
+                ExtendedDHGroups.Group15SHA256(),
+                ExtendedDHGroups.Group15SHA256AtSSH(),
+                ExtendedDHGroups.Group15SHA384AtSSH(),
+                ExtendedDHGroups.Group16SHA256(),
+                ExtendedDHGroups.Group16SHA384AtSSH(),
+                ExtendedDHGroups.Group16SHA512AtSSH(),
+                ExtendedDHGroups.Group18SHA512AtSSH(),
+                new ExtInfoClientFactory()
+        );
     }
 
     protected void initKeyAlgorithms() {
@@ -151,20 +148,18 @@ public class DefaultConfig
                 KeyAlgorithms.SSHDSA()));
     }
 
-    protected void initRandomFactory(boolean bouncyCastleRegistered) {
+    protected void initRandomFactory() {
         setRandomFactory(new SingletonRandomFactory(new JCERandom.Factory()));
     }
 
-    protected void initFileKeyProviderFactories(boolean bouncyCastleRegistered) {
-        if (bouncyCastleRegistered) {
-            setFileKeyProviderFactories(
-                    new OpenSSHKeyV1KeyFile.Factory(),
-                    new PKCS8KeyFile.Factory(),
-                    new OpenSSHKeyFile.Factory(),
-                    new PuTTYKeyFile.Factory());
-        }
+    protected void initFileKeyProviderFactories() {
+        setFileKeyProviderFactories(
+                new OpenSSHKeyV1KeyFile.Factory(),
+                new PKCS8KeyFile.Factory(),
+                new OpenSSHKeyFile.Factory(),
+                new PuTTYKeyFile.Factory()
+        );
     }
-
 
     protected void initCipherFactories() {
         List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
@@ -203,27 +198,22 @@ public class DefaultConfig
                 StreamCiphers.Arcfour256())
         );
 
-        boolean warn = false;
-        // Ref. https://issues.apache.org/jira/browse/SSHD-24
-        // "AES256 and AES192 requires unlimited cryptography extension"
-        for (Iterator<Factory.Named<Cipher>> i = avail.iterator(); i.hasNext(); ) {
-            final Factory.Named<Cipher> f = i.next();
+        final ListIterator<Factory.Named<Cipher>> factories = avail.listIterator();
+        while (factories.hasNext()) {
+            final Factory.Named<Cipher> factory = factories.next();
             try {
-                final Cipher c = f.create();
-                final byte[] key = new byte[c.getBlockSize()];
-                final byte[] iv = new byte[c.getIVSize()];
-                c.init(Cipher.Mode.Encrypt, key, iv);
+                final Cipher cipher = factory.create();
+                final byte[] key = new byte[cipher.getBlockSize()];
+                final byte[] iv = new byte[cipher.getIVSize()];
+                cipher.init(Cipher.Mode.Encrypt, key, iv);
             } catch (Exception e) {
-                warn = true;
-                log.warn(e.getCause().getMessage());
-                i.remove();
+                log.info("Cipher [{}] disabled: {}", factory.getName(), e.getCause().getMessage());
+                factories.remove();
             }
         }
-        if (warn)
-            log.warn("Disabling high-strength ciphers: cipher strengths apparently limited by JCE policy");
 
         setCipherFactories(avail);
-        log.debug("Available cipher factories: {}", avail);
+        log.debug("Available Ciphers {}", avail);
     }
 
     protected void initMACFactories() {

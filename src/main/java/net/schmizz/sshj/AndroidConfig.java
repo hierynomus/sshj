@@ -19,8 +19,6 @@ import com.hierynomus.sshj.key.KeyAlgorithm;
 import com.hierynomus.sshj.key.KeyAlgorithms;
 import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
-import net.schmizz.sshj.transport.random.JCERandom;
-import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 
 import java.util.Arrays;
 
@@ -34,7 +32,6 @@ public class AndroidConfig
         SecurityUtils.registerSecurityProvider("org.spongycastle.jce.provider.BouncyCastleProvider");
     }
 
-
     @Override
     protected void initKeyAlgorithms() {
         setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
@@ -43,10 +40,4 @@ public class AndroidConfig
                 KeyAlgorithms.SSHDSA()
         ));
     }
-
-    @Override
-    protected void initRandomFactory(boolean ignored) {
-        setRandomFactory(new SingletonRandomFactory(new JCERandom.Factory()));
-    }
-
 }

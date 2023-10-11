@@ -15,14 +15,14 @@
  */
 package com.hierynomus.sshj.sftp;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.sftp.*;
 import org.apache.sshd.common.util.io.IoUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.*;
 import java.security.SecureRandom;
@@ -33,15 +33,15 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class RemoteFileTest {
-    @Rule
-    public SshFixture fixture = new SshFixture();
+    @RegisterExtension
+    public SshServerExtension fixture = new SshServerExtension();
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @TempDir
+    public File temp;
 
     @Test
     public void shouldNotGoOutOfBoundsInReadAheadInputStream() throws IOException {
@@ -50,7 +50,7 @@ public class RemoteFileTest {
         SFTPEngine sftp = new SFTPEngine(ssh).init();
 
         RemoteFile rf;
-        File file = temp.newFile("SftpReadAheadTest.bin");
+        File file = new File(temp, "SftpReadAheadTest.bin");
         rf = sftp.open(file.getPath(), EnumSet.of(OpenMode.WRITE, OpenMode.CREAT));
         byte[] data = new byte[8192];
         new Random(53).nextBytes(data);
@@ -95,7 +95,7 @@ public class RemoteFileTest {
         SFTPEngine sftp = new SFTPEngine(ssh).init();
 
         RemoteFile rf;
-        File file = temp.newFile("SftpReadAheadLimitTest.bin");
+        File file = new File(temp, "SftpReadAheadLimitTest.bin");
         rf = sftp.open(file.getPath(), EnumSet.of(OpenMode.WRITE, OpenMode.CREAT));
         byte[] data = new byte[8192];
         new Random(53).nextBytes(data);
@@ -138,7 +138,7 @@ public class RemoteFileTest {
         SFTPEngine sftp = new SFTPEngine(ssh).init();
 
         RemoteFile rf;
-        File file = temp.newFile("SftpReadAheadLimitedTest.bin");
+        File file = new File(temp, "SftpReadAheadLimitedTest.bin");
         rf = sftp.open(file.getPath(), EnumSet.of(OpenMode.WRITE, OpenMode.CREAT));
         byte[] data = new byte[8192];
         new Random(53).nextBytes(data);
@@ -204,7 +204,7 @@ public class RemoteFileTest {
         final byte[] expected = new byte[fileSize];
         new SecureRandom(new byte[] { 31 }).nextBytes(expected);
 
-        File file = temp.newFile("shouldReadCorrectlyWhenWrappedInBufferedStream.bin");
+        File file = new File(temp, "shouldReadCorrectlyWhenWrappedInBufferedStream.bin");
         try (OutputStream fStream = new FileOutputStream(file)) {
             IoUtils.copy(new ByteArrayInputStream(expected), fStream);
         }
@@ -220,7 +220,7 @@ public class RemoteFileTest {
             actual = baos.toByteArray();
         }
 
-        assertEquals("The file should be fully read", expected.length, actual.length);
+        assertEquals(expected.length, actual.length, "The file should be fully read");
         assertThat("The file should be read correctly",
                 ByteArrayUtils.equals(expected, 0, actual, 0, expected.length));
     }

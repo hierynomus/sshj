@@ -28,7 +28,6 @@ import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder.Forward
 import net.schmizz.sshj.connection.channel.forwarded.X11Forwarder;
 import net.schmizz.sshj.connection.channel.forwarded.X11Forwarder.X11Channel;
 import net.schmizz.sshj.sftp.SFTPClient;
-import net.schmizz.sshj.sftp.SFTPEngine;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
@@ -733,7 +732,7 @@ public class SSHClient
             throws IOException {
         checkConnected();
         checkAuthenticated();
-        return new SFTPClient(new SFTPEngine(this).init());
+        return new SFTPClient(this);
     }
 
     /**
@@ -742,11 +741,11 @@ public class SSHClient
      *
      * @throws IOException if there is an error starting the {@code sftp} subsystem
      */
-    public SFTPClient newStatefulSFTPClient()
+    public StatefulSFTPClient newStatefulSFTPClient()
             throws IOException {
         checkConnected();
         checkAuthenticated();
-        return new StatefulSFTPClient(new SFTPEngine(this).init());
+        return new StatefulSFTPClient(this);
     }
 
     /**
@@ -810,12 +809,7 @@ public class SSHClient
             ThreadNameProvider.setThreadName(conn.getKeepAlive(), trans);
             keepAliveThread.start();
         }
-        if (trans.isKeyExchangeRequired()) {
-            log.debug("Initiating Key Exchange for new connection");
-            doKex();
-        } else {
-            log.debug("Key Exchange already completed for new connection");
-        }
+        doKex();
     }
 
     /**

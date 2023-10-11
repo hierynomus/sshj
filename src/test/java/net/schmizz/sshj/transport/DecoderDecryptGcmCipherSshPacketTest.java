@@ -23,13 +23,13 @@ import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.security.SecureRandom;
 import java.security.Security;
 
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -47,7 +47,7 @@ public class DecoderDecryptGcmCipherSshPacketTest {
 
     private Decoder decoder;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
         ClassLoader classLoader = DecoderDecryptGcmCipherSshPacketTest.class.getClassLoader();

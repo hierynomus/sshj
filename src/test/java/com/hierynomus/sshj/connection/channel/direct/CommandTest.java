@@ -15,13 +15,13 @@
  */
 package com.hierynomus.sshj.connection.channel.direct;
 
-import com.hierynomus.sshj.test.SshFixture;
+import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.SFTPClient;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,17 +30,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class CommandTest {
 
-    @Rule
-    public SshFixture fixture = new SshFixture();
+    @RegisterExtension
+    public SshServerExtension fixture = new SshServerExtension();
 
-    @Rule
-    public TemporaryFolder temp = new TemporaryFolder();
+    @TempDir
+    public File temp;
 
     @Test
     public void shouldExecuteBackgroundCommand() throws IOException {
         SSHClient sshClient = fixture.setupConnectedDefaultClient();
         sshClient.authPassword("jeroen", "jeroen");
-        File file = new File(temp.getRoot(), "testdir");
+        File file = new File(temp, "testdir");
         assertThat("File should not exist", !file.exists());
         // TODO figure out why this does not really execute in the background.
         Session.Command exec = sshClient.startSession().exec("mkdir " + file.getPath() + " &");
