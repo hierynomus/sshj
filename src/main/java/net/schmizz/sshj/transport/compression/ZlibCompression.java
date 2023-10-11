@@ -22,7 +22,6 @@ import java.util.zip.Inflater;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.transport.TransportException;
-import net.schmizz.sshj.transport.compression.Compression;
 
 public class ZlibCompression implements Compression {
 
@@ -71,10 +70,14 @@ public class ZlibCompression implements Compression {
     public void compress(Buffer buffer) {
         deflater.setInput(buffer.array(), buffer.rpos(), buffer.available());
         buffer.wpos(buffer.rpos());
-        do {
+        while (true) {
             final int len = deflater.deflate(tempBuf, 0, BUF_SIZE, Deflater.SYNC_FLUSH);
-            buffer.putRawBytes(tempBuf, 0, len);
-        } while (!deflater.needsInput());
+            if(len > 0) {
+                buffer.putRawBytes(tempBuf, 0, len);
+            } else {
+                return;
+            }
+        }
     }
 
     @Override
