@@ -41,6 +41,7 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -468,7 +469,8 @@ public class OpenSSHKnownHosts
         }
 
         private String getKeyString(PublicKey pk) {
-            return Base64.getEncoder().encodeToString(pk.getEncoded());
+            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(pk);
+            return Base64.getEncoder().encodeToString(Arrays.copyOfRange(buf.array(), buf.rpos(), buf.available()));
         }
 
         protected String getHostPart() {
