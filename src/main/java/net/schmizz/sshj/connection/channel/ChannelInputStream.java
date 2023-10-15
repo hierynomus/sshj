@@ -134,6 +134,24 @@ public final class ChannelInputStream
             buf.putRawBytes(data, offset, len);
             buf.notifyAll();
         }
+
+        // For slow readers, wait until the buffer has been completely read; this ensures that the buffer will be cleared
+        // in #read and the window position will be reset to 0. Otherwise, if the buffer is read slower than incoming data
+        // arrives, the buffer might continuing growing endlessly, finally resulting in an OOME.
+        // Note, that the buffer may still double its size once (provided that the maximum received chunk size is less
+        // than chan.getLocalMaxPacketSize).
+        for (; ; ) {
+            synchronized (buf) {
+                if (buf.wpos() >= chan.getLocalMaxPacketSize() && buf.available() > 0) {
+                    buf.notifyAll();
+                    Thread.yield();
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
         // Potential fix for #203 (window consumed below 0).
         // This seems to be a race condition if we receive more data, while we're already sending a SSH_MSG_CHANNEL_WINDOW_ADJUST
         // And the window has not expanded yet.
