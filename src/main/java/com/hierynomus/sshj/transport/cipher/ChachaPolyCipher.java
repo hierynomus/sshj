@@ -147,19 +147,15 @@ public class ChachaPolyCipher extends BaseCipher {
             if (!MessageDigest.isEqual(actualPolyTag, expectedPolyTag)) {
                 throw new SSHRuntimeException("MAC Error");
             }
+        }
 
-            try {
-                cipher.update(input, inputOffset, inputLen, input, inputOffset);
-            } catch (GeneralSecurityException e) {
-                throw new SSHRuntimeException("ChaCha20 decryption failed", e);
-            }
-        } else {
-            try {
-                cipher.update(input, inputOffset, inputLen, input, inputOffset);
-            } catch (GeneralSecurityException e) {
-                throw new SSHRuntimeException("ChaCha20 encryption failed", e);
-            }
+        try {
+            cipher.update(input, inputOffset, inputLen, input, inputOffset);
+        } catch (GeneralSecurityException e) {
+            throw new SSHRuntimeException("ChaCha20 cipher processing failed", e);
+        }
 
+        if (mode == Mode.Encrypt) {
             byte[] macInput = Arrays.copyOf(input, macInputLength);
             byte[] polyTag = mac.doFinal(macInput);
             System.arraycopy(polyTag, 0, input, macInputLength, POLY_TAG_LENGTH);
