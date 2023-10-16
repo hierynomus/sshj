@@ -266,6 +266,11 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldLoadProtectedEd25519PrivateKeyChaCha20Poly1305() throws IOException {
+        checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_chacha20-poly1305", "sshjtest", false);
+    }
+
+    @Test
     public void shouldFailOnIncorrectPassphraseAfterRetries() {
         assertThrows(KeyDecryptionFailedException.class, () -> {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
