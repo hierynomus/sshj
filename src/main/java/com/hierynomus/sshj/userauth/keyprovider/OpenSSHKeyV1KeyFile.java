@@ -18,6 +18,7 @@ package com.hierynomus.sshj.userauth.keyprovider;
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
+import com.hierynomus.sshj.transport.cipher.ChachaPolyCiphers;
 import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
@@ -83,6 +84,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         SUPPORTED_CIPHERS.put(BlockCiphers.AES256CTR().getName(), BlockCiphers.AES256CTR());
         SUPPORTED_CIPHERS.put(GcmCiphers.AES256GCM().getName(), GcmCiphers.AES256GCM());
         SUPPORTED_CIPHERS.put(GcmCiphers.AES128GCM().getName(), GcmCiphers.AES128GCM());
+        SUPPORTED_CIPHERS.put(ChachaPolyCiphers.CHACHA_POLY_OPENSSH().getName(), ChachaPolyCiphers.CHACHA_POLY_OPENSSH());
     }
 
     private PublicKey pubKey;
@@ -192,7 +194,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         if (bufferRemaining == 0) {
             encryptedPrivateKey = privateKeyEncoded;
         } else {
-            // Read Authentication Tag for AES-GCM
+            // Read Authentication Tag for AES-GCM or ChaCha20-Poly1305
             final byte[] authenticationTag = new byte[bufferRemaining];
             inputBuffer.readRawBytes(authenticationTag);
 
@@ -314,7 +316,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         int checkInt1 = keyBuffer.readUInt32AsInt(); // uint32 checkint1
         int checkInt2 = keyBuffer.readUInt32AsInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
-            throw new KeyDecryptionFailedException();
+            throw new KeyDecryptionFailedException(new EncryptionException("OpenSSH Private Key integer comparison failed"));
         }
         // The private key section contains both the public key and the private key
         String keyType = keyBuffer.readString(); // string keytype
