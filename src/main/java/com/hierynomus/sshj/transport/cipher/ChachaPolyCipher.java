@@ -155,7 +155,7 @@ public class ChachaPolyCipher extends BaseCipher {
             }
         } else {
             try {
-                cipher.update(input, AAD_LENGTH, inputLen, input, AAD_LENGTH);
+                cipher.update(input, inputOffset, inputLen, input, inputOffset);
             } catch (GeneralSecurityException e) {
                 throw new SSHRuntimeException("ChaCha20 encryption failed", e);
             }
