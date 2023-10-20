@@ -229,15 +229,16 @@ public class RemoteFileTest {
     public void shouldOverwriteFileWhenRequested() throws IOException {
         // create source file
         final byte[] sourceBytes = generateBytes(32);
-        File sourceFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-source.bin", sourceBytes);
+        File sourceFile = newTempFile("shouldOverwriteFileWhenRequested-source.bin", sourceBytes);
 
         // create target file
         final byte[] targetBytes = generateBytes(32);
-        File targetFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-target.bin", targetBytes);
+        File targetFile = newTempFile("shouldOverwriteFileWhenRequested-target.bin", targetBytes);
 
         // rename with overwrite
         Set<RenameFlags> flags = EnumSet.of(RenameFlags.OVERWRITE);
-        sftpRenameFile(sourceFile, targetFile, flags);
+        SFTPEngine sftp = sftpInit();
+        sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
 
         // check if rename was successful
         assertThat("The source file should not exist anymore", !sourceFile.exists());
@@ -249,17 +250,18 @@ public class RemoteFileTest {
     public void shouldNotOverwriteFileWhenNotRequested() throws IOException {
         // create source file
         final byte[] sourceBytes = generateBytes(32);
-        File sourceFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-source.bin", sourceBytes);
+        File sourceFile = newTempFile("shouldNotOverwriteFileWhenNotRequested-source.bin", sourceBytes);
 
         // create target file
         final byte[] targetBytes = generateBytes(32);
-        File targetFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-target.bin", targetBytes);
+        File targetFile = newTempFile("shouldNotOverwriteFileWhenNotRequested-target.bin", targetBytes);
 
         // rename without overwrite -> should fail
         Boolean exceptionThrown = false;
+        Set<RenameFlags> flags = new HashSet<>();
+        SFTPEngine sftp = sftpInit();
         try {
-            Set<RenameFlags> flags = new HashSet<>();
-            sftpRenameFile(sourceFile, targetFile, flags);
+            sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
         }
         catch (net.schmizz.sshj.sftp.SFTPException e) {
             exceptionThrown = true;
@@ -273,23 +275,112 @@ public class RemoteFileTest {
     }
 
     @Test
-    public void shouldUseAtomicRenameWhenRequested() throws IOException {
+    public void shouldUseAtomicRenameWhenRequestedWithOverwriteOnInsufficientProtocolVersion() throws IOException {
         // create source file
         final byte[] sourceBytes = generateBytes(32);
-        File sourceFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-source.bin", sourceBytes);
+        File sourceFile = newTempFile("shouldUseAtomicRenameWhenRequestedWithOverwriteOnInsufficientProtocolVersion-source.bin", sourceBytes);
 
         // create target file
         final byte[] targetBytes = generateBytes(32);
-        File targetFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-target.bin", targetBytes);
+        File targetFile = newTempFile("shouldUseAtomicRenameWhenRequestedWithOverwriteOnInsufficientProtocolVersion-target.bin", targetBytes);
 
         // atomic rename with overwrite -> should work
         Set<RenameFlags> flags = EnumSet.of(RenameFlags.OVERWRITE, RenameFlags.ATOMIC);
-        sftpRenameFile(sourceFile, targetFile, flags);
+        int version = Math.min(SFTPEngine.MAX_SUPPORTED_VERSION, 4); // choose a supported version smaller than 5
+        SFTPEngine sftp = sftpInit(version);
+        sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
 
+        assertThat("The connection should use the requested protocol version", sftp.getOperativeProtocolVersion() == version);
         assertThat("The source file should not exist anymore", !sourceFile.exists());
         assertThat("The contents of the target file should be equal to the contents previously written " +
                         "to the source file", fileContentEquals(targetFile, sourceBytes));
+    }
 
+
+    @Test
+    public void shouldIgnoreAtomicFlagWhenRequestedWithNativeOnInsufficientProtocolVersion() throws IOException {
+        // create source file
+        final byte[] sourceBytes = generateBytes(32);
+        File sourceFile = newTempFile("shouldIgnoreAtomicFlagWhenRequestedWithNativeOnInsufficientProtocolVersion-source.bin", sourceBytes);
+
+        // create target file
+        final byte[] targetBytes = generateBytes(32);
+        File targetFile = newTempFile("shouldIgnoreAtomicFlagWhenRequestedWithNativeOnInsufficientProtocolVersion-target.bin", targetBytes);
+
+        // atomic flag should be ignored with native
+        // -> should fail because target exists and overwrite behaviour is not requested
+        Boolean exceptionThrown = false;
+        Set<RenameFlags> flags = EnumSet.of(RenameFlags.NATIVE, RenameFlags.ATOMIC);
+        int version = Math.min(SFTPEngine.MAX_SUPPORTED_VERSION, 4); // choose a supported version smaller than 5
+        SFTPEngine sftp = sftpInit(version);
+        try {
+            sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+        }
+        catch (net.schmizz.sshj.sftp.SFTPException e) {
+            exceptionThrown = true;
+        }
+
+        assertThat("The connection should use the requested protocol version", sftp.getOperativeProtocolVersion() == version);
+        assertThat("The source file should still exist", sourceFile.exists());
+        assertThat("The contents of the target file should be equal to the contents previously written to it",
+                fileContentEquals(targetFile, targetBytes));
+        assertThat("An appropriate exception should have been thrown", exceptionThrown);
+
+    }
+
+
+    @Test
+    public void shouldFailAtomicRenameWithoutOverwriteOnInsufficientProtocolVersion() throws IOException {
+        // create source file
+        final byte[] sourceBytes = generateBytes(32);
+        File sourceFile = newTempFile("shouldFailAtomicRenameWithoutOverwriteOnInsufficientProtocolVersion-source.bin", sourceBytes);
+
+        // create target file
+        File targetFile = new File(temp, "shouldFailAtomicRenameWithoutOverwriteOnInsufficientProtocolVersion-target.bin");
+
+        // atomic rename without overwrite -> should fail
+        Boolean exceptionThrown = false;
+        Set<RenameFlags> flags = EnumSet.of(RenameFlags.ATOMIC);
+        int version = Math.min(SFTPEngine.MAX_SUPPORTED_VERSION, 4); // choose a supported version smaller than 5
+        SFTPEngine sftp = sftpInit(version);
+        try {
+            sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+        }
+        catch (net.schmizz.sshj.sftp.SFTPException e) {
+            exceptionThrown = true;
+        }
+
+        // check if rename failed as it should (for version < 5)
+        assertThat("The connection should use the requested protocol version", sftp.getOperativeProtocolVersion() == version);
+        assertThat("The source file should still exist", sourceFile.exists());
+        assertThat("The target file should not exist", !targetFile.exists());
+        assertThat("An appropriate exception should have been thrown", exceptionThrown);
+    }
+
+    @Test
+    public void shouldDoAtomicRenameOnSufficientProtocolVersion() throws IOException {
+        // This test will be relevant as soon as sshj supports SFTP protocol version >= 5
+        if (SFTPEngine.MAX_SUPPORTED_VERSION >= 5) {
+            // create source file
+            final byte[] sourceBytes = generateBytes(32);
+            File sourceFile = newTempFile("shouldDoAtomicRenameOnSufficientProtocolVersion-source.bin", sourceBytes);
+
+            // create target file
+            File targetFile = new File(temp, "shouldDoAtomicRenameOnSufficientProtocolVersion-target.bin");
+
+            // atomic rename without overwrite -> should work on version >= 5
+            Set<RenameFlags> flags = EnumSet.of(RenameFlags.ATOMIC);
+            SFTPEngine sftp = sftpInit();
+            sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+
+            // check if rename worked as it should (for version >= 5)
+            assertThat("The connection should use the requested protocol version", sftp.getOperativeProtocolVersion() >= 5);
+            assertThat("The source file should not exist anymore", !sourceFile.exists());
+            assertThat("The target file should exist", targetFile.exists());
+        }
+        else {
+            // Ignored - cannot test because client does not support protocol version >= 5
+        }
     }
 
     private byte[] generateBytes(Integer size) {
@@ -314,10 +405,14 @@ public class RemoteFileTest {
                 testBytes.length);
     }
 
-    private void sftpRenameFile(File sourceFile, File targetFile, Set<RenameFlags> flags) throws IOException {
+    private SFTPEngine sftpInit() throws IOException {
+        return sftpInit(SFTPEngine.MAX_SUPPORTED_VERSION);
+    }
+
+    private SFTPEngine sftpInit(int version) throws IOException {
         SSHClient ssh = fixture.setupConnectedDefaultClient();
         ssh.authPassword("test", "test");
-        SFTPEngine sftp = new SFTPEngine(ssh).init();
-        sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+        SFTPEngine sftp = new SFTPEngine(ssh).init(version);
+        return sftp;
     }
 }
