@@ -81,7 +81,18 @@ public class SFTPEngine
 
     public SFTPEngine init()
             throws IOException {
-        transmit(new SFTPPacket<Request>(PacketType.INIT).putUInt32(MAX_SUPPORTED_VERSION));
+        return init(MAX_SUPPORTED_VERSION);
+    }
+
+    public SFTPEngine init(int requestedVersion)
+            throws IOException {
+        if (requestedVersion > MAX_SUPPORTED_VERSION)
+            throw new SFTPException("You requested an unsupported protocol version: " + requestedVersion + " (requested) > " + MAX_SUPPORTED_VERSION + " (supported)");
+
+        if (requestedVersion < MAX_SUPPORTED_VERSION)
+            log.debug("Client version {} is smaller than MAX_SUPPORTED_VERSION {}", requestedVersion, MAX_SUPPORTED_VERSION);
+
+        transmit(new SFTPPacket<Request>(PacketType.INIT).putUInt32(requestedVersion));
 
         final SFTPPacket<Response> response = reader.readPacket();
 
@@ -91,7 +102,7 @@ public class SFTPEngine
 
         operativeVersion = response.readUInt32AsInt();
         log.debug("Server version {}", operativeVersion);
-        if (MAX_SUPPORTED_VERSION < operativeVersion)
+        if (requestedVersion < operativeVersion)
             throw new SFTPException("Server reported incompatible protocol version: " + operativeVersion);
 
         while (response.available() > 0)
