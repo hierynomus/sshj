@@ -227,69 +227,39 @@ public class RemoteFileTest {
 
     @Test
     public void shouldOverwriteFileWhenRequested() throws IOException {
-        SSHClient ssh = fixture.setupConnectedDefaultClient();
-        ssh.authPassword("test", "test");
-        SFTPEngine sftp = new SFTPEngine(ssh).init();
-
         // create source file
-        final byte[] sourceBytes = new byte[32];
-        new SecureRandom(new byte[]{31}).nextBytes(sourceBytes);
-
-        File sourceFile = temp.newFile("shouldOverwriteFileWhenRequested-source.bin");
-        try (OutputStream fStream = new FileOutputStream(sourceFile)) {
-            IoUtils.copy(new ByteArrayInputStream(sourceBytes), fStream);
-        }
+        final byte[] sourceBytes = generateBytes(32);
+        File sourceFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-source.bin", sourceBytes);
 
         // create target file
-        final byte[] targetBytes = new byte[32];
-        new SecureRandom(new byte[]{31}).nextBytes(targetBytes);
-
-        File targetFile = temp.newFile("shouldOverwriteFileWhenRequested-target.bin");
-        try (OutputStream fStream = new FileOutputStream(targetFile)) {
-            IoUtils.copy(new ByteArrayInputStream(targetBytes), fStream);
-        }
+        final byte[] targetBytes = generateBytes(32);
+        File targetFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-target.bin", targetBytes);
 
         // rename with overwrite
         Set<RenameFlags> flags = EnumSet.of(RenameFlags.OVERWRITE);
-        sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+        sftpRenameFile(sourceFile, targetFile, flags);
 
         // check if rename was successful
         assertThat("The source file should not exist anymore", !sourceFile.exists());
         assertThat("The contents of the target file should be equal to the contents previously written " +
-                        "to the source file",
-                ByteArrayUtils.equals(IoUtils.toByteArray(new FileInputStream(targetFile)), 0,
-                        sourceBytes, 0, sourceBytes.length));
+                        "to the source file", fileContentEquals(targetFile, sourceBytes));
     }
 
     @Test
     public void shouldNotOverwriteFileWhenNotRequested() throws IOException {
-        SSHClient ssh = fixture.setupConnectedDefaultClient();
-        ssh.authPassword("test", "test");
-        SFTPEngine sftp = new SFTPEngine(ssh).init();
-
         // create source file
-        final byte[] sourceBytes = new byte[32];
-        new SecureRandom(new byte[]{31}).nextBytes(sourceBytes);
-
-        File sourceFile = temp.newFile("shouldOverwriteFileWhenRequested-source.bin");
-        try (OutputStream fStream = new FileOutputStream(sourceFile)) {
-            IoUtils.copy(new ByteArrayInputStream(sourceBytes), fStream);
-        }
+        final byte[] sourceBytes = generateBytes(32);
+        File sourceFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-source.bin", sourceBytes);
 
         // create target file
-        final byte[] targetBytes = new byte[32];
-        new SecureRandom(new byte[]{31}).nextBytes(targetBytes);
-
-        File targetFile = temp.newFile("shouldOverwriteFileWhenRequested-target.bin");
-        try (OutputStream fStream = new FileOutputStream(targetFile)) {
-            IoUtils.copy(new ByteArrayInputStream(targetBytes), fStream);
-        }
+        final byte[] targetBytes = generateBytes(32);
+        File targetFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-target.bin", targetBytes);
 
         // rename without overwrite -> should fail
         Boolean exceptionThrown = false;
         try {
             Set<RenameFlags> flags = new HashSet<>();
-            sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
+            sftpRenameFile(sourceFile, targetFile, flags);
         }
         catch (net.schmizz.sshj.sftp.SFTPException e) {
             exceptionThrown = true;
@@ -298,8 +268,36 @@ public class RemoteFileTest {
         // check if rename failed as it should
         assertThat("The source file should still exist", sourceFile.exists());
         assertThat("The contents of the target file should be equal to the contents previously written to it",
-                ByteArrayUtils.equals(IoUtils.toByteArray(new FileInputStream(targetFile)), 0,
-                        targetBytes, 0, targetBytes.length));
+                fileContentEquals(targetFile, targetBytes));
         assertThat("An appropriate exception should have been thrown", exceptionThrown);
+    }
+
+    private byte[] generateBytes(Integer size) {
+        byte[] randomBytes = new byte[size];
+        Random rnd = new Random();
+        rnd.nextBytes(randomBytes);
+        return randomBytes;
+    }
+
+    private File newTempFile(String name, byte[] content) throws IOException {
+        File tmpFile = new File(temp, name);
+        try (OutputStream fStream = new FileOutputStream(tmpFile)) {
+            IoUtils.copy(new ByteArrayInputStream(content), fStream);
+        }
+        return tmpFile;
+    }
+
+    private boolean fileContentEquals(File testFile, byte[] testBytes) throws IOException {
+        return ByteArrayUtils.equals(
+                IoUtils.toByteArray(new FileInputStream(testFile)), 0,
+                testBytes, 0,
+                testBytes.length);
+    }
+
+    private void sftpRenameFile(File sourceFile, File targetFile, Set<RenameFlags> flags) throws IOException {
+        SSHClient ssh = fixture.setupConnectedDefaultClient();
+        ssh.authPassword("test", "test");
+        SFTPEngine sftp = new SFTPEngine(ssh).init();
+        sftp.rename(sourceFile.getPath(), targetFile.getPath(), flags);
     }
 }
