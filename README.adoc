@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.36.0
+:sshj_version: 0.37.0
 :source-highlighter: pygments
 
 image:https://github.com/hierynomus/sshj/actions/workflows/gradle.yml/badge.svg[link="https://github.com/hierynomus/sshj/actions/workflows/gradle.yml"]
@@ -108,6 +108,10 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.37.0 (2023-10-11)::
+* Merged https://github.com/hierynomus/sshj/pull/899[#899]: Add support for AES-GCM OpenSSH private keys
+* Merged https://github.com/hierynomus/sshj/pull/901[#901]: Fix ZLib compression bug
+* Merged https://github.com/hierynomus/sshj/pull/898[#898]: Improved malformed file handling for OpenSSH private keys
 SSHJ 0.36.0 (2023-09-04)::
 * Rewrote Integration tests to JUnit5
 * Merged https://github.com/hierynomus/sshj/pull/851[#851]: Fix race condition in key exchange causing intermittent SSH_MSG_UNIMPLEMENTED

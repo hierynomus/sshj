@@ -71,6 +71,28 @@ public class ChachaPolyCipherTest {
     }
 
     @Test
+    public void testEncryptDecryptWithoutAAD() {
+        final Cipher encryptionCipher = FACTORY.create();
+        final byte[] key = new byte[encryptionCipher.getBlockSize()];
+        Arrays.fill(key, (byte) 1);
+        encryptionCipher.init(Cipher.Mode.Encrypt, key, new byte[0]);
+
+        final byte[] plaintextBytes = PLAINTEXT.getBytes(StandardCharsets.UTF_8);
+        final byte[] message = new byte[plaintextBytes.length + POLY_TAG_LENGTH];
+        System.arraycopy(plaintextBytes, 0, message, 0, plaintextBytes.length);
+
+        encryptionCipher.update(message, 0, plaintextBytes.length);
+
+        final Cipher decryptionCipher = FACTORY.create();
+        decryptionCipher.init(Cipher.Mode.Decrypt, key, new byte[0]);
+        decryptionCipher.update(message, 0, plaintextBytes.length);
+
+        final byte[] decrypted = Arrays.copyOfRange(message, 0, plaintextBytes.length);
+        final String decoded = new String(decrypted, StandardCharsets.UTF_8);
+        assertEquals(PLAINTEXT, decoded);
+    }
+
+    @Test
     public void testCheckOnUpdateParameters() {
         Cipher cipher = FACTORY.create();
         try {
