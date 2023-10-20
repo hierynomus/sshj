@@ -272,6 +272,26 @@ public class RemoteFileTest {
         assertThat("An appropriate exception should have been thrown", exceptionThrown);
     }
 
+    @Test
+    public void shouldUseAtomicRenameWhenRequested() throws IOException {
+        // create source file
+        final byte[] sourceBytes = generateBytes(32);
+        File sourceFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-source.bin", sourceBytes);
+
+        // create target file
+        final byte[] targetBytes = generateBytes(32);
+        File targetFile = newTempFile("shouldAtomicOverwriteFileWhenRequested-target.bin", targetBytes);
+
+        // atomic rename with overwrite -> should work
+        Set<RenameFlags> flags = EnumSet.of(RenameFlags.OVERWRITE, RenameFlags.ATOMIC);
+        sftpRenameFile(sourceFile, targetFile, flags);
+
+        assertThat("The source file should not exist anymore", !sourceFile.exists());
+        assertThat("The contents of the target file should be equal to the contents previously written " +
+                        "to the source file", fileContentEquals(targetFile, sourceBytes));
+
+    }
+
     private byte[] generateBytes(Integer size) {
         byte[] randomBytes = new byte[size];
         Random rnd = new Random();
