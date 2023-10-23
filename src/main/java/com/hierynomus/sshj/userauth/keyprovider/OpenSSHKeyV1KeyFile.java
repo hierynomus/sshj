@@ -83,6 +83,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     private PublicKey pubKey;
 
+    @Override
+    public PublicKey getPublic()
+            throws IOException {
+        return pubKey != null ? pubKey : super.getPublic();
+    }
+
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
 
