@@ -81,7 +81,23 @@ public class SFTPEngine
 
     public SFTPEngine init()
             throws IOException {
-        transmit(new SFTPPacket<Request>(PacketType.INIT).putUInt32(MAX_SUPPORTED_VERSION));
+        return init(MAX_SUPPORTED_VERSION);
+    }
+
+    /**
+     * Introduced for internal use by testcases.
+     * @param requestedVersion
+     * @throws IOException
+     */
+    protected SFTPEngine init(int requestedVersion)
+            throws IOException {
+        if (requestedVersion > MAX_SUPPORTED_VERSION)
+            throw new SFTPException("You requested an unsupported protocol version: " + requestedVersion + " (requested) > " + MAX_SUPPORTED_VERSION + " (supported)");
+
+        if (requestedVersion < MAX_SUPPORTED_VERSION)
+            log.debug("Client version {} is smaller than MAX_SUPPORTED_VERSION {}", requestedVersion, MAX_SUPPORTED_VERSION);
+
+        transmit(new SFTPPacket<Request>(PacketType.INIT).putUInt32(requestedVersion));
 
         final SFTPPacket<Response> response = reader.readPacket();
 
@@ -91,7 +107,7 @@ public class SFTPEngine
 
         operativeVersion = response.readUInt32AsInt();
         log.debug("Server version {}", operativeVersion);
-        if (MAX_SUPPORTED_VERSION < operativeVersion)
+        if (requestedVersion < operativeVersion)
             throw new SFTPException("Server reported incompatible protocol version: " + operativeVersion);
 
         while (response.available() > 0)
@@ -234,16 +250,75 @@ public class SFTPEngine
 
     public void rename(String oldPath, String newPath, Set<RenameFlags> flags)
             throws IOException {
-        if (operativeVersion < 1)
+        if (operativeVersion < 1) {
             throw new SFTPException("RENAME is not supported in SFTPv" + operativeVersion);
+        }
 
-        final Request request = newRequest(PacketType.RENAME).putString(oldPath, sub.getRemoteCharset()).putString(newPath, sub.getRemoteCharset());
-        // SFTP Version 5 introduced rename flags according to Section 6.5 of the specification
-        if (operativeVersion >= 5) {
-            long renameFlagMask = 0L;
-            for (RenameFlags flag : flags) {
-                renameFlagMask = renameFlagMask | flag.longValue();
+        // request variables to be determined
+        PacketType type = PacketType.RENAME; // Default
+        long renameFlagMask = 0L;
+        String serverExtension = null;
+
+        if (!flags.isEmpty()) {
+            // SFTP Version 5 introduced rename flags according to Section 6.5 of the specification
+            if (operativeVersion >= 5) {
+                for (RenameFlags flag : flags) {
+                    renameFlagMask = renameFlagMask | flag.longValue();
+                }
             }
+            // Try to find a fallback solution if flags are not supported by the server.
+
+            // "posix-rename@openssh.com" provides ATOMIC and OVERWRITE behaviour.
+            //  From the SFTP-spec, Section 6.5:
+            // "If SSH_FXP_RENAME_OVERWRITE is specified, the server MAY perform an atomic rename even if it is
+            // not requested."
+            // So, if overwrite is allowed we can always use the posix-rename as a fallback.
+            else if (flags.contains(RenameFlags.OVERWRITE) &&
+                    supportsServerExtension("posix-rename","openssh.com")) {
+
+                type = PacketType.EXTENDED;
+                serverExtension = "posix-rename@openssh.com";
+            }
+
+            // Because the OVERWRITE flag changes the behaviour in a possibly unintended way, it has to be
+            // explicitly requested for the above fallback to be applicable.
+            // Tell this to the developer if ATOMIC is requested without OVERWRITE.
+            else if (flags.contains(RenameFlags.ATOMIC) &&
+                    !flags.contains(RenameFlags.OVERWRITE) &&
+                    !flags.contains(RenameFlags.NATIVE) && // see next case below
+                    supportsServerExtension("posix-rename","openssh.com")) {
+                throw new SFTPException("RENAME-FLAGS are not supported in SFTPv" + operativeVersion + " but " +
+                            "the \"posix-rename@openssh.com\" extension could be used as fallback if OVERWRITE " +
+                            "behaviour is acceptable (needs to be activated via RenameFlags.OVERWRITE).");
+            }
+
+            // From the SFTP-spec, Section 6.5:
+            // "If flags includes SSH_FXP_RENAME_NATIVE, the server is free to do the rename operation in whatever
+            // fashion it deems appropriate. Other flag values are considered hints as to desired behavior, but not
+            // requirements."
+            else if (flags.contains(RenameFlags.NATIVE)) {
+                log.debug("Flags are not supported but NATIVE-flag allows to ignore other requested flags: " +
+                        flags.toString());
+            }
+
+            // finally: let the user know that the server does not support what was asked
+            else {
+                throw new SFTPException("RENAME-FLAGS are not supported in SFTPv" + operativeVersion + " and no " +
+                        "supported server extension could be found to achieve a similar result.");
+            }
+        }
+
+        // build and send request
+        final Request request = newRequest(type);
+
+        if (serverExtension != null) {
+            request.putString(serverExtension);
+        }
+
+        request.putString(oldPath, sub.getRemoteCharset())
+                .putString(newPath, sub.getRemoteCharset());
+
+        if (renameFlagMask != 0L) {
             request.putUInt32(renameFlagMask);
         }
 
