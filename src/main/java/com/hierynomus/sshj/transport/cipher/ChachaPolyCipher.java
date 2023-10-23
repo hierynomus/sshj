@@ -16,9 +16,8 @@
 package com.hierynomus.sshj.transport.cipher;
 
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 
+import java.security.MessageDigest;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 import javax.crypto.spec.IvParameterSpec;
@@ -82,8 +81,7 @@ public class ChachaPolyCipher extends BaseCipher {
     }
 
     @Override
-    protected void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv)
-            throws InvalidKeyException, InvalidAlgorithmParameterException {
+    protected void initCipher(javax.crypto.Cipher cipher, Mode mode, byte[] key, byte[] iv) {
         this.mode = mode;
 
         cipherKey = getKeySpec(Arrays.copyOfRange(key, 0, CHACHA_KEY_SIZE));
@@ -127,28 +125,34 @@ public class ChachaPolyCipher extends BaseCipher {
 
     @Override
     public void update(byte[] input, int inputOffset, int inputLen) {
-        if (inputOffset != AAD_LENGTH) {
+        if (inputOffset != 0 && inputOffset != AAD_LENGTH) {
             throw new IllegalArgumentException("updateAAD called with inputOffset " + inputOffset);
         }
 
-        final int macInputLength = AAD_LENGTH + inputLen;
-
+        final int macInputLength = inputOffset + inputLen;
         if (mode == Mode.Decrypt) {
-            byte[] macInput = new byte[macInputLength];
-            System.arraycopy(encryptedAad, 0, macInput, 0, AAD_LENGTH);
-            System.arraycopy(input, AAD_LENGTH, macInput, AAD_LENGTH, inputLen);
+            final byte[] macInput = new byte[macInputLength];
 
-            byte[] expectedPolyTag = mac.doFinal(macInput);
-            byte[] actualPolyTag = Arrays.copyOfRange(input, macInputLength, macInputLength + POLY_TAG_LENGTH);
-            if (!Arrays.equals(actualPolyTag, expectedPolyTag)) {
+            if (inputOffset == 0) {
+                // Handle decryption without AAD
+                System.arraycopy(input, 0, macInput, 0, inputLen);
+            } else {
+                // Handle decryption with previous AAD from updateAAD()
+                System.arraycopy(encryptedAad, 0, macInput, 0, AAD_LENGTH);
+                System.arraycopy(input, AAD_LENGTH, macInput, AAD_LENGTH, inputLen);
+            }
+
+            final byte[] expectedPolyTag = mac.doFinal(macInput);
+            final byte[] actualPolyTag = Arrays.copyOfRange(input, macInputLength, macInputLength + POLY_TAG_LENGTH);
+            if (!MessageDigest.isEqual(actualPolyTag, expectedPolyTag)) {
                 throw new SSHRuntimeException("MAC Error");
             }
         }
 
         try {
-            cipher.update(input, AAD_LENGTH, inputLen, input, AAD_LENGTH);
+            cipher.update(input, inputOffset, inputLen, input, inputOffset);
         } catch (GeneralSecurityException e) {
-            throw new SSHRuntimeException("Error updating data through cipher", e);
+            throw new SSHRuntimeException("ChaCha20 cipher processing failed", e);
         }
 
         if (mode == Mode.Encrypt) {
