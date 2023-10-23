@@ -30,6 +30,10 @@ public interface FileKeyProvider
 
     void init(Reader location);
 
+    void init(Reader privateKey, Reader publicKey);
+
+    void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf);
+
     void init(Reader location, PasswordFinder pwdf);
 
     void init(String privateKey, String publicKey);

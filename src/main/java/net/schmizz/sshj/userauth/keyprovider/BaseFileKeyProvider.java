@@ -34,38 +34,47 @@ public abstract class BaseFileKeyProvider implements FileKeyProvider {
 
     @Override
     public void init(Reader location) {
-        assert location != null;
-        resource = new PrivateKeyReaderResource(location);
+        this.init(location, (PasswordFinder) null);
     }
 
     @Override
     public void init(Reader location, PasswordFinder pwdf) {
-        init(location);
+        this.init(location, null, pwdf);
+    }
+
+    @Override
+    public void init(Reader privateKey, Reader publicKey) {
+        this.init(privateKey, publicKey, null);
+    }
+
+    @Override
+    public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
+        assert publicKey == null;
+        this.resource = new PrivateKeyReaderResource(privateKey);
         this.pwdf = pwdf;
     }
 
     @Override
     public void init(File location) {
-        assert location != null;
-        resource = new PrivateKeyFileResource(location.getAbsoluteFile());
+        this.init(location, null);
     }
 
     @Override
     public void init(File location, PasswordFinder pwdf) {
-        init(location);
+        this.resource = new PrivateKeyFileResource(location.getAbsoluteFile());
         this.pwdf = pwdf;
     }
 
     @Override
     public void init(String privateKey, String publicKey) {
-        assert privateKey != null;
-        assert publicKey == null;
-        resource = new PrivateKeyStringResource(privateKey);
+        this.init(privateKey, publicKey, null);
     }
 
     @Override
     public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        init(privateKey, publicKey);
+        assert privateKey != null;
+        assert publicKey == null;
+        this.resource = new PrivateKeyStringResource(privateKey);
         this.pwdf = pwdf;
     }
 
