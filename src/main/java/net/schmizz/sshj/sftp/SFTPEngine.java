@@ -84,7 +84,12 @@ public class SFTPEngine
         return init(MAX_SUPPORTED_VERSION);
     }
 
-    public SFTPEngine init(int requestedVersion)
+    /**
+     * Introduced for internal use by testcases.
+     * @param requestedVersion
+     * @throws IOException
+     */
+    protected SFTPEngine init(int requestedVersion)
             throws IOException {
         if (requestedVersion > MAX_SUPPORTED_VERSION)
             throw new SFTPException("You requested an unsupported protocol version: " + requestedVersion + " (requested) > " + MAX_SUPPORTED_VERSION + " (supported)");
