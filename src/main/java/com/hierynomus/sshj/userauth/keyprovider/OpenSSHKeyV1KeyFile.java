@@ -20,6 +20,7 @@ import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.ChachaPolyCiphers;
 import com.hierynomus.sshj.transport.cipher.GcmCiphers;
+import com.hierynomus.sshj.userauth.keyprovider.bcrypt.BCrypt;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
@@ -29,24 +30,23 @@ import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import com.hierynomus.sshj.userauth.keyprovider.bcrypt.BCrypt;
 import org.bouncycastle.openssl.EncryptionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
@@ -100,16 +100,41 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void init(File location) {
+    public void init(File location, PasswordFinder pwdf) {
         File pubKey = OpenSSHKeyFileUtil.getPublicKeyFile(location);
-        if (pubKey != null)
+        if (pubKey != null) {
             try {
                 initPubKey(new FileReader(pubKey));
             } catch (IOException e) {
                 // let super provide both public & private key
                 log.warn("Error reading public key file: {}", e.toString());
             }
-        super.init(location);
+        }
+        super.init(location, pwdf);
+    }
+
+    @Override
+    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
+        if (pubKey != null) {
+            try {
+                initPubKey(new StringReader(publicKey));
+            } catch (IOException e) {
+                log.warn("Error reading public key file: {}", e.toString());
+            }
+        }
+        super.init(privateKey, null, pwdf);
+    }
+
+    @Override
+    public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
+        if (pubKey != null) {
+            try {
+                initPubKey(publicKey);
+            } catch (IOException e) {
+                log.warn("Error reading public key file: {}", e.toString());
+            }
+        }
+        super.init(privateKey, null, pwdf);
     }
 
     @Override
