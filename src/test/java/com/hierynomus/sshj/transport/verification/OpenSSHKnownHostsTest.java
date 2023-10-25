@@ -63,6 +63,11 @@ public class OpenSSHKnownHostsTest {
         OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
         assertTrue(ohk.verify("192.168.1.61", 22, k));
         assertFalse(ohk.verify("192.168.1.2", 22, k));
+        ohk.write();
+        for (OpenSSHKnownHosts.KnownHostEntry entry : ohk.entries()) {
+            assertEquals("|1|F1E1KeoE/eEWhi10WpGv4OdiO6Y=|3988QV0VE8wmZL7suNrYQLITLCg= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ==",
+                    entry.getLine());
+        }
     }
 
     @Test
