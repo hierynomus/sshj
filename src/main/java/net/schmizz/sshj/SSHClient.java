@@ -804,12 +804,12 @@ public class SSHClient
             throws IOException {
         super.onConnect();
         trans.init(getRemoteHostname(), getRemotePort(), getInputStream(), getOutputStream());
-        doKex();
         final KeepAlive keepAliveThread = conn.getKeepAlive();
         if (keepAliveThread.isEnabled()) {
             ThreadNameProvider.setThreadName(conn.getKeepAlive(), trans);
             keepAliveThread.start();
         }
+        doKex();
     }
 
     /**
