@@ -38,7 +38,7 @@ public final class ChannelInputStream
     private final Channel chan;
     private final Transport trans;
     private final Window.Local win;
-    private final Buffer.PlainBuffer buf;
+    private final CircularBuffer.PlainCircularBuffer buf;
     private final byte[] b = new byte[1];
 
     private boolean eof;
@@ -46,10 +46,11 @@ public final class ChannelInputStream
 
     public ChannelInputStream(Channel chan, Transport trans, Window.Local win) {
         this.chan = chan;
-        log = chan.getLoggerFactory().getLogger(getClass());
+        this.log = chan.getLoggerFactory().getLogger(getClass());
         this.trans = trans;
         this.win = win;
-        buf = new Buffer.PlainBuffer(chan.getLocalMaxPacketSize());
+        this.buf = new CircularBuffer.PlainCircularBuffer(
+            chan.getLocalMaxPacketSize(), trans.getConfig().getMaxCircularBufferSize());
     }
 
     @Override
@@ -113,48 +114,44 @@ public final class ChannelInputStream
                 len = buf.available();
             }
             buf.readRawBytes(b, off, len);
-            if (buf.rpos() > win.getMaxPacketSize() && buf.available() == 0) {
-                buf.clear();
-            }
-        }
 
-        if (!chan.getAutoExpand()) {
-            checkWindow();
+            if (!chan.getAutoExpand()) {
+                checkWindow();
+            }
         }
 
         return len;
     }
 
-    public void receive(byte[] data, int offset, int len)
-            throws ConnectionException, TransportException {
+    public void receive(byte[] data, int offset, int len) throws SSHException {
         if (eof) {
             throw new ConnectionException("Getting data on EOF'ed stream");
         }
         synchronized (buf) {
             buf.putRawBytes(data, offset, len);
             buf.notifyAll();
-        }
-        // Potential fix for #203 (window consumed below 0).
-        // This seems to be a race condition if we receive more data, while we're already sending a SSH_MSG_CHANNEL_WINDOW_ADJUST
-        // And the window has not expanded yet.
-        synchronized (win) {
+            // Potential fix for #203 (window consumed below 0).
+            // This seems to be a race condition if we receive more data, while we're already sending a SSH_MSG_CHANNEL_WINDOW_ADJUST
+            // And the window has not expanded yet.
             win.consume(len);
-        }
-        if (chan.getAutoExpand()) {
-            checkWindow();
+            if (chan.getAutoExpand()) {
+                checkWindow();
+            }
         }
     }
 
-    private void checkWindow()
-            throws TransportException {
-        synchronized (win) {
-            final long adjustment = win.neededAdjustment();
-            if (adjustment > 0) {
-                log.debug("Sending SSH_MSG_CHANNEL_WINDOW_ADJUST to #{} for {} bytes", chan.getRecipient(), adjustment);
-                trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST)
-                        .putUInt32FromInt(chan.getRecipient()).putUInt32(adjustment));
-                win.expand(adjustment);
-            }
+    private void checkWindow() throws TransportException {
+        /*
+         * Window must fit in remaining buffer capacity. We already expect win.size() amount of data to arrive. The
+         * difference between that and the remaining capacity is the maximum adjustment we can make to the window.
+         */
+        final long maxAdjustment = buf.maxPossibleRemainingCapacity() - win.getSize();
+        final long adjustment = Math.min(win.neededAdjustment(), maxAdjustment);
+        if (adjustment > 0) {
+            log.debug("Sending SSH_MSG_CHANNEL_WINDOW_ADJUST to #{} for {} bytes", chan.getRecipient(), adjustment);
+            trans.write(new SSHPacket(Message.CHANNEL_WINDOW_ADJUST)
+                    .putUInt32FromInt(chan.getRecipient()).putUInt32(adjustment));
+            win.expand(adjustment);
         }
     }
 

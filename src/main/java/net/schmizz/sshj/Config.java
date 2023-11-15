@@ -200,4 +200,8 @@ public interface Config {
      * See {@link #isVerifyHostKeyCertificates()}.
      */
     void setVerifyHostKeyCertificates(boolean value);
+
+    int getMaxCircularBufferSize();
+
+    void setMaxCircularBufferSize(int maxCircularBufferSize);
 }
