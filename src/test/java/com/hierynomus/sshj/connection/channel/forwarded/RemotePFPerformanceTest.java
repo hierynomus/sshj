@@ -15,8 +15,7 @@
  */
 package com.hierynomus.sshj.connection.channel.forwarded;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +27,8 @@ import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder.Forward;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ public class RemotePFPerformanceTest {
     private static final Logger log = LoggerFactory.getLogger(RemotePFPerformanceTest.class);
 
     @Test
-    @Ignore
+    @Disabled
     public void startPF() throws IOException, InterruptedException {
         DefaultConfig config = new DefaultConfig();
         config.setMaxCircularBufferSize(16 * 1024 * 1026);

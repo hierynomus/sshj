@@ -15,13 +15,11 @@
  */
 package net.schmizz.sshj.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 import net.schmizz.sshj.common.CircularBuffer.CircularBufferException;
 import net.schmizz.sshj.common.CircularBuffer.PlainCircularBuffer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CircularBufferTest {
 
@@ -47,8 +45,8 @@ public class CircularBufferTest {
         buffer.readRawBytes(dataToRead, 320, 80);
         buffer.readRawBytes(dataToRead, 400, 100);
 
-        Assert.assertEquals(256, buffer.length());
-        Assert.assertArrayEquals(dataToWrite, dataToRead);
+        assertEquals(256, buffer.length());
+        assertArrayEquals(dataToWrite, dataToRead);
     }
 
     @Test
@@ -74,8 +72,8 @@ public class CircularBufferTest {
 
         buffer.readRawBytes(dataToRead, 400, 100);
 
-        Assert.assertEquals(256, buffer.length());
-        Assert.assertArrayEquals(dataToWrite, dataToRead);
+        assertEquals(256, buffer.length());
+        assertArrayEquals(dataToWrite, dataToRead);
     }
 
     @Test
@@ -159,7 +157,7 @@ public class CircularBufferTest {
         assertEquals(64, buffer.length());
     }
 
-    @Test(expected = CircularBufferException.class)
+    @Test
     public void shouldOverflowWhenWritingOverMaxRemainingCapacity() throws CircularBufferException {
         PlainCircularBuffer buffer = new PlainCircularBuffer(64, 64);
 
@@ -171,30 +169,30 @@ public class CircularBufferTest {
         assertEquals(buffer.length() - 1 - initiallyWritten, maxRemainingCapacity);
 
         byte[] dataToWrite = getData(maxRemainingCapacity + 1);
-        buffer.putRawBytes(dataToWrite, 0, dataToWrite.length);
+        assertThrows(CircularBufferException.class, () -> buffer.putRawBytes(dataToWrite, 0, dataToWrite.length));
     }
 
-    @Test(expected = CircularBufferException.class)
-    public void shouldThrowWhenReadingEmptyBuffer() throws CircularBufferException {
+    @Test
+    public void shouldThrowWhenReadingEmptyBuffer() {
         PlainCircularBuffer buffer = new PlainCircularBuffer(64, Integer.MAX_VALUE);
-        buffer.readRawBytes(new byte[1], 0, 1);
+        assertThrows(CircularBufferException.class, () -> buffer.readRawBytes(new byte[1], 0, 1));
     }
 
-    @Test(expected = CircularBufferException.class)
+    @Test
     public void shouldThrowWhenReadingMoreThanAvailable() throws CircularBufferException {
         PlainCircularBuffer buffer = new PlainCircularBuffer(64, Integer.MAX_VALUE);
         buffer.putRawBytes(new byte[1], 0, 1);
-        buffer.readRawBytes(new byte[2], 0, 2);
+        assertThrows(CircularBufferException.class, () -> buffer.readRawBytes(new byte[2], 0, 2));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldThrowOnAboveMaximumInitialSize() {
-        new PlainCircularBuffer(65, 64);
+        assertThrows(IllegalArgumentException.class, () -> new PlainCircularBuffer(65, 64));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void shouldThrowOnMaximumInitialSize() {
-        new PlainCircularBuffer(Integer.MAX_VALUE, 64);
+        assertThrows(IllegalArgumentException.class, () -> new PlainCircularBuffer(Integer.MAX_VALUE, 64));
     }
 
     @Test
@@ -205,11 +203,11 @@ public class CircularBufferTest {
         assertEquals(maxSize - 1, buffer.maxPossibleRemainingCapacity());
     }
 
-    @Test(expected = CircularBufferException.class)
-    public void shouldThrowOnTooLargeRequestedCapacity() throws CircularBufferException {
+    @Test
+    public void shouldThrowOnTooLargeRequestedCapacity() {
         int maxSize = 1024;
         PlainCircularBuffer buffer = new PlainCircularBuffer(256, maxSize);
-        buffer.ensureCapacity(maxSize);
+        assertThrows(CircularBufferException.class, () -> buffer.ensureCapacity(maxSize));
     }
 
     private static byte[] getData(int length) {
