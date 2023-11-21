@@ -50,7 +50,7 @@ public class ConfigImpl
     private LoggerFactory loggerFactory;
     private boolean verifyHostKeyCertificates = true;
     // HF-982: default to 16MB buffers.
-    private int maxCircularBufferSize = 16 * 1024 * 1026;
+    private int maxCircularBufferSize = 16 * 1024 * 1024;
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {

@@ -40,7 +40,7 @@ public class RemotePFPerformanceTest {
     @Disabled
     public void startPF() throws IOException, InterruptedException {
         DefaultConfig config = new DefaultConfig();
-        config.setMaxCircularBufferSize(16 * 1024 * 1026);
+        config.setMaxCircularBufferSize(16 * 1024 * 1024);
         SSHClient client = new SSHClient(config);
         client.loadKnownHosts();
         client.addHostKeyVerifier("5c:0c:8e:9d:1c:50:a9:ba:a7:05:f6:b1:2b:0b:5f:ba");
