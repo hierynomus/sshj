@@ -60,6 +60,10 @@ final class KeyExchanger
 
     private final AtomicBoolean kexOngoing = new AtomicBoolean();
 
+    private final AtomicBoolean initialKex = new AtomicBoolean(true);
+
+    private final AtomicBoolean strictKex = new AtomicBoolean();
+
     /** What we are expecting from the next packet */
     private Expected expected = Expected.KEXINIT;
 
@@ -123,6 +127,14 @@ final class KeyExchanger
         return kexOngoing.get();
     }
 
+    boolean isStrictKex() {
+        return strictKex.get();
+    }
+
+    boolean isInitialKex() {
+        return initialKex.get();
+    }
+
     /**
      * Starts key exchange by sending a {@code SSH_MSG_KEXINIT} packet. Key exchange needs to be done once mandatorily
      * after initializing the {@link Transport} for it to be usable and may be initiated at any later point e.g. if
@@ -183,7 +195,7 @@ final class KeyExchanger
             throws TransportException {
         log.debug("Sending SSH_MSG_KEXINIT");
         List<String> knownHostAlgs = findKnownHostAlgs(transport.getRemoteHost(), transport.getRemotePort());
-        clientProposal = new Proposal(transport.getConfig(), knownHostAlgs);
+        clientProposal = new Proposal(transport.getConfig(), knownHostAlgs, initialKex.get());
         transport.write(clientProposal.getPacket());
         kexInitSent.set();
     }
@@ -202,6 +214,9 @@ final class KeyExchanger
             throws TransportException {
         log.debug("Sending SSH_MSG_NEWKEYS");
         transport.write(new SSHPacket(Message.NEWKEYS));
+        if (strictKex.get()) {
+            transport.getEncoder().resetSequenceNumber();
+        }
     }
 
     /**
@@ -234,6 +249,10 @@ final class KeyExchanger
 
     private void setKexDone() {
         kexOngoing.set(false);
+        initialKex.set(false);
+        if (strictKex.get()) {
+            transport.getDecoder().resetSequenceNumber();
+        }
         kexInitSent.clear();
         done.set();
     }
@@ -242,6 +261,7 @@ final class KeyExchanger
             throws TransportException {
         buf.rpos(buf.rpos() - 1);
         final Proposal serverProposal = new Proposal(buf);
+        gotStrictKexInfo(serverProposal);
         negotiatedAlgs = clientProposal.negotiate(serverProposal);
         log.debug("Negotiated algorithms: {}", negotiatedAlgs);
         for(AlgorithmsVerifier v: algorithmVerifiers) {
@@ -262,6 +282,18 @@ final class KeyExchanger
                      serverProposal.getPacket().getCompactData(), clientProposal.getPacket().getCompactData());
         } catch (GeneralSecurityException e) {
             throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED, e);
+        }
+    }
+
+    private void gotStrictKexInfo(Proposal serverProposal) throws TransportException {
+        if (initialKex.get() && serverProposal.isStrictKeyExchangeSupportedByServer()) {
+            strictKex.set(true);
+            log.debug("Enabling strict key exchange extension");
+            if (transport.getDecoder().getSequenceNumber() != 0) {
+                throw new TransportException(DisconnectReason.KEY_EXCHANGE_FAILED,
+                    "SSH_MSG_KEXINIT was not first package during strict key exchange"
+                );
+            }
         }
     }
 
