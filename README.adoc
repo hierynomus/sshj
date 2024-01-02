@@ -115,7 +115,7 @@ SSHJ 0.38.0 (2024-01-02)::
   * Merged https://github.com/hierynomus/sshj/pull/917[#917]: Implement OpenSSH strict key exchange extension
 * Merged https://github.com/hierynomus/sshj/pull/903[#903]: Fix for writing known hosts key string
 * Merged https://github.com/hierynomus/sshj/pull/913[#913]: Prevent remote port forwarding buffers to grow without bounds
-* Moved tess to JUnit5
+* Moved tests to JUnit5
 * Merged https://github.com/hierynomus/sshj/pull/827[#827]: Fallback to posix-rename@openssh.com extension if available
 * Merged https://github.com/hierynomus/sshj/pull/904[#904]: Add ChaCha20-Poly1305 support for OpenSSH keys
 SSHJ 0.37.0 (2023-10-11)::
