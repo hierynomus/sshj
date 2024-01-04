@@ -292,8 +292,8 @@ public class OpenSSHKnownHosts
                 try {
                     byte[] keyBytes = Base64.getDecoder().decode(sKey);
                     key = new Buffer.PlainBuffer(keyBytes).readPublicKey();
-                } catch (IOException ioe) {
-                    log.warn("Error decoding Base64 key bytes", ioe);
+                } catch (IOException | IllegalArgumentException exception) {
+                    log.warn("Error decoding Base64 key bytes", exception);
                     return new BadHostEntry(line);
                 }
             } else if (isBits(sType)) {

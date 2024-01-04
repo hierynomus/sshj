@@ -23,11 +23,9 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.module.ModuleDescriptor.Opens;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.PublicKey;
-import java.security.Security;
 import java.util.Base64;
 import java.util.stream.Stream;
 
@@ -108,6 +106,16 @@ public class OpenSSHKnownHostsTest {
         OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
 
         assertTrue(ohk.verify("host1", 22, k));
+    }
+
+    @Test
+    public void shouldNotFailOnMalformedBase64String() throws IOException {
+        File knownHosts = knownHosts(
+                "1.1.1.1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBA/CkqWXSlbdo7jPshvIWT/m3FAdpSIKUx/uTmz87ObpBxXsfF8aMSiwGMKHjqviTV4cG6F7vFf28ll+9CbGsbs=192\n"
+        );
+        OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
+        assertEquals(1, ohk.entries().size());
+        assertThat(ohk.entries().get(0)).isInstanceOf(OpenSSHKnownHosts.BadHostEntry.class);
     }
 
     @Test
