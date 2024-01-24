@@ -19,6 +19,7 @@ import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.StreamCopier;
+import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.connection.channel.direct.Session.Command;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.TransferListener;
@@ -41,6 +42,7 @@ class SCPEngine {
     private final SessionFactory host;
     private final TransferListener listener;
 
+    private Session session;
     private Command scp;
     private int exitStatus;
 
@@ -82,7 +84,8 @@ class SCPEngine {
 
     void execSCPWith(ScpCommandLine commandLine)
             throws SSHException {
-        scp = host.startSession().exec(commandLine.toCommandLine());
+        session = host.startSession();
+        scp = session.exec(commandLine.toCommandLine());
     }
 
     void exit() {
@@ -101,6 +104,10 @@ class SCPEngine {
             if (scp.getExitSignal() != null) {
                 log.warn("SCP exit signal: {}", scp.getExitSignal());
             }
+        }
+        if(session != null) {
+            IOUtils.closeQuietly(session);
+            session = null;
         }
 
         scp = null;
