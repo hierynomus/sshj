@@ -79,10 +79,8 @@ public abstract class SocketClient {
             this.hostname = hostname;
             this.port = port;
             socket = socketFactory.createSocket();
-            if (! socket.isConnected()) {
-                socket.bind(new InetSocketAddress(localAddr, localPort));
-                socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
-            }
+            socket.bind(new InetSocketAddress(localAddr, localPort));
+            socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
             onConnect();
         }
     }
@@ -118,10 +116,8 @@ public abstract class SocketClient {
             throws IOException {
         this.port = port;
         socket = socketFactory.createSocket();
-        if (! socket.isConnected()) {
-            socket.bind(new InetSocketAddress(localAddr, localPort));
-            socket.connect(new InetSocketAddress(host, port), connectTimeout);
-        }
+        socket.bind(new InetSocketAddress(localAddr, localPort));
+        socket.connect(new InetSocketAddress(host, port), connectTimeout);
         onConnect();
     }
 

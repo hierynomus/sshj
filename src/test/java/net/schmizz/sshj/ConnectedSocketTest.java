@@ -20,11 +20,17 @@ import net.schmizz.sshj.SSHClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import org.apache.sshd.server.SshServer;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.stream.Stream;
+
 import javax.net.SocketFactory;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -39,13 +45,34 @@ public class ConnectedSocketTest {
         SSHClient defaultClient = fixture.setupDefaultClient();
     }
 
-    @Test
-    public void connectsIfUnconnected() {
-        assertDoesNotThrow(() -> fixture.connectClient(fixture.getClient()));
+    private static interface Connector {
+        void connect(SshServerExtension fx) throws IOException;
     }
 
-    @Test
-    public void handlesConnected() throws IOException {
+    private static void connectViaHostname(SshServerExtension fx) throws IOException {
+        SshServer server = fx.getServer();
+        fx.getClient().connect(server.getHost(), server.getPort());
+    }
+
+    private static void connectViaAddr(SshServerExtension fx) throws IOException {
+        SshServer server = fx.getServer();
+        InetAddress addr = InetAddress.getByName(server.getHost());
+        fx.getClient().connect(addr, server.getPort());
+    }
+
+    private static Stream<Connector> connectMethods() {
+        return Stream.of(fx -> connectViaHostname(fx), fx -> connectViaAddr(fx));
+    }
+
+    @ParameterizedTest
+    @MethodSource("connectMethods")
+    public void connectsIfUnconnected(Connector connector) {
+        assertDoesNotThrow(() -> connector.connect(fixture));
+    }
+
+    @ParameterizedTest
+    @MethodSource("connectMethods")
+    public void handlesConnected(Connector connector) throws IOException {
         Socket socket = SocketFactory.getDefault().createSocket();
         SocketFactory factory = new SocketFactory() {
                 @Override
@@ -73,6 +100,6 @@ public class ConnectedSocketTest {
             };
         socket.connect(new InetSocketAddress("localhost", fixture.getServer().getPort()));
         fixture.getClient().setSocketFactory(factory);
-        assertDoesNotThrow(() -> fixture.connectClient(fixture.getClient()));
+        assertDoesNotThrow(() -> connector.connect(fixture));
     }
 }
