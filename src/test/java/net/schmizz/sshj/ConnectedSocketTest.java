@@ -51,7 +51,7 @@ public class ConnectedSocketTest {
 
     private static void connectViaHostname(SshServerExtension fx) throws IOException {
         SshServer server = fx.getServer();
-        fx.getClient().connect(server.getHost(), server.getPort());
+        fx.getClient().connect("localhost", server.getPort());
     }
 
     private static void connectViaAddr(SshServerExtension fx) throws IOException {
