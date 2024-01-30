@@ -48,6 +48,7 @@ public class SFTPEngine
 
     protected final PathHelper pathHelper;
 
+    private final Session session;
     protected final Session.Subsystem sub;
     protected final PacketReader reader;
     protected final OutputStream out;
@@ -63,7 +64,7 @@ public class SFTPEngine
 
     public SFTPEngine(SessionFactory ssh, String pathSep)
             throws SSHException {
-        Session session = ssh.startSession();
+        session = ssh.startSession();
         loggerFactory = session.getLoggerFactory();
         log = loggerFactory.getLogger(getClass());
         sub = session.startSubsystem("sftp");
@@ -346,6 +347,7 @@ public class SFTPEngine
             throws IOException {
         sub.close();
         reader.interrupt();
+        session.close();
     }
 
     protected LoggerFactory getLoggerFactory() {
