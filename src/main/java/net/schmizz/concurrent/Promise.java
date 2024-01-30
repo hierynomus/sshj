@@ -104,7 +104,8 @@ public class Promise<V, T extends Throwable> {
         lock.lock();
         try {
             pendingEx = null;
-            deliver(null);
+            log.debug("Clearing <<{}>>", name);
+            val = null;
         } finally {
             lock.unlock();
         }
