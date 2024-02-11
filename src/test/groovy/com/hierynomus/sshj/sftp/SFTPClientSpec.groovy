@@ -19,6 +19,7 @@ import com.hierynomus.sshj.test.SshServerExtension
 import com.hierynomus.sshj.test.util.FileUtil
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.sftp.FileMode
+import net.schmizz.sshj.sftp.RemoteResourceInfo
 import net.schmizz.sshj.sftp.SFTPClient
 import org.junit.jupiter.api.extension.RegisterExtension
 import spock.lang.Specification
@@ -204,6 +205,60 @@ class SFTPClientSpec extends Specification {
 
         then:
         attrs.type == FileMode.Type.DIRECTORY
+    }
+
+    def "should support premature termination of listing"() {
+        given:
+        SSHClient sshClient = fixture.setupConnectedDefaultClient()
+        sshClient.authPassword("test", "test")
+        SFTPClient sftpClient = sshClient.newSFTPClient()
+
+        final Path source = Files.createDirectory(temp.resolve("source")).toAbsolutePath()
+        final Path destination = Files.createDirectory(temp.resolve("destination")).toAbsolutePath()
+        final Path firstFile = Files.writeString(source.resolve("a_first.txt"), "first")
+        final Path secondFile = Files.writeString(source.resolve("b_second.txt"), "second")
+        final Path thirdFile = Files.writeString(source.resolve("c_third.txt"), "third")
+        final Path fourthFile = Files.writeString(source.resolve("d_fourth.txt"), "fourth")
+        sftpClient.put(firstFile.toString(), destination.resolve(firstFile.fileName).toString())
+        sftpClient.put(secondFile.toString(), destination.resolve(secondFile.fileName).toString())
+        sftpClient.put(thirdFile.toString(), destination.resolve(thirdFile.fileName).toString())
+        sftpClient.put(fourthFile.toString(), destination.resolve(fourthFile.fileName).toString())
+
+        def filesListed = 0
+        RemoteResourceInfo expectedFile = null
+        RemoteResourceSelector limitingSelector = new RemoteResourceSelector() {
+            @Override
+            RemoteResourceSelector.Result select(RemoteResourceInfo resource) {
+                filesListed += 1
+
+                switch(filesListed) {
+                    case 1:
+                        return RemoteResourceSelector.Result.CONTINUE
+                    case 2:
+                        expectedFile = resource
+                        return RemoteResourceSelector.Result.ACCEPT
+                    case 3:
+                        return RemoteResourceSelector.Result.BREAK
+                    default:
+                        throw new AssertionError((Object) "Should NOT select any more resources")
+                }
+            }
+        }
+
+        when:
+        def listingResult = sftpClient
+                .ls(destination.toString(), limitingSelector);
+
+        then:
+        // first should be skipped by CONTINUE
+        listingResult.contains(expectedFile) // second should be included by ACCEPT
+        // third should be skipped by BREAK
+        // fourth should be skipped by preceding BREAK
+        listingResult.size() == 1
+
+        cleanup:
+        sftpClient.close()
+        sshClient.disconnect()
     }
 
     private void doUpload(File src, File dest) throws IOException {
