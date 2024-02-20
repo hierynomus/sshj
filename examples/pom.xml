@@ -59,6 +59,20 @@
         </dependency>
     </dependencies>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.github.leetcrunch</groupId>
+            <artifactId>scribejava</artifactId>
+            <version>8.3.5</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>io.github.leetcrunch</groupId>
+            <artifactId>scribejava-httpclient-ning</artifactId>
+            <version>8.3.5</version>
+        </dependency>
+    </dependencies>
 
     <developers>
         <developer>
