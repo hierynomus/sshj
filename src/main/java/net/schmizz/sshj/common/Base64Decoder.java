@@ -29,7 +29,7 @@ public class Base64Decoder {
     private Base64Decoder() {
     }
 
-    public static byte[] decode(byte[] source) throws IOException, Base64DecodingException {
+    public static byte[] decode(byte[] source) throws Base64DecodingException {
         try {
             return Base64.getDecoder().decode(source);
         } catch (IllegalArgumentException err) {
@@ -37,7 +37,7 @@ public class Base64Decoder {
         }
     }
 
-    public static byte[] decode(String src) throws IOException, Base64DecodingException {
+    public static byte[] decode(String src) throws Base64DecodingException {
         try {
             return Base64.getDecoder().decode(src);
         } catch (IllegalArgumentException err) {
