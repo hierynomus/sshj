@@ -89,7 +89,7 @@ public class KnownHostMatchers {
             try {
                 return hash.equals(hashHost(hostname));
             } catch (Base64DecodingException err) {
-                log.warn("Failed to match {}", hostname, err);
+                log.warn("Hostname [{}] not matched: salt decoding failed", hostname, err);
                 return false;
             }
         }
