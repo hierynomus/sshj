@@ -128,7 +128,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         } catch (final GeneralSecurityException e) {
             throw new SSHRuntimeException("Read OpenSSH Version 1 Key failed", e);
         } catch (Base64DecodingException e) {
-            throw new SSHRuntimeException("Corrupted private key: " + e.getMessage(), e);
+            throw new SSHRuntimeException("Private Key decoding failed", e);
         } finally {
             IOUtils.closeQuietly(reader);
         }
