@@ -264,7 +264,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             }
         }
         catch (Base64DecodingException e) {
-            throw new IOException("Corrupted PuTTY key: " + e.getMessage(), e);
+            throw new IOException("PuTTY key decoding failed", e);
         }
     }
 

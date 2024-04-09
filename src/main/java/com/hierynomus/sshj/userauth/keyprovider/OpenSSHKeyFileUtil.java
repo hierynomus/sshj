@@ -67,7 +67,7 @@ public class OpenSSHKeyFileUtil {
             }
             throw new IOException("Public key file is blank");
         } catch (Base64DecodingException err) {
-            throw new IOException("Public Key decoding failed: " + err.getMessage(), err);
+            throw new IOException("Public key decoding failed", err);
         } finally {
             br.close();
         }
