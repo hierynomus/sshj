@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj.userauth.keyprovider;
 
+import net.schmizz.sshj.common.Base64DecodeError;
+import net.schmizz.sshj.common.Base64Decoder;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 
@@ -54,9 +56,10 @@ public class OpenSSHKeyFileUtil {
                 if (!keydata.isEmpty()) {
                     String[] parts = keydata.trim().split("\\s+");
                     if (parts.length >= 2) {
+                        byte[] decodedPublicKey = Base64Decoder.decode(parts[1]);
                         return new ParsedPubKey(
                                 KeyType.fromString(parts[0]),
-                                new Buffer.PlainBuffer(Base64.getDecoder().decode(parts[1])).readPublicKey()
+                                new Buffer.PlainBuffer(decodedPublicKey).readPublicKey()
                         );
                     } else {
                         throw new IOException("Got line with only one column");
@@ -64,6 +67,8 @@ public class OpenSSHKeyFileUtil {
                 }
             }
             throw new IOException("Public key file is blank");
+        } catch (Base64DecodeError err) {
+            throw new IOException("Corrupted public key: " + err.getMessage(), err);
         } finally {
             br.close();
         }
