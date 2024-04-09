@@ -21,8 +21,8 @@ package net.schmizz.sshj.common;
  *
  * @see Base64Decoder
  */
-public class Base64DecodeError extends Exception {
-    public Base64DecodeError(IllegalArgumentException cause) {
+public class Base64DecodingException extends Exception {
+    public Base64DecodingException(IllegalArgumentException cause) {
         super("Failed to decode base64: " + cause.getMessage(), cause);
     }
 }

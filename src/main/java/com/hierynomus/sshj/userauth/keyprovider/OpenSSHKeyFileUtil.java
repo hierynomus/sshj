@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.userauth.keyprovider;
 
-import net.schmizz.sshj.common.Base64DecodeError;
+import net.schmizz.sshj.common.Base64DecodingException;
 import net.schmizz.sshj.common.Base64Decoder;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.security.PublicKey;
-import java.util.Base64;
 
 public class OpenSSHKeyFileUtil {
     private OpenSSHKeyFileUtil() {
@@ -67,7 +66,7 @@ public class OpenSSHKeyFileUtil {
                 }
             }
             throw new IOException("Public key file is blank");
-        } catch (Base64DecodeError err) {
+        } catch (Base64DecodingException err) {
             throw new IOException("Corrupted public key: " + err.getMessage(), err);
         } finally {
             br.close();

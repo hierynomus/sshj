@@ -29,19 +29,19 @@ public class Base64Decoder {
     private Base64Decoder() {
     }
 
-    public static byte[] decode(byte[] source) throws IOException, Base64DecodeError {
+    public static byte[] decode(byte[] source) throws IOException, Base64DecodingException {
         try {
             return Base64.getDecoder().decode(source);
         } catch (IllegalArgumentException err) {
-            throw new Base64DecodeError(err);
+            throw new Base64DecodingException(err);
         }
     }
 
-    public static byte[] decode(String src) throws IOException, Base64DecodeError {
+    public static byte[] decode(String src) throws IOException, Base64DecodingException {
         try {
             return Base64.getDecoder().decode(src);
         } catch (IllegalArgumentException err) {
-            throw new Base64DecodeError(err);
+            throw new Base64DecodingException(err);
         }
     }
 }

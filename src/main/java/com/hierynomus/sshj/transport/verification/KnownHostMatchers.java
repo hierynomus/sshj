@@ -15,7 +15,7 @@
  */
 package com.hierynomus.sshj.transport.verification;
 
-import net.schmizz.sshj.common.Base64DecodeError;
+import net.schmizz.sshj.common.Base64DecodingException;
 import net.schmizz.sshj.common.Base64Decoder;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
@@ -88,18 +88,18 @@ public class KnownHostMatchers {
         public boolean match(String hostname) throws IOException {
             try {
                 return hash.equals(hashHost(hostname));
-            } catch (Base64DecodeError err) {
+            } catch (Base64DecodingException err) {
                 log.warn("Failed to match {}", hostname, err);
                 return false;
             }
         }
 
-        private String hashHost(String host) throws IOException, Base64DecodeError {
+        private String hashHost(String host) throws IOException, Base64DecodingException {
             sha1.init(getSaltyBytes());
             return "|1|" + salt + "|" + Base64.getEncoder().encodeToString(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
         }
 
-        private byte[] getSaltyBytes() throws IOException, Base64DecodeError {
+        private byte[] getSaltyBytes() throws IOException, Base64DecodingException {
             if (saltyBytes == null) {
                 saltyBytes = Base64Decoder.decode(salt);
             }

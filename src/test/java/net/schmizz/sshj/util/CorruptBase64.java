@@ -16,7 +16,7 @@
 
 package net.schmizz.sshj.util;
 
-import net.schmizz.sshj.common.Base64DecodeError;
+import net.schmizz.sshj.common.Base64DecodingException;
 import net.schmizz.sshj.common.Base64Decoder;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class CorruptBase64 {
         while (true) {
             try {
                 Base64Decoder.decode(source);
-            } catch (Base64DecodeError e) {
+            } catch (Base64DecodingException e) {
                 return source;
             }
 

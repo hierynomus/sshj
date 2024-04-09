@@ -50,7 +50,6 @@ import java.security.*;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,7 +127,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             }
         } catch (final GeneralSecurityException e) {
             throw new SSHRuntimeException("Read OpenSSH Version 1 Key failed", e);
-        } catch (Base64DecodeError e) {
+        } catch (Base64DecodingException e) {
             throw new SSHRuntimeException("Corrupted private key: " + e.getMessage(), e);
         } finally {
             IOUtils.closeQuietly(reader);

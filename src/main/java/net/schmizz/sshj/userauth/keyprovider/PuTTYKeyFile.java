@@ -40,7 +40,6 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -264,7 +263,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                 privateKey = Base64Decoder.decode(payload.get("Private-Lines"));
             }
         }
-        catch (Base64DecodeError e) {
+        catch (Base64DecodingException e) {
             throw new IOException("Corrupted PuTTY key: " + e.getMessage(), e);
         }
     }
