@@ -60,18 +60,18 @@ public class SFTPClient
 
     public List<RemoteResourceInfo> ls(String path)
             throws IOException {
-        return ls(path, (RemoteResourceSelector) null);
+        return ls(path, RemoteResourceSelector.ALL);
     }
 
     public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
             throws IOException {
-        return ls(path, filter == null ? null : selectorFrom(filter));
+        return ls(path, selectorFrom(filter));
     }
 
     public List<RemoteResourceInfo> ls(String path, RemoteResourceSelector selector)
             throws IOException {
         try (RemoteDirectory dir = engine.openDir(path)) {
-            return dir.scan(selector);
+            return dir.scan(selector == null ? RemoteResourceSelector.ALL : selector);
         }
     }
 

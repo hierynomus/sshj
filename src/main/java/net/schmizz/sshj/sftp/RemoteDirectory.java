@@ -34,11 +34,15 @@ public class RemoteDirectory
 
     public List<RemoteResourceInfo> scan(RemoteResourceFilter filter)
             throws IOException {
-        return scan(filter == null ? null : selectorFrom(filter));
+        return scan(selectorFrom(filter));
     }
 
     public List<RemoteResourceInfo> scan(RemoteResourceSelector selector)
             throws IOException {
+        if (selector == null) {
+            selector = RemoteResourceSelector.ALL;
+        }
+
         List<RemoteResourceInfo> remoteResourceInfos = new LinkedList<>();
 
         while (true) {
@@ -59,8 +63,7 @@ public class RemoteDirectory
                             continue;
                         }
 
-                        final RemoteResourceSelector.Result selectionResult = selector == null ?
-                                RemoteResourceSelector.Result.ACCEPT : selector.select(inf);
+                        final RemoteResourceSelector.Result selectionResult = selector.select(inf);
                         switch (selectionResult) {
                             case ACCEPT:
                                 remoteResourceInfos.add(inf);

@@ -60,7 +60,7 @@ public class StatefulSFTPClient
 
     public synchronized List<RemoteResourceInfo> ls()
             throws IOException {
-        return ls(cwd, (RemoteResourceSelector) null);
+        return ls(cwd, RemoteResourceSelector.ALL);
     }
 
     public synchronized List<RemoteResourceInfo> ls(RemoteResourceFilter filter)
@@ -75,19 +75,19 @@ public class StatefulSFTPClient
 
     public List<RemoteResourceInfo> ls(String path)
             throws IOException {
-        return ls(path, (RemoteResourceSelector) null);
+        return ls(path, RemoteResourceSelector.ALL);
     }
 
     public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
             throws IOException {
-        return ls(path, filter == null ? null : selectorFrom(filter));
+        return ls(path, selectorFrom(filter));
     }
 
     @Override
     public List<RemoteResourceInfo> ls(String path, RemoteResourceSelector selector)
             throws IOException {
         try (RemoteDirectory dir = getSFTPEngine().openDir(cwdify(path))) {
-            return dir.scan(selector);
+            return dir.scan(selector == null ? RemoteResourceSelector.ALL : selector);
         }
     }
 
