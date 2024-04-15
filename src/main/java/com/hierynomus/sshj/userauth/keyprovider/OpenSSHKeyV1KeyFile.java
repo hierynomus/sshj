@@ -23,13 +23,8 @@ import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import net.i2p.crypto.eddsa.EdDSAPrivateKey;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
-import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
-import net.schmizz.sshj.common.ByteArrayUtils;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SSHRuntimeException;
-import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.cipher.Cipher;
 import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
@@ -55,7 +50,6 @@ import java.security.*;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -124,7 +118,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         try {
             if (checkHeader(reader)) {
                 final String encodedPrivateKey = readEncodedKey(reader);
-                byte[] decodedPrivateKey = Base64.getDecoder().decode(encodedPrivateKey);
+                byte[] decodedPrivateKey = Base64Decoder.decode(encodedPrivateKey);
                 final PlainBuffer bufferedPrivateKey = new PlainBuffer(decodedPrivateKey);
                 return readDecodedKeyPair(bufferedPrivateKey);
             } else {
@@ -133,6 +127,8 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             }
         } catch (final GeneralSecurityException e) {
             throw new SSHRuntimeException("Read OpenSSH Version 1 Key failed", e);
+        } catch (Base64DecodingException e) {
+            throw new SSHRuntimeException("Private Key decoding failed", e);
         } finally {
             IOUtils.closeQuietly(reader);
         }
