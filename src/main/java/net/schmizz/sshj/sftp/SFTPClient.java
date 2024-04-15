@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.sftp;
 
+import com.hierynomus.sshj.sftp.RemoteResourceSelector;
 import net.schmizz.sshj.connection.channel.direct.SessionFactory;
 import net.schmizz.sshj.xfer.FilePermission;
 import net.schmizz.sshj.xfer.LocalDestFile;
@@ -24,6 +25,8 @@ import org.slf4j.Logger;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
+
+import static com.hierynomus.sshj.sftp.RemoteResourceFilterConverter.selectorFrom;
 
 public class SFTPClient
         implements Closeable {
@@ -57,16 +60,18 @@ public class SFTPClient
 
     public List<RemoteResourceInfo> ls(String path)
             throws IOException {
-        return ls(path, null);
+        return ls(path, RemoteResourceSelector.ALL);
     }
 
     public List<RemoteResourceInfo> ls(String path, RemoteResourceFilter filter)
             throws IOException {
-        final RemoteDirectory dir = engine.openDir(path);
-        try {
-            return dir.scan(filter);
-        } finally {
-            dir.close();
+        return ls(path, selectorFrom(filter));
+    }
+
+    public List<RemoteResourceInfo> ls(String path, RemoteResourceSelector selector)
+            throws IOException {
+        try (RemoteDirectory dir = engine.openDir(path)) {
+            return dir.scan(selector == null ? RemoteResourceSelector.ALL : selector);
         }
     }
 
