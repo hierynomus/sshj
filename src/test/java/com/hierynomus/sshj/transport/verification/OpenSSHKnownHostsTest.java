@@ -15,11 +15,16 @@
  */
 package com.hierynomus.sshj.transport.verification;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.assertj.core.api.Assertions.*;
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import net.schmizz.sshj.util.KeyUtil;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,17 +34,8 @@ import java.security.PublicKey;
 import java.util.Base64;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.SecurityUtils;
-import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
-import net.schmizz.sshj.util.KeyUtil;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OpenSSHKnownHostsTest {
     @TempDir
@@ -116,6 +112,24 @@ public class OpenSSHKnownHostsTest {
         OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
         assertEquals(1, ohk.entries().size());
         assertThat(ohk.entries().get(0)).isInstanceOf(OpenSSHKnownHosts.BadHostEntry.class);
+    }
+
+    @Test
+    public void shouldNotFailOnMalformeSaltBase64String() throws IOException {
+        // A record with broken base64 inside the salt part of the hash.
+        // No matter how it could be generated, such broken strings must not cause unexpected errors.
+        String hostName = "example.com";
+        File knownHosts = knownHosts(
+                "|1|2gujgGa6gJnK7wGPCX8zuGttvCMXX|Oqkbjtxd9RFxKQv6y3l3GIxLNiU= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGVVnyoAD5/uWiiuTSM3RuW8dEWRrqOXYobAMKHhAA6kuOBoPK+LoAYyUcN26bdMiCxg+VOaLHxPNWv5SlhbMWw=\n"
+        );
+        OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
+        assertEquals(1, ohk.entries().size());
+
+        // Some random valid public key. It doesn't matter for the test if it matches the broken host key record or not.
+        PublicKey k = new Buffer.PlainBuffer(Base64.getDecoder().decode(
+                "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck="))
+                .readPublicKey();
+        assertFalse(ohk.verify(hostName, 22, k));
     }
 
     @Test
