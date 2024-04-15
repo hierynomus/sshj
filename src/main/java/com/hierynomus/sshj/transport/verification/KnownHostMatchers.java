@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj.transport.verification;
 
+import net.schmizz.sshj.common.Base64DecodingException;
+import net.schmizz.sshj.common.Base64Decoder;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.transport.mac.MAC;
@@ -26,8 +28,12 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import com.hierynomus.sshj.transport.mac.Macs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class KnownHostMatchers {
+
+    private static final Logger log = LoggerFactory.getLogger(KnownHostMatchers.class);
 
     public static HostMatcher createMatcher(String hostEntry) throws SSHException {
         if (hostEntry.contains(",")) {
@@ -80,17 +86,22 @@ public class KnownHostMatchers {
 
         @Override
         public boolean match(String hostname) throws IOException {
-            return hash.equals(hashHost(hostname));
+            try {
+                return hash.equals(hashHost(hostname));
+            } catch (Base64DecodingException err) {
+                log.warn("Hostname [{}] not matched: salt decoding failed", hostname, err);
+                return false;
+            }
         }
 
-        private String hashHost(String host) throws IOException {
+        private String hashHost(String host) throws IOException, Base64DecodingException {
             sha1.init(getSaltyBytes());
             return "|1|" + salt + "|" + Base64.getEncoder().encodeToString(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
         }
 
-        private byte[] getSaltyBytes() {
+        private byte[] getSaltyBytes() throws IOException, Base64DecodingException {
             if (saltyBytes == null) {
-                saltyBytes = Base64.getDecoder().decode(salt);
+                saltyBytes = Base64Decoder.decode(salt);
             }
             return saltyBytes;
         }

@@ -22,9 +22,7 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.bouncycastle.asn1.nist.NISTNamedCurves;
 import org.bouncycastle.asn1.x9.X9ECParameters;
@@ -42,7 +40,6 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.*;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -240,29 +237,34 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         if (this.keyFileVersion == null) {
             throw new IOException("Invalid key file format: missing \"PuTTY-User-Key-File-?\" entry");
         }
-        // Retrieve keys from payload
-        publicKey = Base64.getDecoder().decode(payload.get("Public-Lines"));
-        if (this.isEncrypted()) {
-            final char[] passphrase;
-            if (pwdf != null) {
-                passphrase = pwdf.reqPassword(resource);
-            } else {
-                passphrase = "".toCharArray();
-            }
-            try {
-                privateKey = this.decrypt(Base64.getDecoder().decode(payload.get("Private-Lines")), passphrase);
-                Mac mac;
-                if (this.keyFileVersion <= 2) {
-                    mac = this.prepareVerifyMacV2(passphrase);
+        try {
+            // Retrieve keys from payload
+            publicKey = Base64Decoder.decode(payload.get("Public-Lines"));
+            if (this.isEncrypted()) {
+                final char[] passphrase;
+                if (pwdf != null) {
+                    passphrase = pwdf.reqPassword(resource);
                 } else {
-                    mac = this.prepareVerifyMacV3();
+                    passphrase = "".toCharArray();
                 }
-                this.verify(mac);
-            } finally {
-                PasswordUtils.blankOut(passphrase);
+                try {
+                    privateKey = this.decrypt(Base64Decoder.decode(payload.get("Private-Lines")), passphrase);
+                    Mac mac;
+                    if (this.keyFileVersion <= 2) {
+                        mac = this.prepareVerifyMacV2(passphrase);
+                    } else {
+                        mac = this.prepareVerifyMacV3();
+                    }
+                    this.verify(mac);
+                } finally {
+                    PasswordUtils.blankOut(passphrase);
+                }
+            } else {
+                privateKey = Base64Decoder.decode(payload.get("Private-Lines"));
             }
-        } else {
-            privateKey = Base64.getDecoder().decode(payload.get("Private-Lines"));
+        }
+        catch (Base64DecodingException e) {
+            throw new IOException("PuTTY key decoding failed", e);
         }
     }
 
