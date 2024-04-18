@@ -65,7 +65,9 @@ public abstract class SocketClient {
             this.hostname = hostname;
             this.port = port;
             socket = socketFactory.createSocket();
-            socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
+            if (! socket.isConnected()) {
+                socket.connect(makeInetSocketAddress(hostname, port), connectTimeout);
+            }
             onConnect();
         }
     }
@@ -104,7 +106,9 @@ public abstract class SocketClient {
     public void connect(InetAddress host, int port) throws IOException {
         this.port = port;
         socket = socketFactory.createSocket();
-        socket.connect(new InetSocketAddress(host, port), connectTimeout);
+        if (! socket.isConnected()) {
+            socket.connect(new InetSocketAddress(host, port), connectTimeout);
+        }
         onConnect();
     }
 

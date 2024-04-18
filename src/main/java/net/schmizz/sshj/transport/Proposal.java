@@ -37,8 +37,11 @@ class Proposal {
     private final List<String> s2cComp;
     private final SSHPacket packet;
 
-    public Proposal(Config config, List<String> knownHostAlgs) {
+    public Proposal(Config config, List<String> knownHostAlgs, boolean initialKex) {
         kex = Factory.Named.Util.getNames(config.getKeyExchangeFactories());
+        if (initialKex) {
+            kex.add("kex-strict-c-v00@openssh.com");
+        }
         sig = filterKnownHostKeyAlgorithms(Factory.Named.Util.getNames(config.getKeyAlgorithms()), knownHostAlgs);
         c2sCipher = s2cCipher = Factory.Named.Util.getNames(config.getCipherFactories());
         c2sMAC = s2cMAC = Factory.Named.Util.getNames(config.getMACFactories());
@@ -89,6 +92,10 @@ class Proposal {
 
     public List<String> getKeyExchangeAlgorithms() {
         return kex;
+    }
+
+    public boolean isStrictKeyExchangeSupportedByServer() {
+        return kex.contains("kex-strict-s-v00@openssh.com");
     }
 
     public List<String> getHostKeyAlgorithms() {

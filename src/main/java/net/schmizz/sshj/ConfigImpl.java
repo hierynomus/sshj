@@ -49,6 +49,8 @@ public class ConfigImpl
     private boolean waitForServerIdentBeforeSendingClientIdent = false;
     private LoggerFactory loggerFactory;
     private boolean verifyHostKeyCertificates = true;
+    // HF-982: default to 16MB buffers.
+    private int maxCircularBufferSize = 16 * 1024 * 1024;
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
@@ -173,6 +175,16 @@ public class ConfigImpl
     @Override
     public LoggerFactory getLoggerFactory() {
         return loggerFactory;
+    }
+
+    @Override
+    public int getMaxCircularBufferSize() {
+        return maxCircularBufferSize;
+    }
+
+    @Override
+    public void setMaxCircularBufferSize(int maxCircularBufferSize) {
+        this.maxCircularBufferSize = maxCircularBufferSize;
     }
 
     @Override

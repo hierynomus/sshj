@@ -15,22 +15,10 @@
  */
 package com.hierynomus.sshj.transport.verification;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.assertj.core.api.Assertions.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.module.ModuleDescriptor.Opens;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.security.PublicKey;
-import java.security.Security;
-import java.util.Base64;
-import java.util.stream.Stream;
-
+import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
+import net.schmizz.sshj.util.KeyUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -38,10 +26,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.SecurityUtils;
-import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
-import net.schmizz.sshj.util.KeyUtil;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.security.PublicKey;
+import java.util.Base64;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class OpenSSHKnownHostsTest {
     @TempDir
@@ -63,6 +57,11 @@ public class OpenSSHKnownHostsTest {
         OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
         assertTrue(ohk.verify("192.168.1.61", 22, k));
         assertFalse(ohk.verify("192.168.1.2", 22, k));
+        ohk.write();
+        for (OpenSSHKnownHosts.KnownHostEntry entry : ohk.entries()) {
+            assertEquals("|1|F1E1KeoE/eEWhi10WpGv4OdiO6Y=|3988QV0VE8wmZL7suNrYQLITLCg= ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6P9Hlwdahh250jGZYKg2snRq2j2lFJVdKSHyxqbJiVy9VX9gTkN3K2MD48qyrYLYOyGs3vTttyUk+cK++JMzURWsrP4piby7LpeOT+3Iq8CQNj4gXZdcH9w15Vuk2qS11at6IsQPVHpKD9HGg9//EFUccI/4w06k4XXLm/IxOGUwj6I2AeWmEOL3aDi+fe07TTosSdLUD6INtR0cyKsg0zC7Da24ixoShT8Oy3x2MpR7CY3PQ1pUVmvPkr79VeA+4qV9F1JM09WdboAMZgWQZ+XrbtuBlGsyhpUHSCQOya+kOJ+bYryS+U7A+6nmTW3C9FX4FgFqTF89UHOC7V0zZQ==",
+                    entry.getLine());
+        }
     }
 
     @Test
@@ -103,6 +102,34 @@ public class OpenSSHKnownHostsTest {
         OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
 
         assertTrue(ohk.verify("host1", 22, k));
+    }
+
+    @Test
+    public void shouldNotFailOnMalformedBase64String() throws IOException {
+        File knownHosts = knownHosts(
+                "1.1.1.1 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBA/CkqWXSlbdo7jPshvIWT/m3FAdpSIKUx/uTmz87ObpBxXsfF8aMSiwGMKHjqviTV4cG6F7vFf28ll+9CbGsbs=192\n"
+        );
+        OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
+        assertEquals(1, ohk.entries().size());
+        assertThat(ohk.entries().get(0)).isInstanceOf(OpenSSHKnownHosts.BadHostEntry.class);
+    }
+
+    @Test
+    public void shouldNotFailOnMalformeSaltBase64String() throws IOException {
+        // A record with broken base64 inside the salt part of the hash.
+        // No matter how it could be generated, such broken strings must not cause unexpected errors.
+        String hostName = "example.com";
+        File knownHosts = knownHosts(
+                "|1|2gujgGa6gJnK7wGPCX8zuGttvCMXX|Oqkbjtxd9RFxKQv6y3l3GIxLNiU= ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBGVVnyoAD5/uWiiuTSM3RuW8dEWRrqOXYobAMKHhAA6kuOBoPK+LoAYyUcN26bdMiCxg+VOaLHxPNWv5SlhbMWw=\n"
+        );
+        OpenSSHKnownHosts ohk = new OpenSSHKnownHosts(knownHosts);
+        assertEquals(1, ohk.entries().size());
+
+        // Some random valid public key. It doesn't matter for the test if it matches the broken host key record or not.
+        PublicKey k = new Buffer.PlainBuffer(Base64.getDecoder().decode(
+                "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLTjA7hduYGmvV9smEEsIdGLdghSPD7kL8QarIIOkeXmBh+LTtT/T1K+Ot/rmXCZsP8hoUXxbvN+Tks440Ci0ck="))
+                .readPublicKey();
+        assertFalse(ohk.verify(hostName, 22, k));
     }
 
     @Test

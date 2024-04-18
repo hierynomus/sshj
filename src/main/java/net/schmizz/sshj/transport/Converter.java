@@ -51,6 +51,14 @@ abstract class Converter {
         return seq;
     }
 
+    void resetSequenceNumber() {
+        seq = -1;
+    }
+
+    boolean isSequenceNumberAtMax() {
+        return seq == 0xffffffffL;
+    }
+
     void setAlgorithms(Cipher cipher, MAC mac, Compression compression) {
         this.cipher = cipher;
         this.mac = mac;
