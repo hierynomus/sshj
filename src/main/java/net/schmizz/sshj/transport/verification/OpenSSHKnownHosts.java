@@ -18,13 +18,7 @@ package net.schmizz.sshj.transport.verification;
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.transport.verification.KnownHostMatchers;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
-import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.common.LoggerFactory;
-import net.schmizz.sshj.common.SSHException;
-import net.schmizz.sshj.common.SSHRuntimeException;
-import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.common.*;
 import org.slf4j.Logger;
 
 import java.io.BufferedOutputStream;
@@ -41,6 +35,7 @@ import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -289,10 +284,10 @@ public class OpenSSHKnownHosts
             if (type != KeyType.UNKNOWN) {
                 final String sKey = split[i++];
                 try {
-                    byte[] keyBytes = Base64.getDecoder().decode(sKey);
+                    byte[] keyBytes = Base64Decoder.decode(sKey);
                     key = new Buffer.PlainBuffer(keyBytes).readPublicKey();
-                } catch (IOException ioe) {
-                    log.warn("Error decoding Base64 key bytes", ioe);
+                } catch (IOException | Base64DecodingException exception) {
+                    log.warn("Error decoding Base64 key bytes", exception);
                     return new BadHostEntry(line);
                 }
             } else if (isBits(sType)) {
@@ -468,7 +463,8 @@ public class OpenSSHKnownHosts
         }
 
         private String getKeyString(PublicKey pk) {
-            return Base64.getEncoder().encodeToString(pk.getEncoded());
+            final Buffer.PlainBuffer buf = new Buffer.PlainBuffer().putPublicKey(pk);
+            return Base64.getEncoder().encodeToString(Arrays.copyOfRange(buf.array(), buf.rpos(), buf.available()));
         }
 
         protected String getHostPart() {

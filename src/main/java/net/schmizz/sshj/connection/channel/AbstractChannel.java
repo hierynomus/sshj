@@ -164,8 +164,7 @@ public abstract class AbstractChannel
     }
 
     @Override
-    public void handle(Message msg, SSHPacket buf)
-            throws ConnectionException, TransportException {
+    public void handle(Message msg, SSHPacket buf) throws SSHException {
         switch (msg) {
 
             case CHANNEL_DATA:
@@ -354,7 +353,7 @@ public abstract class AbstractChannel
     }
 
     protected void gotExtendedData(SSHPacket buf)
-            throws ConnectionException, TransportException {
+            throws SSHException {
         throw new ConnectionException(DisconnectReason.PROTOCOL_ERROR,
                                       "Extended data not supported on " + type + " channel");
     }
@@ -375,7 +374,7 @@ public abstract class AbstractChannel
     }
 
     protected void receiveInto(ChannelInputStream stream, SSHPacket buf)
-            throws ConnectionException, TransportException {
+            throws SSHException {
         final int len;
         try {
             len = buf.readUInt32AsInt();

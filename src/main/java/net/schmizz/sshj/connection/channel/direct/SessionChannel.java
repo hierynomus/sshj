@@ -210,7 +210,7 @@ public class SessionChannel
 
     @Override
     protected void gotExtendedData(SSHPacket buf)
-            throws ConnectionException, TransportException {
+            throws SSHException {
         try {
             final int dataTypeCode = buf.readUInt32AsInt();
             if (dataTypeCode == 1)

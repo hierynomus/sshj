@@ -112,7 +112,7 @@ public class KeyExchangeRepeatTest {
     }
 
     private SSHPacket getKexinitPacket() {
-        SSHPacket kexinitPacket = new Proposal(config, Collections.emptyList()).getPacket();
+        SSHPacket kexinitPacket = new Proposal(config, Collections.emptyList(), false).getPacket();
         kexinitPacket.rpos(kexinitPacket.rpos() + 1);
         return kexinitPacket;
     }

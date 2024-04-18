@@ -15,12 +15,15 @@
  */
 package net.schmizz.sshj.sftp;
 
+import com.hierynomus.sshj.sftp.RemoteResourceSelector;
 import net.schmizz.sshj.sftp.Response.StatusCode;
 
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static com.hierynomus.sshj.sftp.RemoteResourceFilterConverter.selectorFrom;
 
 public class RemoteDirectory
         extends RemoteResource {
@@ -31,37 +34,55 @@ public class RemoteDirectory
 
     public List<RemoteResourceInfo> scan(RemoteResourceFilter filter)
             throws IOException {
-        List<RemoteResourceInfo> rri = new LinkedList<RemoteResourceInfo>();
-        // TODO: Remove GOTO! 
-        loop:
-        for (; ; ) {
-            final Response res = requester.request(newRequest(PacketType.READDIR))
-                    .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
-            switch (res.getType()) {
+        return scan(selectorFrom(filter));
+    }
 
+    public List<RemoteResourceInfo> scan(RemoteResourceSelector selector)
+            throws IOException {
+        if (selector == null) {
+            selector = RemoteResourceSelector.ALL;
+        }
+
+        List<RemoteResourceInfo> remoteResourceInfos = new LinkedList<>();
+
+        while (true) {
+            final Response response = requester.request(newRequest(PacketType.READDIR))
+                    .retrieve(requester.getTimeoutMs(), TimeUnit.MILLISECONDS);
+
+            switch (response.getType()) {
                 case NAME:
-                    final int count = res.readUInt32AsInt();
+                    final int count = response.readUInt32AsInt();
                     for (int i = 0; i < count; i++) {
-                        final String name = res.readString(requester.sub.getRemoteCharset());
-                        res.readString(); // long name - IGNORED - shdve never been in the protocol
-                        final FileAttributes attrs = res.readFileAttributes();
+                        final String name = response.readString(requester.sub.getRemoteCharset());
+                        response.readString(); // long name - IGNORED - shdve never been in the protocol
+                        final FileAttributes attrs = response.readFileAttributes();
                         final PathComponents comps = requester.getPathHelper().getComponents(path, name);
                         final RemoteResourceInfo inf = new RemoteResourceInfo(comps, attrs);
-                        if (!(".".equals(name) || "..".equals(name)) && (filter == null || filter.accept(inf))) {
-                            rri.add(inf);
+
+                        if (".".equals(name) || "..".equals(name)) {
+                            continue;
+                        }
+
+                        final RemoteResourceSelector.Result selectionResult = selector.select(inf);
+                        switch (selectionResult) {
+                            case ACCEPT:
+                                remoteResourceInfos.add(inf);
+                                break;
+                            case CONTINUE:
+                                continue;
+                            case BREAK:
+                                return remoteResourceInfos;
                         }
                     }
                     break;
 
                 case STATUS:
-                    res.ensureStatusIs(StatusCode.EOF);
-                    break loop;
+                    response.ensureStatusIs(StatusCode.EOF);
+                    return remoteResourceInfos;
 
                 default:
-                    throw new SFTPException("Unexpected packet: " + res.getType());
+                    throw new SFTPException("Unexpected packet: " + response.getType());
             }
         }
-        return rri;
     }
-
 }

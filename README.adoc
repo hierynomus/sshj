@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.37.0
+:sshj_version: 0.38.0
 :source-highlighter: pygments
 
 image:https://github.com/hierynomus/sshj/actions/workflows/gradle.yml/badge.svg[link="https://github.com/hierynomus/sshj/actions/workflows/gradle.yml"]
@@ -9,6 +9,8 @@ image:https://app.codacy.com/project/badge/Grade/2c8a5a67c6a54ed89c9a699fd6b2730
 image:https://codecov.io/gh/hierynomus/sshj/branch/master/graph/badge.svg["codecov", link="https://codecov.io/gh/hierynomus/sshj"]
 image:http://www.javadoc.io/badge/com.hierynomus/sshj.svg?color=blue["JavaDocs", link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
+
+WARNING: SSHJ versions up to and including 0.37.0 are vulnerable to https://nvd.nist.gov/vuln/detail/CVE-2023-48795[CVE-2023-48795 - Terrapin]. Please upgrade to 0.38.0 or higher.
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
 
@@ -46,7 +48,7 @@ If your project is built using another build tool that uses the Maven Central re
 In the `examples` directory, there is a separate Maven project that shows how the library can be used in some sample cases. If you want to run them, follow these guidelines:
 
 . Install http://maven.apache.org/[Maven 2.2.1] or up.
-. Clone the Overthere repository.
+. Clone the SSHJ repository.
 . Go into the `examples` directory and run the command `mvn eclipse:eclipse`.
 . Import the `examples` project into Eclipse.
 . Change the login details in the example classes (address, username and password) and run them!
@@ -108,6 +110,14 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.38.0 (2024-01-02)::
+* Mitigated CVE-2023-48795 - Terrapin
+  * Merged https://github.com/hierynomus/sshj/pull/917[#917]: Implement OpenSSH strict key exchange extension
+* Merged https://github.com/hierynomus/sshj/pull/903[#903]: Fix for writing known hosts key string
+* Merged https://github.com/hierynomus/sshj/pull/913[#913]: Prevent remote port forwarding buffers to grow without bounds
+* Moved tests to JUnit5
+* Merged https://github.com/hierynomus/sshj/pull/827[#827]: Fallback to posix-rename@openssh.com extension if available
+* Merged https://github.com/hierynomus/sshj/pull/904[#904]: Add ChaCha20-Poly1305 support for OpenSSH keys
 SSHJ 0.37.0 (2023-10-11)::
 * Merged https://github.com/hierynomus/sshj/pull/899[#899]: Add support for AES-GCM OpenSSH private keys
 * Merged https://github.com/hierynomus/sshj/pull/901[#901]: Fix ZLib compression bug
