@@ -382,6 +382,18 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldSuccessfullyLoadSignedRSAPublicKeyFromStream() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new FileReader("src/test/resources/keytypes/certificate/test_rsa"),
+                new FileReader("src/test/resources/keytypes/certificate/test_rsa.pub"),
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        PublicKey pubKey = keyFile.getPublic();
+        assertNotNull(pubKey);
+        assertEquals("RSA", pubKey.getAlgorithm());
+    }
+
+    @Test
     public void shouldSuccessfullyLoadSignedRSAPublicKeyWithMaxDate() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa_max_date"),
@@ -420,6 +432,17 @@ public class OpenSSHKeyFileTest {
 
         assertEquals(1, certificate.getExtensions().size());
         assertEquals("", certificate.getExtensions().get("permit-pty"));
+    }
+
+    @Test
+    public void shouldSuccessfullyLoadSignedDSAPublicKeyFromStream() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new FileReader("src/test/resources/keytypes/certificate/test_dsa"),
+                new FileReader("src/test/resources/keytypes/certificate/test_dsa-cert.pub"),
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        PublicKey pubKey = keyFile.getPublic();
+        assertEquals("DSA", pubKey.getAlgorithm());
     }
 
     /**

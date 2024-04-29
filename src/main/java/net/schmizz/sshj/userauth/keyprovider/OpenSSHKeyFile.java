@@ -16,6 +16,7 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyFileUtil;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
 
 import java.io.*;
 import java.security.PublicKey;
@@ -54,21 +55,22 @@ public class OpenSSHKeyFile
     }
 
     @Override
-    public void init(File location) {
+    public void init(File location, PasswordFinder pwdf) {
         // try cert key location first
         File pubKey = OpenSSHKeyFileUtil.getPublicKeyFile(location);
-        if (pubKey != null)
+        if (pubKey != null) {
             try {
                 initPubKey(new FileReader(pubKey));
             } catch (IOException e) {
                 // let super provide both public & private key
                 log.warn("Error reading public key file: {}", e.toString());
             }
-        super.init(location);
+        }
+        super.init(location, pwdf);
     }
 
     @Override
-    public void init(String privateKey, String publicKey) {
+    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
         if (publicKey != null) {
             try {
                 initPubKey(new StringReader(publicKey));
@@ -77,7 +79,20 @@ public class OpenSSHKeyFile
                 log.warn("Error reading public key: {}", e.toString());
             }
         }
-        super.init(privateKey, null);
+        super.init(privateKey, null, pwdf);
+    }
+
+    @Override
+    public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
+        if (publicKey != null) {
+            try {
+                initPubKey(publicKey);
+            } catch (IOException e) {
+                // let super provide both public & private key
+                log.warn("Error reading public key: {}", e.toString());
+            }
+        }
+        super.init(privateKey, null, pwdf);
     }
 
     /**
