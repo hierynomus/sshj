@@ -121,7 +121,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        if (pubKey != null) {
+        if (publicKey != null) {
             try {
                 initPubKey(new StringReader(publicKey));
             } catch (IOException e) {
@@ -133,7 +133,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
-        if (pubKey != null) {
+        if (publicKey != null) {
             try {
                 initPubKey(publicKey);
             } catch (IOException e) {
