@@ -41,11 +41,11 @@ compileJava {
 
 configurations.implementation.transitive = false
 
-def bouncycastleVersion = "1.78"
-def sshdVersion = "2.10.0"
+def bouncycastleVersion = "1.78.1"
+def sshdVersion = "2.12.1"
 
 dependencies {
-  implementation "org.slf4j:slf4j-api:2.0.7"
+  implementation "org.slf4j:slf4j-api:2.0.13"
   implementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
   implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
   implementation "com.hierynomus:asn-one:0.6.0"
@@ -59,7 +59,6 @@ license {
     java = 'SLASHSTAR_STYLE'
   }
   excludes([
-    '**/sshj/common/Base64.java',
     '**/com/hierynomus/sshj/userauth/keyprovider/bcrypt/*.java',
     '**/files/test_file_*.txt',
   ])
@@ -86,7 +85,7 @@ testing {
     configureEach {
       useJUnitJupiter()
       dependencies {
-        implementation "org.slf4j:slf4j-api:2.0.7"
+        implementation "org.slf4j:slf4j-api:2.0.13"
         implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
         implementation "org.mockito:mockito-core:4.11.0"
         implementation "org.assertj:assertj-core:3.24.2"
@@ -94,7 +93,7 @@ testing {
         implementation "org.apache.sshd:sshd-core:$sshdVersion"
         implementation "org.apache.sshd:sshd-sftp:$sshdVersion"
         implementation "org.apache.sshd:sshd-scp:$sshdVersion"
-        implementation "ch.qos.logback:logback-classic:1.3.8"
+        implementation "ch.qos.logback:logback-classic:1.3.14"
         implementation 'org.glassfish.grizzly:grizzly-http-server:3.0.1'
       }
 
@@ -130,8 +129,8 @@ testing {
     integrationTest(JvmTestSuite) {
       dependencies {
         implementation project()
-        implementation 'org.testcontainers:testcontainers:1.18.3'
-        implementation 'org.testcontainers:junit-jupiter:1.18.3'
+        implementation 'org.testcontainers:testcontainers:1.19.8'
+        implementation 'org.testcontainers:junit-jupiter:1.19.8'
       }
 
       sources {
