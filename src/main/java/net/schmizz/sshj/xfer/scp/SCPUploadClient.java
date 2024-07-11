@@ -44,14 +44,14 @@ public class SCPUploadClient extends AbstractSCPClient {
     }
 
     public synchronized int copy (LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode) throws IOException {
-        return copy(sourceFile, remotePath, escapeMode, true);
+        return copy(sourceFile, remotePath, escapeMode, true, true);
     }
 
-    public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes)
-        throws IOException {
+    public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes, boolean defaultArgs)
+            throws IOException {
         engine.cleanSlate();
         try {
-            startCopy(sourceFile, remotePath, escapeMode, preserveTimes);
+            startCopy(sourceFile, remotePath, escapeMode, preserveTimes, defaultArgs);
         } finally {
             engine.exit();
         }
@@ -62,11 +62,9 @@ public class SCPUploadClient extends AbstractSCPClient {
         this.uploadFilter = uploadFilter;
     }
 
-    private void startCopy(LocalSourceFile sourceFile, String targetPath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes)
-        throws IOException {
-        ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SINK)
-            .and(ScpCommandLine.Arg.RECURSIVE)
-            .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
+    private void startCopy(LocalSourceFile sourceFile, String targetPath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes, boolean defaultArgs)
+            throws IOException {
+        ScpCommandLine commandLine = initialScpArguments(defaultArgs);
         if (preserveTimes) {
             commandLine.and(ScpCommandLine.Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime());
         }
@@ -74,6 +72,13 @@ public class SCPUploadClient extends AbstractSCPClient {
         engine.execSCPWith(commandLine);
         engine.check("Start status OK");
         process(engine.getTransferListener(), sourceFile, preserveTimes);
+    }
+
+    protected ScpCommandLine initialScpArguments(boolean defaultArgs) {
+        if (!defaultArgs) return ScpCommandLine.with(ScpCommandLine.Arg.SINK);
+        return ScpCommandLine.with(ScpCommandLine.Arg.SINK)
+                .and(ScpCommandLine.Arg.RECURSIVE)
+                .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
     }
 
     private void process(TransferListener listener, LocalSourceFile f, boolean preserveTimes)

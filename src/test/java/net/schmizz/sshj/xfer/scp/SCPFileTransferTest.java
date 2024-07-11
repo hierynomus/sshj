@@ -18,6 +18,7 @@ package net.schmizz.sshj.xfer.scp;
 import com.hierynomus.sshj.test.SshServerExtension;
 import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.xfer.FileSystemFile;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,6 +85,19 @@ public class SCPFileTransferTest {
         SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer().bandwidthLimit(16000);
         assertFalse(Files.exists(targetFile));
         scpFileTransfer.upload(sourceFile.toAbsolutePath().toString(), targetDir.toAbsolutePath().toString());
+        assertTrue(Files.exists(targetFile));
+    }
+
+    @Test
+    public void shouldSCPUploadFileWithoutArgs() throws IOException {
+        // scp without any option
+        SCPFileTransfer scpFileTransfer = sshClient.newSCPFileTransfer();
+        assertFalse(Files.exists(targetFile));
+        scpFileTransfer.newSCPUploadClient().copy(
+                new FileSystemFile(sourceFile.toAbsolutePath().toString()) ,
+                targetDir.toAbsolutePath().toString(),
+                ScpCommandLine.EscapeMode.SingleQuote,
+                false, false);
         assertTrue(Files.exists(targetFile));
     }
 
