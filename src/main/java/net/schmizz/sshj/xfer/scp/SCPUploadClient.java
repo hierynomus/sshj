@@ -20,6 +20,7 @@ import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.xfer.LocalFileFilter;
 import net.schmizz.sshj.xfer.LocalSourceFile;
 import net.schmizz.sshj.xfer.TransferListener;
+import net.schmizz.sshj.xfer.scp.ScpCommandLine.Arg;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,37 +44,44 @@ public class SCPUploadClient extends AbstractSCPClient {
         return copy(sourceFile, remotePath, ScpCommandLine.EscapeMode.SingleQuote);
     }
 
-    public synchronized int copy (LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode) throws IOException {
+    public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode)
+            throws IOException {
         return copy(sourceFile, remotePath, escapeMode, true);
     }
 
     public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes)
-        throws IOException {
+            throws IOException {
+        ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SINK)
+                .and(ScpCommandLine.Arg.RECURSIVE)
+                .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
+        if (preserveTimes) {
+            commandLine.and(ScpCommandLine.Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime());
+        }
+        return copy(sourceFile, remotePath, escapeMode, commandLine);
+    }
+
+    public synchronized int copy(LocalSourceFile sourceFile, String remotePath, ScpCommandLine.EscapeMode escapeMode, ScpCommandLine commandLine)
+            throws IOException {
         engine.cleanSlate();
         try {
-            startCopy(sourceFile, remotePath, escapeMode, preserveTimes);
+            commandLine.withPath(remotePath, escapeMode);
+            startCopy(sourceFile, commandLine);
         } finally {
             engine.exit();
         }
         return engine.getExitStatus();
     }
 
+
     public void setUploadFilter(LocalFileFilter uploadFilter) {
         this.uploadFilter = uploadFilter;
     }
 
-    private void startCopy(LocalSourceFile sourceFile, String targetPath, ScpCommandLine.EscapeMode escapeMode, boolean preserveTimes)
+    private void startCopy(LocalSourceFile sourceFile, ScpCommandLine commandLine)
         throws IOException {
-        ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SINK)
-            .and(ScpCommandLine.Arg.RECURSIVE)
-            .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
-        if (preserveTimes) {
-            commandLine.and(ScpCommandLine.Arg.PRESERVE_TIMES, sourceFile.providesAtimeMtime());
-        }
-        commandLine.withPath(targetPath, escapeMode);
         engine.execSCPWith(commandLine);
         engine.check("Start status OK");
-        process(engine.getTransferListener(), sourceFile, preserveTimes);
+        process(engine.getTransferListener(), sourceFile, commandLine.has(Arg.PRESERVE_TIMES));
     }
 
     private void process(TransferListener listener, LocalSourceFile f, boolean preserveTimes)

@@ -24,7 +24,7 @@ public class ScpCommandLine {
     private static final String SCP_COMMAND = "scp";
     private EscapeMode mode;
 
-    enum Arg {
+    public enum Arg {
         SOURCE('f'),
         SINK('t'),
         RECURSIVE('r'),
@@ -77,19 +77,19 @@ public class ScpCommandLine {
     ScpCommandLine() {
     }
 
-    static ScpCommandLine with(Arg name) {
+    public static ScpCommandLine with(Arg name) {
         return with(name, null, true);
     }
 
-    static ScpCommandLine with(Arg name, String value) {
+    public static ScpCommandLine with(Arg name, String value) {
         return with(name, value, true);
     }
 
-    static ScpCommandLine with(Arg name, boolean accept) {
+    public static ScpCommandLine with(Arg name, boolean accept) {
         return with(name, null, accept);
     }
 
-    static ScpCommandLine with(Arg name, String value, boolean accept) {
+    public static ScpCommandLine with(Arg name, String value, boolean accept) {
         ScpCommandLine commandLine = new ScpCommandLine();
         commandLine.addArgument(name, value, accept);
         return commandLine;
@@ -101,22 +101,22 @@ public class ScpCommandLine {
         }
     }
 
-    ScpCommandLine and(Arg name) {
+    public ScpCommandLine and(Arg name) {
         addArgument(name, null, true);
         return this;
     }
 
-    ScpCommandLine and(Arg name, String value) {
+    public ScpCommandLine and(Arg name, String value) {
         addArgument(name, value, true);
         return this;
     }
 
-    ScpCommandLine and(Arg name, boolean accept) {
+    public ScpCommandLine and(Arg name, boolean accept) {
         addArgument(name, null, accept);
         return this;
     }
 
-    ScpCommandLine and(Arg name, String value, boolean accept) {
+    public ScpCommandLine and(Arg name, String value, boolean accept) {
         addArgument(name, value, accept);
         return this;
     }
@@ -125,6 +125,10 @@ public class ScpCommandLine {
         this.path = path;
         this.mode = mode;
         return this;
+    }
+
+    boolean has(Arg arg) {
+        return arguments.containsKey(arg);
     }
 
     String toCommandLine() {
