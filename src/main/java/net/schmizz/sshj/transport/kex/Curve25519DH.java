@@ -34,13 +34,14 @@ public class Curve25519DH extends DHBase {
 
     private static final String ALGORITHM = "X25519";
 
-    private static final int ENCODED_ALGORITHM_ID_KEY_LENGTH = 44;
-
-    private static final int ALGORITHM_ID_LENGTH = 12;
-
     private static final int KEY_LENGTH = 32;
 
-    private final byte[] algorithmId = new byte[ALGORITHM_ID_LENGTH];
+    private int encodedKeyLength;
+
+    private int algorithmIdLength;
+
+    // Algorithm Identifier is set on Key Agreement Initialization
+    private byte[] algorithmId = new byte[KEY_LENGTH];
 
     public Curve25519DH() {
         super(ALGORITHM, ALGORITHM);
@@ -81,23 +82,24 @@ public class Curve25519DH extends DHBase {
     private void setPublicKey(final PublicKey publicKey) {
         final byte[] encoded = publicKey.getEncoded();
 
-        // Encoded public key consists of the algorithm identifier and public key
-        if (encoded.length == ENCODED_ALGORITHM_ID_KEY_LENGTH) {
-            final byte[] publicKeyEncoded = new byte[KEY_LENGTH];
-            System.arraycopy(encoded, ALGORITHM_ID_LENGTH, publicKeyEncoded, 0, KEY_LENGTH);
-            setE(publicKeyEncoded);
+        // Set key and algorithm identifier lengths based on initialized Public Key
+        encodedKeyLength = encoded.length;
+        algorithmIdLength = encodedKeyLength - KEY_LENGTH;
+        algorithmId = new byte[algorithmIdLength];
 
-            // Save Algorithm Identifier byte array
-            System.arraycopy(encoded, 0, algorithmId, 0, ALGORITHM_ID_LENGTH);
-        } else {
-            throw new IllegalArgumentException(String.format("X25519 unsupported public key length [%d]", encoded.length));
-        }
+        // Encoded public key consists of the algorithm identifier and public key
+        final byte[] publicKeyEncoded = new byte[KEY_LENGTH];
+        System.arraycopy(encoded, algorithmIdLength, publicKeyEncoded, 0, KEY_LENGTH);
+        setE(publicKeyEncoded);
+
+        // Save Algorithm Identifier byte array
+        System.arraycopy(encoded, 0, algorithmId, 0, algorithmIdLength);
     }
 
     private KeySpec getPeerPublicKeySpec(final byte[] peerPublicKey) {
-        final byte[] encodedKeySpec = new byte[ENCODED_ALGORITHM_ID_KEY_LENGTH];
-        System.arraycopy(algorithmId, 0, encodedKeySpec, 0, ALGORITHM_ID_LENGTH);
-        System.arraycopy(peerPublicKey, 0, encodedKeySpec, ALGORITHM_ID_LENGTH, KEY_LENGTH);
+        final byte[] encodedKeySpec = new byte[encodedKeyLength];
+        System.arraycopy(algorithmId, 0, encodedKeySpec, 0, algorithmIdLength);
+        System.arraycopy(peerPublicKey, 0, encodedKeySpec, algorithmIdLength, KEY_LENGTH);
         return new X509EncodedKeySpec(encodedKeySpec);
     }
 }
