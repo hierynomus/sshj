@@ -45,9 +45,20 @@ public class SCPDownloadClient extends AbstractSCPClient {
 
     public synchronized int copy(String sourcePath, LocalDestFile targetFile, ScpCommandLine.EscapeMode escapeMode)
             throws IOException {
+        ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SOURCE)
+                                                   .and(ScpCommandLine.Arg.QUIET)
+                                                   .and(ScpCommandLine.Arg.PRESERVE_TIMES)
+                                                   .and(ScpCommandLine.Arg.RECURSIVE, recursiveMode)
+                                                   .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
+        return copy(sourcePath, targetFile, escapeMode, commandLine);
+    }
+
+    public synchronized int copy(String sourcePath, LocalDestFile targetFile, ScpCommandLine.EscapeMode escapeMode, ScpCommandLine commandLine)
+            throws IOException {
         engine.cleanSlate();
         try {
-            startCopy(sourcePath, targetFile, escapeMode);
+            commandLine.withPath(sourcePath, escapeMode);
+            startCopy(targetFile, commandLine);
         } finally {
             engine.exit();
         }
@@ -62,14 +73,7 @@ public class SCPDownloadClient extends AbstractSCPClient {
         this.recursiveMode = recursive;
     }
 
-    private void startCopy(String sourcePath, LocalDestFile targetFile, ScpCommandLine.EscapeMode escapeMode)
-            throws IOException {
-        ScpCommandLine commandLine = ScpCommandLine.with(ScpCommandLine.Arg.SOURCE)
-                            .and(ScpCommandLine.Arg.QUIET)
-                            .and(ScpCommandLine.Arg.PRESERVE_TIMES)
-                            .and(ScpCommandLine.Arg.RECURSIVE, recursiveMode)
-                            .and(ScpCommandLine.Arg.LIMIT, String.valueOf(bandwidthLimit), (bandwidthLimit > 0));
-        commandLine.withPath(sourcePath, escapeMode);
+    private void startCopy(LocalDestFile targetFile, ScpCommandLine commandLine) throws IOException {
         engine.execSCPWith(commandLine);
 
         engine.signal("Start status OK");
