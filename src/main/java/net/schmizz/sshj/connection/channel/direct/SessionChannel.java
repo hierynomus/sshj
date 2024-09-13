@@ -225,7 +225,9 @@ public class SessionChannel
 
     @Override
     public void notifyError(SSHException error) {
-        err.notifyError(error);
+        if (err != null) {
+            err.notifyError(error);
+        }
         super.notifyError(error);
     }
 
