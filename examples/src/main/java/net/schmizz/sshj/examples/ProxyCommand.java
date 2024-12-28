@@ -18,7 +18,7 @@ public class ProxyCommand {
             throws IOException {
     	
     	/* 
-    	for testing, use a locally-installed ssh client (which sort of defeats the purpose of using sshj),
+    	for testing, uses a locally-installed ssh client,
     	
     	but for AWS SSM, once you've negotiated the OAuth/SAML login for SSO, 
     	then called StsClient.getCallerIdentity() to check that worked
@@ -47,7 +47,7 @@ public class ProxyCommand {
         ssh.connectVia(recvStream, xmitStream);
         
         try {
-        	ssh.authPublickey(System.getProperty("user.name"));
+            ssh.authPublickey(System.getProperty("user.name"));
             final Session session = ssh.startSession();
             try {
                 final Session.Command cmd = session.exec("ping -c 1 google.com");
