@@ -94,6 +94,7 @@ public abstract class SocketClient {
         onConnect();
     }
 
+    /** Connect using the supplied InputStream and OutputStream. */
     public void connectVia(InputStream input, OutputStream output) throws IOException {
         this.hostname = null; 
         this.port = -1;
@@ -103,7 +104,6 @@ public abstract class SocketClient {
         onConnect();
     }
 
-    
     /** Connect to a remote address via a direct TCP/IP connection from the server. */
     public void connectVia(DirectConnection directConnection) throws IOException {
         connectVia(directConnection, directConnection.getRemoteHost(), directConnection.getRemotePort());
