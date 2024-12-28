@@ -96,8 +96,8 @@ public abstract class SocketClient {
 
     /** Connect using the supplied InputStream and OutputStream. */
     public void connectVia(InputStream input, OutputStream output) throws IOException {
-        this.hostname = null; 
-        this.port = -1;
+        this.hostname = "localhost"; 
+        this.port = 65535;
         this.input = input;
         this.output = output;
         this.tunneled = true;
