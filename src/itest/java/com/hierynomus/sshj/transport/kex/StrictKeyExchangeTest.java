@@ -145,7 +145,7 @@ class StrictKeyExchangeTest {
 
         @Override
         protected void doKeepAlive() throws TransportException {
-            conn.getTransport().write(new SSHPacket(Message.IGNORE));
+            conn.getTransport().write(new SSHPacket(Message.IGNORE).putString(""));
         }
 
     }
