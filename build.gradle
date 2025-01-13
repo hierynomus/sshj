@@ -86,8 +86,8 @@ testing {
       useJUnitJupiter()
       dependencies {
         implementation "org.slf4j:slf4j-api:2.0.13"
-        implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
-        implementation "org.mockito:mockito-core:4.11.0"
+        implementation "org.spockframework:spock-core:2.4-M5-groovy-4.0"
+        implementation "org.mockito:mockito-core:5.15.2"
         implementation "org.assertj:assertj-core:3.24.2"
         implementation "ru.vyarus:spock-junit5:1.2.0"
         implementation "org.apache.sshd:sshd-core:$sshdVersion"

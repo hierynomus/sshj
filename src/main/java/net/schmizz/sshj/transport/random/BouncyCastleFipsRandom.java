@@ -22,13 +22,13 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
 /**
- * BouncyCastle <code>Random</code>. This pseudo random number generator uses BouncyCastle non fips.
+ * BouncyCastle <code>Random</code>. This pseudo random number generator uses BouncyCastle fips.
  * The JRE random will be used when creating a new generator to add some random data to the seed.
  */
-public class BouncyCastleRandom
+public class BouncyCastleFipsRandom
         implements Random {
 
-    private static final Logger logger = LoggerFactory.getLogger(BouncyCastleRandom.class);
+    private static final Logger logger = LoggerFactory.getLogger(BouncyCastleFipsRandom.class);
 
     /** Named factory for the BouncyCastle <code>Random</code> */
     public static class Factory
@@ -36,39 +36,39 @@ public class BouncyCastleRandom
 
         @Override
         public Random create() {
-            return new BouncyCastleRandom();
+            return new BouncyCastleFipsRandom();
         }
 
     }
     private byte[] tmp = new byte[16];
     private final SecureRandom random;
 
-  public BouncyCastleRandom() {
-    logger.info("Generating random seed from SecureRandom of BC.");
-    long t = System.currentTimeMillis();
-    try {
-      // Use SecureRandom with the BC provider
-      random = SecureRandom.getInstance("DEFAULT", "BC");
-    } catch (NoSuchProviderException e) {
-      throw new RuntimeException("BC provider is not in the classpath", e);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to initialize SecureRandom with BC provider", e);
+    public BouncyCastleFipsRandom() {
+        logger.info("Generating random seed from SecureRandom of BCFIPS.");
+        long t = System.currentTimeMillis();
+        try {
+            // Use SecureRandom with the BCFIPS provider
+            random = SecureRandom.getInstance("DEFAULT", "BCFIPS");
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException("BCFIPS provider is not available", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize SecureRandom with BCFIPS provider", e);
+        }
+        logger.debug("Creating random seed took {} ms", System.currentTimeMillis() - t);
     }
-    logger.debug("Creating random seed took {} ms", System.currentTimeMillis() - t);
-  }
 
-  @Override
-  public synchronized void fill(byte[] bytes, int start, int len) {
-    if (start == 0 && len == bytes.length) {
-      random.nextBytes(bytes);
-    } else {
-      synchronized (this) {
-        if (len > tmp.length) tmp = new byte[len];
-        random.nextBytes(tmp);
-        System.arraycopy(tmp, 0, bytes, start, len);
-      }
+    @Override
+    public synchronized void fill(byte[] bytes, int start, int len) {
+        if (start == 0 && len == bytes.length) {
+            random.nextBytes(bytes);
+        } else {
+            synchronized (this) {
+                if (len > tmp.length) tmp = new byte[len];
+                random.nextBytes(tmp);
+                System.arraycopy(tmp, 0, bytes, start, len);
+            }
+        }
     }
-  }
 
     @Override
     public void fill(byte[] bytes) {
