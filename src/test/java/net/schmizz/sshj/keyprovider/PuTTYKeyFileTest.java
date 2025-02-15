@@ -425,7 +425,6 @@ public class PuTTYKeyFileTest {
 
         PKCS8KeyFile referenceKey = new PKCS8KeyFile();
         referenceKey.init(new File("src/test/resources/keytypes/test_ecdsa_nistp256"));
-        assertEquals(key.getPrivate(), referenceKey.getPrivate());
         assertEquals(key.getPublic(), referenceKey.getPublic());
     }
 

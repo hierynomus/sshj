@@ -24,11 +24,8 @@ import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
-import org.bouncycastle.asn1.nist.NISTNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
@@ -173,29 +170,26 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.readBytes(), ed25519);
             return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
         }
-        final String ecdsaCurve;
+        final ECDSACurve ecdsaCurve;
         switch (keyType) {
             case ECDSA256:
-                ecdsaCurve = "P-256";
+                ecdsaCurve = ECDSACurve.SECP256R1;
                 break;
             case ECDSA384:
-                ecdsaCurve = "P-384";
+                ecdsaCurve = ECDSACurve.SECP384R1;
                 break;
             case ECDSA521:
-                ecdsaCurve = "P-521";
+                ecdsaCurve = ECDSACurve.SECP521R1;
                 break;
             default:
                 ecdsaCurve = null;
                 break;
         }
         if (ecdsaCurve != null) {
-            BigInteger s = new BigInteger(1, privateKeyReader.readBytes());
-            X9ECParameters ecParams = NISTNamedCurves.getByName(ecdsaCurve);
-            ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(ecdsaCurve, ecParams.getCurve(), ecParams.getG(),
-                    ecParams.getN());
-            ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
+            final BigInteger s = new BigInteger(1, privateKeyReader.readBytes());
+
             try {
-                PrivateKey privateKey = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
+                final PrivateKey privateKey = ECDSAKeyFactory.getPrivateKey(s, ecdsaCurve);
                 return new KeyPair(keyType.readPubKeyFromBuffer(publicKeyReader), privateKey);
             } catch (GeneralSecurityException e) {
                 throw new IOException(e.getMessage(), e);
