@@ -9,7 +9,7 @@ plugins {
   id 'pl.allegro.tech.build.axion-release' version '1.15.3'
   id "com.github.hierynomus.license" version "0.16.1"
   id "com.bmuschko.docker-remote-api" version "9.2.1"
-  id 'ru.vyarus.github-info' version '1.5.0'
+  id 'ru.vyarus.github-info' version '2.0.0'
   id "io.github.gradle-nexus.publish-plugin" version "1.3.0"
 }
 
@@ -20,6 +20,11 @@ defaultTasks "build"
 
 repositories {
   mavenCentral()
+}
+
+github {
+    user 'hierynomus'
+    license 'Apache'
 }
 
 scmVersion {
@@ -200,11 +205,6 @@ sourcesJar {
       "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
     )
   }
-}
-
-github {
-  user 'hierynomus'
-  license 'Apache'
 }
 
 publishing {
