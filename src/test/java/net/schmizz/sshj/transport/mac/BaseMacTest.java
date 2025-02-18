@@ -17,10 +17,11 @@ package net.schmizz.sshj.transport.mac;
 
 import com.hierynomus.sshj.transport.mac.Macs;
 import net.schmizz.sshj.common.SSHRuntimeException;
-import org.bouncycastle.util.encoders.Hex;
+import org.apache.sshd.common.util.buffer.BufferUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,9 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class BaseMacTest {
-    private static final Charset CHARSET = Charset.forName("US-ASCII");
+    private static final Charset CHARSET = StandardCharsets.US_ASCII;
     private static final byte[] PLAIN_TEXT = "Hello World".getBytes(CHARSET);
-    private static final String EXPECTED_HMAC = "24ddeed57ad91465c5b59dce74ef73778bfb0cb9";
+    private static final String EXPECTED_HMAC = "24 dd ee d5 7a d9 14 65 c5 b5 9d ce 74 ef 73 77 8b fb 0c b9";
     private static final String KEY = "et1Quo5ooCie6theel8i";
 
     @Test
@@ -38,7 +39,7 @@ public class BaseMacTest {
         BaseMAC hmac = Macs.HMACSHA1().create();
         hmac.init((KEY + "foo").getBytes(CHARSET));
         hmac.update(PLAIN_TEXT);
-        assertThat(Hex.toHexString(hmac.doFinal()),  is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(hmac.doFinal()),  is(EXPECTED_HMAC));
     }
 
     @Test
@@ -54,7 +55,7 @@ public class BaseMacTest {
     public void testUpdateWithDoFinal() {
         BaseMAC hmac = initHmac();
         hmac.update(PLAIN_TEXT);
-        assertThat(Hex.toHexString(hmac.doFinal()),  is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(hmac.doFinal()),  is(EXPECTED_HMAC));
     }
 
     @Test
@@ -67,13 +68,13 @@ public class BaseMacTest {
 
         // update with the range from the second to penultimate byte
         hmac.update(plainText, 1, PLAIN_TEXT.length);
-        assertThat(Hex.toHexString(hmac.doFinal()),  is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(hmac.doFinal()),  is(EXPECTED_HMAC));
     }
 
     @Test
     public void testDoFinalWithInput() {
         BaseMAC hmac = initHmac();
-        assertThat(Hex.toHexString(hmac.doFinal(PLAIN_TEXT)), is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(hmac.doFinal(PLAIN_TEXT)), is(EXPECTED_HMAC));
     }
 
     @Test
@@ -82,7 +83,7 @@ public class BaseMacTest {
         byte[] resultBuf = new byte[20];
         hmac.update(PLAIN_TEXT);
         hmac.doFinal(resultBuf, 0);
-        assertThat(Hex.toHexString(resultBuf), is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(resultBuf), is(EXPECTED_HMAC));
     }
 
     private BaseMAC initHmac() {

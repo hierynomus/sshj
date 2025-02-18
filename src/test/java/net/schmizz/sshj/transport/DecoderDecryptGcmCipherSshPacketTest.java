@@ -22,12 +22,10 @@ import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.cipher.Cipher;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.security.SecureRandom;
-import java.security.Security;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -49,7 +47,6 @@ public class DecoderDecryptGcmCipherSshPacketTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        Security.addProvider(new BouncyCastleProvider());
         ClassLoader classLoader = DecoderDecryptGcmCipherSshPacketTest.class.getClassLoader();
         iv = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/mina-sshd/s2c.iv.bin" )).toByteArray();
         key = IOUtils.readFully(classLoader.getResourceAsStream("ssh-packets/gcm/mina-sshd/s2c.key.bin" )).toByteArray();
