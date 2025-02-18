@@ -17,21 +17,16 @@ package net.schmizz.sshj.common;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.secg.SecgUtils;
-import org.bouncycastle.asn1.nist.NISTNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.Key;
-import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.interfaces.ECKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPoint;
-import java.security.spec.ECPublicKeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,13 +37,13 @@ class ECDSAVariationsAdapter {
 
     private final static Logger log = LoggerFactory.getLogger(ECDSAVariationsAdapter.class);
 
-    public final static Map<String, String> SUPPORTED_CURVES = new HashMap<String, String>();
-    public final static Map<String, String> NIST_CURVES_NAMES = new HashMap<String, String>();
+    public final static Map<String, String> SUPPORTED_CURVES = new HashMap<>();
+    public final static Map<String, ECDSACurve> NIST_CURVES = new HashMap<>();
 
     static {
-        NIST_CURVES_NAMES.put("256", "p-256");
-        NIST_CURVES_NAMES.put("384", "p-384");
-        NIST_CURVES_NAMES.put("521", "p-521");
+        NIST_CURVES.put("256", ECDSACurve.SECP256R1);
+        NIST_CURVES.put("384", ECDSACurve.SECP384R1);
+        NIST_CURVES.put("521", ECDSACurve.SECP521R1);
 
         SUPPORTED_CURVES.put("256", "nistp256");
         SUPPORTED_CURVES.put("384", "nistp384");
@@ -72,21 +67,15 @@ class ECDSAVariationsAdapter {
                         algorithm, curveName, keyLen, x04, Arrays.toString(x), Arrays.toString(y)));
             }
 
-            if (!SUPPORTED_CURVES.values().contains(curveName)) {
+            if (!SUPPORTED_CURVES.containsValue(curveName)) {
                 throw new GeneralSecurityException(String.format("Unknown curve %s", curveName));
             }
 
-            BigInteger bigX = new BigInteger(1, x);
-            BigInteger bigY = new BigInteger(1, y);
-
-            String name = NIST_CURVES_NAMES.get(variation);
-            X9ECParameters ecParams = NISTNamedCurves.getByName(name);
-            ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
-            ECPoint p = new ECPoint(bigX, bigY);
-            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(p, ecCurveSpec);
-
-            KeyFactory keyFactory = KeyFactory.getInstance(KeyAlgorithm.ECDSA);
-            return keyFactory.generatePublic(publicKeySpec);
+            final BigInteger bigX = new BigInteger(1, x);
+            final BigInteger bigY = new BigInteger(1, y);
+            final ECPoint point = new ECPoint(bigX, bigY);
+            final ECDSACurve ecdsaCurve = NIST_CURVES.get(variation);
+            return ECDSAKeyFactory.getPublicKey(point, ecdsaCurve);
         } catch (Exception ex) {
             throw new GeneralSecurityException(ex);
         }
@@ -96,7 +85,7 @@ class ECDSAVariationsAdapter {
         final ECPublicKey ecdsa = (ECPublicKey) pk;
         byte[] encoded = SecgUtils.getEncoded(ecdsa.getW(), ecdsa.getParams().getCurve());
 
-        buf.putString("nistp" + Integer.toString(fieldSizeFromKey(ecdsa)))
+        buf.putString("nistp" + (fieldSizeFromKey(ecdsa)))
             .putBytes(encoded);
     }
 

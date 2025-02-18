@@ -31,10 +31,6 @@ import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
-import org.bouncycastle.asn1.nist.NISTNamedCurves;
-import org.bouncycastle.asn1.x9.X9ECParameters;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.bouncycastle.openssl.EncryptionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +43,6 @@ import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,7 +50,7 @@ import java.util.Map;
 
 /**
  * Reads a key file in the new OpenSSH format.
- * The format is described in the following document: https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key
+ * The format is described in the following document: <a href="https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key">Key Protocol</a>
  */
 public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     private static final String BEGIN = "-----BEGIN ";
@@ -244,7 +239,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             cipher.update(privateKey, 0, privateKeyLength);
         } catch (final SSHRuntimeException e) {
             final String message = String.format("OpenSSH Private Key decryption failed with cipher [%s]", cipherName);
-            throw new KeyDecryptionFailedException(new EncryptionException(message, e));
+            throw new KeyDecryptionFailedException(new IOException(message, e));
         }
         final PlainBuffer decryptedPrivateKey = new PlainBuffer(privateKeyLength);
         decryptedPrivateKey.putRawBytes(privateKey, 0, privateKeyLength);
@@ -343,7 +338,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         int checkInt1 = keyBuffer.readUInt32AsInt(); // uint32 checkint1
         int checkInt2 = keyBuffer.readUInt32AsInt(); // uint32 checkint2
         if (checkInt1 != checkInt2) {
-            throw new KeyDecryptionFailedException(new EncryptionException("OpenSSH Private Key integer comparison failed"));
+            throw new KeyDecryptionFailedException(new IOException("OpenSSH Private Key integer comparison failed"));
         }
         // The private key section contains both the public key and the private key
         String keyType = keyBuffer.readString(); // string keytype
@@ -365,13 +360,13 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 kp = new KeyPair(publicKey, privateKey);
                 break;
             case ECDSA256:
-                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-256"));
+                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, ECDSACurve.SECP256R1));
                 break;
             case ECDSA384:
-                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-384"));
+                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, ECDSACurve.SECP384R1));
                 break;
             case ECDSA521:
-                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, "P-521"));
+                kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, ECDSACurve.SECP521R1));
                 break;
 
             default:
@@ -388,13 +383,10 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         return kp;
     }
 
-    private PrivateKey createECDSAPrivateKey(KeyType kt, PlainBuffer buffer, String name) throws GeneralSecurityException, Buffer.BufferException {
+    private PrivateKey createECDSAPrivateKey(KeyType kt, PlainBuffer buffer, ECDSACurve ecdsaCurve) throws GeneralSecurityException, Buffer.BufferException {
         kt.readPubKeyFromBuffer(buffer); // Public key
-        BigInteger s = new BigInteger(1, buffer.readBytes());
-        X9ECParameters ecParams = NISTNamedCurves.getByName(name);
-        ECNamedCurveSpec ecCurveSpec = new ECNamedCurveSpec(name, ecParams.getCurve(), ecParams.getG(), ecParams.getN());
-        ECPrivateKeySpec pks = new ECPrivateKeySpec(s, ecCurveSpec);
-        return SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA).generatePrivate(pks);
+        final BigInteger s = new BigInteger(1, buffer.readBytes());
+        return ECDSAKeyFactory.getPrivateKey(s, ecdsaCurve);
     }
 
     /**
