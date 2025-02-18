@@ -13,25 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hierynomus.sshj.common;
-
-import java.io.IOException;
+package net.schmizz.sshj.common;
 
 /**
- * Thrown when a key file could not be decrypted correctly, e.g. if its checkInts differed in the case of an OpenSSH
- * key file.
+ * Enumeration of supported ECDSA Curves with corresponding algorithm parameter names
  */
-@SuppressWarnings("serial")
-public class KeyDecryptionFailedException extends IOException {
+public enum ECDSACurve {
+    /** NIST P-256 */
+    SECP256R1("secp256r1"),
 
-    public static final String MESSAGE = "Decryption of the key failed. A supplied passphrase may be incorrect.";
+    /** NIST P-384 */
+    SECP384R1("secp384r1"),
 
-    public KeyDecryptionFailedException() {
-        super(MESSAGE);
+    /** NIST P-521 */
+    SECP521R1("secp521r1");
+
+    private final String curveName;
+
+    ECDSACurve(final String curveName) {
+        this.curveName = curveName;
     }
 
-    public KeyDecryptionFailedException(IOException cause) {
-        super(MESSAGE, cause);
+    /**
+     * Get Curve Name for use with Java Cryptography Architecture components
+     *
+     * @return Curve Name
+     */
+    public String getCurveName() {
+        return curveName;
     }
-
 }
