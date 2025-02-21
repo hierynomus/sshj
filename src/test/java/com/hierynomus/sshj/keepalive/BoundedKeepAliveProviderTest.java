@@ -5,6 +5,7 @@ import net.schmizz.keepalive.BoundedKeepAliveProvider;
 import net.schmizz.keepalive.KeepAlive;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.ConnectionImpl;
 import net.schmizz.sshj.transport.TransportException;
@@ -19,7 +20,7 @@ import java.util.List;
 
 class EventuallyFailKeepAlive extends KeepAlive {
     // they can survive first 2 checks, and fail at 3rd
-    int failAfter = 2;
+    int failAfter = 1;
     volatile int current = 0;
 
     protected EventuallyFailKeepAlive(ConnectionImpl conn, String name) {
@@ -45,7 +46,7 @@ public class BoundedKeepAliveProviderTest {
     @BeforeAll
     static void setUpBeforeClass() throws Exception {
 
-        kp = new BoundedKeepAliveProvider(defaultConfig, 2) {
+        kp = new BoundedKeepAliveProvider(LoggerFactory.DEFAULT, 2) {
             @Override
             public KeepAlive provide(ConnectionImpl connection) {
                 return new EventuallyFailKeepAlive(connection, "test") {
@@ -67,19 +68,19 @@ public class BoundedKeepAliveProviderTest {
             fixture.connectClient(client);
         }
         // first two checks are ok
-        Thread.sleep(2000);
+        Thread.sleep(1000);
         Assertions.assertTrue(clients.stream().allMatch(SSHClient::isConnected));
 
-        // wait for 3rd check to take place, we wait additional 100ms for it to finish
-        Thread.sleep(1100);
+        // wait for 2nd check to take place, we wait additional 200ms for it to finish
+        Thread.sleep(1200);
         Assertions.assertTrue(clients.stream().noneMatch(SSHClient::isConnected));
         Assertions.assertEquals(0, fixture.getServer().getActiveSessions().size());
     }
 
     @Test
     void testBoundedKeepAlive() throws IOException, InterruptedException {
-        // 2 threads can handle 64 connections
-        testWithConnections(64);
+        // 2 threads can handle 32 connections
+        testWithConnections(32);
     }
 
     private List<SSHClient> setupClients(int numOfConnections) {

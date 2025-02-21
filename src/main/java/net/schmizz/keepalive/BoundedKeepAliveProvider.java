@@ -1,6 +1,7 @@
 package net.schmizz.keepalive;
 
 import net.schmizz.sshj.Config;
+import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.ConnectionImpl;
 import net.schmizz.sshj.transport.TransportException;
@@ -29,8 +30,8 @@ public class BoundedKeepAliveProvider extends KeepAliveProvider {
     protected final KeepAliveMonitor monitor;
 
 
-    public BoundedKeepAliveProvider(Config config, int numberOfThreads) {
-        this.monitor = new KeepAliveMonitor(config, numberOfThreads);
+    public BoundedKeepAliveProvider(LoggerFactory loggerFactory, int numberOfThreads) {
+        this.monitor = new KeepAliveMonitor(loggerFactory, numberOfThreads);
     }
 
     public void setKeepAliveInterval(int interval) {
@@ -76,22 +77,24 @@ public class BoundedKeepAliveProvider extends KeepAliveProvider {
     }
 
     protected static class KeepAliveMonitor {
-
-        private final int numberOfThreads;
-        private final PriorityBlockingQueue<Wrapper> Q =
-                new PriorityBlockingQueue<>(32, Comparator.comparingLong(w -> w.nextTimeMillis));
-        private long idleSleepMillis = 100;
-        private static final List<Thread> workerThreads = new ArrayList<>();
-        volatile boolean started = false;
         private final Logger logger;
+
+        private final PriorityBlockingQueue<Wrapper> q =
+                new PriorityBlockingQueue<>(32, Comparator.comparingLong(w -> w.nextTimeMillis));
+        private static final List<Thread> workerThreads = new ArrayList<>();
+
+        private volatile long idleSleepMillis = 100;
+        private final int numberOfThreads;
+
+        volatile boolean started = false;
 
         private final ReentrantLock lock = new ReentrantLock();
         private final Condition shutDown = lock.newCondition();
         private final AtomicInteger shutDownCnt = new AtomicInteger(0);
 
-        public KeepAliveMonitor(Config config, int numberOfThreads) {
+        public KeepAliveMonitor(LoggerFactory loggerFactory, int numberOfThreads) {
             this.numberOfThreads = numberOfThreads;
-            logger = config.getLoggerFactory().getLogger(KeepAliveMonitor.class);
+            logger = loggerFactory.getLogger(KeepAliveMonitor.class);
         }
 
         // made public for test
@@ -99,15 +102,11 @@ public class BoundedKeepAliveProvider extends KeepAliveProvider {
             if (!started) {
                 start();
             }
-            Q.add(new Wrapper(keepAlive));
+            q.add(new Wrapper(keepAlive));
         }
 
         public void setIdleSleepMillis(long idleSleepMillis) {
             this.idleSleepMillis = idleSleepMillis;
-        }
-
-        void unregister(KeepAlive keepAlive) {
-            Q.removeIf(w -> keepAlive == w.keepAlive);
         }
 
         private void sleep() {
@@ -140,7 +139,7 @@ public class BoundedKeepAliveProvider extends KeepAliveProvider {
             while (!Thread.currentThread().isInterrupted()) {
                 Wrapper wrapper;
 
-                if (Q.isEmpty() || (wrapper = Q.poll()) == null) {
+                if (q.isEmpty() || (wrapper = q.poll()) == null) {
                     sleep();
                     continue;
                 }
@@ -154,7 +153,7 @@ public class BoundedKeepAliveProvider extends KeepAliveProvider {
 
                 try {
                     wrapper.keepAlive.doKeepAlive();
-                    Q.add(wrapper.reschedule());
+                    q.add(wrapper.reschedule());
                 } catch (Exception e) {
                     // If we weren't interrupted, kill the transport, then this exception was unexpected.
                     // Else we're in shutdown-mode already, so don't forcibly kill the transport.
