@@ -808,7 +808,7 @@ public class SSHClient
         final KeepAlive keepAliveThread = conn.getKeepAlive();
         if (keepAliveThread.isEnabled()) {
             ThreadNameProvider.setThreadName(conn.getKeepAlive(), trans);
-            keepAliveThread.start();
+            keepAliveThread.startKeepAlive();
         }
     }
 
