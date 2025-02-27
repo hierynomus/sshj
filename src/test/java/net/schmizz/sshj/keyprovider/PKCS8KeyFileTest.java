@@ -126,8 +126,8 @@ public class PKCS8KeyFileTest {
     public void testPkcs8Ecdsa() throws IOException {
         final PKCS8KeyFile provider = new PKCS8KeyFile();
         provider.init(getFile("pkcs8-ecdsa"));
-        assertEquals(KeyAlgorithm.ECDSA, provider.getPublic().getAlgorithm());
-        assertEquals(KeyAlgorithm.ECDSA, provider.getPrivate().getAlgorithm());
+        assertEquals(KeyAlgorithm.EC_KEYSTORE, provider.getPublic().getAlgorithm());
+        assertEquals(KeyAlgorithm.EC_KEYSTORE, provider.getPrivate().getAlgorithm());
     }
 
     @Test

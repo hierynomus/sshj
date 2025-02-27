@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.userauth.keyprovider.pkcs;
+package net.schmizz.sshj.userauth.keyprovider;
 
-import org.bouncycastle.openssl.PEMKeyPair;
-
+import java.io.BufferedReader;
 import java.io.IOException;
 
 /**
- * Converter from typed object to PEM Key Pair
- * @param <T> Object Type
+ * Abstraction for parsing and returning PEM Keys
  */
-public interface KeyPairConverter<T> {
+interface PEMKeyReader {
     /**
-     * Get PEM Key Pair from typed object
+     * Read PEM Key from buffered reader
      *
-     * @param object Typed Object
-     * @return PEM Key Pair
-     * @throws IOException Thrown on conversion failures
+     * @param bufferedReader Buffered Reader containing lines from resource reader
+     * @return PEM Key
+     * @throws IOException Thrown on failure to read PEM Key from resources
      */
-    PEMKeyPair getKeyPair(T object) throws IOException;
+    PEMKey readPemKey(BufferedReader bufferedReader) throws IOException;
 }
