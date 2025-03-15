@@ -15,14 +15,14 @@
  */
 package com.hierynomus.sshj.signature;
 
-import net.i2p.crypto.eddsa.EdDSAEngine;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHRuntimeException;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.AbstractSignature;
 import net.schmizz.sshj.signature.Signature;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 
 public class SignatureEdDSA extends AbstractSignature {
@@ -43,11 +43,11 @@ public class SignatureEdDSA extends AbstractSignature {
         super(getEngine(), KeyType.ED25519.toString());
     }
 
-    private static EdDSAEngine getEngine() {
+    private static java.security.Signature getEngine() {
         try {
-            return new EdDSAEngine(MessageDigest.getInstance("SHA-512"));
-        } catch (NoSuchAlgorithmException e) {
-            throw new SSHRuntimeException(e);
+            return SecurityUtils.getSignature("Ed25519");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new SSHRuntimeException("Ed25519 Signatures not supported", e);
         }
     }
 
