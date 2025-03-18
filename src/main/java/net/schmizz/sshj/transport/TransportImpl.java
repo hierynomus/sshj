@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -207,7 +208,7 @@ public final class TransportImpl
      */
     private void sendClientIdent() throws IOException {
         log.info("Client identity string: {}", clientID);
-        connInfo.out.write((clientID + "\r\n").getBytes(IOUtils.UTF8));
+        connInfo.out.write((clientID + "\r\n").getBytes(StandardCharsets.UTF_8));
         connInfo.out.flush();
     }
 

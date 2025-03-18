@@ -17,6 +17,7 @@ package net.schmizz.sshj.common;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -428,7 +429,7 @@ public class Buffer<T extends Buffer<T>> {
      */
     public String readString()
             throws BufferException {
-        return readString(IOUtils.UTF8);
+        return readString(StandardCharsets.UTF_8);
     }
 
     /**
@@ -454,7 +455,7 @@ public class Buffer<T extends Buffer<T>> {
     }
 
     public T putString(String string) {
-        return putString(string, IOUtils.UTF8);
+        return putString(string, StandardCharsets.UTF_8);
     }
 
     /**
