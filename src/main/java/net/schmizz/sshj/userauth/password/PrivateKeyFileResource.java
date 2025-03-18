@@ -16,6 +16,7 @@
 package net.schmizz.sshj.userauth.password;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class PrivateKeyFileResource
         extends Resource<File> {
@@ -27,6 +28,6 @@ public class PrivateKeyFileResource
     @Override
     public Reader getReader()
             throws IOException {
-        return new InputStreamReader(new FileInputStream(getDetail()), "UTF-8");
+        return new InputStreamReader(new FileInputStream(getDetail()), StandardCharsets.UTF_8);
     }
 }

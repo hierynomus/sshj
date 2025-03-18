@@ -15,13 +15,13 @@
  */
 package net.schmizz.sshj.util.gss;
 
-import net.schmizz.sshj.common.IOUtils;
 import org.ietf.jgss.*;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static net.schmizz.sshj.util.gss.BogusGSSManager.unavailable;
@@ -34,7 +34,7 @@ public class BogusGSSContext
     private static final byte[] MIC = fromString("LGTM");
 
     private static byte[] fromString(String s) {
-        return s.getBytes(IOUtils.UTF8);
+        return s.getBytes(StandardCharsets.UTF_8);
     }
 
     private boolean initialized = false;

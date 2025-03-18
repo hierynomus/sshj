@@ -31,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.RSAPublicKeySpec;
@@ -189,7 +190,7 @@ public class OpenSSHKnownHosts
         final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile));
         try {
             for (KnownHostEntry entry : entries)
-                bos.write((entry.getLine() + LS).getBytes(IOUtils.UTF8));
+                bos.write((entry.getLine() + LS).getBytes(StandardCharsets.UTF_8));
         } finally {
             bos.close();
         }

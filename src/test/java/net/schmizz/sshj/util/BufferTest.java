@@ -31,12 +31,12 @@
 package net.schmizz.sshj.util;
 
 import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,7 +51,7 @@ public class BufferTest {
     public void setUp()
             throws UnsupportedEncodingException, GeneralSecurityException {
         // for position test
-        byte[] data = "Hello".getBytes(IOUtils.UTF8);
+        byte[] data = "Hello".getBytes(StandardCharsets.UTF_8);
         posBuf = new Buffer.PlainBuffer(data);
         handyBuf = new Buffer.PlainBuffer();
     }

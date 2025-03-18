@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
@@ -90,7 +91,7 @@ public abstract class AbstractChannel
         this.log = loggerFactory.getLogger(getClass());
         this.trans = conn.getTransport();
 
-        this.remoteCharset = remoteCharset != null ? remoteCharset : IOUtils.UTF8;
+        this.remoteCharset = remoteCharset != null ? remoteCharset : StandardCharsets.UTF_8;
         id = conn.nextID();
 
         lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize(), loggerFactory);
