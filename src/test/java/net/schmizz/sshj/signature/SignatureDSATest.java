@@ -17,11 +17,11 @@ package net.schmizz.sshj.signature;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.DSAPrivateKeySpec;
@@ -47,7 +47,7 @@ public class SignatureDSATest {
         BigInteger q = new BigInteger(new byte[] { 0, -105, 96, 80, -113, 21, 35, 11, -52, -78, -110, -71, -126, -94, -21, -124, 11, -16, 88, 28, -11 });
         BigInteger g = new BigInteger(new byte[] { 0, -9, -31, -96, -123, -42, -101, 61, -34, -53, -68, -85, 92, 54, -72, 87, -71, 121, -108, -81, -69, -6, 58, -22, -126, -7, 87, 76, 11, 61, 7, -126, 103, 81, 89, 87, -114, -70, -44, 89, 79, -26, 113, 7, 16, -127, -128, -76, 73, 22, 113, 35, -24, 76, 40, 22, 19, -73, -49, 9, 50, -116, -56, -90, -31, 60, 22, 122, -117, 84, 124, -115, 40, -32, -93, -82, 30, 43, -77, -90, 117, -111, 110, -93, 127, 11, -6, 33, 53, 98, -15, -5, 98, 122, 1, 36, 59, -52, -92, -15, -66, -88, 81, -112, -119, -88, -125, -33, -31, 90, -27, -97, 6, -110, -117, 102, 94, -128, 123, 85, 37, 100, 1, 76, 59, -2, -49, 73, 42 });
 
-        byte[] data = "The Magic Words are Squeamish Ossifrage".getBytes(IOUtils.UTF8);
+        byte[] data = "The Magic Words are Squeamish Ossifrage".getBytes(StandardCharsets.UTF_8);
 
         // A previously signed and verified signature using the data and DSA key parameters above.
         byte[] dataSig = new byte[] { 0, 0, 0, 7, 115, 115, 104, 45, 100, 115, 115, 0, 0, 0, 40, 40, -71, 33, 105, -89, -107, 8, 26, -13, -90, 73, -103, 105, 112, 7, -59, -66, 46, 85, -27, 20, 82, 22, -113, -75, -86, -121, -42, -73, 78, 66, 93, -34, 39, -50, -93, 27, -5, 37, -92 };

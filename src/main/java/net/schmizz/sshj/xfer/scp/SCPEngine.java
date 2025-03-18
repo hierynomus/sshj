@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /** @see <a href="https://blogs.oracle.com/janp/entry/how_the_scp_protocol_works">SCP Protocol</a> */
 class SCPEngine {
@@ -128,7 +129,7 @@ class SCPEngine {
                 baos.write(x);
             }
         }
-        final String msg = baos.toString(IOUtils.UTF8.displayName());
+        final String msg = baos.toString(StandardCharsets.UTF_8.displayName());
         log.debug("Read message: `{}`", msg);
         return msg;
     }
