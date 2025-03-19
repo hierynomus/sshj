@@ -16,6 +16,7 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
+import net.schmizz.sshj.common.ByteArrayUtils;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import net.schmizz.sshj.userauth.password.Resource;
@@ -24,7 +25,6 @@ import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.bc.BcPEMDecryptorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.util.encoders.Hex;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -124,7 +124,7 @@ class EncryptedPEMKeyReader extends StandardPEMKeyReader {
             if (matcher.matches()) {
                 final String algorithm = matcher.group(DEK_INFO_ALGORITHM_GROUP);
                 final String initializationVectorGroup = matcher.group(DEK_INFO_IV_GROUP);
-                final byte[] initializationVector = Hex.decode(initializationVectorGroup);
+                final byte[] initializationVector = ByteArrayUtils.parseHex(initializationVectorGroup);
                 dataEncryptionKeyInfo = new DataEncryptionKeyInfo(algorithm, initializationVector);
             }
         }
