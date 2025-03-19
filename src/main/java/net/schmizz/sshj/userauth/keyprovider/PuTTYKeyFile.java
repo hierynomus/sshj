@@ -201,9 +201,8 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
 
     protected void parseKeyPair() throws IOException {
         this.keyFileVersion = null;
-        BufferedReader r = new BufferedReader(resource.getReader());
         // Parse the text into headers and payloads
-        try {
+        try (BufferedReader r = new BufferedReader(resource.getReader())) {
             String headerName = null;
             String line;
             while ((line = r.readLine()) != null) {
@@ -226,8 +225,6 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
                     payload.put(headerName, s);
                 }
             }
-        } finally {
-            r.close();
         }
         if (this.keyFileVersion == null) {
             throw new IOException("Invalid key file format: missing \"PuTTY-User-Key-File-?\" entry");
