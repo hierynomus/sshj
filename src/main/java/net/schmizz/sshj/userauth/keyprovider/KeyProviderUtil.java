@@ -20,7 +20,7 @@ import net.schmizz.sshj.common.IOUtils;
 
 import java.io.*;
 
-public class KeyProviderUtil {
+public interface KeyProviderUtil {
 
     /**
      * Attempts to detect how a key file is encoded.
@@ -31,7 +31,7 @@ public class KeyProviderUtil {
      * @return name of the key file format
      * @throws java.io.IOException Thrown on file processing failures
      */
-    public static KeyFormat detectKeyFileFormat(File location)
+    static KeyFormat detectKeyFileFormat(File location)
             throws IOException {
         return detectKeyFileFormat(new FileReader(location),
                 new File(location + ".pub").exists() || new File(location + "-cert.pub").exists());
@@ -47,7 +47,7 @@ public class KeyProviderUtil {
      * @return name of the key file format
      * @throws java.io.IOException Thrown on file processing failures
      */
-    public static KeyFormat detectKeyFileFormat(String privateKey, boolean separatePubKey)
+    static KeyFormat detectKeyFileFormat(String privateKey, boolean separatePubKey)
             throws IOException {
         return detectKeyFileFormat(new StringReader(privateKey), separatePubKey);
     }
@@ -62,7 +62,7 @@ public class KeyProviderUtil {
      * @return name of the key file format
      * @throws java.io.IOException Thrown on file processing failures
      */
-    public static KeyFormat detectKeyFileFormat(Reader privateKey, boolean separatePubKey)
+    static KeyFormat detectKeyFileFormat(Reader privateKey, boolean separatePubKey)
             throws IOException {
         String header = readHeader(privateKey);
         if (header == null) {
@@ -71,7 +71,7 @@ public class KeyProviderUtil {
         return keyFormatFromHeader(header, separatePubKey);
     }
 
-    private static String readHeader(Reader privateKey) throws IOException {
+    static String readHeader(Reader privateKey) throws IOException {
         BufferedReader br = new BufferedReader(privateKey);
         try {
             String header;
@@ -87,7 +87,7 @@ public class KeyProviderUtil {
         }
     }
 
-    private static KeyFormat keyFormatFromHeader(String header, boolean separatePubKey) {
+    static KeyFormat keyFormatFromHeader(String header, boolean separatePubKey) {
         if (header.startsWith("-----BEGIN") && header.endsWith("PRIVATE KEY-----")) {
             if (header.contains(OpenSSHKeyV1KeyFile.OPENSSH_PRIVATE_KEY)) {
                 return KeyFormat.OpenSSHv1;

@@ -20,18 +20,18 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class IOUtils {
+public interface IOUtils {
 
-    public static void closeQuietly(Closeable... closeables) {
+    static void closeQuietly(Closeable... closeables) {
         closeQuietly(LoggerFactory.DEFAULT, closeables);
     }
 
-    public static ByteArrayOutputStream readFully(InputStream stream)
+    static ByteArrayOutputStream readFully(InputStream stream)
             throws IOException {
         return readFully(stream, LoggerFactory.DEFAULT);
     }
 
-    public static void closeQuietly(LoggerFactory loggerFactory, Closeable... closeables) {
+    static void closeQuietly(LoggerFactory loggerFactory, Closeable... closeables) {
         for (Closeable c : closeables) {
             try {
                 if (c != null)
@@ -42,7 +42,7 @@ public class IOUtils {
         }
     }
 
-    public static ByteArrayOutputStream readFully(InputStream stream, LoggerFactory loggerFactory)
+    static ByteArrayOutputStream readFully(InputStream stream, LoggerFactory loggerFactory)
             throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new StreamCopier(stream, baos, loggerFactory).copy();
