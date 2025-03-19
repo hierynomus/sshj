@@ -19,13 +19,10 @@ import com.hierynomus.sshj.transport.cipher.GcmCiphers;
 import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.cipher.Cipher;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.security.Security;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
@@ -40,11 +37,6 @@ public class GcmCipherDecryptSshPacketTest {
 
     public static Stream<Arguments> sets() {
         return Stream.of(Arguments.of("mina-sshd", 3), Arguments.of("openssh", 4));
-    }
-
-    @BeforeAll
-    public static void setupBeforeClass() {
-        Security.addProvider(new BouncyCastleProvider());
     }
 
     @ParameterizedTest

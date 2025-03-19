@@ -21,7 +21,6 @@ import java.util.EnumSet;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.org.bouncycastle.util.Arrays;
 
 import com.hierynomus.sshj.SshdContainer;
 
@@ -31,11 +30,12 @@ import net.schmizz.sshj.sftp.RemoteFile;
 import net.schmizz.sshj.sftp.SFTPClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 @Testcontainers
 public class FileWriteTest {
     @Container
-    private static SshdContainer sshd = new SshdContainer();
+    private static final SshdContainer sshd = new SshdContainer();
 
     @Test
     public void shouldAppendToFile_GH390() throws Throwable {
@@ -63,8 +63,14 @@ public class FileWriteTest {
                 try (RemoteFile read = sftp.open(file, EnumSet.of(OpenMode.READ))) {
                     byte[] readBytes = new byte[initialText.length + appendText.length];
                     read.read(0, readBytes, 0, readBytes.length);
-                    assertThat(Arrays.copyOfRange(readBytes, 0, initialText.length)).isEqualTo(initialText);
-                    assertThat(Arrays.copyOfRange(readBytes, initialText.length, initialText.length + appendText.length)).isEqualTo(appendText);
+
+                    final byte[] expectedInitialText = new byte[initialText.length];
+                    System.arraycopy(readBytes, 0, expectedInitialText, 0, expectedInitialText.length);
+                    assertArrayEquals(expectedInitialText, initialText);
+
+                    final byte[] expectedAppendText = new byte[appendText.length];
+                    System.arraycopy(readBytes, initialText.length, expectedAppendText, 0, expectedAppendText.length);
+                    assertArrayEquals(expectedAppendText, appendText);
                 }
             }
 
