@@ -16,10 +16,8 @@
 package com.hierynomus.sshj.transport.verification;
 
 import net.schmizz.sshj.common.Buffer;
-import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.util.KeyUtil;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,11 +38,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OpenSSHKnownHostsTest {
     @TempDir
     public File tempDir;
-
-    @BeforeAll
-    public static void setup() {
-        SecurityUtils.registerSecurityProvider("org.bouncycastle.jce.provider.BouncyCastleProvider");
-    }
 
     @Test
     public void shouldParseAndVerifyHashedHostEntry() throws Exception {
