@@ -16,7 +16,6 @@
 
 package net.schmizz.sshj.common;
 
-import java.io.IOException;
 import java.util.Base64;
 
 /**
@@ -25,11 +24,9 @@ import java.util.Base64;
  *
  * <p>Please use this class instead of {@link java.util.Base64.Decoder}.</p>
  */
-public class Base64Decoder {
-    private Base64Decoder() {
-    }
+public interface Base64Decoder {
 
-    public static byte[] decode(byte[] source) throws Base64DecodingException {
+    static byte[] decode(byte[] source) throws Base64DecodingException {
         try {
             return Base64.getDecoder().decode(source);
         } catch (IllegalArgumentException err) {
@@ -37,7 +34,7 @@ public class Base64Decoder {
         }
     }
 
-    public static byte[] decode(String src) throws Base64DecodingException {
+    static byte[] decode(String src) throws Base64DecodingException {
         try {
             return Base64.getDecoder().decode(src);
         } catch (IllegalArgumentException err) {

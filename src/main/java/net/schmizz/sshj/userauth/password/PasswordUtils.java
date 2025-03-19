@@ -21,14 +21,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /** Static utility method and factories */
-public class PasswordUtils {
+public interface PasswordUtils {
 
     /**
      * Blank out a character array
      *
      * @param pwd the character array
      */
-    public static void blankOut(char[] pwd) {
+    static void blankOut(char[] pwd) {
         if (pwd != null)
             Arrays.fill(pwd, ' ');
     }
@@ -38,7 +38,7 @@ public class PasswordUtils {
      *
      * @return the constructed {@link PasswordFinder}
      */
-    public static PasswordFinder createOneOff(final char[] password) {
+    static PasswordFinder createOneOff(final char[] password) {
         if (password == null)
             return null;
         else
@@ -63,7 +63,7 @@ public class PasswordUtils {
      * @param password
      * @return
      */
-    public static byte[] toByteArray(char[] password) {
+    static byte[] toByteArray(char[] password) {
         CharBuffer charBuffer = CharBuffer.wrap(password);
         final ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(charBuffer);
         byte[] bytes = new byte[byteBuffer.remaining()];

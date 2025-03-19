@@ -21,16 +21,16 @@ import java.util.Collection;
 public interface ErrorNotifiable {
 
     /** Utility functions. */
-    class Util {
+    interface Util {
 
         /** Notify all {@code notifiables} of given {@code error}. */
-        public static void alertAll(SSHException error, ErrorNotifiable... notifiables) {
+        static void alertAll(SSHException error, ErrorNotifiable... notifiables) {
             for (ErrorNotifiable notifiable : notifiables)
                 notifiable.notifyError(error);
         }
 
         /** Notify all {@code notifiables} of given {@code error}. */
-        public static void alertAll(SSHException error, Collection<? extends ErrorNotifiable> notifiables) {
+        static void alertAll(SSHException error, Collection<? extends ErrorNotifiable> notifiables) {
             for (ErrorNotifiable notifiable : notifiables)
                 notifiable.notifyError(error);
         }

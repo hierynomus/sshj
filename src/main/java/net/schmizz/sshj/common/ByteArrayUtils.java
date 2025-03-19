@@ -22,9 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /** Utility functions for byte arrays. */
-public class ByteArrayUtils {
+public interface ByteArrayUtils {
 
-    final static char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    char[] digits = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     /**
      * Check whether some part or whole of two byte arrays is equal, for <code>length</code> bytes starting at some
@@ -38,7 +38,7 @@ public class ByteArrayUtils {
      *
      * @return <code>true</code> or <code>false</code>
      */
-    public static boolean equals(byte[] a1, int a1Offset, byte[] a2, int a2Offset, int length) {
+    static boolean equals(byte[] a1, int a1Offset, byte[] a2, int a2Offset, int length) {
         if (a1.length < a1Offset + length || a2.length < a2Offset + length)
             return false;
         while (length-- > 0)
@@ -57,7 +57,7 @@ public class ByteArrayUtils {
      *
      * @return hex string, each octet delimited by a space
      */
-    public static String printHex(byte[] array, int offset, int len) {
+    static String printHex(byte[] array, int offset, int len) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < len; i++) {
             byte b = array[offset + i];
@@ -76,7 +76,7 @@ public class ByteArrayUtils {
      *
      * @return hex string
      */
-    public static String toHex(byte[] array) {
+    static String toHex(byte[] array) {
         return toHex(array, 0, array.length);
     }
 
@@ -90,7 +90,7 @@ public class ByteArrayUtils {
      *
      * @return hex string
      */
-    public static String toHex(byte[] array, int offset, int len) {
+    static String toHex(byte[] array, int offset, int len) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < len; i++) {
             byte b = array[offset + i];
@@ -101,7 +101,7 @@ public class ByteArrayUtils {
     }
 
 
-    public static byte[] parseHex(String hex) {
+    static byte[] parseHex(String hex) {
         if (hex == null) {
             throw new IllegalArgumentException("Hex string is null");
         }
@@ -118,7 +118,7 @@ public class ByteArrayUtils {
         return result;
     }
 
-    private static int parseHexDigit(char c) {
+    static int parseHexDigit(char c) {
         if (c >= '0' && c <= '9') {
             return c - '0';
         }
@@ -140,7 +140,7 @@ public class ByteArrayUtils {
      *
      * @return UTF-8 bytes of the string
      */
-    public static byte[] encodeSensitiveStringToUtf8(char[] str) {
+    static byte[] encodeSensitiveStringToUtf8(char[] str) {
         CharsetEncoder charsetEncoder = StandardCharsets.UTF_8.newEncoder();
         ByteBuffer utf8Buffer = ByteBuffer.allocate((int) (str.length * charsetEncoder.maxBytesPerChar()));
         assert utf8Buffer.hasArray();

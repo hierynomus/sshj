@@ -26,11 +26,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.security.PublicKey;
 
-public class OpenSSHKeyFileUtil {
-    private OpenSSHKeyFileUtil() {
-    }
+public interface OpenSSHKeyFileUtil {
 
-    public static File getPublicKeyFile(File privateKeyFile) {
+    static File getPublicKeyFile(File privateKeyFile) {
         File pubKey = new File(privateKeyFile + "-cert.pub");
         if (!pubKey.exists()) {
             pubKey = new File(privateKeyFile + ".pub");
@@ -46,7 +44,7 @@ public class OpenSSHKeyFileUtil {
      *
      * @param publicKey Public key accessible through a {@code Reader}
      */
-    public static ParsedPubKey initPubKey(Reader publicKey) throws IOException {
+    static ParsedPubKey initPubKey(Reader publicKey) throws IOException {
         try (BufferedReader br = new BufferedReader(publicKey)) {
             String keydata;
             while ((keydata = br.readLine()) != null) {
@@ -71,7 +69,7 @@ public class OpenSSHKeyFileUtil {
     }
 
 
-    public static class ParsedPubKey {
+    class ParsedPubKey {
         private final KeyType type;
         private final PublicKey pubKey;
 

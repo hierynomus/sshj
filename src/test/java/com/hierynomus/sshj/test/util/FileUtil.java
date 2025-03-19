@@ -20,9 +20,9 @@ import net.schmizz.sshj.common.IOUtils;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-public class FileUtil {
+public interface FileUtil {
 
-    public static void writeToFile(File f, String content) throws IOException {
+    static void writeToFile(File f, String content) throws IOException {
         FileWriter w = new FileWriter(f);
         try {
             w.write(content);
@@ -31,7 +31,7 @@ public class FileUtil {
         }
     }
 
-    public static String readFromFile(File f) throws IOException {
+    static String readFromFile(File f) throws IOException {
         FileInputStream fileInputStream = new FileInputStream(f);
         try {
             ByteArrayOutputStream byteArrayOutputStream = IOUtils.readFully(fileInputStream);

@@ -33,11 +33,7 @@ import java.util.Objects;
 /**
  * Factory for generating Elliptic Curve Keys using Java Security components for NIST Curves
  */
-public class ECDSAKeyFactory {
-
-    private ECDSAKeyFactory() {
-
-    }
+public interface ECDSAKeyFactory {
 
     /**
      * Get Elliptic Curve Private Key for private key value and Curve Name
@@ -47,7 +43,7 @@ public class ECDSAKeyFactory {
      * @return Elliptic Curve Private Key
      * @throws GeneralSecurityException Thrown on failure to create parameter specification
      */
-    public static PrivateKey getPrivateKey(final BigInteger privateKeyInteger, final ECDSACurve ecdsaCurve) throws GeneralSecurityException {
+    static PrivateKey getPrivateKey(final BigInteger privateKeyInteger, final ECDSACurve ecdsaCurve) throws GeneralSecurityException {
         Objects.requireNonNull(privateKeyInteger, "Private Key integer required");
         Objects.requireNonNull(ecdsaCurve, "Curve required");
 
@@ -66,7 +62,7 @@ public class ECDSAKeyFactory {
      * @return Elliptic Curve Public Key
      * @throws GeneralSecurityException Thrown on failure to create parameter specification
      */
-    public static PublicKey getPublicKey(final ECPoint point, final ECDSACurve ecdsaCurve) throws GeneralSecurityException {
+    static PublicKey getPublicKey(final ECPoint point, final ECDSACurve ecdsaCurve) throws GeneralSecurityException {
         Objects.requireNonNull(point, "Elliptic Curve Point required");
         Objects.requireNonNull(ecdsaCurve, "Curve required");
 
@@ -77,7 +73,7 @@ public class ECDSAKeyFactory {
         return keyFactory.generatePublic(publicKeySpec);
     }
 
-    private static ECParameterSpec getParameterSpec(final ECDSACurve ecdsaCurve) throws GeneralSecurityException {
+    static ECParameterSpec getParameterSpec(final ECDSACurve ecdsaCurve) throws GeneralSecurityException {
         final ECGenParameterSpec genParameterSpec = new ECGenParameterSpec(ecdsaCurve.getCurveName());
         final AlgorithmParameters algorithmParameters = AlgorithmParameters.getInstance(KeyAlgorithm.EC_KEYSTORE);
         algorithmParameters.init(genParameterSpec);
