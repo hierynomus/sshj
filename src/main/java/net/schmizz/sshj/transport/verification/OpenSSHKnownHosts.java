@@ -187,12 +187,9 @@ public class OpenSSHKnownHosts
 
     public void write()
             throws IOException {
-        final BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile));
-        try {
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(khFile))) {
             for (KnownHostEntry entry : entries)
                 bos.write((entry.getLine() + LS).getBytes(StandardCharsets.UTF_8));
-        } finally {
-            bos.close();
         }
     }
 

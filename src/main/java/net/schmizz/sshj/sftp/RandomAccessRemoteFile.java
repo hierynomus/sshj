@@ -317,13 +317,10 @@ public class RandomAccessRemoteFile
     @Override
     public void writeUTF(String str)
             throws IOException {
-        final DataOutputStream dos = new DataOutputStream(rf.new RemoteFileOutputStream(fp));
-        try {
+        try (DataOutputStream dos = new DataOutputStream(rf.new RemoteFileOutputStream(fp));) {
             dos.writeUTF(str);
-        } finally {
-            dos.close();
+            fp += dos.size();
         }
-        fp += dos.size();
     }
 
 }
