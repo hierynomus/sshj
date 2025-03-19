@@ -68,10 +68,10 @@ public class DHGroups {
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
 
-        private String name;
-        private BigInteger group;
-        private BigInteger generator;
-        private Factory.Named<Digest> digestFactory;
+        private final String name;
+        private final BigInteger group;
+        private final BigInteger generator;
+        private final Factory.Named<Digest> digestFactory;
 
         public Factory(String name, BigInteger group, BigInteger generator, Named<Digest> digestFactory) {
             this.name = name;
