@@ -16,12 +16,6 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
-import net.i2p.crypto.eddsa.EdDSAPrivateKey;
-import net.i2p.crypto.eddsa.EdDSAPublicKey;
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
-import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec;
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
@@ -165,10 +159,17 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
             }
         }
         if (KeyType.ED25519.equals(keyType)) {
-            EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("Ed25519");
-            EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(publicKeyReader.readBytes(), ed25519);
-            EdDSAPrivateKeySpec privateSpec = new EdDSAPrivateKeySpec(privateKeyReader.readBytes(), ed25519);
-            return new KeyPair(new EdDSAPublicKey(publicSpec), new EdDSAPrivateKey(privateSpec));
+            try {
+                final byte[] publicKeyEncoded = publicKeyReader.readBytes();
+                final PublicKey edPublicKey = Ed25519KeyFactory.getPublicKey(publicKeyEncoded);
+
+                final byte[] privateKeyEncoded = privateKeyReader.readBytes();
+                final PrivateKey edPrivateKey = Ed25519KeyFactory.getPrivateKey(privateKeyEncoded);
+
+                return new KeyPair(edPublicKey, edPrivateKey);
+            } catch (final GeneralSecurityException e) {
+                throw new IOException("Reading Ed25519 Keys failed", e);
+            }
         }
         final ECDSACurve ecdsaCurve;
         switch (keyType) {
