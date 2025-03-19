@@ -40,10 +40,10 @@ public class StreamCiphers {
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
 
-        private int keysize;
-        private String cipher;
-        private String mode;
-        private String name;
+        private final int keysize;
+        private final String cipher;
+        private final String mode;
+        private final String name;
 
         /**
          * @param keysize The keysize used in bits.
