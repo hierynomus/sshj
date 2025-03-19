@@ -71,10 +71,10 @@ public class Macs {
 
     public static class Factory implements net.schmizz.sshj.common.Factory.Named<MAC> {
 
-        private String name;
-        private String algorithm;
-        private int bSize;
-        private int defBSize;
+        private final String name;
+        private final String algorithm;
+        private final int bSize;
+        private final int defBSize;
         private final boolean etm;
 
         public Factory(String name, String algorithm, int bSize, int defBSize, boolean etm) {

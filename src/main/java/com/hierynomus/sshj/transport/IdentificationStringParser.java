@@ -28,7 +28,7 @@ public class IdentificationStringParser {
     private final Logger log;
     private final Buffer.PlainBuffer buffer;
 
-    private byte[] EXPECTED_START_BYTES = new byte[] {'S', 'S', 'H', '-'};
+    private final byte[] EXPECTED_START_BYTES = new byte[] {'S', 'S', 'H', '-'};
 
     public IdentificationStringParser(Buffer.PlainBuffer buffer) {
 	this(buffer, LoggerFactory.DEFAULT);

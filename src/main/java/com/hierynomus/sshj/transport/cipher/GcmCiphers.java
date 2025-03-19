@@ -33,12 +33,12 @@ public class GcmCiphers {
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Cipher> {
 
-        private int keysize;
-        private int authSize;
-        private String cipher;
-        private String mode;
-        private String name;
-        private int ivsize;
+        private final int keysize;
+        private final int authSize;
+        private final String cipher;
+        private final String mode;
+        private final String name;
+        private final int ivsize;
 
         /**
          * @param ivsize

@@ -101,7 +101,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         throw new IOException(String.format("Unsupported encryption: %s", encryption));
     }
 
-    private Map<String, String> payload = new HashMap<String, String>();
+    private final Map<String, String> payload = new HashMap<String, String>();
 
     /**
      * For each line that looks like "Xyz: vvv", it will be stored in this map.
