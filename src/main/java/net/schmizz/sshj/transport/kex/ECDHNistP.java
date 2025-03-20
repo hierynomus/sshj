@@ -25,7 +25,7 @@ import java.security.spec.ECGenParameterSpec;
 
 public class ECDHNistP extends AbstractDHG {
 
-    private String curve;
+    private final String curve;
 
     /** Named factory for ECDHNistP key exchange */
     public static class Factory521

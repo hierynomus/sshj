@@ -54,7 +54,6 @@ dependencies {
   implementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
   implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
   implementation "com.hierynomus:asn-one:0.6.0"
-  implementation "net.i2p.crypto:eddsa:0.3.0"
 }
 
 license {
@@ -182,8 +181,6 @@ jar {
     instruction "Import-Package", "!net.schmizz.*"
     instruction "Import-Package", "!com.hierynomus.sshj.*"
     instruction "Import-Package", "javax.crypto*"
-    instruction "Import-Package", "!net.i2p.crypto.eddsa.math"
-    instruction "Import-Package", "net.i2p*"
     instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
     instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
     instruction "Import-Package", "org.bouncycastle*;resolution:=optional"

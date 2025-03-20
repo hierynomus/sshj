@@ -13,21 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.userauth.password;
+package net.schmizz.sshj.userauth.keyprovider;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.IOException;
 
-public class PrivateKeyFileResource
-        extends Resource<File> {
-
-    public PrivateKeyFileResource(File privateKeyFile) {
-        super(privateKeyFile);
-    }
-
-    @Override
-    public Reader getReader()
-            throws IOException {
-        return new InputStreamReader(new FileInputStream(getDetail()), StandardCharsets.UTF_8);
-    }
+/**
+ * Abstraction for parsing and returning PEM Keys
+ */
+interface PEMKeyReader {
+    /**
+     * Read PEM Key from buffered reader
+     *
+     * @param bufferedReader Buffered Reader containing lines from resource reader
+     * @return PEM Key
+     * @throws IOException Thrown on failure to read PEM Key from resources
+     */
+    PEMKey readPemKey(BufferedReader bufferedReader) throws IOException;
 }

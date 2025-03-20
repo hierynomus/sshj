@@ -16,13 +16,8 @@
 package net.schmizz.sshj.common;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
-import com.hierynomus.sshj.signature.Ed25519PublicKey;
 import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
-import net.i2p.crypto.eddsa.EdDSAPublicKey;
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveSpec;
-import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable;
-import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec;
 import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.signature.SignatureDSA;
@@ -178,20 +173,16 @@ public enum KeyType {
         public PublicKey readPubKeyFromBuffer(Buffer<?> buf) throws GeneralSecurityException {
             try {
                 final int keyLen = buf.readUInt32AsInt();
-                final byte[] p = new byte[keyLen];
-                buf.readRawBytes(p);
+                final byte[] publicKeyBinary = new byte[keyLen];
+                buf.readRawBytes(publicKeyBinary);
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("Key algo: %s, Key curve: 25519, Key Len: %s\np: %s",
                             sType,
                             keyLen,
-                            Arrays.toString(p))
+                            Arrays.toString(publicKeyBinary))
                     );
                 }
-
-                EdDSANamedCurveSpec ed25519 = EdDSANamedCurveTable.getByName("Ed25519");
-                EdDSAPublicKeySpec publicSpec = new EdDSAPublicKeySpec(p, ed25519);
-                return new Ed25519PublicKey(publicSpec);
-
+                return Ed25519KeyFactory.getPublicKey(publicKeyBinary);
             } catch (Buffer.BufferException be) {
                 throw new SSHRuntimeException(be);
             }
@@ -199,13 +190,17 @@ public enum KeyType {
 
         @Override
         protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
-            EdDSAPublicKey key = (EdDSAPublicKey) pk;
-            buf.putBytes(key.getAbyte());
+            final byte[] encoded = pk.getEncoded();
+            final int keyLength = 32;
+            final int headerLength = encoded.length - keyLength;
+            final byte[] encodedPublicKey = new byte[keyLength];
+            System.arraycopy(encoded, headerLength, encodedPublicKey, 0, keyLength);
+            buf.putBytes(encodedPublicKey);
         }
 
         @Override
         protected boolean isMyType(Key key) {
-            return "EdDSA".equals(key.getAlgorithm());
+            return "EdDSA".equals(key.getAlgorithm()) || "Ed25519".equals(key.getAlgorithm());
         }
     },
 

@@ -87,7 +87,7 @@ public class SignatureRSA
 
     }
 
-    private KeyType keyType;
+    private final KeyType keyType;
 
 
     public SignatureRSA(String algorithm, KeyType keyType, String name) {
