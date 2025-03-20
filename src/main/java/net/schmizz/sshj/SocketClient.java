@@ -94,6 +94,16 @@ public abstract class SocketClient {
         onConnect();
     }
 
+    /** Connect using the supplied InputStream and OutputStream. */
+    public void connectVia(InputStream input, OutputStream output) throws IOException {
+        this.hostname = "localhost"; 
+        this.port = 65535;
+        this.input = input;
+        this.output = output;
+        this.tunneled = true;
+        onConnect();
+    }
+
     /** Connect to a remote address via a direct TCP/IP connection from the server. */
     public void connectVia(DirectConnection directConnection) throws IOException {
         connectVia(directConnection, directConnection.getRemoteHost(), directConnection.getRemotePort());
