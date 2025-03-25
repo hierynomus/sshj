@@ -42,10 +42,10 @@ import java.security.spec.DSAPublicKeySpec;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 
-public class KeyUtil {
+public interface KeyUtil {
 
     /** Creates a DSA private key. */
-    public static PrivateKey newDSAPrivateKey(String x, String p, String q, String g)
+    static PrivateKey newDSAPrivateKey(String x, String p, String q, String g)
             throws GeneralSecurityException {
         return SecurityUtils.getKeyFactory(KeyAlgorithm.DSA).generatePrivate(new DSAPrivateKeySpec(new BigInteger(x, 16),
                                                                                         new BigInteger(p, 16),
@@ -55,7 +55,7 @@ public class KeyUtil {
     }
 
     /** Creates a DSA public key. */
-    public static PublicKey newDSAPublicKey(String y, String p, String q, String g)
+    static PublicKey newDSAPublicKey(String y, String p, String q, String g)
             throws GeneralSecurityException {
         return SecurityUtils.getKeyFactory(KeyAlgorithm.DSA).generatePublic(new DSAPublicKeySpec(new BigInteger(y, 16),
                                                                                       new BigInteger(p, 16),
@@ -65,7 +65,7 @@ public class KeyUtil {
     }
 
     /** Creates an RSA private key. */
-    public static PrivateKey newRSAPrivateKey(String modulus, String exponent)
+    static PrivateKey newRSAPrivateKey(String modulus, String exponent)
             throws GeneralSecurityException {
         return SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePrivate(new RSAPrivateKeySpec(new BigInteger(modulus, 16),
                                                                                         new BigInteger(exponent, 16))
@@ -73,7 +73,7 @@ public class KeyUtil {
     }
 
     /** Creates an RSA public key. */
-    public static PublicKey newRSAPublicKey(String modulus, String exponent)
+    static PublicKey newRSAPublicKey(String modulus, String exponent)
             throws GeneralSecurityException {
         return SecurityUtils.getKeyFactory(KeyAlgorithm.RSA).generatePublic(new RSAPublicKeySpec(new BigInteger(modulus, 16),
                                                                                       new BigInteger(exponent, 16)));

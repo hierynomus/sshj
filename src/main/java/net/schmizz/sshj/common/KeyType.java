@@ -418,7 +418,7 @@ public enum KeyType {
         return sType;
     }
 
-    public static class CertUtils {
+    public interface CertUtils {
 
         @SuppressWarnings("unchecked")
         static <T extends PublicKey> Certificate<T> readPubKey(Buffer<?> buf, KeyType innerKeyType) throws GeneralSecurityException {
@@ -470,7 +470,7 @@ public enum KeyType {
          * @return null if the certificate is valid, an error message if it is not valid.
          * @throws Buffer.BufferException If something from {@code certRaw} or {@code cert} can't be parsed.
          */
-        public static String verifyHostCertificate(byte[] certRaw, Certificate<?> cert, String hostname)
+        static String verifyHostCertificate(byte[] certRaw, Certificate<?> cert, String hostname)
                 throws Buffer.BufferException, SSHRuntimeException {
             String signatureType = new Buffer.PlainBuffer(cert.getSignature()).readString();
             final Signature signature = Factory.Named.Util.create(ALL_SIGNATURES, signatureType);
@@ -538,7 +538,7 @@ public enum KeyType {
          * This method must work exactly as match_pattern from match.c of OpenSSH. If it works differently, consider it
          * as a bug that must be fixed.
          */
-        public static boolean matchPattern(String target, String pattern) {
+        static boolean matchPattern(String target, String pattern) {
             StringBuilder regex = new StringBuilder();
             String endEscape = "";
             for (int i = 0; i < pattern.length(); ++i) {
@@ -562,7 +562,7 @@ public enum KeyType {
             return Pattern.compile(regex.toString()).matcher(target).matches();
         }
 
-        public static final List<Factory.Named<Signature>> ALL_SIGNATURES = Arrays.asList(
+        List<Factory.Named<Signature>> ALL_SIGNATURES = Arrays.asList(
                 new SignatureRSA.FactorySSHRSA(),
                 new SignatureRSA.FactoryCERT(),
                 new SignatureRSA.FactoryRSASHA256(),
@@ -596,7 +596,7 @@ public enum KeyType {
             return ((Certificate<PublicKey>) key);
         }
 
-        private static Date dateFromEpoch(BigInteger seconds) {
+        static Date dateFromEpoch(BigInteger seconds) {
             BigInteger maxValue = BigInteger.valueOf(Long.MAX_VALUE / 1000);
             if (seconds.compareTo(maxValue) > 0) {
                 return new Date(maxValue.longValue() * 1000);
@@ -605,7 +605,7 @@ public enum KeyType {
             }
         }
 
-        private static BigInteger epochFromDate(Date date) {
+        static BigInteger epochFromDate(Date date) {
             long time = date.getTime() / 1000;
             if (time >= Long.MAX_VALUE / 1000) {
                 // Dealing with the signed longs in Java. Since the protocol requires a unix timestamp in milliseconds,
@@ -619,14 +619,14 @@ public enum KeyType {
             }
         }
 
-        private static String unpackString(byte[] packedString) throws BufferException {
+        static String unpackString(byte[] packedString) throws BufferException {
             if (packedString.length == 0) {
                 return "";
             }
             return new Buffer.PlainBuffer(packedString).readString();
         }
 
-        private static List<String> unpackList(byte[] packedString) throws BufferException {
+        static List<String> unpackList(byte[] packedString) throws BufferException {
             List<String> list = new ArrayList<String>();
             Buffer<?> buf = new Buffer.PlainBuffer(packedString);
             while (buf.available() > 0) {
@@ -635,7 +635,7 @@ public enum KeyType {
             return list;
         }
 
-        private static Map<String, String> unpackMap(byte[] packedString) throws BufferException {
+        static Map<String, String> unpackMap(byte[] packedString) throws BufferException {
             Map<String, String> map = new LinkedHashMap<String, String>();
             Buffer<?> buf = new Buffer.PlainBuffer(packedString);
             while (buf.available() > 0) {
@@ -646,14 +646,14 @@ public enum KeyType {
             return map;
         }
 
-        private static byte[] packString(String data) {
+        static byte[] packString(String data) {
             if (data == null || data.isEmpty()) {
                 return "".getBytes();
             }
             return new Buffer.PlainBuffer().putString(data).getCompactData();
         }
 
-        private static byte[] packList(Iterable<String> strings) {
+        static byte[] packList(Iterable<String> strings) {
             Buffer<?> buf = new Buffer.PlainBuffer();
             for (String string : strings) {
                 buf.putString(string);
@@ -661,7 +661,7 @@ public enum KeyType {
             return buf.getCompactData();
         }
 
-        private static byte[] packMap(Map<String, String> map) {
+        static byte[] packMap(Map<String, String> map) {
             Buffer<?> buf = new Buffer.PlainBuffer();
             List<String> keys = new ArrayList<String>(map.keySet());
             Collections.sort(keys);

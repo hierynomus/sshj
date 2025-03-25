@@ -17,24 +17,24 @@ package net.schmizz.concurrent;
 
 import java.util.Collection;
 
-public class ErrorDeliveryUtil {
+public interface ErrorDeliveryUtil {
 
-    public static void alertPromises(Throwable x, Promise<?, ?>... promises) {
+    static void alertPromises(Throwable x, Promise<?, ?>... promises) {
         for (Promise<?, ?> p : promises)
             p.deliverError(x);
     }
 
-    public static void alertPromises(Throwable x, Collection<? extends Promise<?, ?>> promises) {
+    static void alertPromises(Throwable x, Collection<? extends Promise<?, ?>> promises) {
         for (Promise<?, ?> p : promises)
             p.deliverError(x);
     }
 
-    public static void alertEvents(Throwable x, Event<?>... events) {
+    static void alertEvents(Throwable x, Event<?>... events) {
         for (Event<?> e : events)
             e.deliverError(x);
     }
 
-    public static void alertEvents(Throwable x, Collection<? extends Event<?>> events) {
+    static void alertEvents(Throwable x, Collection<? extends Event<?>> events) {
         for (Event<?> e : events)
             e.deliverError(x);
     }
