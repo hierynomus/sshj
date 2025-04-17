@@ -49,11 +49,19 @@ configurations.implementation.transitive = false
 def bouncycastleVersion = "1.80"
 def sshdVersion = "2.14.0"
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+    registerFeature('bouncyCastle') {
+        usingSourceSet(sourceSets.main)
+    }
+}
+
 dependencies {
   implementation "org.slf4j:slf4j-api:2.0.17"
-  implementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
-  implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
   implementation "com.hierynomus:asn-one:0.6.0"
+  bouncyCastleImplementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
+  bouncyCastleImplementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
 }
 
 license {
@@ -66,11 +74,6 @@ license {
     '**/com/hierynomus/sshj/userauth/keyprovider/bcrypt/*.java',
     '**/files/test_file_*.txt',
   ])
-}
-
-java {
-	withJavadocJar()
-	withSourcesJar()
 }
 
 if (!JavaVersion.current().isJava9Compatible()) {
@@ -99,6 +102,8 @@ testing {
         implementation "org.apache.sshd:sshd-scp:$sshdVersion"
         implementation "ch.qos.logback:logback-classic:1.5.18"
         implementation 'org.glassfish.grizzly:grizzly-http-server:3.0.1'
+        implementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
+        implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
       }
 
       targets {
