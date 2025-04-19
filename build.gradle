@@ -98,7 +98,6 @@ testing {
         implementation "org.apache.sshd:sshd-sftp:$sshdVersion"
         implementation "org.apache.sshd:sshd-scp:$sshdVersion"
         implementation "ch.qos.logback:logback-classic:1.5.18"
-        implementation 'org.glassfish.grizzly:grizzly-http-server:3.0.1'
       }
 
       targets {
