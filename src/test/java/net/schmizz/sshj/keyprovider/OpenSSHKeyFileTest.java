@@ -222,7 +222,7 @@ public class OpenSSHKeyFileTest {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ed25519"));
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("EdDSA"));
+        assertThat(aPrivate.getAlgorithm(), equalTo("Ed25519"));
     }
 
     @Test
@@ -343,7 +343,7 @@ public class OpenSSHKeyFileTest {
         WipeTrackingPasswordFinder pwf = new WipeTrackingPasswordFinder(password, withRetry);
         keyFile.init(new File(key), pwf);
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("EdDSA"));
+        assertThat(aPrivate.getAlgorithm(), equalTo("Ed25519"));
         pwf.assertWiped();
     }
 

@@ -71,7 +71,7 @@ public class ScpCommandLine {
         }
     }
 
-    private LinkedHashMap<Arg, String> arguments = new LinkedHashMap<Arg, String>();
+    private final LinkedHashMap<Arg, String> arguments = new LinkedHashMap<Arg, String>();
     private String path;
 
     ScpCommandLine() {

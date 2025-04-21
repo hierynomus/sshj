@@ -18,6 +18,7 @@ package com.hierynomus.sshj.test.util;
 import net.schmizz.sshj.common.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 public class FileUtil {
 
@@ -34,12 +35,12 @@ public class FileUtil {
         FileInputStream fileInputStream = new FileInputStream(f);
         try {
             ByteArrayOutputStream byteArrayOutputStream = IOUtils.readFully(fileInputStream);
-            return byteArrayOutputStream.toString(IOUtils.UTF8.displayName());
+            return byteArrayOutputStream.toString(StandardCharsets.UTF_8.displayName());
         } finally {
             IOUtils.closeQuietly(fileInputStream);
         }
     }
-    
+
     public static boolean compareFileContents(File f1, File f2) throws IOException {
         return readFromFile(f1).equals(readFromFile(f2));
     }

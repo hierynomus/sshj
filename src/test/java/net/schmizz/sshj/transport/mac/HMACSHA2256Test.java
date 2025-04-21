@@ -16,30 +16,31 @@
 package net.schmizz.sshj.transport.mac;
 
 import com.hierynomus.sshj.transport.mac.Macs;
-import org.bouncycastle.util.encoders.Hex;
+import org.apache.sshd.common.util.buffer.BufferUtils;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HMACSHA2256Test {
-    private static final Charset CHARSET = Charset.forName("US-ASCII");
+    private static final Charset CHARSET = StandardCharsets.US_ASCII;
     private static final byte[] PLAIN_TEXT = "Hello World".getBytes(CHARSET);
-    private static final String EXPECTED_HMAC = "eb2207b2df36c7485f46d1be30418bc44e8134b4fdaabbe16d71f56ab24fce88";
+    private static final String EXPECTED_HMAC = "eb 22 07 b2 df 36 c7 48 5f 46 d1 be 30 41 8b c4 4e 81 34 b4 fd aa bb e1 6d 71 f5 6a b2 4f ce 88";
 
     @Test
     public void testUpdateWithDoFinal() {
         BaseMAC hmac = initHmac();
         hmac.update(PLAIN_TEXT);
-        assertThat(Hex.toHexString(hmac.doFinal()), is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(hmac.doFinal()), is(EXPECTED_HMAC));
     }
 
     @Test
     public void testDoFinalWithInput() {
         BaseMAC hmac = initHmac();
-        assertThat(Hex.toHexString(hmac.doFinal(PLAIN_TEXT)), is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(hmac.doFinal(PLAIN_TEXT)), is(EXPECTED_HMAC));
     }
 
     @Test
@@ -48,7 +49,7 @@ public class HMACSHA2256Test {
         byte[] resultBuf = new byte[32];
         hmac.update(PLAIN_TEXT);
         hmac.doFinal(resultBuf, 0);
-        assertThat(Hex.toHexString(resultBuf), is(EXPECTED_HMAC));
+        assertThat(BufferUtils.toHex(resultBuf), is(EXPECTED_HMAC));
     }
 
     private BaseMAC initHmac() {

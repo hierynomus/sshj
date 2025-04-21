@@ -37,7 +37,7 @@ public final class ChannelOutputStream extends OutputStream implements ErrorNoti
     private final DataBuffer buffer = new DataBuffer();
     private final byte[] b = new byte[1];
 
-    private AtomicBoolean closed;
+    private final AtomicBoolean closed;
     private SSHException error;
 
     private final class DataBuffer {
