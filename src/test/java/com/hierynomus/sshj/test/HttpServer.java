@@ -19,42 +19,36 @@ import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import java.io.File;
-import java.nio.file.Files;
+import java.net.InetSocketAddress;
+import java.net.URI;
 
 /**
  * Can be used to setup a test HTTP server
  */
 public class HttpServer implements BeforeEachCallback, AfterEachCallback {
 
-    private org.glassfish.grizzly.http.server.HttpServer httpServer;
+    private static final String BIND_ADDRESS = "127.0.0.1";
 
-
-    private File docRoot ;
+    private com.sun.net.httpserver.HttpServer httpServer;
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
+    public void afterEach(ExtensionContext context) {
         try {
-            httpServer.shutdownNow();
-        } catch (Exception e) {}
-        try {
-            docRoot.delete();
-        } catch (Exception e) {}
-
+            httpServer.stop(0);
+        } catch (Exception ignored) {}
     }
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
-        docRoot = Files.createTempDirectory("sshj").toFile();
-        httpServer = org.glassfish.grizzly.http.server.HttpServer.createSimpleServer(docRoot.getAbsolutePath());
+        httpServer = com.sun.net.httpserver.HttpServer.create();
+        final InetSocketAddress socketAddress = new InetSocketAddress(BIND_ADDRESS, 0);
+        httpServer.bind(socketAddress, 10);
         httpServer.start();
     }
 
-    public org.glassfish.grizzly.http.server.HttpServer getHttpServer() {
-        return httpServer;
-    }
-
-    public File getDocRoot() {
-        return docRoot;
+    public URI getServerUrl() {
+        final InetSocketAddress bindAddress = httpServer.getAddress();
+        final String serverUrl = String.format("http://%s:%d", BIND_ADDRESS, bindAddress.getPort());
+        return URI.create(serverUrl);
     }
 }
