@@ -57,7 +57,7 @@ public class KnownHostMatchers {
     }
 
     private static class EquiHostMatcher implements HostMatcher {
-        private String host;
+        private final String host;
 
         public EquiHostMatcher(String host) {
             this.host = host;

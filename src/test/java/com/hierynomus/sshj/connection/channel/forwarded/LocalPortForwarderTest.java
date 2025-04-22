@@ -17,7 +17,6 @@ package com.hierynomus.sshj.connection.channel.forwarded;
 
 import com.hierynomus.sshj.test.HttpServer;
 import com.hierynomus.sshj.test.SshServerExtension;
-import com.hierynomus.sshj.test.util.FileUtil;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Parameters;
@@ -29,13 +28,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LocalPortForwarderTest {
-    private static final String LOCALHOST_URL = "http://127.0.0.1:8080";
-
     @RegisterExtension
     public SshServerExtension fixture = new SshServerExtension();
 
@@ -43,21 +39,19 @@ public class LocalPortForwarderTest {
     public HttpServer httpServer = new HttpServer();
 
     @BeforeEach
-    public void setUp() throws IOException {
+    public void setUp() {
         fixture.getServer().setForwardingFilter(new AcceptAllForwardingFilter());
-        File file = Files.createFile(httpServer.getDocRoot().toPath().resolve("index.html")).toFile();
-        FileUtil.writeToFile(file, "<html><head/><body><h1>Hi!</h1></body></html>");
     }
 
     @Test
     public void shouldHaveWorkingHttpServer() throws IOException {
-        assertEquals(200, httpGet());
+        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, httpGet());
     }
 
     @Test
     public void shouldHaveHttpServerThatClosesConnectionAfterResponse() throws IOException {
         // Just to check that the test server does close connections before we try through the forwarder...
-        httpGetAndAssertConnectionClosedByServer(8080);
+        httpGetAndAssertConnectionClosedByServer(httpServer.getServerUrl().getPort());
     }
 
     @Test
@@ -68,7 +62,8 @@ public class LocalPortForwarderTest {
         ServerSocket serverSocket = new ServerSocket();
         serverSocket.setReuseAddress(true);
         serverSocket.bind(new InetSocketAddress("0.0.0.0", 12345));
-        LocalPortForwarder localPortForwarder = sshClient.newLocalPortForwarder(new Parameters("0.0.0.0", 12345, "localhost", 8080), serverSocket);
+        final int serverPort = httpServer.getServerUrl().getPort();
+        LocalPortForwarder localPortForwarder = sshClient.newLocalPortForwarder(new Parameters("0.0.0.0", 12345, "localhost", serverPort), serverSocket);
         new Thread(() -> {
             try {
                 localPortForwarder.listen();
@@ -90,7 +85,7 @@ public class LocalPortForwarderTest {
             // It returns 400 Bad Request because it's missing a bunch of info, but the HTTP response doesn't matter, we just want to test the connection closing.
             OutputStream outputStream = socket.getOutputStream();
             PrintWriter writer = new PrintWriter(outputStream);
-            writer.println("GET / HTTP/1.1");
+            writer.println("GET / HTTP/1.1\r\n");
             writer.println("");
             writer.flush();
 
@@ -111,7 +106,7 @@ public class LocalPortForwarderTest {
     }
 
     private int httpGet() throws IOException {
-        final URL url = new URL(LOCALHOST_URL);
+        final URL url = httpServer.getServerUrl().toURL();
         final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setConnectTimeout(3000);
         urlConnection.setRequestMethod("GET");

@@ -18,12 +18,10 @@ package net.schmizz.sshj.userauth.keyprovider;
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
-import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
-import org.bouncycastle.crypto.params.Argon2Parameters;
-import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
 import javax.crypto.Mac;
+import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
@@ -75,6 +73,8 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         }
     }
 
+    private static final String KEY_DERIVATION_HEADER = "Key-Derivation";
+
     private Integer keyFileVersion;
     private byte[] privateKey;
     private byte[] publicKey;
@@ -101,12 +101,12 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         throw new IOException(String.format("Unsupported encryption: %s", encryption));
     }
 
-    private Map<String, String> payload = new HashMap<String, String>();
+    private final Map<String, String> payload = new HashMap<>();
 
     /**
      * For each line that looks like "Xyz: vvv", it will be stored in this map.
      */
-    private final Map<String, String> headers = new HashMap<String, String>();
+    private final Map<String, String> headers = new HashMap<>();
 
     protected KeyPair readKeyPair() throws IOException {
         this.parseKeyPair();
@@ -261,99 +261,43 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
     }
 
     /**
-     * Converts a passphrase into a key, by following the convention that PuTTY
-     * uses. Only PuTTY v1/v2 key files
-     * <p><p/>
-     * This is used to decrypt the private key when it's encrypted.
+     * Initialize Java Cipher for decryption using Secret Key derived from passphrase according to PuTTY Key Version
      */
-    private void initCipher(final char[] passphrase, Cipher cipher) throws IOException, InvalidAlgorithmParameterException, InvalidKeyException {
-        // The field Key-Derivation has been introduced with Putty v3 key file format
-        // For v3 the algorithms are "Argon2i" "Argon2d" and "Argon2id"
-        String kdfAlgorithm = headers.get("Key-Derivation");
-        if (kdfAlgorithm != null) {
-            kdfAlgorithm = kdfAlgorithm.toLowerCase();
-            byte[] keyData = this.argon2(kdfAlgorithm, passphrase);
-            if (keyData == null) {
-                throw new IOException(String.format("Unsupported key derivation function: %s", kdfAlgorithm));
-            }
-            byte[] key = new byte[32];
-            byte[] iv = new byte[16];
-            byte[] tag = new byte[32]; // Hmac key
-            System.arraycopy(keyData, 0, key, 0, 32);
-            System.arraycopy(keyData, 32, iv, 0, 16);
-            System.arraycopy(keyData, 48, tag, 0, 32);
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"),
-                    new IvParameterSpec(iv));
-            verifyHmac = tag;
-            return;
-        }
+    private void initCipher(final char[] passphrase, final Cipher cipher) throws InvalidAlgorithmParameterException, InvalidKeyException {
+        final String keyDerivationHeader = headers.get(KEY_DERIVATION_HEADER);
 
-        // Key file format v1 + v2
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+        final SecretKey secretKey;
+        final IvParameterSpec ivParameterSpec;
 
-            // The encryption key is derived from the passphrase by means of a succession of
-            // SHA-1 hashes.
-            byte[] encodedPassphrase = PasswordUtils.toByteArray(passphrase);
-
-            // Sequence number 0
-            digest.update(new byte[]{0, 0, 0, 0});
-            digest.update(encodedPassphrase);
-            byte[] key1 = digest.digest();
-
-            // Sequence number 1
-            digest.update(new byte[]{0, 0, 0, 1});
-            digest.update(encodedPassphrase);
-            byte[] key2 = digest.digest();
-
-            Arrays.fill(encodedPassphrase, (byte) 0);
-
-            byte[] expanded = new byte[32];
-            System.arraycopy(key1, 0, expanded, 0, 20);
-            System.arraycopy(key2, 0, expanded, 20, 12);
-
-            cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(expanded, 0, 32, "AES"),
-                    new IvParameterSpec(new byte[16])); // initial vector=0
-
-        } catch (NoSuchAlgorithmException e) {
-            throw new IOException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Uses BouncyCastle Argon2 implementation
-     */
-    private byte[] argon2(String algorithm, final char[] passphrase) throws IOException {
-        int type;
-        if ("argon2i".equals(algorithm)) {
-            type = Argon2Parameters.ARGON2_i;
-        } else if ("argon2d".equals(algorithm)) {
-            type = Argon2Parameters.ARGON2_d;
-        } else if ("argon2id".equals(algorithm)) {
-            type = Argon2Parameters.ARGON2_id;
+        if (keyDerivationHeader == null) {
+            // Key Version 1 and 2 with historical key derivation
+            final PuTTYSecretKeyDerivationFunction keyDerivationFunction = new V1PuTTYSecretKeyDerivationFunction();
+            secretKey = keyDerivationFunction.deriveSecretKey(passphrase);
+            ivParameterSpec = new IvParameterSpec(new byte[16]);
         } else {
-            return null;
-        }
-        byte[] salt = Hex.decode(headers.get("Argon2-Salt"));
-        int iterations = Integer.parseInt(headers.get("Argon2-Passes"));
-        int memory = Integer.parseInt(headers.get("Argon2-Memory"));
-        int parallelism = Integer.parseInt(headers.get("Argon2-Parallelism"));
+            // Key Version 3 with Argon2 key derivation
+            final PuTTYSecretKeyDerivationFunction keyDerivationFunction = new V3PuTTYSecretKeyDerivationFunction(headers);
+            final SecretKey derivedSecretKey = keyDerivationFunction.deriveSecretKey(passphrase);
+            final byte[] derivedSecretKeyEncoded = derivedSecretKey.getEncoded();
 
-        Argon2Parameters a2p = new Argon2Parameters.Builder(type)
-                .withVersion(Argon2Parameters.ARGON2_VERSION_13)
-                .withIterations(iterations)
-                .withMemoryAsKB(memory)
-                .withParallelism(parallelism)
-                .withSalt(salt).build();
+            // Set Secret Key from first 32 bytes
+            final byte[] secretKeyEncoded = new byte[32];
+            System.arraycopy(derivedSecretKeyEncoded, 0, secretKeyEncoded, 0, secretKeyEncoded.length);
+            secretKey = new SecretKeySpec(secretKeyEncoded, derivedSecretKey.getAlgorithm());
 
-        Argon2BytesGenerator generator = new Argon2BytesGenerator();
-        generator.init(a2p);
-        byte[] output = new byte[80];
-        int bytes = generator.generateBytes(passphrase, output);
-        if (bytes != output.length) {
-            throw new IOException("Failed to generate key via Argon2");
+            // Set IV from next 16 bytes
+            final byte[] iv = new byte[16];
+            System.arraycopy(derivedSecretKeyEncoded, secretKeyEncoded.length, iv, 0, iv.length);
+            ivParameterSpec = new IvParameterSpec(iv);
+
+            // Set HMAC Tag from next 32 bytes
+            final byte[] tag = new byte[32];
+            final int tagSourcePosition = secretKeyEncoded.length + iv.length;
+            System.arraycopy(derivedSecretKeyEncoded, tagSourcePosition, tag, 0, tag.length);
+            verifyHmac = tag;
         }
-        return output;
+
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivParameterSpec);
     }
 
     /**
@@ -380,7 +324,7 @@ public class PuTTYKeyFile extends BaseFileKeyProvider {
         data.writeInt(privateKey.length);
         data.write(privateKey);
 
-        final String encoded = Hex.toHexString(mac.doFinal(out.toByteArray()));
+        final String encoded = ByteArrayUtils.toHex(mac.doFinal(out.toByteArray()));
         final String reference = headers.get("Private-MAC");
         if (!encoded.equals(reference)) {
             throw new IOException("Invalid passphrase");

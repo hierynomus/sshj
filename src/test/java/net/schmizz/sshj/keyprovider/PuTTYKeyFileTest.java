@@ -489,6 +489,8 @@ public class PuTTYKeyFileTest {
         key.init(new StringReader(v3_rsa_argon2d), new UnitTestPasswordFinder("changeit"));
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
+        assertEquals(3, key.getKeyFileVersion());
+
         OpenSSHKeyV1KeyFile referenceKey = new OpenSSHKeyV1KeyFile();
         referenceKey.init(new File("src/test/resources/keytypes/test_rsa_putty_priv.openssh2"));
         RSAPrivateKey loadedPrivate = (RSAPrivateKey) key.getPrivate();

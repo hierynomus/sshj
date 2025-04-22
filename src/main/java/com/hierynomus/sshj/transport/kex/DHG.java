@@ -28,8 +28,8 @@ import java.security.GeneralSecurityException;
  *
  */
 public class DHG extends AbstractDHG {
-    private BigInteger group;
-    private BigInteger generator;
+    private final BigInteger group;
+    private final BigInteger generator;
 
     public DHG(BigInteger group, BigInteger generator, Digest digest) {
         super(new DH(), digest);

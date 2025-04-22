@@ -475,7 +475,7 @@ public class OpenSSHKnownHosts
     }
 
     public static class BadHostEntry implements KnownHostEntry {
-        private String line;
+        private final String line;
 
         public BadHostEntry(String line) {
             this.line = line;
