@@ -17,8 +17,8 @@ package net.schmizz.sshj.common;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /** Utility functions for byte arrays. */
@@ -141,7 +141,7 @@ public class ByteArrayUtils {
      * @return UTF-8 bytes of the string
      */
     public static byte[] encodeSensitiveStringToUtf8(char[] str) {
-        CharsetEncoder charsetEncoder = Charset.forName("UTF-8").newEncoder();
+        CharsetEncoder charsetEncoder = StandardCharsets.UTF_8.newEncoder();
         ByteBuffer utf8Buffer = ByteBuffer.allocate((int) (str.length * charsetEncoder.maxBytesPerChar()));
         assert utf8Buffer.hasArray();
         charsetEncoder.encode(CharBuffer.wrap(str), utf8Buffer, true);

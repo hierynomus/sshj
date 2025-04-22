@@ -26,8 +26,12 @@ public class KeyDecryptionFailedException extends IOException {
 
     public static final String MESSAGE = "Decryption of the key failed. A supplied passphrase may be incorrect.";
 
-    public KeyDecryptionFailedException() {
-        super(MESSAGE);
+    public KeyDecryptionFailedException(final String message) {
+        super(message);
+    }
+
+    public KeyDecryptionFailedException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 
     public KeyDecryptionFailedException(IOException cause) {

@@ -47,8 +47,7 @@ public class OpenSSHKeyFileUtil {
      * @param publicKey Public key accessible through a {@code Reader}
      */
     public static ParsedPubKey initPubKey(Reader publicKey) throws IOException {
-        final BufferedReader br = new BufferedReader(publicKey);
-        try {
+        try (BufferedReader br = new BufferedReader(publicKey)) {
             String keydata;
             while ((keydata = br.readLine()) != null) {
                 keydata = keydata.trim();
@@ -68,8 +67,6 @@ public class OpenSSHKeyFileUtil {
             throw new IOException("Public key file is blank");
         } catch (Base64DecodingException err) {
             throw new IOException("Public key decoding failed", err);
-        } finally {
-            br.close();
         }
     }
 

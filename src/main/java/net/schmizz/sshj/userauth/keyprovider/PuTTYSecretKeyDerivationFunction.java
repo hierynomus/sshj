@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.schmizz.sshj.userauth.keyprovider.pkcs;
+package net.schmizz.sshj.userauth.keyprovider;
 
-import org.bouncycastle.openssl.PEMKeyPair;
-
-import java.io.IOException;
+import javax.crypto.SecretKey;
 
 /**
- * Converter from typed object to PEM Key Pair
- * @param <T> Object Type
+ * Abstraction for deriving the Secret Key for decrypting PuTTY Key Files
  */
-public interface KeyPairConverter<T> {
+interface PuTTYSecretKeyDerivationFunction {
     /**
-     * Get PEM Key Pair from typed object
+     * Derive Secret Key from provided passphrase characters
      *
-     * @param object Typed Object
-     * @return PEM Key Pair
-     * @throws IOException Thrown on conversion failures
+     * @param passphrase Passphrase characters required
+     * @return Derived Secret Key
      */
-    PEMKeyPair getKeyPair(T object) throws IOException;
+    SecretKey deriveSecretKey(char[] passphrase);
 }

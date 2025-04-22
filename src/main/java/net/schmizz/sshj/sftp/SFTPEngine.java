@@ -17,7 +17,6 @@ package net.schmizz.sshj.sftp;
 
 import com.hierynomus.sshj.common.ThreadNameProvider;
 import net.schmizz.concurrent.Promise;
-import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.LoggerFactory;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -28,6 +27,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -373,7 +373,7 @@ public class SFTPEngine
     /** Using UTF-8 */
     protected static String readSingleName(Response res)
         throws IOException {
-        return readSingleName(res, IOUtils.UTF8);
+        return readSingleName(res, StandardCharsets.UTF_8);
     }
 
     /** Using any character set */

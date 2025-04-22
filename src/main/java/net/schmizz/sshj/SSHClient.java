@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.*;
 
@@ -126,7 +127,7 @@ public class SSHClient
     private final List<LocalPortForwarder> forwarders = new ArrayList<LocalPortForwarder>();
 
     /** character set of the remote machine */
-    protected Charset remoteCharset = IOUtils.UTF8;
+    protected Charset remoteCharset = StandardCharsets.UTF_8;
 
     /** Default constructor. Initializes this object using {@link DefaultConfig}. */
     public SSHClient() {
@@ -765,7 +766,7 @@ public class SSHClient
      *        remote character set or {@code null} for default
      */
     public void setRemoteCharset(Charset remoteCharset) {
-        this.remoteCharset = remoteCharset != null ? remoteCharset : IOUtils.UTF8;
+        this.remoteCharset = remoteCharset != null ? remoteCharset : StandardCharsets.UTF_8;
     }
 
     @Override

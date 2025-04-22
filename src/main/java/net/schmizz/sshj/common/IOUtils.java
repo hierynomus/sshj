@@ -19,11 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
 public class IOUtils {
-
-    public static final Charset UTF8 = Charset.forName("UTF-8");
 
     public static void closeQuietly(Closeable... closeables) {
         closeQuietly(LoggerFactory.DEFAULT, closeables);

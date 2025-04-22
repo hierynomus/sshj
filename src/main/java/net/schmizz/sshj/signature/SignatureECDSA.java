@@ -77,7 +77,7 @@ public class SignatureECDSA extends AbstractSignatureDSA {
 
     }
 
-    private String keyTypeName;
+    private final String keyTypeName;
 
     public SignatureECDSA(String algorithm, String keyTypeName) {
         super(algorithm, keyTypeName);

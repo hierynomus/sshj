@@ -17,11 +17,11 @@ package com.hierynomus.sshj.transport.verification;
 
 import net.schmizz.sshj.common.Base64DecodingException;
 import net.schmizz.sshj.common.Base64Decoder;
-import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.SSHException;
 import net.schmizz.sshj.transport.mac.MAC;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -57,7 +57,7 @@ public class KnownHostMatchers {
     }
 
     private static class EquiHostMatcher implements HostMatcher {
-        private String host;
+        private final String host;
 
         public EquiHostMatcher(String host) {
             this.host = host;
@@ -96,7 +96,7 @@ public class KnownHostMatchers {
 
         private String hashHost(String host) throws IOException, Base64DecodingException {
             sha1.init(getSaltyBytes());
-            return "|1|" + salt + "|" + Base64.getEncoder().encodeToString(sha1.doFinal(host.getBytes(IOUtils.UTF8)));
+            return "|1|" + salt + "|" + Base64.getEncoder().encodeToString(sha1.doFinal(host.getBytes(StandardCharsets.UTF_8)));
         }
 
         private byte[] getSaltyBytes() throws IOException, Base64DecodingException {
