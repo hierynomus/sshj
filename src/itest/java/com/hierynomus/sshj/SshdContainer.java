@@ -106,11 +106,22 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
         private List<String> hostKeys = new ArrayList<>();
         private List<String> certificates = new ArrayList<>();
         private @NotNull SshdConfigBuilder sshdConfig = SshdConfigBuilder.defaultBuilder();
+        private boolean privileged = false;
+        private List<String> packages = new ArrayList<>();
 
         public static Builder defaultBuilder() {
             Builder b = new Builder();
-
             return b;
+        }
+
+        public @NotNull Builder withPrivileged(boolean privileged) {
+            this.privileged = privileged;
+            return this;
+        }
+
+        public @NotNull Builder withPackages(@NotNull String... packages) {
+            this.packages.addAll(List.of(packages));
+            return this;
         }
 
 
@@ -153,6 +164,9 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
             builder.expose(22);
             builder.copy("entrypoint.sh", "/entrypoint.sh");
 
+            if (!packages.isEmpty()) {
+                builder.run("apk add --no-cache " + String.join(" ", packages));
+            }
             builder.add("authorized_keys", "/home/sshj/.ssh/authorized_keys");
             builder.copy("test-container/trusted_ca_keys", "/etc/ssh/trusted_ca_keys");
 
@@ -201,6 +215,9 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
 
     public SshdContainer(SshdContainer.Builder builder) {
         this(builder.buildInner());
+        if (builder.privileged) {
+            withPrivilegedMode(true);
+        }
     }
 
     public SshdContainer(@NotNull Future<String> future) {
