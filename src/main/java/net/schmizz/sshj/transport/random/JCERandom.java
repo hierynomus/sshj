@@ -15,16 +15,11 @@
  */
 package net.schmizz.sshj.transport.random;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
 
 /** A {@link Random} implementation using the built-in {@link SecureRandom} PRNG. */
-public class JCERandom
-        implements Random {
-    private static final Logger logger = LoggerFactory.getLogger(JCERandom.class);
-
+public class JCERandom extends SecureRandomProvider {
     /** Named factory for the JCE {@link Random} */
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<Random> {
@@ -41,39 +36,7 @@ public class JCERandom
 
     }
 
-    private byte[] tmp = new byte[16];
-    private final SecureRandom random;
-
     JCERandom() {
-        logger.info("Creating new SecureRandom.");
-        long t = System.currentTimeMillis();
-        random = new SecureRandom();
-        logger.debug("Random creation took {} ms", System.currentTimeMillis() - t);
-    }
-
-    /**
-     * Fill the given byte-array with random bytes from this PRNG.
-     *
-     * @param foo   the byte-array
-     * @param start the offset to start at
-     * @param len   the number of bytes to fill
-     */
-    @Override
-    public synchronized void fill(byte[] foo, int start, int len) {
-        if (start == 0 && len == foo.length) {
-            random.nextBytes(foo);
-        } else {
-            synchronized (this) {
-                if (len > tmp.length)
-                    tmp = new byte[len];
-                random.nextBytes(tmp);
-                System.arraycopy(tmp, 0, foo, start, len);
-            }
-        }
-    }
-
-    @Override
-    public void fill(final byte[] bytes) {
-        random.nextBytes(bytes);
+        super();
     }
 }
