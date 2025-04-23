@@ -62,7 +62,7 @@ public class ScpCommandLine {
         SingleQuote {
             @Override
             String escapedPath(String path) {
-                return "\'" + path.replace("'", "\\'") + "'";
+                return "\"" + path.replace("'", "\'") + "\"";
             }
         };
 
