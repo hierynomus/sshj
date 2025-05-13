@@ -110,6 +110,18 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+SSHJ 0.39.0 (2024-02-20)::
+* Upgraded dependencies
+* Remove hard dependencies on BouncyCastle, making it optional.
+* Merged https://github.com/hierynomus/sshj/pull/993[#993]: Remove EDDSA dependency
+* Merged https://github.com/hierynomus/sshj/pull/959[#959]: Improve Curve25519 public key handling
+* Merged https://github.com/hierynomus/sshj/pull/911[#911]: Fix for bad packet received with heartbeat enabled
+* Merged https://github.com/hierynomus/sshj/pull/926[#926]: Close session when closing SFTP client
+* Merged https://github.com/hierynomus/sshj/pull/928[#928]: Improve file-listing performance
+* Merged https://github.com/hierynomus/sshj/pull/934[#934]: Don't send keep-alive before KEX done
+* Merged https://github.com/hierynomus/sshj/pull/936[#936]: Improve Base64 decoding error handling
+* Merged https://github.com/hierynomus/sshj/pull/925[#925]: Allow passing connected sockets
+* Merged https://github.com/hierynomus/sshj/pull/922[#922]: Fix bug in known_hosts parsing
 SSHJ 0.38.0 (2024-01-02)::
 * Mitigated CVE-2023-48795 - Terrapin
   * Merged https://github.com/hierynomus/sshj/pull/917[#917]: Implement OpenSSH strict key exchange extension
