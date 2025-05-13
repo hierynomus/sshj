@@ -59,7 +59,8 @@ import java.util.Properties;
  * net.schmizz.sshj.transport.mac.HMACMD596}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setCompressionFactories Compression}: {@link net.schmizz.sshj.transport.compression.NoneCompression}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setKeyAlgorithms KeyAlgorithm}: {@link net.schmizz.sshj.signature.SignatureRSA}, {@link net.schmizz.sshj.signature.SignatureDSA}</li>
- * <li>{@link net.schmizz.sshj.ConfigImpl#setRandomFactory PRNG}: {@link net.schmizz.sshj.transport.random.BouncyCastleRandom}* or {@link net.schmizz.sshj.transport.random.JCERandom}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setRandomFactory BC}: {@link net.schmizz.sshj.transport.random.BouncyCastleRandom}* or {@link net.schmizz.sshj.transport.random.JCERandom}</li>
+ * <li>{@link net.schmizz.sshj.ConfigImpl#setRandomFactory BCFIPS}: {@link net.schmizz.sshj.transport.random.BouncyCastleFipsRandom}* or {@link net.schmizz.sshj.transport.random.JCERandom}</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setFileKeyProviderFactories Key file support}: {@link net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile}*, {@link
  * net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile}*</li>
  * <li>{@link net.schmizz.sshj.ConfigImpl#setVersion Client version}: {@code "NET_3_0"}</li>

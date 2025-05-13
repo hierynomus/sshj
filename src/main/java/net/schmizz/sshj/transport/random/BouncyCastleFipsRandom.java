@@ -15,28 +15,25 @@
  */
 package net.schmizz.sshj.transport.random;
 
+/**
+ * BouncyCastle <code>Random</code>. This pseudo random number generator uses BouncyCastle fips.
+ * The JRE random will be used when creating a new generator to add some random data to the seed.
+ */
+public class BouncyCastleFipsRandom extends SecureRandomProvider {
 
-import java.security.SecureRandom;
-
-/** A {@link Random} implementation using the built-in {@link SecureRandom} PRNG. */
-public class JCERandom extends SecureRandomProvider {
-    /** Named factory for the JCE {@link Random} */
+    /** Named factory for the BouncyCastle <code>Random</code> */
     public static class Factory
-            implements net.schmizz.sshj.common.Factory.Named<Random> {
+            implements net.schmizz.sshj.common.Factory<Random> {
 
         @Override
         public Random create() {
-            return new JCERandom();
-        }
-
-        @Override
-        public String getName() {
-            return "default";
+            return new BouncyCastleFipsRandom();
         }
 
     }
 
-    JCERandom() {
-        super();
+
+    public BouncyCastleFipsRandom() {
+        super("DEFAULT", "BCFIPS");
     }
 }
