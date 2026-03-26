@@ -38,17 +38,19 @@ public final class ChannelInputStream
     private final Channel chan;
     private final Transport trans;
     private final Window.Local win;
+    private final int timeoutMs;
     private final CircularBuffer.PlainCircularBuffer buf;
     private final byte[] b = new byte[1];
 
     private boolean eof;
     private SSHException error;
 
-    public ChannelInputStream(Channel chan, Transport trans, Window.Local win) {
+    public ChannelInputStream(Channel chan, Transport trans, Window.Local win, int timeoutMs) {
         this.chan = chan;
         this.log = chan.getLoggerFactory().getLogger(getClass());
         this.trans = trans;
         this.win = win;
+        this.timeoutMs = timeoutMs;
         this.buf = new CircularBuffer.PlainCircularBuffer(
             chan.getLocalMaxPacketSize(), trans.getConfig().getMaxCircularBufferSize());
     }
@@ -104,7 +106,11 @@ public final class ChannelInputStream
                     }
                 }
                 try {
-                    buf.wait();
+                    if (timeoutMs > 0) {
+                        buf.wait(timeoutMs);
+                    } else {
+                        buf.wait();
+                    }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw (IOException) new InterruptedIOException().initCause(e);
