@@ -109,7 +109,7 @@ public final class ChannelInputStream
                     if (timeoutMs > 0) {
                         buf.wait(timeoutMs);
                         // detect if wait was aborted because of new data or a timeout occurred
-                        if (buf.available() == 0) {
+                        if (buf.available() == 0 && !eof) {
                             throw new IOException("Timeout of " + timeoutMs + "ms while waiting for data");
                         }
                     } else {
