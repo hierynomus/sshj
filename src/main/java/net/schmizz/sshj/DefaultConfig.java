@@ -35,6 +35,7 @@ import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
+import net.schmizz.sshj.transport.kex.MLKEM768X25519SHA256;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import net.schmizz.sshj.userauth.keyprovider.OpenSSHKeyFile;
@@ -105,6 +106,7 @@ public class DefaultConfig
 
     protected void initKeyExchangeFactories() {
         setKeyExchangeFactories(
+                new MLKEM768X25519SHA256.Factory(),
                 new Curve25519SHA256.Factory(),
                 new Curve25519SHA256.FactoryLibSsh(),
                 new DHGexSHA256.Factory(),
