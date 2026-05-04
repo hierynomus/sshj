@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
 
 /**
  * Post-Quantum Traditional (PQ/T) hybrid SSH key exchange combining
@@ -95,8 +94,8 @@ public class MLKEM768X25519SHA256 extends KeyExchangeBase {
         // Generate X25519 ephemeral key pair (C_PK1).
         x25519.init(null, trans.getConfig().getRandomFactory());
 
-        // Generate ML-KEM-768 ephemeral key pair (C_PK2).
-        final byte[] mlkemPublicKey = mlkem.generateKeyPair(new SecureRandom());
+        // Generate ML-KEM-768 ephemeral key pair (C_PK2) via JCA.
+        final byte[] mlkemPublicKey = mlkem.generateKeyPair();
 
         // C_INIT is the concatenation C_PK2 || C_PK1.
         final byte[] x25519PublicKey = x25519.getE();

@@ -15,17 +15,19 @@
  */
 package net.schmizz.sshj.transport.kex;
 
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
+import net.schmizz.sshj.common.SecurityUtils;
 import org.bouncycastle.crypto.SecretWithEncapsulation;
 import org.bouncycastle.pqc.crypto.mlkem.MLKEMExtractor;
 import org.bouncycastle.pqc.crypto.mlkem.MLKEMGenerator;
-import org.bouncycastle.pqc.crypto.mlkem.MLKEMKeyGenerationParameters;
-import org.bouncycastle.pqc.crypto.mlkem.MLKEMKeyPairGenerator;
 import org.bouncycastle.pqc.crypto.mlkem.MLKEMParameters;
 import org.bouncycastle.pqc.crypto.mlkem.MLKEMPrivateKeyParameters;
 import org.bouncycastle.pqc.crypto.mlkem.MLKEMPublicKeyParameters;
+import org.bouncycastle.pqc.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.pqc.crypto.util.PublicKeyFactory;
 
+import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyPair;
 import java.security.SecureRandom;
 
 /**
@@ -55,17 +57,20 @@ public final class MLKEM768 {
     private MLKEMPrivateKeyParameters privateKey;
 
     /**
-     * Generate an ephemeral ML-KEM-768 key pair using the provided source of randomness.
+     * Generate an ephemeral ML-KEM-768 key pair via the JCA, using the same path
+     * as the rest of sshj (see {@link SecurityUtils#getKeyPairGenerator(String)}).
      *
-     * @param random source of randomness
      * @return the encoded public key (length {@value #PUBLIC_KEY_LENGTH})
+     * @throws GeneralSecurityException if no JCA provider supports ML-KEM-768 or key conversion fails
      */
-    public byte[] generateKeyPair(final SecureRandom random) {
-        final MLKEMKeyPairGenerator generator = new MLKEMKeyPairGenerator();
-        generator.init(new MLKEMKeyGenerationParameters(random, MLKEMParameters.ml_kem_768));
-        final AsymmetricCipherKeyPair keyPair = generator.generateKeyPair();
-        publicKey = (MLKEMPublicKeyParameters) keyPair.getPublic();
-        privateKey = (MLKEMPrivateKeyParameters) keyPair.getPrivate();
+    public byte[] generateKeyPair() throws GeneralSecurityException {
+        final KeyPair keyPair = SecurityUtils.getKeyPairGenerator("ML-KEM-768").generateKeyPair();
+        try {
+            publicKey = (MLKEMPublicKeyParameters) PublicKeyFactory.createKey(keyPair.getPublic().getEncoded());
+            privateKey = (MLKEMPrivateKeyParameters) PrivateKeyFactory.createKey(keyPair.getPrivate().getEncoded());
+        } catch (IOException e) {
+            throw new GeneralSecurityException("Failed to convert ML-KEM-768 JCA key pair to lightweight parameters", e);
+        }
         return publicKey.getEncoded();
     }
 
