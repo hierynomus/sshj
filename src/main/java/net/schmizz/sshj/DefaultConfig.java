@@ -35,6 +35,7 @@ import net.schmizz.sshj.transport.kex.Curve25519SHA256;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
+import net.schmizz.sshj.transport.kex.KeyExchange;
 import net.schmizz.sshj.transport.kex.MLKEM768X25519SHA256;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
@@ -44,6 +45,7 @@ import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import org.slf4j.Logger;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -105,8 +107,11 @@ public class DefaultConfig
     }
 
     protected void initKeyExchangeFactories() {
-        setKeyExchangeFactories(
-                new MLKEM768X25519SHA256.Factory(),
+        final List<Factory.Named<KeyExchange>> factories = new ArrayList<>();
+        if (MLKEM768X25519SHA256.isSupported()) {
+            factories.add(new MLKEM768X25519SHA256.Factory());
+        }
+        factories.addAll(Arrays.<Factory.Named<KeyExchange>>asList(
                 new Curve25519SHA256.Factory(),
                 new Curve25519SHA256.FactoryLibSsh(),
                 new DHGexSHA256.Factory(),
@@ -130,7 +135,8 @@ public class DefaultConfig
                 ExtendedDHGroups.Group16SHA512AtSSH(),
                 ExtendedDHGroups.Group18SHA512AtSSH(),
                 new ExtInfoClientFactory()
-        );
+        ));
+        setKeyExchangeFactories(factories);
     }
 
     protected void initKeyAlgorithms() {

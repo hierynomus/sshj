@@ -189,6 +189,61 @@ public class SecurityUtils {
     }
 
     /**
+     * Creates a new instance of {@link SshjKEM} for the given algorithm. This wraps
+     * the JDK 21+ {@code javax.crypto.KEM} API, accessed reflectively so that this
+     * library still compiles at Java 8 source level.
+     *
+     * @param algorithm KEM algorithm name (Bouncy Castle 1.80 registers ML-KEM under {@code "ML-KEM"};
+     *                  the per-parameter-set name {@code "ML-KEM-768"} is selected via the keys passed
+     *                  to {@link SshjKEM#encapsulate(java.security.PublicKey)} /
+     *                  {@link SshjKEM#decapsulate(java.security.PrivateKey, byte[])})
+     * @return new instance
+     * @throws NoSuchAlgorithmException if no provider supplies the algorithm, or if the runtime
+     *                                  is older than Java 21 (in which case the underlying API is absent)
+     * @throws NoSuchProviderException
+     */
+    public static synchronized SshjKEM getKEM(String algorithm)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
+        register();
+        return JcaKEM.create(algorithm, getSecurityProvider());
+    }
+
+    /**
+     * Tests whether a JCA service of the given type and algorithm is available with the
+     * currently configured security provider chain (registering Bouncy Castle on demand,
+     * if enabled, before probing).
+     *
+     * <p>Special-cased for {@code type == "KEM"}: in addition to looking up the JCA service
+     * descriptor we also verify that the underlying {@code javax.crypto.KEM} API class is
+     * present, since on Java versions older than 21 the API itself is absent regardless
+     * of any provider's claims.</p>
+     *
+     * @param type      JCA service type (e.g. {@code "KeyPairGenerator"}, {@code "KeyFactory"},
+     *                  {@code "KEM"}, {@code "Signature"}, ...)
+     * @param algorithm JCA algorithm name as registered by the provider
+     * @return {@code true} if a provider on the current chain offers the service
+     */
+    public static synchronized boolean isAlgorithmAvailable(String type, String algorithm) {
+        register();
+        if ("KEM".equals(type) && !JcaKEM.isApiAvailable()) {
+            return false;
+        }
+        Provider[] providers;
+        if (getSecurityProvider() == null) {
+            providers = Security.getProviders();
+        } else {
+            Provider single = Security.getProvider(getSecurityProvider());
+            providers = (single == null) ? new Provider[0] : new Provider[]{single};
+        }
+        for (Provider p : providers) {
+            if (p.getService(type, algorithm) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Create a new instance of {@link Mac} with the given algorithm.
      *
      * @param algorithm MAC algorithm

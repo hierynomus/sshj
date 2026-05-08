@@ -20,6 +20,7 @@ import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.DisconnectReason;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.TransportException;
@@ -59,10 +60,34 @@ public class MLKEM768X25519SHA256 extends KeyExchangeBase {
 
     private static final String NAME = "mlkem768x25519-sha256";
 
+    /**
+     * Whether this hybrid key exchange can be used at runtime. Requires the
+     * {@code javax.crypto.KEM} API (Java 21+) and a JCA provider that supplies
+     * both an {@code ML-KEM-768} {@link java.security.KeyPairGenerator} /
+     * {@link java.security.KeyFactory} and an {@code ML-KEM} KEM service. On older
+     * runtimes (or when no such provider is registered, e.g. when Bouncy Castle is
+     * not on the classpath and the JDK does not yet ship an ML-KEM provider of its
+     * own) callers should refrain from advertising the algorithm.
+     *
+     * <p>The result is cached after the first call.</p>
+     *
+     * @return {@code true} iff a working ML-KEM-768 implementation is reachable through the JCA
+     */
+    public static boolean isSupported() {
+        return SecurityUtils.isAlgorithmAvailable("KeyPairGenerator", MLKEM768.KEY_ALGORITHM)
+                && SecurityUtils.isAlgorithmAvailable("KeyFactory", MLKEM768.KEY_ALGORITHM)
+                && SecurityUtils.isAlgorithmAvailable("KEM", MLKEM768.KEM_ALGORITHM);
+    }
+
     /** Named factory for the {@code mlkem768x25519-sha256} key exchange. */
     public static class Factory implements net.schmizz.sshj.common.Factory.Named<KeyExchange> {
         @Override
         public KeyExchange create() {
+            if (!isSupported()) {
+                throw new IllegalStateException(
+                        "mlkem768x25519-sha256 is not supported on this runtime: requires Java 21+ "
+                                + "and a JCA provider for ML-KEM-768");
+            }
             return new MLKEM768X25519SHA256();
         }
 

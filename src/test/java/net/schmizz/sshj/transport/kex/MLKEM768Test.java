@@ -15,11 +15,10 @@
  */
 package net.schmizz.sshj.transport.kex;
 
-import org.bouncycastle.crypto.SecretWithEncapsulation;
+import net.schmizz.sshj.common.SshjKEM;
 import org.junit.jupiter.api.Test;
 
 import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,19 +38,18 @@ public class MLKEM768Test {
 
     @Test
     public void encapsulateAndDecapsulateProduceMatchingSecret() throws GeneralSecurityException {
-        final SecureRandom random = new SecureRandom();
         final MLKEM768 mlkem = new MLKEM768();
 
         final byte[] publicKey = mlkem.generateKeyPair();
-        final SecretWithEncapsulation server = MLKEM768.encapsulate(publicKey, random);
+        final SshjKEM.Encapsulated server = MLKEM768.encapsulate(publicKey);
 
-        assertEquals(MLKEM768.CIPHERTEXT_LENGTH, server.getEncapsulation().length);
-        assertEquals(MLKEM768.SHARED_SECRET_LENGTH, server.getSecret().length);
+        assertEquals(MLKEM768.CIPHERTEXT_LENGTH, server.getCiphertext().length);
+        assertEquals(MLKEM768.SHARED_SECRET_LENGTH, server.getSharedSecret().length);
 
-        final byte[] clientSecret = mlkem.decapsulate(server.getEncapsulation());
+        final byte[] clientSecret = mlkem.decapsulate(server.getCiphertext());
 
         assertEquals(MLKEM768.SHARED_SECRET_LENGTH, clientSecret.length);
-        assertArrayEquals(server.getSecret(), clientSecret);
+        assertArrayEquals(server.getSharedSecret(), clientSecret);
     }
 
     @Test
@@ -71,6 +69,6 @@ public class MLKEM768Test {
     @Test
     public void encapsulateRejectsPublicKeyOfWrongLength() {
         assertThrows(GeneralSecurityException.class,
-                () -> MLKEM768.encapsulate(new byte[10], new SecureRandom()));
+                () -> MLKEM768.encapsulate(new byte[10]));
     }
 }

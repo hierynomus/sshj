@@ -21,11 +21,11 @@ import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.SshjKEM;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.Transport;
 import net.schmizz.sshj.transport.digest.SHA256;
 import net.schmizz.sshj.transport.random.JCERandom;
-import org.bouncycastle.crypto.SecretWithEncapsulation;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -33,7 +33,6 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -75,8 +74,8 @@ public class MLKEM768X25519SHA256WireFormatTest {
         // against it; this would fail if the order were reversed (X25519 key first).
         final byte[] mlkemPk = new byte[MLKEM768.PUBLIC_KEY_LENGTH];
         System.arraycopy(cInit, 0, mlkemPk, 0, MLKEM768.PUBLIC_KEY_LENGTH);
-        final SecretWithEncapsulation enc = MLKEM768.encapsulate(mlkemPk, new SecureRandom());
-        assertEquals(MLKEM768.CIPHERTEXT_LENGTH, enc.getEncapsulation().length);
+        final SshjKEM.Encapsulated enc = MLKEM768.encapsulate(mlkemPk);
+        assertEquals(MLKEM768.CIPHERTEXT_LENGTH, enc.getCiphertext().length);
     }
 
     /**
@@ -227,9 +226,9 @@ public class MLKEM768X25519SHA256WireFormatTest {
         System.arraycopy(cInit, 0, cPk2, 0, MLKEM768.PUBLIC_KEY_LENGTH);
         System.arraycopy(cInit, MLKEM768.PUBLIC_KEY_LENGTH, cPk1, 0, Curve25519DH.KEY_LENGTH);
 
-        final SecretWithEncapsulation enc = MLKEM768.encapsulate(cPk2, new SecureRandom());
-        final byte[] kPq = enc.getSecret();
-        final byte[] sCt2 = enc.getEncapsulation();
+        final SshjKEM.Encapsulated enc = MLKEM768.encapsulate(cPk2);
+        final byte[] kPq = enc.getSharedSecret();
+        final byte[] sCt2 = enc.getCiphertext();
 
         final Curve25519DH serverDh = new Curve25519DH();
         serverDh.init(null, new JCERandom.Factory());
