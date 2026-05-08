@@ -189,23 +189,52 @@ public class SecurityUtils {
     }
 
     /**
-     * Creates a new instance of {@link SshjKEM} for the given algorithm. This wraps
-     * the JDK 21+ {@code javax.crypto.KEM} API, accessed reflectively so that this
-     * library still compiles at Java 8 source level.
+     * Creates a new instance of {@link SshjKEM} for the given algorithm.
+     *
+     * <p>Two backends are tried, in order:</p>
+     * <ol>
+     *   <li>The JDK 21+ {@code javax.crypto.KEM} API (accessed reflectively so this library
+     *       still compiles at Java 8 source level), dispatched through the configured JCA
+     *       provider chain.</li>
+     *   <li>If the JCA path is unusable&mdash;either because the {@code javax.crypto.KEM}
+     *       class is absent, or because no registered provider offers the requested KEM
+     *       service&mdash;a Bouncy Castle lightweight-API fallback
+     *       ({@code org.bouncycastle.pqc.crypto.mlkem}) is used when those classes are on
+     *       the classpath. (BC&nbsp;1.80 ships the lightweight ML-KEM API on every JDK but
+     *       only registers the JCA {@code KEM} service on JDK&nbsp;21+; the fallback covers
+     *       older JDKs where BC's KeyPairGenerator/KeyFactory <em>are</em> registered yet
+     *       its JCA KEM service is not.)</li>
+     * </ol>
      *
      * @param algorithm KEM algorithm name (Bouncy Castle 1.80 registers ML-KEM under {@code "ML-KEM"};
      *                  the per-parameter-set name {@code "ML-KEM-768"} is selected via the keys passed
      *                  to {@link SshjKEM#encapsulate(java.security.PublicKey)} /
      *                  {@link SshjKEM#decapsulate(java.security.PrivateKey, byte[])})
      * @return new instance
-     * @throws NoSuchAlgorithmException if no provider supplies the algorithm, or if the runtime
-     *                                  is older than Java 21 (in which case the underlying API is absent)
+     * @throws NoSuchAlgorithmException if neither backend can supply the algorithm
      * @throws NoSuchProviderException
      */
     public static synchronized SshjKEM getKEM(String algorithm)
             throws NoSuchAlgorithmException, NoSuchProviderException {
         register();
-        return JcaKEM.create(algorithm, getSecurityProvider());
+        if (JcaKEM.isApiAvailable()) {
+            try {
+                return JcaKEM.create(algorithm, getSecurityProvider());
+            } catch (NoSuchAlgorithmException jcaFailure) {
+                if (!BouncyCastleKEM.isAvailable()) {
+                    throw jcaFailure;
+                }
+                // Fall through to BC fallback: JCA KEM API present but no provider offers
+                // the requested algorithm. Common on JDK 17/20 with BC 1.80, where BC
+                // registers ML-KEM as KeyPairGenerator/KeyFactory but not as a KEM service.
+            }
+        }
+        if (BouncyCastleKEM.isAvailable()) {
+            return BouncyCastleKEM.create(algorithm);
+        }
+        throw new NoSuchAlgorithmException(
+                "No KEM implementation available for " + algorithm
+                        + " (requires Java 21+ for javax.crypto.KEM, or Bouncy Castle PQC on the classpath)");
     }
 
     /**
@@ -223,11 +252,34 @@ public class SecurityUtils {
      * @param algorithm JCA algorithm name as registered by the provider
      * @return {@code true} if a provider on the current chain offers the service
      */
+    /**
+     * Tests whether a JCA service of the given type and algorithm is available with the
+     * currently configured security provider chain (registering Bouncy Castle on demand,
+     * if enabled, before probing).
+     *
+     * <p>Special-cased for {@code type == "KEM"}: the JCA {@code javax.crypto.KEM} class
+     * was introduced in Java&nbsp;21, so on older runtimes a JCA provider's claim to
+     * support a "KEM" service is moot. We therefore additionally check that either
+     * the {@code javax.crypto.KEM} API class is present <em>and</em> a provider offers
+     * the service, <em>or</em> the Bouncy Castle PQC fallback is available.</p>
+     *
+     * @param type      JCA service type (e.g. {@code "KeyPairGenerator"}, {@code "KeyFactory"},
+     *                  {@code "KEM"}, {@code "Signature"}, ...)
+     * @param algorithm JCA algorithm name as registered by the provider
+     * @return {@code true} if a provider on the current chain offers the service
+     */
     public static synchronized boolean isAlgorithmAvailable(String type, String algorithm) {
         register();
-        if ("KEM".equals(type) && !JcaKEM.isApiAvailable()) {
-            return false;
+        if ("KEM".equals(type)) {
+            if (JcaKEM.isApiAvailable() && hasProviderService(type, algorithm)) {
+                return true;
+            }
+            return BouncyCastleKEM.isAvailable();
         }
+        return hasProviderService(type, algorithm);
+    }
+
+    private static boolean hasProviderService(String type, String algorithm) {
         Provider[] providers;
         if (getSecurityProvider() == null) {
             providers = Security.getProviders();

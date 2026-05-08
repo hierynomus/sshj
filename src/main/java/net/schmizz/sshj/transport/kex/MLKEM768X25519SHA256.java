@@ -61,17 +61,19 @@ public class MLKEM768X25519SHA256 extends KeyExchangeBase {
     private static final String NAME = "mlkem768x25519-sha256";
 
     /**
-     * Whether this hybrid key exchange can be used at runtime. Requires the
-     * {@code javax.crypto.KEM} API (Java 21+) and a JCA provider that supplies
-     * both an {@code ML-KEM-768} {@link java.security.KeyPairGenerator} /
-     * {@link java.security.KeyFactory} and an {@code ML-KEM} KEM service. On older
-     * runtimes (or when no such provider is registered, e.g. when Bouncy Castle is
-     * not on the classpath and the JDK does not yet ship an ML-KEM provider of its
-     * own) callers should refrain from advertising the algorithm.
+     * Whether this hybrid key exchange can be used at runtime. Requires a JCA provider
+     * that supplies an {@code ML-KEM-768} {@link java.security.KeyPairGenerator} and
+     * {@link java.security.KeyFactory}, plus one of:
+     * <ul>
+     *   <li>the JDK&nbsp;21+ {@code javax.crypto.KEM} API together with a provider that
+     *       registers an {@code ML-KEM} KEM service, or</li>
+     *   <li>the Bouncy Castle PQC lightweight API
+     *       ({@code org.bouncycastle.pqc.crypto.mlkem}) on the classpath, which works
+     *       on any JDK.</li>
+     * </ul>
+     * When neither is reachable callers should refrain from advertising the algorithm.
      *
-     * <p>The result is cached after the first call.</p>
-     *
-     * @return {@code true} iff a working ML-KEM-768 implementation is reachable through the JCA
+     * @return {@code true} iff a working ML-KEM-768 implementation is reachable
      */
     public static boolean isSupported() {
         return SecurityUtils.isAlgorithmAvailable("KeyPairGenerator", MLKEM768.KEY_ALGORITHM)
@@ -85,8 +87,9 @@ public class MLKEM768X25519SHA256 extends KeyExchangeBase {
         public KeyExchange create() {
             if (!isSupported()) {
                 throw new IllegalStateException(
-                        "mlkem768x25519-sha256 is not supported on this runtime: requires Java 21+ "
-                                + "and a JCA provider for ML-KEM-768");
+                        "mlkem768x25519-sha256 is not supported on this runtime: requires a JCA "
+                                + "provider for ML-KEM-768 plus either Java 21+ (javax.crypto.KEM) "
+                                + "or Bouncy Castle PQC on the classpath");
             }
             return new MLKEM768X25519SHA256();
         }
