@@ -242,21 +242,6 @@ public class SecurityUtils {
      * currently configured security provider chain (registering Bouncy Castle on demand,
      * if enabled, before probing).
      *
-     * <p>Special-cased for {@code type == "KEM"}: in addition to looking up the JCA service
-     * descriptor we also verify that the underlying {@code javax.crypto.KEM} API class is
-     * present, since on Java versions older than 21 the API itself is absent regardless
-     * of any provider's claims.</p>
-     *
-     * @param type      JCA service type (e.g. {@code "KeyPairGenerator"}, {@code "KeyFactory"},
-     *                  {@code "KEM"}, {@code "Signature"}, ...)
-     * @param algorithm JCA algorithm name as registered by the provider
-     * @return {@code true} if a provider on the current chain offers the service
-     */
-    /**
-     * Tests whether a JCA service of the given type and algorithm is available with the
-     * currently configured security provider chain (registering Bouncy Castle on demand,
-     * if enabled, before probing).
-     *
      * <p>Special-cased for {@code type == "KEM"}: the JCA {@code javax.crypto.KEM} class
      * was introduced in Java&nbsp;21, so on older runtimes a JCA provider's claim to
      * support a "KEM" service is moot. We therefore additionally check that either

@@ -39,6 +39,13 @@ final class BouncyCastleKEM implements SshjKEM {
     /** BC ML-KEM family name (parameter set inferred from the encoded key). */
     private static final String ML_KEM = "ML-KEM";
 
+    /**
+     * Shared {@link SecureRandom}. {@code SecureRandom} is documented thread-safe, and
+     * lazily seeded by the JDK on first use, so a single instance avoids paying the
+     * (potentially blocking) seed cost on every encapsulation.
+     */
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
     private static final boolean AVAILABLE;
     private static final Constructor<?> GENERATOR_CTOR;
     private static final Method GENERATE_ENCAPSULATED;
@@ -122,7 +129,7 @@ final class BouncyCastleKEM implements SshjKEM {
     public Encapsulated encapsulate(PublicKey peerPublicKey) throws GeneralSecurityException {
         try {
             Object params = PUBLIC_KEY_FACTORY_CREATE.invoke(null, (Object) peerPublicKey.getEncoded());
-            Object generator = GENERATOR_CTOR.newInstance(new SecureRandom());
+            Object generator = GENERATOR_CTOR.newInstance(SECURE_RANDOM);
             Object result = GENERATE_ENCAPSULATED.invoke(generator, params);
             try {
                 byte[] ciphertext = (byte[]) GET_ENCAPSULATION.invoke(result);
