@@ -34,14 +34,14 @@ public abstract class KeyedAuthMethod
         extends AbstractAuthMethod {
 
     protected final KeyProvider kProv;
-    private Queue<KeyAlgorithm> available;
+    protected Queue<KeyAlgorithm> available;
 
     public KeyedAuthMethod(String name, KeyProvider kProv) {
         super(name);
         this.kProv = kProv;
     }
 
-    private KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
+    protected KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
         if (available == null) {
             available = new LinkedList<>(params.getTransport().getClientKeyAlgorithms(keyType));
         }
