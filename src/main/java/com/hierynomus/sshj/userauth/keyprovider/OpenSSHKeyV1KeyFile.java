@@ -17,6 +17,9 @@ package com.hierynomus.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
+import com.hierynomus.sshj.userauth.fido.SecurityKeyPrivateKey;
+import com.hierynomus.sshj.userauth.fido.SecurityKeyPublicKey;
+import com.hierynomus.sshj.userauth.fido.SecurityKeySigner;
 import com.hierynomus.sshj.transport.cipher.BlockCiphers;
 import com.hierynomus.sshj.transport.cipher.ChachaPolyCiphers;
 import com.hierynomus.sshj.transport.cipher.GcmCiphers;
@@ -74,11 +77,23 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     }
 
     private PublicKey pubKey;
+    private SecurityKeySigner securityKeySigner;
 
     @Override
     public PublicKey getPublic()
             throws IOException {
         return pubKey != null ? pubKey : super.getPublic();
+    }
+
+    /**
+     * Attach the bridge to the hardware authenticator used to sign with a FIDO/U2F security key
+     * ({@code sk-ecdsa-sha2-nistp256@openssh.com} / {@code sk-ssh-ed25519@openssh.com}). Without it
+     * such a key can be read but not used to sign. Not needed when authenticating via an SSH agent.
+     *
+     * @param securityKeySigner the signer, or {@code null} to clear it
+     */
+    public void setSecurityKeySigner(SecurityKeySigner securityKeySigner) {
+        this.securityKeySigner = securityKeySigner;
     }
 
     public static class Factory
@@ -371,6 +386,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             case ECDSA521:
                 kp = new KeyPair(publicKey, createECDSAPrivateKey(kt, keyBuffer, ECDSACurve.SECP521R1));
                 break;
+            case SK_ED25519:
+                kp = readSecurityKey(kt, keyBuffer, publicKey, false);
+                break;
+            case SK_ECDSA:
+                kp = readSecurityKey(kt, keyBuffer, publicKey, true);
+                break;
 
             default:
                 throw new IOException("Cannot decode keytype " + keyType + " in openssh-key-v1 files (yet).");
@@ -384,6 +405,31 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             }
         }
         return kp;
+    }
+
+    /**
+     * Read a FIDO/U2F security key private section, per OpenSSH {@code sshkey_private_deserialize}.
+     * There is no private scalar - only the application, authenticator flags and key handle. Signing
+     * is delegated to the configured {@link SecurityKeySigner}.
+     */
+    private KeyPair readSecurityKey(KeyType kt, PlainBuffer keyBuffer, PublicKey publicKey, boolean ecdsa) throws IOException {
+        if (ecdsa) {
+            keyBuffer.readString(); // curve name, e.g. "nistp256"
+            keyBuffer.readBytes();  // Q (the EC point)
+        } else {
+            keyBuffer.readBytes();  // enc_A (the Ed25519 public key)
+        }
+        keyBuffer.readString();     // application (also carried by the public key)
+        final byte flags = keyBuffer.readByte();
+        final byte[] keyHandle = keyBuffer.readBytes();
+        keyBuffer.readBytes();      // reserved
+
+        if (!(publicKey instanceof SecurityKeyPublicKey)) {
+            throw new IOException("Expected a security-key public key for " + kt + " but got: " + publicKey);
+        }
+        final SecurityKeyPrivateKey privateKey = new SecurityKeyPrivateKey(
+                kt.toString(), (SecurityKeyPublicKey) publicKey, flags, keyHandle, securityKeySigner);
+        return new KeyPair(publicKey, privateKey);
     }
 
     private PrivateKey createECDSAPrivateKey(KeyType kt, PlainBuffer buffer, ECDSACurve ecdsaCurve) throws GeneralSecurityException, Buffer.BufferException {

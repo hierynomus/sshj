@@ -18,6 +18,8 @@ package net.schmizz.sshj.common;
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.signature.SignatureEdDSA;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
+import com.hierynomus.sshj.userauth.fido.SecurityKeyPrivateKey;
+import com.hierynomus.sshj.userauth.fido.SecurityKeyPublicKey;
 import net.schmizz.sshj.common.Buffer.BufferException;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.signature.SignatureDSA;
@@ -200,7 +202,84 @@ public enum KeyType {
 
         @Override
         protected boolean isMyType(Key key) {
+            // A FIDO/U2F (sk-ssh-ed25519) key wraps an Ed25519 key but is a distinct type.
+            if (key instanceof SecurityKeyPublicKey || key instanceof SecurityKeyPrivateKey) {
+                return false;
+            }
             return "EdDSA".equals(key.getAlgorithm()) || "Ed25519".equals(key.getAlgorithm());
+        }
+    },
+
+    /** OpenSSH FIDO/U2F security key backed by ECDSA NIST P-256 */
+    SK_ECDSA("sk-ecdsa-sha2-nistp256@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf) throws GeneralSecurityException {
+            final PublicKey delegate = ECDSAVariationsAdapter.readPubKeyFromBuffer(buf, "256");
+            try {
+                final String application = buf.readString();
+                return new SecurityKeyPublicKey(delegate, application);
+            } catch (Buffer.BufferException be) {
+                throw new GeneralSecurityException(be);
+            }
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            final SecurityKeyPublicKey sk = (SecurityKeyPublicKey) pk;
+            ECDSAVariationsAdapter.writePubKeyContentsIntoBuffer(sk.getDelegate(), buf);
+            buf.putString(sk.getApplication());
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            if (key instanceof SecurityKeyPublicKey) {
+                return ECDSAVariationsAdapter.isECKeyWithFieldSize(((SecurityKeyPublicKey) key).getDelegate(), 256);
+            }
+            if (key instanceof SecurityKeyPrivateKey) {
+                return sType.equals(((SecurityKeyPrivateKey) key).getKeyTypeName());
+            }
+            return false;
+        }
+    },
+
+    /** OpenSSH FIDO/U2F security key backed by Ed25519 */
+    SK_ED25519("sk-ssh-ed25519@openssh.com") {
+        @Override
+        public PublicKey readPubKeyFromBuffer(Buffer<?> buf) throws GeneralSecurityException {
+            try {
+                final int keyLen = buf.readUInt32AsInt();
+                final byte[] publicKeyBinary = new byte[keyLen];
+                buf.readRawBytes(publicKeyBinary);
+                final PublicKey delegate = Ed25519KeyFactory.getPublicKey(publicKeyBinary);
+                final String application = buf.readString();
+                return new SecurityKeyPublicKey(delegate, application);
+            } catch (Buffer.BufferException be) {
+                throw new GeneralSecurityException(be);
+            }
+        }
+
+        @Override
+        protected void writePubKeyContentsIntoBuffer(PublicKey pk, Buffer<?> buf) {
+            final SecurityKeyPublicKey sk = (SecurityKeyPublicKey) pk;
+            final byte[] encoded = sk.getDelegate().getEncoded();
+            final int keyLength = 32;
+            final int headerLength = encoded.length - keyLength;
+            final byte[] encodedPublicKey = new byte[keyLength];
+            System.arraycopy(encoded, headerLength, encodedPublicKey, 0, keyLength);
+            buf.putBytes(encodedPublicKey);
+            buf.putString(sk.getApplication());
+        }
+
+        @Override
+        protected boolean isMyType(Key key) {
+            if (key instanceof SecurityKeyPublicKey) {
+                final String algorithm = ((SecurityKeyPublicKey) key).getDelegate().getAlgorithm();
+                return "EdDSA".equals(algorithm) || "Ed25519".equals(algorithm);
+            }
+            if (key instanceof SecurityKeyPrivateKey) {
+                return sType.equals(((SecurityKeyPrivateKey) key).getKeyTypeName());
+            }
+            return false;
         }
     },
 
