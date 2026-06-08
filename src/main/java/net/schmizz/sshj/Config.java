@@ -204,4 +204,12 @@ public interface Config {
     int getMaxCircularBufferSize();
 
     void setMaxCircularBufferSize(int maxCircularBufferSize);
+
+    int getChannelReadTimeoutMs();
+
+    void setChannelReadTimeoutMs(int channelReadTimeoutMs);
+
+    int getChannelErrorReadTimeoutMs();
+
+    void setChannelErrorReadTimeoutMs(int channelErrorReadTimeoutMs);
 }

@@ -95,7 +95,7 @@ public abstract class AbstractChannel
         id = conn.nextID();
 
         lwin = new Window.Local(conn.getWindowSize(), conn.getMaxPacketSize(), loggerFactory);
-        in = new ChannelInputStream(this, trans, lwin);
+        in = new ChannelInputStream(this, trans, lwin, trans.getConfig().getChannelReadTimeoutMs());
 
         openEvent = new Event<ConnectionException>("chan#" + id + " / " + "open", ConnectionException.chainer, openCloseLock, loggerFactory);
         closeEvent = new Event<ConnectionException>("chan#" + id + " / " + "close", ConnectionException.chainer, openCloseLock, loggerFactory);
