@@ -3,14 +3,14 @@ plugins {
   id "jvm-test-suite"
   id "groovy"
   id "jacoco"
-  id "com.github.blindpirate.osgi" version '0.0.6'
+  id "biz.aQute.bnd.builder" version "7.3.0"
   id "maven-publish"
   id "signing"
-  id 'pl.allegro.tech.build.axion-release' version '1.15.3'
+  id 'pl.allegro.tech.build.axion-release' version '1.21.2'
   id "com.github.hierynomus.license" version "0.16.1"
   id "com.bmuschko.docker-remote-api" version "9.2.1"
   id 'ru.vyarus.github-info' version '2.0.0'
-  id "io.github.gradle-nexus.publish-plugin" version "1.3.0"
+  id "io.github.gradle-nexus.publish-plugin" version "2.0.0"
 }
 
 group = "com.hierynomus"
@@ -41,12 +41,12 @@ scmVersion {
 project.version = scmVersion.version
 
 compileJava {
-  options.release = 8
+  options.release = 17
 }
 
 configurations.implementation.transitive = false
 
-def bouncycastleVersion = "1.80"
+def bouncycastleVersion = "1.84"
 def sshdVersion = "2.15.0"
 
 dependencies {
@@ -90,7 +90,8 @@ testing {
       useJUnitJupiter()
       dependencies {
         implementation "org.slf4j:slf4j-api:2.0.17"
-        implementation 'org.spockframework:spock-core:2.3-groovy-3.0'
+        implementation 'org.apache.groovy:groovy:4.0.30'
+        implementation 'org.spockframework:spock-core:2.3-groovy-4.0'
         implementation "org.mockito:mockito-core:5.16.1"
         implementation "org.assertj:assertj-core:3.27.3"
         implementation "ru.vyarus:spock-junit5:1.2.0"
@@ -163,8 +164,9 @@ project.tasks.compileGroovy.onlyIf { false }
 
 task writeSshjVersionProperties {
   doLast {
-    project.file("${project.buildDir}/resources/main").mkdirs()
-    project.file("${project.buildDir}/resources/main/sshj.properties").withWriter { w ->
+    def resourcesDir = project.layout.buildDirectory.dir("resources/main").get().asFile
+    resourcesDir.mkdirs()
+    new File(resourcesDir, "sshj.properties").withWriter { w ->
       w.append("sshj.version=${version}")
     }
   }
@@ -175,32 +177,19 @@ jar {
   inputs.property("moduleName", moduleName)
   manifest {
     attributes 'Automatic-Module-Name': moduleName
-
-    // please see http://bnd.bndtools.org/chapters/390-wrapping.html
-    instruction "Bundle-Description", "SSHv2 library for Java"
-    instruction "Bundle-License", "http://www.apache.org/licenses/LICENSE-2.0.txt"
-    instruction "Import-Package", "!net.schmizz.*"
-    instruction "Import-Package", "!com.hierynomus.sshj.*"
-    instruction "Import-Package", "javax.crypto*"
-    instruction "Import-Package", "com.jcraft.jzlib*;version=\"[1.1,2)\";resolution:=optional"
-    instruction "Import-Package", "org.slf4j*;version=\"[1.7,5)\""
-    instruction "Import-Package", "org.bouncycastle*;resolution:=optional"
-    instruction "Import-Package", "org.bouncycastle.jce.provider;resolution:=optional"
-    instruction "Import-Package", "*"
-    instruction "Export-Package", "com.hierynomus.sshj.*;version=\"${project.jar.manifest.version}\""
-    instruction "Export-Package", "net.schmizz.*;version=\"${project.jar.manifest.version}\""
   }
 }
 
 sourcesJar {
+  def bundleSymbolicName = "${project.group}.${project.name}"
+  def bundleVersion = project.version.toString().replaceFirst('-', '.')
   manifest {
     attributes(
-      // Add the needed OSGI attributes
       "Bundle-ManifestVersion": "2",
-      "Bundle-Name": "${project.jar.manifest.name} Source",
-      "Bundle-Version": project.jar.manifest.version,
-      "Eclipse-SourceBundle": "${project.jar.manifest.symbolicName};version=\"${project.jar.manifest.version}\";roots:=\".\"",
-      "Bundle-SymbolicName": "${project.jar.manifest.symbolicName}.source"
+      "Bundle-Name": "${project.name} Source",
+      "Bundle-Version": bundleVersion,
+      "Eclipse-SourceBundle": "${bundleSymbolicName};version=\"${bundleVersion}\";roots:=\".\"",
+      "Bundle-SymbolicName": "${bundleSymbolicName}.source"
     )
   }
 }

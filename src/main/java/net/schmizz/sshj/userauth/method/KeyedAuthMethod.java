@@ -42,7 +42,7 @@ public abstract class KeyedAuthMethod
         this.kProv = kProv;
     }
 
-    private KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
+    protected KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
         if (available == null) {
             available = new LinkedList<>(params.getTransport().getClientKeyAlgorithms(keyType));
         }
