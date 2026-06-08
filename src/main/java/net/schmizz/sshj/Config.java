@@ -204,4 +204,19 @@ public interface Config {
     int getMaxCircularBufferSize();
 
     void setMaxCircularBufferSize(int maxCircularBufferSize);
+
+    /**
+     * Returns the timeout in milliseconds for blocking operations (e.g., authentication, channel open, etc.).
+     * The default value is 30000 milliseconds (30 seconds).
+     *
+     * @return the timeout in milliseconds
+     */
+    int getTimeoutMs();
+
+    /**
+     * Sets the timeout in milliseconds for blocking operations (e.g., authentication, channel open, etc.).
+     *
+     * @param timeoutMs the timeout in milliseconds
+     */
+    void setTimeoutMs(int timeoutMs);
 }
