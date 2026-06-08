@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,6 +50,11 @@ public final class ChannelInputStream
 
     private boolean eof;
     private SSHException error;
+
+    /** Creates a non-timeout channel input stream. Reads will block indefinitely until data arrives or EOF. */
+    public ChannelInputStream(Channel chan, Transport trans, Window.Local win) {
+        this(chan, trans, win, 0);
+    }
 
     public ChannelInputStream(Channel chan, Transport trans, Window.Local win, int timeoutMs) {
         this.chan = chan;
@@ -91,9 +97,11 @@ public final class ChannelInputStream
     public void notifyError(SSHException error) {
         lock.lock();
         try {
-            this.error = error;
-            eof = true;
-            dataArrived.signalAll();
+            if (!eof) {
+                this.error = error;
+                eof = true;
+                dataArrived.signalAll();
+            }
         } finally {
             lock.unlock();
         }
@@ -123,7 +131,7 @@ public final class ChannelInputStream
                 try {
                     if (timeoutMs > 0) {
                         if (!dataArrived.await(timeoutMs, TimeUnit.MILLISECONDS)) {
-                            throw new IOException("Timeout of " + timeoutMs + "ms while waiting for data");
+                            throw new SocketTimeoutException("Timeout of " + timeoutMs + "ms while waiting for data");
                         }
                     } else {
                         dataArrived.await();
@@ -150,11 +158,11 @@ public final class ChannelInputStream
     }
 
     public void receive(byte[] data, int offset, int len) throws SSHException {
-        if (eof) {
-            throw new ConnectionException("Getting data on EOF'ed stream");
-        }
         lock.lock();
         try {
+            if (eof) {
+                throw new ConnectionException("Getting data on EOF'ed stream");
+            }
             buf.putRawBytes(data, offset, len);
             dataArrived.signalAll();
             // Potential fix for #203 (window consumed below 0).

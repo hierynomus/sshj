@@ -32,7 +32,7 @@ public class SessionChannel
         extends AbstractDirectChannel
         implements Session, Session.Command, Session.Shell, Session.Subsystem {
 
-    private final ChannelInputStream err = new ChannelInputStream(this, trans, lwin, 0);
+    private final ChannelInputStream err = new ChannelInputStream(this, trans, lwin, trans.getConfig().getChannelErrorReadTimeoutMs());
 
     private volatile Integer exitStatus;
 
