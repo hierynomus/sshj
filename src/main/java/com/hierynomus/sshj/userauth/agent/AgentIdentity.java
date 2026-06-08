@@ -39,7 +39,7 @@ public class AgentIdentity {
 
     /** @return the exact key blob bytes as returned by the agent. */
     public byte[] getKeyBlob() {
-        return keyBlob;
+        return keyBlob.clone();
     }
 
     public String getComment() {

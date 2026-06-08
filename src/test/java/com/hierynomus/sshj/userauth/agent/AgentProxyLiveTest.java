@@ -24,10 +24,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.nio.charset.StandardCharsets;
+import java.security.interfaces.RSAPublicKey;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * End-to-end test against a real, running ssh-agent over a unix-domain socket. It exercises the
@@ -58,6 +62,41 @@ public class AgentProxyLiveTest {
                 verifier.update(data);
                 assertTrue(verifier.verify(signature),
                         "agent signature should verify for " + identity + " (" + signatureType + ")");
+            }
+        }
+    }
+
+    @Test
+    public void rsaKeysProduceVerifiableSha2Signatures() throws Exception {
+        String socketPath = System.getenv("SSHJ_TEST_AGENT_SOCK");
+        try (AgentProxy agent = new AgentProxy(new UnixSocketAgentConnection(socketPath))) {
+            List<AgentIdentity> rsaIdentities = agent.getIdentities().stream()
+                    .filter(id -> id.getPublicKey() instanceof RSAPublicKey)
+                    .collect(Collectors.toList());
+            assumeTrue(!rsaIdentities.isEmpty(), "skipping: no RSA identities in the test agent");
+
+            byte[] data = "sshj rsa sha2 live test challenge".getBytes(StandardCharsets.UTF_8);
+            for (AgentIdentity identity : rsaIdentities) {
+                for (int[] flagAndExpectedName : new int[][]{
+                        {AgentProxy.SSH_AGENT_RSA_SHA2_256, 0},
+                        {AgentProxy.SSH_AGENT_RSA_SHA2_512, 1}
+                }) {
+                    int flag = flagAndExpectedName[0];
+                    String expectedSigName = flag == AgentProxy.SSH_AGENT_RSA_SHA2_256
+                            ? "rsa-sha2-256" : "rsa-sha2-512";
+
+                    byte[] signature = agent.sign(identity.getKeyBlob(), data, flag);
+
+                    String actualSigName = new Buffer.PlainBuffer(signature).readString();
+                    assertEquals(expectedSigName, actualSigName,
+                            "agent should produce " + expectedSigName + " signature for " + identity);
+
+                    Signature verifier = signatureForType(actualSigName);
+                    verifier.initVerify(identity.getPublicKey());
+                    verifier.update(data);
+                    assertTrue(verifier.verify(signature),
+                            expectedSigName + " agent signature should verify for " + identity);
+                }
             }
         }
     }

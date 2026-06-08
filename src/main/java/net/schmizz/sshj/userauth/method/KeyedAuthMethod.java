@@ -34,7 +34,7 @@ public abstract class KeyedAuthMethod
         extends AbstractAuthMethod {
 
     protected final KeyProvider kProv;
-    protected Queue<KeyAlgorithm> available;
+    private Queue<KeyAlgorithm> available;
 
     public KeyedAuthMethod(String name, KeyProvider kProv) {
         super(name);

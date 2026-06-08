@@ -101,7 +101,7 @@ public class AgentProxy implements Closeable {
                 try {
                     PublicKey publicKey = new Buffer.PlainBuffer(keyBlob).readPublicKey();
                     identities.add(new AgentIdentity(publicKey, keyBlob, comment));
-                } catch (Exception e) {
+                } catch (Buffer.BufferException e) {
                     log.debug("Skipping agent identity '{}' of unsupported key type: {}", comment, e.toString());
                 }
             }
