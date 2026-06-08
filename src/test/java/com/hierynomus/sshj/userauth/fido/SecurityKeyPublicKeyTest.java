@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj.userauth.fido;
 
+import com.hierynomus.sshj.userauth.fido.SecurityKeyPrivateKey;
+import com.hierynomus.sshj.userauth.fido.SecurityKeySigningRequest;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,9 @@ import java.security.spec.ECGenParameterSpec;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies that the {@code sk-ecdsa-sha2-nistp256@openssh.com} and {@code sk-ssh-ed25519@openssh.com}
@@ -101,5 +106,80 @@ public class SecurityKeyPublicKeyTest {
         PublicKey parsed = new Buffer.PlainBuffer(blob).readPublicKey();
 
         assertEquals(application, ((SecurityKeyPublicKey) parsed).getApplication());
+    }
+
+    @Test
+    public void equalsAndHashCodeBasedOnDelegateAndApplication() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey k1 = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        SecurityKeyPublicKey k2 = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        assertEquals(k1, k2);
+        assertEquals(k1.hashCode(), k2.hashCode());
+        assertEquals(k1, k1); // reflexive
+    }
+
+    @Test
+    public void equalsReturnsFalseForDifferentApplication() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey k1 = new SecurityKeyPublicKey(kp.getPublic(), "ssh:");
+        SecurityKeyPublicKey k2 = new SecurityKeyPublicKey(kp.getPublic(), "ssh:other");
+        assertNotEquals(k1, k2);
+    }
+
+    @Test
+    public void equalsReturnsFalseForDifferentDelegate() throws Exception {
+        KeyPair kp1 = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        KeyPair kp2 = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey k1 = new SecurityKeyPublicKey(kp1.getPublic(), APPLICATION);
+        SecurityKeyPublicKey k2 = new SecurityKeyPublicKey(kp2.getPublic(), APPLICATION);
+        assertNotEquals(k1, k2);
+    }
+
+    @Test
+    public void equalsReturnsFalseForNonSecurityKeyPublicKey() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey key = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        assertNotEquals(key, kp.getPublic());
+        assertNotEquals(key, null);
+    }
+
+    @Test
+    public void toStringContainsApplicationAndDelegate() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey key = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        String s = key.toString();
+        assertTrue(s.contains(APPLICATION), "toString should contain the application string");
+    }
+
+    @Test
+    public void getFormatAndEncodedDelegateToUnderlying() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey key = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        assertEquals(kp.getPublic().getFormat(), key.getFormat());
+        assertArrayEquals(kp.getPublic().getEncoded(), key.getEncoded());
+    }
+
+    @Test
+    public void privateKeyGetPublicKeyAndEncodingMethods() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey pub = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        SecurityKeyPrivateKey priv = new SecurityKeyPrivateKey(
+                KeyType.SK_ED25519.toString(), pub, (byte) 0x01, new byte[]{1, 2, 3}, null);
+        assertEquals(pub, priv.getPublicKey());
+        assertNull(priv.getFormat());
+        assertNull(priv.getEncoded());
+        assertEquals(pub.getAlgorithm(), priv.getAlgorithm());
+    }
+
+    @Test
+    public void signingRequestGettersReturnConstructorValues() {
+        String keyTypeName = KeyType.SK_ED25519.toString();
+        byte[] keyHandle = {0x01, 0x02, 0x03};
+        byte[] challenge = {0x04, 0x05};
+        SecurityKeySigningRequest req = new SecurityKeySigningRequest(
+                keyTypeName, APPLICATION, keyHandle, challenge, (byte) 0x01);
+        assertEquals(keyTypeName, req.getKeyTypeName());
+        assertArrayEquals(keyHandle, req.getKeyHandle());
+        assertEquals((byte) 0x01, req.getMinFlags());
     }
 }

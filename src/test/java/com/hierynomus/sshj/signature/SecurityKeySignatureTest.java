@@ -22,6 +22,7 @@ import com.hierynomus.sshj.userauth.fido.SecurityKeySigner;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySigningRequest;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.signature.Signature;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +35,10 @@ import java.security.PrivateKey;
 import java.security.spec.ECGenParameterSpec;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -156,6 +160,107 @@ public class SecurityKeySignatureTest {
         buf.readBytes(); // raw signature
         org.junit.jupiter.api.Assertions.assertEquals(FLAGS, buf.readByte());
         org.junit.jupiter.api.Assertions.assertEquals(COUNTER, buf.readUInt32());
+    }
+
+    @Test
+    public void factoryNamesMatchKeyTypeStrings() {
+        assertEquals(KeyType.SK_ECDSA.toString(), new SignatureSkEcdsa.Factory().getName());
+        assertEquals(KeyType.SK_ED25519.toString(), new SignatureSkEd25519.Factory().getName());
+        assertInstanceOf(SignatureSkEcdsa.class, new SignatureSkEcdsa.Factory().create());
+        assertInstanceOf(SignatureSkEd25519.class, new SignatureSkEd25519.Factory().create());
+    }
+
+    @Test
+    public void isSignaturePreEncodedReturnsTrueForSkSignatures() {
+        assertTrue(new SignatureSkEcdsa().isSignaturePreEncoded());
+        assertTrue(new SignatureSkEd25519().isSignaturePreEncoded());
+    }
+
+    @Test
+    public void initVerifyThrowsForPlainPublicKey() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        Signature sig = new SignatureSkEd25519();
+        assertThrows(SSHRuntimeException.class, () -> sig.initVerify(kp.getPublic()));
+    }
+
+    @Test
+    public void initSignThrowsForPlainPrivateKey() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        Signature sig = new SignatureSkEd25519();
+        assertThrows(SSHRuntimeException.class, () -> sig.initSign(kp.getPrivate()));
+    }
+
+    @Test
+    public void signThrowsWhenNoSignerAttached() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey pub = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        SecurityKeyPrivateKey priv = new SecurityKeyPrivateKey(
+                KeyType.SK_ED25519.toString(), pub, FLAGS, new byte[]{1}, null);
+        Signature sig = new SignatureSkEd25519();
+        sig.initSign(priv);
+        sig.update("data".getBytes(StandardCharsets.UTF_8));
+        assertThrows(SSHRuntimeException.class, sig::sign);
+    }
+
+    @Test
+    public void signThrowsWhenInitSignNotCalled() {
+        // Calling sign() without initSign() means signingKey is null.
+        Signature sig = new SignatureSkEd25519();
+        assertThrows(SSHRuntimeException.class, sig::sign);
+    }
+
+    @Test
+    public void signThrowsWhenSignerThrowsIOException() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        SecurityKeyPublicKey pub = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        SecurityKeySigner failingSigner = req -> {
+            throw new java.io.IOException("authenticator unavailable");
+        };
+        SecurityKeyPrivateKey priv = new SecurityKeyPrivateKey(
+                KeyType.SK_ED25519.toString(), pub, FLAGS, new byte[]{1}, failingSigner);
+        Signature sig = new SignatureSkEd25519();
+        sig.initSign(priv);
+        sig.update("data".getBytes(StandardCharsets.UTF_8));
+        assertThrows(SSHRuntimeException.class, sig::sign);
+    }
+
+    @Test
+    public void verifyThrowsForMalformedWireSignature() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        Signature sig = new SignatureSkEd25519();
+        sig.initVerify(new SecurityKeyPublicKey(kp.getPublic(), APPLICATION));
+        sig.update("data".getBytes(StandardCharsets.UTF_8));
+        // An empty buffer will fail on the first readString() with BufferException.
+        assertThrows(SSHRuntimeException.class, () -> sig.verify(new byte[0]));
+    }
+
+    @Test
+    public void verifyThrowsBufferExceptionForTruncatedSignature() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        // Type string is valid but the raw signature bytes are missing — readBytes() will throw
+        // Buffer.BufferException which is caught and rethrown as SSHRuntimeException.
+        byte[] truncated = new Buffer.PlainBuffer()
+                .putString(KeyType.SK_ED25519.toString())
+                .getCompactData();
+        Signature sig = new SignatureSkEd25519();
+        sig.initVerify(new SecurityKeyPublicKey(kp.getPublic(), APPLICATION));
+        sig.update("data".getBytes(StandardCharsets.UTF_8));
+        assertThrows(SSHRuntimeException.class, () -> sig.verify(truncated));
+    }
+
+    @Test
+    public void verifyThrowsForWrongSignatureType() throws Exception {
+        KeyPair kp = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        byte[] wrongTypeSig = new Buffer.PlainBuffer()
+                .putString(KeyType.SK_ECDSA.toString()) // wrong type for an Ed25519 verifier
+                .putBytes(new byte[64])
+                .putByte(FLAGS)
+                .putUInt32(COUNTER)
+                .getCompactData();
+        Signature sig = new SignatureSkEd25519();
+        sig.initVerify(new SecurityKeyPublicKey(kp.getPublic(), APPLICATION));
+        sig.update("msg".getBytes(StandardCharsets.UTF_8));
+        assertThrows(SSHRuntimeException.class, () -> sig.verify(wrongTypeSig));
     }
 
     // --- software authenticator helpers (these stand in for the YubiKey) ---
