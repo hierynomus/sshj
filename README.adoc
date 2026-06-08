@@ -57,6 +57,9 @@ In the `examples` directory, there is a separate Maven project that shows how th
 
 * reading known_hosts files for host key verification
 * publickey, password and keyboard-interactive authentication
+* SSH agent authentication over the `SSH_AUTH_SOCK` unix-domain socket (RSA, ECDSA, Ed25519, and FIDO/U2F security keys)
++
+NOTE: The built-in unix-domain socket transport requires a Java 16+ runtime. On older runtimes, supply your own `AgentConnection` implementation.
 * command, subsystem and shell channels
 * local and remote port forwarding
 * scp + complete sftp version 0-3 implementation
