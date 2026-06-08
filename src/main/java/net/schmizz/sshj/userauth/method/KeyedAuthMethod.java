@@ -16,7 +16,6 @@
 package net.schmizz.sshj.userauth.method;
 
 import com.hierynomus.sshj.key.KeyAlgorithm;
-import com.hierynomus.sshj.signature.AbstractSecurityKeySignature;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHPacket;
@@ -105,7 +104,7 @@ public abstract class KeyedAuthMethod
                 .putBuffer(reqBuf) // & rest of the data for sig
                 .getCompactData());
         final byte[] encoded = signature.encode(signature.sign());
-        if (signature instanceof AbstractSecurityKeySignature) {
+        if (signature.isSignaturePreEncoded()) {
             // A FIDO/U2F signature already encodes the type, flags and counter; write it as one string.
             reqBuf.putString(encoded);
         } else {

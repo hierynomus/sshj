@@ -46,6 +46,6 @@ public class SecurityKeySignatureData {
     }
 
     public byte[] getSignature() {
-        return signature;
+        return signature.clone();
     }
 }

@@ -74,6 +74,11 @@ public abstract class AbstractSecurityKeySignature extends AbstractSignatureDSA 
     }
 
     @Override
+    public boolean isSignaturePreEncoded() {
+        return true;
+    }
+
+    @Override
     public void initVerify(PublicKey publicKey) {
         if (!(publicKey instanceof SecurityKeyPublicKey)) {
             throw new SSHRuntimeException("Expected a SecurityKeyPublicKey but got: " + publicKey);
