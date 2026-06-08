@@ -46,7 +46,7 @@ compileJava {
 
 configurations.implementation.transitive = false
 
-def bouncycastleVersion = "1.80"
+def bouncycastleVersion = "1.84"
 def sshdVersion = "2.15.0"
 
 dependencies {
