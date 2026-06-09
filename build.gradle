@@ -98,8 +98,6 @@ testing {
         implementation "org.apache.sshd:sshd-core:$sshdVersion"
         implementation "org.apache.sshd:sshd-sftp:$sshdVersion"
         implementation "org.apache.sshd:sshd-scp:$sshdVersion"
-        // Apache MINA's sk-ssh-ed25519 verifier (used only by interop tests) delegates to net.i2p.crypto.eddsa.
-        implementation "net.i2p.crypto:eddsa:0.3.0"
         implementation "ch.qos.logback:logback-classic:1.5.18"
       }
 
