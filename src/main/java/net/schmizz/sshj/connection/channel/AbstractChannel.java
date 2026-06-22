@@ -102,6 +102,9 @@ public abstract class AbstractChannel
     }
 
     protected void init(int recipient, long remoteWinSize, long remoteMaxPacketSize) {
+        if (remoteMaxPacketSize <= 0) {
+            throw new ConnectionException("Invalid remote max packet size: " + remoteMaxPacketSize);
+        }
         this.recipient = recipient;
         rwin = new Window.Remote(remoteWinSize, (int) Math.min(remoteMaxPacketSize, REMOTE_MAX_PACKET_SIZE_CEILING),
             conn.getTimeoutMs(), loggerFactory);
