@@ -15,15 +15,22 @@
  */
 package net.schmizz.sshj.connection
 
+import net.schmizz.sshj.DefaultConfig
 import net.schmizz.sshj.transport.Transport
-import org.junit.jupiter.api.Test
 import spock.lang.Specification
 
 class ConnectionImplSpec extends Specification {
 
+    private static Transport mockTransport() {
+        return Stub(Transport) {
+            getConfig() >> new DefaultConfig()
+            getTimeoutMs() >> 0
+        }
+    }
+
     def "setMaxPacketSize should reject zero"() {
         given:
-        def mockTransport = Mock(Transport)
+        def mockTransport = mockTransport()
         def conn = new ConnectionImpl(mockTransport, { c -> null } as net.schmizz.keepalive.KeepAliveProvider)
 
         when:
@@ -35,7 +42,7 @@ class ConnectionImplSpec extends Specification {
 
     def "setMaxPacketSize should reject negative value"() {
         given:
-        def mockTransport = Mock(Transport)
+        def mockTransport = mockTransport()
         def conn = new ConnectionImpl(mockTransport, { c -> null } as net.schmizz.keepalive.KeepAliveProvider)
 
         when:
@@ -47,7 +54,7 @@ class ConnectionImplSpec extends Specification {
 
     def "setMaxPacketSize should accept positive value"() {
         given:
-        def mockTransport = Mock(Transport)
+        def mockTransport = mockTransport()
         def conn = new ConnectionImpl(mockTransport, { c -> null } as net.schmizz.keepalive.KeepAliveProvider)
 
         when:
