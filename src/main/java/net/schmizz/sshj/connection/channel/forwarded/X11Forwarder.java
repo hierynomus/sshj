@@ -36,7 +36,8 @@ public class X11Forwarder
 
         public X11Channel(Connection conn,
                           int recipient, long remoteWinSize, long remoteMaxPacketSize,
-                          String origIP, int origPort) {
+                          String origIP, int origPort)
+                throws ConnectionException {
             super(conn, TYPE, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
         }
 

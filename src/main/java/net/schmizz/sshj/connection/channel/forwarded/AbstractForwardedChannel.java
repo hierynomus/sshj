@@ -17,6 +17,7 @@ package net.schmizz.sshj.connection.channel.forwarded;
 
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.connection.Connection;
+import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.AbstractChannel;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.OpenFailException.Reason;
@@ -36,7 +37,8 @@ public abstract class AbstractForwardedChannel
 
     protected AbstractForwardedChannel(Connection conn, String type,
                                        int recipient, long remoteWinSize, long remoteMaxPacketSize,
-                                       String origIP, int origPort) {
+                                       String origIP, int origPort)
+            throws ConnectionException {
         super(conn, type);
         this.origIP = origIP;
         this.origPort = origPort;
