@@ -21,7 +21,7 @@ import spock.lang.Specification
 
 class ConnectionImplSpec extends Specification {
 
-    private static Transport mockTransport() {
+    private Transport mockTransport() {
         return Stub(Transport) {
             getConfig() >> new DefaultConfig()
             getTimeoutMs() >> 0
