@@ -1,0 +1,60 @@
+name-template: 'SSHJ $RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: '🔒 Security'
+    labels:
+      - 'security'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: '✨ New Features'
+    labels:
+      - 'enhancement'
+      - 'feature'
+  - title: '📦 Dependency Updates'
+    labels:
+      - 'dependencies'
+      - 'dependency-upgrade'
+  - title: '🔨 Improvements'
+    labels:
+      - 'improvement'
+      - 'refactoring'
+      - 'cleanup'
+  - title: '📝 Documentation'
+    labels:
+      - 'documentation'
+  - title: '🏗️ Infrastructure'
+    labels:
+      - 'ci'
+      - 'build'
+      - 'infrastructure'
+
+change-template: '* $TITLE (#$NUMBER) @$AUTHOR'
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels:
+      - 'major'
+  minor:
+    labels:
+      - 'minor'
+      - 'enhancement'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'bug'
+      - 'fix'
+      - 'security'
+      - 'dependencies'
+  default: minor
+
+template: |
+  ## Changes
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

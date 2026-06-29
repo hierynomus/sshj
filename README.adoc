@@ -115,6 +115,10 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+Starting from version 0.40.0, release notes are published as https://github.com/hierynomus/sshj/releases[GitHub Releases].
+
+The history below covers releases up to and including 0.39.0.
+
 SSHJ 0.39.0 (2024-02-20)::
 * Upgraded dependencies
 * Remove hard dependencies on BouncyCastle, making it optional.

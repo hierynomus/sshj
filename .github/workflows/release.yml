@@ -47,3 +47,10 @@ jobs:
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.SIGNINGPASSWORD }}
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.OSSRH_PASSWORD }}
+      - name: Publish GitHub Release
+        uses: release-drafter/release-drafter@v6
+        with:
+          publish: true
+          tag: ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
