@@ -165,6 +165,16 @@ class Proposal {
 
             preferredAlgorithms.addAll(otherAlgorithms);
 
+            // Reorder: ensure rsa-sha2-* come before ssh-rsa
+            if (preferredAlgorithms.contains("rsa-sha2-512") && preferredAlgorithms.contains("ssh-rsa")) {
+                preferredAlgorithms.remove("rsa-sha2-512");
+                preferredAlgorithms.add(preferredAlgorithms.indexOf("ssh-rsa"), "rsa-sha2-512");
+            }
+            if (preferredAlgorithms.contains("rsa-sha2-256") && preferredAlgorithms.contains("ssh-rsa")) {
+                preferredAlgorithms.remove("rsa-sha2-256");
+                preferredAlgorithms.add(preferredAlgorithms.indexOf("ssh-rsa"), "rsa-sha2-256");
+            }
+
             return preferredAlgorithms;
         } else {
             return configuredKeyAlgorithms;
