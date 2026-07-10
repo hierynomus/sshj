@@ -15,9 +15,8 @@
  */
 package net.schmizz.sshj.xfer;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.EnumSet;
 import java.util.Set;
 
 public enum FilePermission {
@@ -72,11 +71,11 @@ public enum FilePermission {
     }
 
     public static Set<FilePermission> fromMask(int mask) {
-        final List<FilePermission> perms = new LinkedList<FilePermission>();
+        final Set<FilePermission> perms = EnumSet.noneOf(FilePermission.class);
         for (FilePermission p : FilePermission.values())
             if (p.isIn(mask))
                 perms.add(p);
-        return new HashSet<FilePermission>(perms);
+        return perms;
     }
 
     public static int toMask(Set<FilePermission> perms) {
@@ -84,6 +83,30 @@ public enum FilePermission {
         for (FilePermission p : perms)
             mask |= p.val;
         return mask;
+    }
+
+    public static FilePermission of(PosixFilePermission posix) {
+        switch (posix) {
+            case GROUP_EXECUTE:
+                return GRP_X;
+            case GROUP_READ:
+                return GRP_R;
+            case GROUP_WRITE:
+                return GRP_W;
+            case OTHERS_EXECUTE:
+                return OTH_X;
+            case OTHERS_READ:
+                return OTH_R;
+            case OTHERS_WRITE:
+                return OTH_W;
+            case OWNER_EXECUTE:
+                return USR_X;
+            case OWNER_READ:
+                return USR_R;
+            case OWNER_WRITE:
+                return USR_W;
+        }
+        throw new IllegalArgumentException(String.valueOf(posix));
     }
 
 }
