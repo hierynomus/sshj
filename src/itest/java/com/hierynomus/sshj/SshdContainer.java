@@ -103,9 +103,12 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
     }
 
     public static class Builder implements Consumer<DockerfileBuilder> {
+        private static final String DEFAULT_BASE_IMAGE = "alpine:3.19.0";
+
         private List<String> hostKeys = new ArrayList<>();
         private List<String> certificates = new ArrayList<>();
         private @NotNull SshdConfigBuilder sshdConfig = SshdConfigBuilder.defaultBuilder();
+        private @NotNull String baseImage = DEFAULT_BASE_IMAGE;
 
         public static Builder defaultBuilder() {
             Builder b = new Builder();
@@ -116,6 +119,16 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
 
         public @NotNull Builder withSshdConfig(@NotNull SshdConfigBuilder sshdConfig) {
             this.sshdConfig = sshdConfig;
+            return this;
+        }
+
+        /**
+         * Override the base image used to build the sshd container. Useful for tests that need
+         * a specific OpenSSH version (for example, OpenSSH&nbsp;≥10 for the
+         * {@code mlkem768x25519-sha256} key exchange).
+         */
+        public @NotNull Builder withBaseImage(@NotNull String baseImage) {
+            this.baseImage = baseImage;
             return this;
         }
 
@@ -148,7 +161,7 @@ public class SshdContainer extends GenericContainer<SshdContainer> {
 
         @Override
         public void accept(@NotNull DockerfileBuilder builder) {
-            builder.from("alpine:3.19.0");
+            builder.from(baseImage);
             builder.run("apk add --no-cache openssh");
             builder.expose(22);
             builder.copy("entrypoint.sh", "/entrypoint.sh");
