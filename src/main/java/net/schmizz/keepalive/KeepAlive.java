@@ -89,4 +89,11 @@ public abstract class KeepAlive extends Thread {
     }
 
     protected abstract void doKeepAlive() throws TransportException, ConnectionException;
+
+    /**
+     * Start keep-alive loop. Implementations MUST NOT block current thread.
+     */
+    public void startKeepAlive() {
+        start();
+    }
 }
