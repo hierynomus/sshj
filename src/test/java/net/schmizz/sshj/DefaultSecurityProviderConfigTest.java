@@ -15,13 +15,17 @@
  */
 package net.schmizz.sshj;
 
+import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.common.SecurityUtils;
+import net.schmizz.sshj.transport.cipher.Cipher;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.security.Provider;
 import java.security.Security;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.AfterAll;
@@ -52,6 +56,37 @@ public class DefaultSecurityProviderConfigTest {
         new DefaultSecurityProviderConfig();
 
         assertBouncyCastleNotRegistered();
+    }
+
+    @Test
+    public void testCipherFactoryExceptionWithoutCause() {
+        final String failingCipherName = "failing-cipher-no-cause";
+
+        DefaultConfig config = new DefaultConfig() {
+            @Override
+            protected List<Factory.Named<Cipher>> getDefaultCipherFactories() {
+                List<Factory.Named<Cipher>> avail = super.getDefaultCipherFactories();
+                avail.add(0, new Factory.Named<Cipher>() {
+                    @Override
+                    public String getName() {
+                        return failingCipherName;
+                    }
+
+                    @Override
+                    public Cipher create() {
+                        throw new RuntimeException("test error with no cause");
+                    }
+                });
+                return avail;
+            }
+        };
+
+        boolean failingCipherPresent = config.getCipherFactories().stream()
+                .map(Factory.Named::getName)
+                .anyMatch(failingCipherName::equals);
+
+        assertFalse(failingCipherPresent,
+                "Cipher factory throwing exception without cause should be removed from available ciphers");
     }
 
     private void assertBouncyCastleNotRegistered() {

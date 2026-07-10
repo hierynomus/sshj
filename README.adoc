@@ -1,7 +1,7 @@
 = sshj - SSHv2 library for Java
 Jeroen van Erp
 :sshj_groupid: com.hierynomus
-:sshj_version: 0.38.0
+:sshj_version: 0.40.0
 :source-highlighter: pygments
 
 image:https://github.com/hierynomus/sshj/actions/workflows/gradle.yml/badge.svg[link="https://github.com/hierynomus/sshj/actions/workflows/gradle.yml"]
@@ -57,6 +57,7 @@ In the `examples` directory, there is a separate Maven project that shows how th
 
 * reading known_hosts files for host key verification
 * publickey, password and keyboard-interactive authentication
+* FIDO/U2F security keys (`sk-ecdsa-sha2-nistp256@openssh.com`, `sk-ssh-ed25519@openssh.com`) via a pluggable `SecurityKeySigner`
 * SSH agent authentication over the `SSH_AUTH_SOCK` unix-domain socket (RSA, ECDSA, Ed25519, and FIDO/U2F security keys)
 +
 NOTE: The built-in unix-domain socket transport requires a Java 16+ runtime. On older runtimes, supply your own `AgentConnection` implementation.
@@ -82,7 +83,8 @@ key exchange::
   `diffie-hellman-group16-sha256`, `diffie-hellman-group16-sha384@ssh.com`, `diffie-hellman-group16-sha512@ssh.com`, `diffie-hellman-group18-sha512@ssh.com`
 
 signatures::
-  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`, `ssh-rsa2-256`, `ssh-rsa2-512`
+  `ssh-rsa`, `ssh-dss`, `ecdsa-sha2-nistp256`, `ecdsa-sha2-nistp384`, `ecdsa-sha2-nistp521`, `ssh-ed25519`, `ssh-rsa2-256`, `ssh-rsa2-512`,
+  `sk-ecdsa-sha2-nistp256@openssh.com`, `sk-ssh-ed25519@openssh.com` (FIDO/U2F security keys)
 
 mac::
   `hmac-md5`, `hmac-md5-96`, `hmac-sha1`, `hmac-sha1-96`, `hmac-sha2-256`, `hmac-sha2-512`, `hmac-ripemd160`, `hmac-ripemd160@openssh.com`
@@ -92,7 +94,7 @@ compression::
   `zlib` and `zlib@openssh.com` (delayed zlib)
 
 private key files::
-   `pkcs5`, `pkcs8`, `openssh-key-v1`, `ssh-rsa-cert-v01@openssh.com`, `ssh-dsa-cert-v01@openssh.com`
+   `pkcs5`, `pkcs8`, `openssh-key-v1` (including FIDO/U2F `sk-ecdsa-sha2-nistp256@openssh.com` and `sk-ssh-ed25519@openssh.com` keys), `ssh-rsa-cert-v01@openssh.com`, `ssh-dsa-cert-v01@openssh.com`
 
 If you need something that is not included, it shouldn't be too hard to add (do contribute it!)
 
@@ -113,6 +115,10 @@ Issue tracker: https://github.com/hierynomus/sshj/issues
 Fork away!
 
 == Release history
+Starting from version 0.40.0, release notes are published as https://github.com/hierynomus/sshj/releases[GitHub Releases].
+
+The history below covers releases up to and including 0.39.0.
+
 SSHJ 0.39.0 (2024-02-20)::
 * Upgraded dependencies
 * Remove hard dependencies on BouncyCastle, making it optional.

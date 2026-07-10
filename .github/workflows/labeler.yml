@@ -1,0 +1,46 @@
+name: Labeler
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label-by-files:
+    name: Label by changed files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          sync-labels: false
+
+  label-by-title:
+    name: Label by PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title.toLowerCase();
+
+            const rules = [
+              { label: 'security',     re: /\b(cve|security|vulnerability|exploit|terrapin)\b/ },
+              { label: 'bug',          re: /\b(fix(es|ed|ing)?|bug|regression|broken|crash)\b/ },
+              { label: 'enhancement',  re: /\b(add(s|ed|ing)?|support(s|ed|ing)?|implement(s|ed)?|feature)\b/ },
+              { label: 'dependencies', re: /\b(upgrad(e|es|ed|ing)|bump(s|ed)?|depend(ency|encies))\b/ },
+              { label: 'improvement',  re: /\b(refactor(ed|ing)?|clean(up)?|improv(e|es|ed|ing)|remov(e|es|ed|ing)|replac(e|es|ed|ing))\b/ },
+            ];
+
+            const toAdd = rules.filter(r => r.re.test(title)).map(r => r.label);
+            if (toAdd.length === 0) return;
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              labels: toAdd,
+            });

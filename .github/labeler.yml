@@ -1,0 +1,25 @@
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'build.gradle'
+      - 'build-publishing.gradle'
+      - 'settings.gradle'
+      - 'gradle/**'
+      - 'mise.toml'
+      - 'gradlew'
+      - 'gradlew.bat'
+
+infrastructure:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'README.adoc'
+      - 'CONTRIBUTORS'
+      - 'NOTICE'
+      - 'LICENSE'
+      - 'LICENSE_HEADER'
+      - 'examples/**'
