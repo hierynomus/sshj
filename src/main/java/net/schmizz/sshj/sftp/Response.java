@@ -29,7 +29,7 @@ public final class Response
         FAILURE(4),
         BAD_MESSAGE(5),
         NO_CONNECTION(6),
-        CONNECITON_LOST(7),
+        CONNECTION_LOST(7),
         OP_UNSUPPORTED(8),
         INVALID_HANDLE(9),
         NO_SUCH_PATH(10),
