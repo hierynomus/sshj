@@ -17,8 +17,11 @@ package net.schmizz.sshj.common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 public class IOUtils {
 
@@ -47,6 +50,22 @@ public class IOUtils {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new StreamCopier(stream, baos, loggerFactory).copy();
         return baos;
+    }
+
+    /**
+     * Wraps a socket output stream so that {@link OutputStream#close()} performs a TCP half-close
+     * ({@link Socket#shutdownOutput()}) instead of closing the entire socket.
+     */
+    public static OutputStream halfCloseOnCloseOutputStream(final Socket socket)
+            throws IOException {
+        final OutputStream out = socket.getOutputStream();
+        return new FilterOutputStream(out) {
+            @Override
+            public void close()
+                    throws IOException {
+                socket.shutdownOutput();
+            }
+        };
     }
 
 }
