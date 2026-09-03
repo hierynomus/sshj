@@ -10,6 +10,8 @@ image:https://codecov.io/gh/hierynomus/sshj/branch/master/graph/badge.svg["codec
 image:http://www.javadoc.io/badge/com.hierynomus/sshj.svg?color=blue["JavaDocs", link="http://www.javadoc.io/doc/com.hierynomus/sshj"]
 image:https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj/badge.svg["Maven Central",link="https://maven-badges.herokuapp.com/maven-central/com.hierynomus/sshj"]
 
+NOTE: This fork is only to solve poor download performance on server connections with high RTT.
+
 WARNING: SSHJ versions up to and including 0.37.0 are vulnerable to https://nvd.nist.gov/vuln/detail/CVE-2023-48795[CVE-2023-48795 - Terrapin]. Please upgrade to 0.38.0 or higher.
 
 To get started, have a look at one of the examples. Hopefully you will find the API pleasant to work with :)
