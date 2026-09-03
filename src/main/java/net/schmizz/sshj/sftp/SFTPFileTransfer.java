@@ -34,7 +34,7 @@ public class SFTPFileTransfer
     private volatile RemoteResourceFilter downloadFilter;
     private volatile boolean preserveAttributes = true;
 
-
+    private volatile int maxUnconfirmedReads = 16; // way too short, but it was the original default
 
     public SFTPFileTransfer(SFTPEngine engine) {
 	    super(engine.getLoggerFactory());
@@ -47,6 +47,14 @@ public class SFTPFileTransfer
 
     public void setPreserveAttributes(boolean preserveAttributes) {
         this.preserveAttributes = preserveAttributes;
+    }
+
+    public int getMaxUnconfirmedReads() {
+        return maxUnconfirmedReads;
+    }
+
+    public void setMaxUnconfirmedReads(int maxUnconfirmedReads) {
+        this.maxUnconfirmedReads = maxUnconfirmedReads;
     }
 
     @Override
@@ -92,7 +100,6 @@ public class SFTPFileTransfer
     public void download(String source, LocalDestFile dest, long byteOffset) throws IOException {
         final PathComponents pathComponents = engine.getPathHelper().getComponents(source);
         final FileAttributes attributes = engine.stat(source);
-        final int maxUnconfirmedReads = engine.getMaxUnconfirmedReads();
         new Downloader().download(getTransferListener(), new RemoteResourceInfo(pathComponents, attributes), dest, byteOffset, maxUnconfirmedReads);
     }
 

@@ -344,14 +344,6 @@ public class SFTPEngine
         return timeoutMs;
     }
 
-    public int getMaxUnconfirmedReads() {
-        return maxUnconfirmedReads;
-    }
-
-    public void setMaxUnconfirmedReads(int maxUnconfirmedReads) {
-        this.maxUnconfirmedReads = maxUnconfirmedReads;
-    }
-
     @Override
     public void close()
             throws IOException {
