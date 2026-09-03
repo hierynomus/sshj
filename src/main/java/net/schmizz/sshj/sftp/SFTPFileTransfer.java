@@ -34,8 +34,10 @@ public class SFTPFileTransfer
     private volatile RemoteResourceFilter downloadFilter;
     private volatile boolean preserveAttributes = true;
 
+
+
     public SFTPFileTransfer(SFTPEngine engine) {
-	super(engine.getLoggerFactory());
+	    super(engine.getLoggerFactory());
         this.engine = engine;
     }
 
@@ -90,7 +92,8 @@ public class SFTPFileTransfer
     public void download(String source, LocalDestFile dest, long byteOffset) throws IOException {
         final PathComponents pathComponents = engine.getPathHelper().getComponents(source);
         final FileAttributes attributes = engine.stat(source);
-        new Downloader().download(getTransferListener(), new RemoteResourceInfo(pathComponents, attributes), dest, byteOffset);
+        final int maxUnconfirmedReads = engine.getMaxUnconfirmedReads();
+        new Downloader().download(getTransferListener(), new RemoteResourceInfo(pathComponents, attributes), dest, byteOffset, maxUnconfirmedReads);
     }
 
     public void setUploadFilter(LocalFileFilter uploadFilter) {
@@ -115,18 +118,19 @@ public class SFTPFileTransfer
         private void download(final TransferListener listener,
                               final RemoteResourceInfo remote,
                               final LocalDestFile local,
-                              final long byteOffset) throws IOException {
+                              final long byteOffset,
+                              final int maxUnconfirmedReads) throws IOException {
             final LocalDestFile adjustedFile;
             switch (remote.getAttributes().getType()) {
                 case DIRECTORY:
-                    adjustedFile = downloadDir(listener.directory(remote.getName()), remote, local);
+                    adjustedFile = downloadDir(listener.directory(remote.getName()), remote, local, maxUnconfirmedReads);
                     break;
                 case UNKNOWN:
                     log.warn("Server did not supply information about the type of file at `{}` " +
                                      "-- assuming it is a regular file!", remote.getPath());
                     // fall through
                 case REGULAR:
-                    adjustedFile = downloadFile(listener.file(remote.getName(), remote.getAttributes().getSize()), remote, local, byteOffset);
+                    adjustedFile = downloadFile(listener.file(remote.getName(), remote.getAttributes().getSize()), remote, local, byteOffset, maxUnconfirmedReads);
                     break;
                 default:
                     throw new IOException(remote + " is not a regular file or directory");
@@ -137,12 +141,13 @@ public class SFTPFileTransfer
 
         private LocalDestFile downloadDir(final TransferListener listener,
                                           final RemoteResourceInfo remote,
-                                          final LocalDestFile local)
+                                          final LocalDestFile local,
+                                          final int maxUnconfirmedReads)
                 throws IOException {
             final LocalDestFile adjusted = local.getTargetDirectory(remote.getName());
             try (RemoteDirectory rd = engine.openDir(remote.getPath())) {
                 for (RemoteResourceInfo rri : rd.scan(getDownloadFilter()))
-                    download(listener, rri, adjusted.getChild(rri.getName()), 0); // not supporting individual byte offsets for these files
+                    download(listener, rri, adjusted.getChild(rri.getName()), 0, maxUnconfirmedReads); // not supporting individual byte offsets for these files
             }
             return adjusted;
         }
@@ -150,12 +155,13 @@ public class SFTPFileTransfer
         private LocalDestFile downloadFile(final StreamCopier.Listener listener,
                                            final RemoteResourceInfo remote,
                                            final LocalDestFile local,
-                                           final long byteOffset)
+                                           final long byteOffset,
+                                           final int maxUnconfirmedReads)
                 throws IOException {
             final LocalDestFile adjusted = local.getTargetFile(remote.getName());
             try (RemoteFile rf = engine.open(remote.getPath())) {
                 log.debug("Attempting to download {} with offset={}", remote.getPath(), byteOffset);
-                try (RemoteFile.ReadAheadRemoteFileInputStream rfis = rf.new ReadAheadRemoteFileInputStream(16, byteOffset);
+                try (RemoteFile.ReadAheadRemoteFileInputStream rfis = rf.new ReadAheadRemoteFileInputStream(maxUnconfirmedReads, byteOffset);
                      OutputStream os = adjusted.getOutputStream(byteOffset != 0)) {
                     new StreamCopier(rfis, os, engine.getLoggerFactory())
                             .bufSize(engine.getSubsystem().getLocalMaxPacketSize())
