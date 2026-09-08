@@ -47,7 +47,6 @@ public class RemotePFPerformanceTest {
 
         client.getConnection().getKeepAlive().setKeepAliveInterval(5);
         client.connect("localhost");
-        client.getConnection().getKeepAlive().setKeepAliveInterval(5);
 
         Object consumerReadyMonitor = new Object();
         ConsumerThread consumerThread = new ConsumerThread(consumerReadyMonitor);
