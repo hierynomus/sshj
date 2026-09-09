@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
@@ -30,151 +31,129 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IOUtilsTest {
 
+    private static final long TIMEOUT_SECONDS = 5;
+
     @Test
     public void halfCloseOnCloseOutputStreamDelegatesBulkWrites() throws Exception {
-        try (ServerSocket serverSocket = new ServerSocket(0)) {
-            final int port = serverSocket.getLocalPort();
-            final Socket[] accepted = new Socket[1];
-            Thread acceptThread = new Thread(() -> {
-                try {
-                    accepted[0] = serverSocket.accept();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            acceptThread.start();
-
-            try (Socket clientSide = new Socket("127.0.0.1", port)) {
-                acceptThread.join(5_000);
-
-                final ByteArrayOutputStream captured = new ByteArrayOutputStream();
-                final AtomicInteger singleByteWrites = new AtomicInteger();
-                final OutputStream spy = new OutputStream() {
-                    @Override
-                    public void write(int b) {
-                        singleByteWrites.incrementAndGet();
-                        captured.write(b);
-                    }
-
-                    @Override
-                    public void write(byte[] b, int off, int len) {
-                        captured.write(b, off, len);
-                    }
-                };
-
-                final byte[] payload = new byte[32 * 1024];
-                for (int i = 0; i < payload.length; i++) {
-                    payload[i] = (byte) i;
+        try (SocketPair sockets = new SocketPair()) {
+            final ByteArrayOutputStream captured = new ByteArrayOutputStream();
+            final AtomicInteger singleByteWrites = new AtomicInteger();
+            final OutputStream spy = new OutputStream() {
+                @Override
+                public void write(int b) {
+                    singleByteWrites.incrementAndGet();
+                    captured.write(b);
                 }
 
-                IOUtils.halfCloseOnCloseOutputStream(accepted[0], spy).write(payload, 0, payload.length);
+                @Override
+                public void write(byte[] b, int off, int len) {
+                    captured.write(b, off, len);
+                }
+            };
 
-                assertEquals(0, singleByteWrites.get(), "bulk write must not be decomposed into single-byte writes");
-                assertArrayEquals(payload, captured.toByteArray());
+            final byte[] payload = new byte[32 * 1024];
+            for (int i = 0; i < payload.length; i++) {
+                payload[i] = (byte) i;
             }
+
+            IOUtils.halfCloseOnCloseOutputStream(sockets.server, spy).write(payload, 0, payload.length);
+
+            assertEquals(0, singleByteWrites.get(), "bulk write must not be decomposed into single-byte writes");
+            assertArrayEquals(payload, captured.toByteArray());
         }
     }
 
     @Test
     public void halfCloseOnCloseOutputStreamDoesNotCloseSocketInput() throws Exception {
-        try (ServerSocket serverSocket = new ServerSocket(0)) {
-            final int port = serverSocket.getLocalPort();
-            final Socket[] accepted = new Socket[1];
-            Thread acceptThread = new Thread(() -> {
-                try {
-                    accepted[0] = serverSocket.accept();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            acceptThread.start();
+        try (SocketPair sockets = new SocketPair()) {
+            IOUtils.halfCloseOnCloseOutputStream(sockets.server).close();
 
-            try (Socket clientSide = new Socket("127.0.0.1", port)) {
-                acceptThread.join(5_000);
+            assertFalse(sockets.server.isClosed());
+            assertFalse(sockets.server.isInputShutdown());
+            assertTrue(sockets.server.isOutputShutdown());
+        }
+    }
 
-                IOUtils.halfCloseOnCloseOutputStream(accepted[0]).close();
+    @Test
+    public void halfCloseOnCloseOutputStreamIsIdempotentAfterSocketClosed() throws Exception {
+        try (SocketPair sockets = new SocketPair()) {
+            final OutputStream out = IOUtils.halfCloseOnCloseOutputStream(sockets.server);
+            sockets.server.close();
 
-                assertFalse(accepted[0].isClosed());
-                assertFalse(accepted[0].isInputShutdown());
-                assertTrue(accepted[0].isOutputShutdown());
-            }
+            out.close(); // must not throw even though the socket is already closed
         }
     }
 
     @Test
     public void streamCopierEOFOnChannelShouldHalfCloseSocketWithoutErrorOnReverseCopy() throws Exception {
-        try (ServerSocket serverSocket = new ServerSocket(0)) {
-            final int port = serverSocket.getLocalPort();
-            final Socket[] accepted = new Socket[1];
-            Thread acceptThread = new Thread(() -> {
-                try {
-                    accepted[0] = serverSocket.accept();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            acceptThread.start();
+        try (SocketPair sockets = new SocketPair()) {
+            final LoggerFactory loggerFactory = LoggerFactory.DEFAULT;
 
-            try (Socket clientSide = new Socket("127.0.0.1", port)) {
-                acceptThread.join(5_000);
-                final Socket socket = accepted[0];
+            final Event<IOException> soc2chan = new StreamCopier(sockets.server.getInputStream(), new ByteArrayOutputStream(), loggerFactory)
+                    .spawnDaemon("soc2chan");
+            final Event<IOException> chan2soc = new StreamCopier(new ByteArrayInputStream(new byte[0]), IOUtils.halfCloseOnCloseOutputStream(sockets.server), loggerFactory)
+                    .spawnDaemon("chan2soc");
 
-                LoggerFactory loggerFactory = LoggerFactory.DEFAULT;
+            // Channel side is at EOF immediately: it should half-close the socket, not error.
+            chan2soc.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assertFalse(chan2soc.inError());
 
-                final Event<IOException> soc2chan = new StreamCopier(socket.getInputStream(), new ByteArrayOutputStream(), loggerFactory)
-                        .spawnDaemon("soc2chan");
+            // The reverse copy keeps running until the socket peer closes its side.
+            assertTrue(sockets.server.isOutputShutdown());
+            assertFalse(soc2chan.isSet());
 
-                final Event<IOException> chan2soc = new StreamCopier(new ByteArrayInputStream(new byte[0]), IOUtils.halfCloseOnCloseOutputStream(socket), loggerFactory)
-                        .spawnDaemon("chan2soc");
+            sockets.client.shutdownOutput();
 
-                chan2soc.await(5, TimeUnit.SECONDS);
-                assertFalse(chan2soc.inError());
-
-                clientSide.shutdownOutput();
-                soc2chan.await(5, TimeUnit.SECONDS);
-
-                assertFalse(soc2chan.inError());
-            }
+            soc2chan.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assertFalse(soc2chan.inError());
         }
     }
 
     @Test
     public void streamCopierEOFOnChannelClosesEntireSocketAndErrorsReverseCopy() throws Exception {
-        try (ServerSocket serverSocket = new ServerSocket(0)) {
-            final int port = serverSocket.getLocalPort();
-            final Socket[] accepted = new Socket[1];
-            Thread acceptThread = new Thread(() -> {
-                try {
-                    accepted[0] = serverSocket.accept();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            acceptThread.start();
+        // Characterises the pre-fix behaviour: closing the raw socket OutputStream on channel EOF
+        // tears down the whole socket and makes the still-running reverse copy fail.
+        try (SocketPair sockets = new SocketPair()) {
+            final LoggerFactory loggerFactory = LoggerFactory.DEFAULT;
 
-            try (Socket clientSide = new Socket("127.0.0.1", port)) {
-                acceptThread.join(5_000);
-                final Socket socket = accepted[0];
+            final Event<IOException> soc2chan = new StreamCopier(sockets.server.getInputStream(), new ByteArrayOutputStream(), loggerFactory)
+                    .spawnDaemon("soc2chan");
+            final Event<IOException> chan2soc = new StreamCopier(new ByteArrayInputStream(new byte[0]), sockets.server.getOutputStream(), loggerFactory)
+                    .spawnDaemon("chan2soc");
 
-                LoggerFactory loggerFactory = LoggerFactory.DEFAULT;
+            chan2soc.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            assertFalse(chan2soc.inError());
 
-                final Event<IOException> soc2chan = new StreamCopier(socket.getInputStream(), new ByteArrayOutputStream(), loggerFactory)
-                        .spawnDaemon("soc2chan");
+            assertThrows(IOException.class, () -> soc2chan.await(TIMEOUT_SECONDS, TimeUnit.SECONDS));
+            assertTrue(soc2chan.inError());
+            assertFalse(chan2soc.inError());
+        }
+    }
 
-                final Event<IOException> chan2soc = new StreamCopier(new ByteArrayInputStream(new byte[0]), socket.getOutputStream(), loggerFactory)
-                        .spawnDaemon("chan2soc");
+    /** A connected loopback socket pair, established without an accept thread. */
+    private static final class SocketPair implements AutoCloseable {
+        final Socket client;
+        final Socket server;
 
-                chan2soc.tryAwait(5, TimeUnit.SECONDS);
-                assertFalse(chan2soc.inError());
-
-                Thread.sleep(200);
-                assertTrue(soc2chan.inError());
-                assertFalse(chan2soc.inError());
+        SocketPair() throws IOException {
+            try (ServerSocket listener = new ServerSocket(0)) {
+                listener.setSoTimeout((int) TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS));
+                final Socket c = new Socket();
+                c.connect(new InetSocketAddress("127.0.0.1", listener.getLocalPort()),
+                        (int) TimeUnit.SECONDS.toMillis(TIMEOUT_SECONDS));
+                this.client = c;
+                this.server = listener.accept();
             }
+        }
+
+        @Override
+        public void close() {
+            IOUtils.closeQuietly(client, server);
         }
     }
 }
