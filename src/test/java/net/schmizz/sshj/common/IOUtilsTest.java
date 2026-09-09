@@ -21,14 +21,63 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class IOUtilsTest {
+
+    @Test
+    public void halfCloseOnCloseOutputStreamDelegatesBulkWrites() throws Exception {
+        try (ServerSocket serverSocket = new ServerSocket(0)) {
+            final int port = serverSocket.getLocalPort();
+            final Socket[] accepted = new Socket[1];
+            Thread acceptThread = new Thread(() -> {
+                try {
+                    accepted[0] = serverSocket.accept();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            acceptThread.start();
+
+            try (Socket clientSide = new Socket("127.0.0.1", port)) {
+                acceptThread.join(5_000);
+
+                final ByteArrayOutputStream captured = new ByteArrayOutputStream();
+                final AtomicInteger singleByteWrites = new AtomicInteger();
+                final OutputStream spy = new OutputStream() {
+                    @Override
+                    public void write(int b) {
+                        singleByteWrites.incrementAndGet();
+                        captured.write(b);
+                    }
+
+                    @Override
+                    public void write(byte[] b, int off, int len) {
+                        captured.write(b, off, len);
+                    }
+                };
+
+                final byte[] payload = new byte[32 * 1024];
+                for (int i = 0; i < payload.length; i++) {
+                    payload[i] = (byte) i;
+                }
+
+                IOUtils.halfCloseOnCloseOutputStream(accepted[0], spy).write(payload, 0, payload.length);
+
+                assertEquals(0, singleByteWrites.get(), "bulk write must not be decomposed into single-byte writes");
+                assertArrayEquals(payload, captured.toByteArray());
+            }
+        }
+    }
 
     @Test
     public void halfCloseOnCloseOutputStreamDoesNotCloseSocketInput() throws Exception {

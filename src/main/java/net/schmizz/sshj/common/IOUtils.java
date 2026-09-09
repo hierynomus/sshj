@@ -17,7 +17,6 @@ package net.schmizz.sshj.common;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,16 +53,41 @@ public class IOUtils {
 
     /**
      * Wraps a socket output stream so that {@link OutputStream#close()} performs a TCP half-close
-     * ({@link Socket#shutdownOutput()}) instead of closing the entire socket.
+     * ({@link Socket#shutdownOutput()}) instead of closing the entire socket. All write and flush
+     * calls are delegated to the underlying stream as-is (in particular bulk writes are not
+     * decomposed into single-byte writes).
      */
     public static OutputStream halfCloseOnCloseOutputStream(final Socket socket)
             throws IOException {
-        final OutputStream out = socket.getOutputStream();
-        return new FilterOutputStream(out) {
+        return halfCloseOnCloseOutputStream(socket, socket.getOutputStream());
+    }
+
+    static OutputStream halfCloseOnCloseOutputStream(final Socket socket, final OutputStream out) {
+        return new OutputStream() {
+            @Override
+            public void write(int b)
+                    throws IOException {
+                out.write(b);
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len)
+                    throws IOException {
+                out.write(b, off, len);
+            }
+
+            @Override
+            public void flush()
+                    throws IOException {
+                out.flush();
+            }
+
             @Override
             public void close()
                     throws IOException {
-                socket.shutdownOutput();
+                if (!socket.isClosed() && !socket.isOutputShutdown()) {
+                    socket.shutdownOutput();
+                }
             }
         };
     }
