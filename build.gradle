@@ -230,35 +230,35 @@ project.plugins.withType(MavenPublishPlugin).all {
 					url = "https://www.apache.org/licenses/LICENSE-2.0"
 				}
 			}
-			developers {
-				developer {
-					id = "hierynomus"
-					name = "Jeroen van Erp"
-					email = "jeroen@hierynomus.com"
-				}
-				developer {
-					id = "shikhar"
-					name = "Shikhar Bhushan"
-					email = "shikhar@schmizz.net"
-          url = "http://schmizz.net"
-          roles = ["Previous Lead developer"]
-				}
-        developer {
-          id = "iterate"
-          name = "David Kocher"
-          email = "dkocher@iterate.ch"
-          organization = "iterate GmbH"
-          organizationUrl = "https://iterate.ch"
-          roles = ["Developer"]
+            developers {
+                developer {
+                    id = "hierynomus"
+                    name = "Jeroen van Erp"
+                    email = "jeroen@hierynomus.com"
+                }
+                developer {
+                    id = "shikhar"
+                    name = "Shikhar Bhushan"
+                    email = "shikhar@schmizz.net"
+                    url = "http://schmizz.net"
+                    roles = ["Previous Lead developer"]
+                }
+                developer {
+                    id = "iterate"
+                    name = "David Kocher"
+                    email = "dkocher@iterate.ch"
+                    organization = "iterate GmbH"
+                    organizationUrl = "https://iterate.ch"
+                    roles = ["Developer"]
+                }
+            }
+            scm {
+                url = "https://github.com/hierynomus/${project.name}"
+                connection = "scm:git@github.com:hierynomus/${project.name}.git"
+                developerConnection = "scm:git@github.com:hierynomus/${project.name}.git"
+            }
         }
-			}
-      scm {
-        url = "https://github.com/hierynomus/${project.name}"
-        connection = "scm:git@github.com:hierynomus/${project.name}.git"
-        developerConnection = "scm:git@github.com:hierynomus/${project.name}.git"
-      }
-		}
-	}
+    }
 }
 
 nexusPublishing {
