@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 public class IOUtils {
 
@@ -47,6 +49,47 @@ public class IOUtils {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         new StreamCopier(stream, baos, loggerFactory).copy();
         return baos;
+    }
+
+    /**
+     * Wraps a socket output stream so that {@link OutputStream#close()} performs a TCP half-close
+     * ({@link Socket#shutdownOutput()}) instead of closing the entire socket. All write and flush
+     * calls are delegated to the underlying stream as-is (in particular bulk writes are not
+     * decomposed into single-byte writes).
+     */
+    public static OutputStream halfCloseOnCloseOutputStream(final Socket socket)
+            throws IOException {
+        return halfCloseOnCloseOutputStream(socket, socket.getOutputStream());
+    }
+
+    static OutputStream halfCloseOnCloseOutputStream(final Socket socket, final OutputStream out) {
+        return new OutputStream() {
+            @Override
+            public void write(int b)
+                    throws IOException {
+                out.write(b);
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len)
+                    throws IOException {
+                out.write(b, off, len);
+            }
+
+            @Override
+            public void flush()
+                    throws IOException {
+                out.flush();
+            }
+
+            @Override
+            public void close()
+                    throws IOException {
+                if (!socket.isClosed() && !socket.isOutputShutdown()) {
+                    socket.shutdownOutput();
+                }
+            }
+        };
     }
 
 }
