@@ -15,25 +15,19 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import com.hierynomus.sshj.userauth.keyprovider.CompanionPublicKey;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-
-import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.security.PublicKey;
+import java.security.KeyPair;
 
 
 /**
- * Represents an OpenSSH identity that consists of a PKCS8-encoded private key file and an unencrypted public key file
- * of the same name with the {@code ".pub"} extension. This allows to delay requesting of the passphrase until the
- * private key is requested.
+ * Represents an OpenSSH identity that consists of a PEM-encoded PKCS8 or PKCS1 private key file and an
+ * unencrypted public key file of the same name with the {@code ".pub"} extension. This allows to delay
+ * requesting of the passphrase until the private key is requested.
  *
  * @see PKCS8KeyFile
+ * @see BaseOpenSSHKeyFile
  */
-public class OpenSSHKeyFile
-        extends PKCS8KeyFile {
+public class OpenSSHKeyFile extends BaseOpenSSHKeyFile {
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -49,35 +43,15 @@ public class OpenSSHKeyFile
         }
     }
 
-    private final CompanionPublicKey companionPublicKey = new CompanionPublicKey();
+    private final KeyPairParser parser = new Pkcs8KeyPairParser();
 
     @Override
-    public PublicKey getPublic()
-            throws IOException {
-        return companionPublicKey.isPresent() ? companionPublicKey.getPublicKey() : super.getPublic();
+    protected KeyPair readKeyPair() throws IOException {
+        return parser.parseKeyPair(resource, pwdf);
     }
 
     @Override
-    public KeyType getType()
-            throws IOException {
-        return companionPublicKey.getType() != null ? companionPublicKey.getType() : super.getType();
-    }
-
-    @Override
-    public void init(File location, PasswordFinder pwdf) {
-        companionPublicKey.loadSiblingOf(location);
-        super.init(location, pwdf);
-    }
-
-    @Override
-    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        companionPublicKey.load(publicKey);
-        super.init(privateKey, null, pwdf);
-    }
-
-    @Override
-    public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
-        companionPublicKey.load(publicKey);
-        super.init(privateKey, null, pwdf);
+    public String toString() {
+        return "OpenSSHKeyFile{resource=" + resource + "}";
     }
 }
