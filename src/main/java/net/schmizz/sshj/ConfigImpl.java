@@ -52,6 +52,8 @@ public class ConfigImpl
     // HF-982: default to 16MB buffers.
     private int maxCircularBufferSize = 16 * 1024 * 1024;
     private int timeoutMs = 30 * 1000; // Default to 30 seconds
+    private int channelReadTimeoutMs = 0;
+    private int channelErrorReadTimeoutMs = 0;
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
@@ -186,6 +188,26 @@ public class ConfigImpl
     @Override
     public void setMaxCircularBufferSize(int maxCircularBufferSize) {
         this.maxCircularBufferSize = maxCircularBufferSize;
+    }
+
+    @Override
+    public int getChannelReadTimeoutMs() {
+        return channelReadTimeoutMs;
+    }
+
+    @Override
+    public void setChannelReadTimeoutMs(int channelReadTimeoutMs) {
+        this.channelReadTimeoutMs = channelReadTimeoutMs;
+    }
+
+    @Override
+    public int getChannelErrorReadTimeoutMs() {
+        return channelErrorReadTimeoutMs;
+    }
+
+    @Override
+    public void setChannelErrorReadTimeoutMs(int channelErrorReadTimeoutMs) {
+        this.channelErrorReadTimeoutMs = channelErrorReadTimeoutMs;
     }
 
     @Override

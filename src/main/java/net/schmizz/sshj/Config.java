@@ -219,4 +219,11 @@ public interface Config {
      * @param timeoutMs the timeout in milliseconds
      */
     void setTimeoutMs(int timeoutMs);
+    int getChannelReadTimeoutMs();
+
+    void setChannelReadTimeoutMs(int channelReadTimeoutMs);
+
+    int getChannelErrorReadTimeoutMs();
+
+    void setChannelErrorReadTimeoutMs(int channelErrorReadTimeoutMs);
 }
