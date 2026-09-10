@@ -163,6 +163,9 @@ public class ConnectionImpl
 
     @Override
     public void setMaxPacketSize(int maxPacketSize) {
+        if (maxPacketSize <= 0) {
+            throw new IllegalArgumentException("maxPacketSize must be greater than 0, got " + maxPacketSize);
+        }
         this.maxPacketSize = maxPacketSize;
     }
 

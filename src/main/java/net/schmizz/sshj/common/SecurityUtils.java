@@ -276,6 +276,9 @@ public class SecurityUtils {
      */
     public static synchronized void setSecurityProvider(String securityProvider) {
         SecurityUtils.securityProvider = securityProvider;
+        if(null == securityProvider) {
+            SecurityUtils.registerBouncyCastle = null;
+        }
         registrationDone = false;
     }
 

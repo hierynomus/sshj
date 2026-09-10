@@ -17,6 +17,7 @@ package net.schmizz.sshj.transport.kex;
 
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.random.JCERandom;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,7 @@ public class Curve25519DHTest {
     };
 
     @BeforeEach
+    @AfterEach
     public void clearSecurityProvider() {
         SecurityUtils.setSecurityProvider(null);
     }

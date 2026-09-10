@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.Properties;
 
 /**
@@ -135,6 +136,8 @@ public class DefaultConfig
         setKeyAlgorithms(Arrays.<Factory.Named<KeyAlgorithm>>asList(
                 KeyAlgorithms.EdDSA25519CertV01(),
                 KeyAlgorithms.EdDSA25519(),
+                KeyAlgorithms.SkSSHEd25519(),
+                KeyAlgorithms.SkECDSANistp256(),
                 KeyAlgorithms.ECDSASHANistp521CertV01(),
                 KeyAlgorithms.ECDSASHANistp521(),
                 KeyAlgorithms.ECDSASHANistp384CertV01(),
@@ -162,8 +165,8 @@ public class DefaultConfig
         );
     }
 
-    protected void initCipherFactories() {
-        List<Factory.Named<Cipher>> avail = new LinkedList<Factory.Named<Cipher>>(Arrays.<Factory.Named<Cipher>>asList(
+    protected List<Factory.Named<Cipher>> getDefaultCipherFactories() {
+        return new LinkedList<>(Arrays.<Factory.Named<Cipher>>asList(
                 ChachaPolyCiphers.CHACHA_POLY_OPENSSH(),
                 BlockCiphers.AES128CBC(),
                 BlockCiphers.AES128CTR(),
@@ -198,6 +201,10 @@ public class DefaultConfig
                 StreamCiphers.Arcfour128(),
                 StreamCiphers.Arcfour256())
         );
+    }
+
+    protected void initCipherFactories() {
+        List<Factory.Named<Cipher>> avail = getDefaultCipherFactories();
 
         final ListIterator<Factory.Named<Cipher>> factories = avail.listIterator();
         while (factories.hasNext()) {
@@ -208,7 +215,7 @@ public class DefaultConfig
                 final byte[] iv = new byte[cipher.getIVSize()];
                 cipher.init(Cipher.Mode.Encrypt, key, iv);
             } catch (Exception e) {
-                log.info("Cipher [{}] disabled: {}", factory.getName(), e.getCause().getMessage());
+                log.info("Cipher [{}] disabled: {}", factory.getName(), Optional.ofNullable(e.getCause()).map(Throwable::getMessage), e);
                 factories.remove();
             }
         }
