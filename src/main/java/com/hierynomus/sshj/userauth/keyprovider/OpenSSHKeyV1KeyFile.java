@@ -76,13 +76,19 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         SUPPORTED_CIPHERS.put(ChachaPolyCiphers.CHACHA_POLY_OPENSSH().getName(), ChachaPolyCiphers.CHACHA_POLY_OPENSSH());
     }
 
-    private PublicKey pubKey;
+    private final CompanionPublicKey companionPublicKey = new CompanionPublicKey();
     private SecurityKeySigner securityKeySigner;
 
     @Override
     public PublicKey getPublic()
             throws IOException {
-        return pubKey != null ? pubKey : super.getPublic();
+        return companionPublicKey.isPresent() ? companionPublicKey.getPublicKey() : super.getPublic();
+    }
+
+    @Override
+    public KeyType getType()
+            throws IOException {
+        return companionPublicKey.getType() != null ? companionPublicKey.getType() : super.getType();
     }
 
     /**
@@ -114,41 +120,19 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     public void init(File location, PasswordFinder pwdf) {
-        File publicKeyFile = OpenSSHKeyFileUtil.getPublicKeyFile(location);
-        if (publicKeyFile != null) {
-            try {
-                initPubKey(new FileReader(publicKeyFile));
-            } catch (IOException e) {
-                // let super provide both public & private key
-                log.warn("Error reading public key file: {}", e.toString());
-            }
-        }
+        companionPublicKey.loadSiblingOf(location);
         super.init(location, pwdf);
     }
 
     @Override
     public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        if (publicKey != null) {
-            try {
-                initPubKey(new StringReader(publicKey));
-            } catch (IOException e) {
-                // let super provide both public & private key
-                log.warn("Error reading public key: {}", e.toString());
-            }
-        }
+        companionPublicKey.load(publicKey);
         super.init(privateKey, null, pwdf);
     }
 
     @Override
     public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
-        if (publicKey != null) {
-            try {
-                initPubKey(publicKey);
-            } catch (IOException e) {
-                // let super provide both public & private key
-                log.warn("Error reading public key: {}", e.toString());
-            }
-        }
+        companionPublicKey.load(publicKey);
         super.init(privateKey, null, pwdf);
     }
 
@@ -174,12 +158,6 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         }
     }
 
-    private void initPubKey(Reader publicKey) throws IOException {
-        OpenSSHKeyFileUtil.ParsedPubKey parsed = OpenSSHKeyFileUtil.initPubKey(publicKey);
-        type = parsed.getType();
-        pubKey = parsed.getPubKey();
-    }
-
     private KeyPair readDecodedKeyPair(final PlainBuffer keyBuffer) throws IOException, GeneralSecurityException {
         byte[] bytes = new byte[AUTH_MAGIC.length];
         keyBuffer.readRawBytes(bytes); // byte[] AUTH_MAGIC
@@ -196,7 +174,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
             final String message = String.format("OpenSSH Private Key number of keys not supported [%d]", nrKeys);
             throw new IOException(message);
         }
-        PublicKey publicKey = pubKey;
+        PublicKey publicKey = companionPublicKey.getPublicKey();
         if (publicKey == null) {
             publicKey = readPublicKey(new PlainBuffer(keyBuffer.readBytes()));
         } else {

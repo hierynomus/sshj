@@ -15,10 +15,13 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyFileUtil;
+import com.hierynomus.sshj.userauth.keyprovider.CompanionPublicKey;
+import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
 import java.security.PublicKey;
 
 
@@ -46,63 +49,35 @@ public class OpenSSHKeyFile
         }
     }
 
-    private PublicKey pubKey;
+    private final CompanionPublicKey companionPublicKey = new CompanionPublicKey();
 
     @Override
     public PublicKey getPublic()
             throws IOException {
-        return pubKey != null ? pubKey : super.getPublic();
+        return companionPublicKey.isPresent() ? companionPublicKey.getPublicKey() : super.getPublic();
+    }
+
+    @Override
+    public KeyType getType()
+            throws IOException {
+        return companionPublicKey.getType() != null ? companionPublicKey.getType() : super.getType();
     }
 
     @Override
     public void init(File location, PasswordFinder pwdf) {
-        // try cert key location first
-        File publicKeyFile = OpenSSHKeyFileUtil.getPublicKeyFile(location);
-        if (publicKeyFile != null) {
-            try {
-                initPubKey(new FileReader(publicKeyFile));
-            } catch (IOException e) {
-                // let super provide both public & private key
-                log.warn("Error reading public key file: {}", e.toString());
-            }
-        }
+        companionPublicKey.loadSiblingOf(location);
         super.init(location, pwdf);
     }
 
     @Override
     public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        if (publicKey != null) {
-            try {
-                initPubKey(new StringReader(publicKey));
-            } catch (IOException e) {
-                // let super provide both public & private key
-                log.warn("Error reading public key: {}", e.toString());
-            }
-        }
+        companionPublicKey.load(publicKey);
         super.init(privateKey, null, pwdf);
     }
 
     @Override
     public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
-        if (publicKey != null) {
-            try {
-                initPubKey(publicKey);
-            } catch (IOException e) {
-                // let super provide both public & private key
-                log.warn("Error reading public key: {}", e.toString());
-            }
-        }
+        companionPublicKey.load(publicKey);
         super.init(privateKey, null, pwdf);
-    }
-
-    /**
-     * Read and store the separate public key provided alongside the private key
-     *
-     * @param publicKey Public key accessible through a {@code Reader}
-     */
-    private void initPubKey(Reader publicKey) throws IOException {
-        OpenSSHKeyFileUtil.ParsedPubKey parsed = OpenSSHKeyFileUtil.initPubKey(publicKey);
-        type = parsed.getType();
-        pubKey = parsed.getPubKey();
     }
 }

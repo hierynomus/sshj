@@ -457,6 +457,17 @@ public class OpenSSHKeyFileTest {
     }
 
     @Test
+    public void shouldSuccessfullyLoadSignedRSACertificateFromStream() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new FileReader("src/test/resources/keytypes/certificate/test_rsa"),
+                new FileReader("src/test/resources/keytypes/certificate/test_rsa-cert.pub"),
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        assertTrue(keyFile.getPublic() instanceof Certificate, "Public key is not a certificate");
+        assertEquals(KeyType.RSA_CERT, keyFile.getType());
+    }
+
+    @Test
     public void shouldSuccessfullyLoadSignedRSAPublicKeyWithMaxDate() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
         keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa_max_date"),
