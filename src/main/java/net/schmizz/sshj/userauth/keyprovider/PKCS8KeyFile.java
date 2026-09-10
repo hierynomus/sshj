@@ -72,6 +72,8 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
 
     private static final boolean HISTORICAL_DECRYPTION_SUPPORTED = isHistoricalDecryptionSupported();
 
+    private static final String PBES2_ALGORITHM = "PBES2";
+
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
     public static class Factory implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -259,10 +261,8 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
         try {
             final EncryptedPrivateKeyInfo encryptedPrivateKeyInfo = new EncryptedPrivateKeyInfo(encoded);
             final AlgorithmParameters algorithmParameters = encryptedPrivateKeyInfo.getAlgParameters();
-            final String secretKeyAlgorithm = algorithmParameters.toString();
-            final SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(secretKeyAlgorithm);
-            final PBEKeySpec secretKeySpec = new PBEKeySpec(password);
-            final SecretKey secretKey = secretKeyFactory.generateSecret(secretKeySpec);
+            final SecretKey secretKey = getSecretKey(algorithmParameters, password);
+            final String secretKeyAlgorithm = secretKey.getAlgorithm();
             final Cipher cipher = Cipher.getInstance(secretKeyAlgorithm);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, algorithmParameters);
 
@@ -274,6 +274,23 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
         } finally {
             PasswordUtils.blankOut(password);
         }
+    }
+
+    private SecretKey getSecretKey(final AlgorithmParameters algorithmParameters, final char[] password) throws GeneralSecurityException {
+        final String algorithm = algorithmParameters.getAlgorithm();
+        final String secretKeyAlgorithm;
+
+        if (PBES2_ALGORITHM.equals(algorithm)) {
+            // Secret Key Algorithm available from AlgorithmParameters.toString() for PBES2
+            secretKeyAlgorithm = algorithmParameters.toString();
+        } else {
+            // Secret Key Algorithm available from AlgorithmParameters.getAlgorithm() for PBES1
+            secretKeyAlgorithm = algorithm;
+        }
+
+        final SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(secretKeyAlgorithm);
+        final PBEKeySpec secretKeySpec = new PBEKeySpec(password);
+        return secretKeyFactory.generateSecret(secretKeySpec);
     }
 
     private KeyPair getPkcs8KeyPair(final byte[] encoded) throws IOException {

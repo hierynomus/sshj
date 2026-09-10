@@ -16,6 +16,8 @@
 package com.hierynomus.sshj.key;
 
 import com.hierynomus.sshj.signature.SignatureEdDSA;
+import com.hierynomus.sshj.signature.SignatureSkEcdsa;
+import com.hierynomus.sshj.signature.SignatureSkEd25519;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.signature.SignatureDSA;
@@ -38,6 +40,8 @@ public class KeyAlgorithms {
     public static Factory ECDSASHANistp521CertV01() { return new Factory(KeyType.ECDSA521_CERT.toString(), new SignatureECDSA.Factory521(), KeyType.ECDSA521_CERT); }
     public static Factory EdDSA25519() { return new Factory(KeyType.ED25519.toString(), new SignatureEdDSA.Factory(), KeyType.ED25519); }
     public static Factory EdDSA25519CertV01() { return new Factory(KeyType.ED25519_CERT.toString(), new SignatureEdDSA.Factory(), KeyType.ED25519_CERT); }
+    public static Factory SkSSHEd25519() { return new Factory(KeyType.SK_ED25519.toString(), new SignatureSkEd25519.Factory(), KeyType.SK_ED25519); }
+    public static Factory SkECDSANistp256() { return new Factory(KeyType.SK_ECDSA.toString(), new SignatureSkEcdsa.Factory(), KeyType.SK_ECDSA); }
 
     public static class Factory implements net.schmizz.sshj.common.Factory.Named<KeyAlgorithm> {
 

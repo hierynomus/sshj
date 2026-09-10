@@ -18,8 +18,9 @@ public class RemotePF {
         SSHClient client = new SSHClient();
         client.loadKnownHosts();
 
-        client.connect("localhost");
         client.getConnection().getKeepAlive().setKeepAliveInterval(5);
+        client.connect("localhost");
+        
         try {
 
             client.authPublickey(System.getProperty("user.name"));

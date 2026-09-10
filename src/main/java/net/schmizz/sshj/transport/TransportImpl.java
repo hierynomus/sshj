@@ -98,7 +98,7 @@ public final class TransportImpl
      */
     private final String clientID;
 
-    private volatile int timeoutMs = 30 * 1000; // Crazy long, but it was the original default
+    private volatile int timeoutMs;
 
     private volatile boolean authed = false;
 
@@ -142,6 +142,7 @@ public final class TransportImpl
         this.decoder = new Decoder(this);
         this.kexer = new KeyExchanger(this);
         this.clientID = String.format("SSH-2.0-%s", config.getVersion());
+        this.timeoutMs = config.getTimeoutMs();
     }
 
     @Override

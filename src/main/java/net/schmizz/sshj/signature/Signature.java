@@ -83,4 +83,13 @@ public interface Signature {
      */
     boolean verify(byte[] sig);
 
+    /**
+     * Returns {@code true} if {@link #encode(byte[])} already produces the full wire-format
+     * signature value (type + payload) and it should be written as a single string without an
+     * additional {@code putSignature} wrapper.  Returns {@code false} for all ordinary signatures.
+     */
+    default boolean isSignaturePreEncoded() {
+        return false;
+    }
+
 }

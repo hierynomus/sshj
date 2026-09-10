@@ -51,6 +51,9 @@ public class ConfigImpl
     private boolean verifyHostKeyCertificates = true;
     // HF-982: default to 16MB buffers.
     private int maxCircularBufferSize = 16 * 1024 * 1024;
+    private int timeoutMs = 30 * 1000; // Default to 30 seconds
+    private int channelReadTimeoutMs = 0;
+    private int channelErrorReadTimeoutMs = 0;
 
     @Override
     public List<Factory.Named<Cipher>> getCipherFactories() {
@@ -188,6 +191,26 @@ public class ConfigImpl
     }
 
     @Override
+    public int getChannelReadTimeoutMs() {
+        return channelReadTimeoutMs;
+    }
+
+    @Override
+    public void setChannelReadTimeoutMs(int channelReadTimeoutMs) {
+        this.channelReadTimeoutMs = channelReadTimeoutMs;
+    }
+
+    @Override
+    public int getChannelErrorReadTimeoutMs() {
+        return channelErrorReadTimeoutMs;
+    }
+
+    @Override
+    public void setChannelErrorReadTimeoutMs(int channelErrorReadTimeoutMs) {
+        this.channelErrorReadTimeoutMs = channelErrorReadTimeoutMs;
+    }
+
+    @Override
     public void setLoggerFactory(LoggerFactory loggerFactory) {
         this.loggerFactory = loggerFactory;
     }
@@ -200,6 +223,16 @@ public class ConfigImpl
     @Override
     public void setVerifyHostKeyCertificates(boolean value) {
         verifyHostKeyCertificates = value;
+    }
+
+    @Override
+    public int getTimeoutMs() {
+        return timeoutMs;
+    }
+
+    @Override
+    public void setTimeoutMs(int timeoutMs) {
+        this.timeoutMs = timeoutMs;
     }
 
     /**

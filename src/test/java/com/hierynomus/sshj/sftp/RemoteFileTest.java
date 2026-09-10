@@ -225,4 +225,26 @@ public class RemoteFileTest {
         assertThat("The file should be read correctly",
                 ByteArrayUtils.equals(expected, 0, actual, 0, expected.length));
     }
+
+    @Test
+    public void shouldReturnZeroWhenReadingWithZeroLength() throws IOException {
+        SSHClient ssh = fixture.setupConnectedDefaultClient();
+        ssh.authPassword("test", "test");
+        SFTPEngine sftp = new SFTPEngine(ssh).init();
+
+        File file = new File(temp, "SftpZeroLengthRead.bin");
+        RemoteFile rf = sftp.open(file.getPath(), EnumSet.of(OpenMode.WRITE, OpenMode.CREAT));
+        rf.write(0, new byte[] {1, 2, 3}, 0, 3);
+        rf.close();
+
+        rf = sftp.open(file.getPath());
+        InputStream in = rf.new RemoteFileInputStream();
+        byte[] buf = new byte[8];
+        assertEquals(0, in.read(buf, 0, 0));
+        assertEquals(1, in.read());
+        assertEquals(2, in.read(buf, 0, 2));
+        assertEquals(0, in.read(buf, 0, 0));
+        assertEquals(-1, in.read());
+        rf.close();
+    }
 }

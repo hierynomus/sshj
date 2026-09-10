@@ -41,7 +41,7 @@ public abstract class KeyedAuthMethod
         this.kProv = kProv;
     }
 
-    private KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
+    protected KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
         if (available == null) {
             available = new LinkedList<>(params.getTransport().getClientKeyAlgorithms(keyType));
         }
@@ -103,7 +103,13 @@ public abstract class KeyedAuthMethod
                 .putString(params.getTransport().getSessionID())
                 .putBuffer(reqBuf) // & rest of the data for sig
                 .getCompactData());
-        reqBuf.putSignature(signature.getSignatureName(), signature.encode(signature.sign()));
+        final byte[] encoded = signature.encode(signature.sign());
+        if (signature.isSignaturePreEncoded()) {
+            // A FIDO/U2F signature already encodes the type, flags and counter; write it as one string.
+            reqBuf.putString(encoded);
+        } else {
+            reqBuf.putSignature(signature.getSignatureName(), encoded);
+        }
         return reqBuf;
     }
 

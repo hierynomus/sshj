@@ -33,6 +33,9 @@ public abstract class Window {
     protected long size;
 
     public Window(long initialWinSize, int maxPacketSize, LoggerFactory loggerFactory) {
+        if (maxPacketSize <= 0) {
+            throw new IllegalArgumentException("maxPacketSize must be greater than 0, got " + maxPacketSize);
+        }
         size = initialWinSize;
         this.maxPacketSize = maxPacketSize;
         log = loggerFactory.getLogger(getClass());
