@@ -114,10 +114,10 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     public void init(File location, PasswordFinder pwdf) {
-        File pubKey = OpenSSHKeyFileUtil.getPublicKeyFile(location);
-        if (pubKey != null) {
+        File publicKeyFile = OpenSSHKeyFileUtil.getPublicKeyFile(location);
+        if (publicKeyFile != null) {
             try {
-                initPubKey(new FileReader(pubKey));
+                initPubKey(new FileReader(publicKeyFile));
             } catch (IOException e) {
                 // let super provide both public & private key
                 log.warn("Error reading public key file: {}", e.toString());
@@ -128,11 +128,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        if (pubKey != null) {
+        if (publicKey != null) {
             try {
                 initPubKey(new StringReader(publicKey));
             } catch (IOException e) {
-                log.warn("Error reading public key file: {}", e.toString());
+                // let super provide both public & private key
+                log.warn("Error reading public key: {}", e.toString());
             }
         }
         super.init(privateKey, null, pwdf);
@@ -140,11 +141,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
 
     @Override
     public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
-        if (pubKey != null) {
+        if (publicKey != null) {
             try {
                 initPubKey(publicKey);
             } catch (IOException e) {
-                log.warn("Error reading public key file: {}", e.toString());
+                // let super provide both public & private key
+                log.warn("Error reading public key: {}", e.toString());
             }
         }
         super.init(privateKey, null, pwdf);
@@ -364,11 +366,11 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
                 byte[] privKey = new byte[32];
                 keyBuffer.readRawBytes(privKey); // string privatekey
 
-                final byte[] pubKey = new byte[32];
-                keyBuffer.readRawBytes(pubKey); // string publickey (again...)
+                final byte[] pubKeyBytes = new byte[32];
+                keyBuffer.readRawBytes(pubKeyBytes); // string publickey (again...)
 
                 final PrivateKey edPrivateKey = Ed25519KeyFactory.getPrivateKey(privKey);
-                final PublicKey edPublicKey = Ed25519KeyFactory.getPublicKey(pubKey);
+                final PublicKey edPublicKey = Ed25519KeyFactory.getPublicKey(pubKeyBytes);
 
                 kp = new KeyPair(edPublicKey, edPrivateKey);
                 break;
