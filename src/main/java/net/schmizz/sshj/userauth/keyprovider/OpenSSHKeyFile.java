@@ -15,15 +15,8 @@
  */
 package net.schmizz.sshj.userauth.keyprovider;
 
-import com.hierynomus.sshj.userauth.keyprovider.CompanionPublicKey;
-import net.schmizz.sshj.common.KeyType;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
-
-import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.security.KeyPair;
-import java.security.PublicKey;
 
 
 /**
@@ -32,8 +25,9 @@ import java.security.PublicKey;
  * requesting of the passphrase until the private key is requested.
  *
  * @see PKCS8KeyFile
+ * @see BaseOpenSSHKeyFile
  */
-public class OpenSSHKeyFile extends BaseFileKeyProvider {
+public class OpenSSHKeyFile extends BaseOpenSSHKeyFile {
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -50,7 +44,6 @@ public class OpenSSHKeyFile extends BaseFileKeyProvider {
     }
 
     private final KeyPairParser parser = new Pkcs8KeyPairParser();
-    private final CompanionPublicKey companionPublicKey = new CompanionPublicKey();
 
     @Override
     protected KeyPair readKeyPair() throws IOException {
@@ -58,32 +51,7 @@ public class OpenSSHKeyFile extends BaseFileKeyProvider {
     }
 
     @Override
-    public PublicKey getPublic()
-            throws IOException {
-        return companionPublicKey.isPresent() ? companionPublicKey.getPublicKey() : super.getPublic();
-    }
-
-    @Override
-    public KeyType getType()
-            throws IOException {
-        return companionPublicKey.getType() != null ? companionPublicKey.getType() : super.getType();
-    }
-
-    @Override
-    public void init(File location, PasswordFinder pwdf) {
-        companionPublicKey.loadSiblingOf(location);
-        super.init(location, pwdf);
-    }
-
-    @Override
-    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        companionPublicKey.load(publicKey);
-        super.init(privateKey, null, pwdf);
-    }
-
-    @Override
-    public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
-        companionPublicKey.load(publicKey);
-        super.init(privateKey, null, pwdf);
+    public String toString() {
+        return "OpenSSHKeyFile{resource=" + resource + "}";
     }
 }
