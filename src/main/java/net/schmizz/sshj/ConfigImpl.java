@@ -51,6 +51,7 @@ public class ConfigImpl
     private boolean verifyHostKeyCertificates = true;
     // HF-982: default to 16MB buffers.
     private int maxCircularBufferSize = 16 * 1024 * 1024;
+    private int timeoutMs = 30 * 1000; // Default to 30 seconds
     private int channelReadTimeoutMs = 0;
     private int channelErrorReadTimeoutMs = 0;
 
@@ -222,6 +223,16 @@ public class ConfigImpl
     @Override
     public void setVerifyHostKeyCertificates(boolean value) {
         verifyHostKeyCertificates = value;
+    }
+
+    @Override
+    public int getTimeoutMs() {
+        return timeoutMs;
+    }
+
+    @Override
+    public void setTimeoutMs(int timeoutMs) {
+        this.timeoutMs = timeoutMs;
     }
 
     /**
