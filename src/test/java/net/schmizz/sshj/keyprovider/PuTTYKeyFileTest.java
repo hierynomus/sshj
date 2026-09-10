@@ -16,6 +16,7 @@
 package net.schmizz.sshj.keyprovider;
 
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
+import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import net.schmizz.sshj.util.CorruptBase64;
@@ -377,6 +378,28 @@ public class PuTTYKeyFileTest {
         key.init(new StringReader(ppk8192));
         assertNotNull(key.getPrivate());
         assertNotNull(key.getPublic());
+    }
+
+    @Test
+    public void exposesMetadataForUnencryptedKey() throws Exception {
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(ppk2048));
+        key.getPrivate(); // trigger parsing
+
+        assertEquals(KeyType.RSA, key.getType());
+        assertFalse(key.isEncrypted());
+        assertEquals(2, key.getKeyFileVersion());
+    }
+
+    @Test
+    public void exposesMetadataForEncryptedV3Key() throws Exception {
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(v3_rsa_argon2id), new UnitTestPasswordFinder("changeit"));
+        key.getPrivate(); // trigger parsing
+
+        assertEquals(KeyType.RSA, key.getType());
+        assertTrue(key.isEncrypted());
+        assertEquals(3, key.getKeyFileVersion());
     }
 
     @Test
