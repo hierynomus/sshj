@@ -4,15 +4,19 @@ on:
   push:
     branches:
       - master
-  pull_request:
+  # Trigger on PRs so the autolabeler can label them. pull_request_target is
+  # required to also label PRs coming from forks.
+  pull_request_target:
     types: [opened, reopened, synchronize]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   update_release_draft:
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v6
