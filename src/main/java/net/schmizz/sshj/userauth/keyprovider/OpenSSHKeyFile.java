@@ -22,18 +22,18 @@ import net.schmizz.sshj.userauth.password.PasswordFinder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.security.KeyPair;
 import java.security.PublicKey;
 
 
 /**
- * Represents an OpenSSH identity that consists of a PKCS8-encoded private key file and an unencrypted public key file
- * of the same name with the {@code ".pub"} extension. This allows to delay requesting of the passphrase until the
- * private key is requested.
+ * Represents an OpenSSH identity that consists of a PEM-encoded PKCS8 or PKCS1 private key file and an
+ * unencrypted public key file of the same name with the {@code ".pub"} extension. This allows to delay
+ * requesting of the passphrase until the private key is requested.
  *
  * @see PKCS8KeyFile
  */
-public class OpenSSHKeyFile
-        extends PKCS8KeyFile {
+public class OpenSSHKeyFile extends BaseFileKeyProvider {
 
     public static class Factory
             implements net.schmizz.sshj.common.Factory.Named<FileKeyProvider> {
@@ -49,7 +49,13 @@ public class OpenSSHKeyFile
         }
     }
 
+    private final KeyPairParser parser = new Pkcs8KeyPairParser();
     private final CompanionPublicKey companionPublicKey = new CompanionPublicKey();
+
+    @Override
+    protected KeyPair readKeyPair() throws IOException {
+        return parser.parseKeyPair(resource, pwdf);
+    }
 
     @Override
     public PublicKey getPublic()
