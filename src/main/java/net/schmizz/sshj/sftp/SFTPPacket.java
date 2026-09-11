@@ -39,7 +39,10 @@ public class SFTPPacket<T extends SFTPPacket<T>>
         try {
             final int mask = readUInt32AsInt();
             if (FileAttributes.Flag.SIZE.isSet(mask))
-                builder.withSize(readUInt64());
+                // Some SFTP server implementations (e.g. Apache MINA sshd >= 2.1.16) report a size of
+                // 0xFFFFFFFFFFFFFFFF for directories. That does not fit into a signed long, so read it as an
+                // unsigned value and truncate to the raw 64 bits rather than failing the whole attribute read.
+                builder.withSize(readUInt64AsBigInteger().longValue());
             if (FileAttributes.Flag.UIDGID.isSet(mask))
                 builder.withUIDGID(readUInt32AsInt(), readUInt32AsInt());
             if (FileAttributes.Flag.MODE.isSet(mask))
