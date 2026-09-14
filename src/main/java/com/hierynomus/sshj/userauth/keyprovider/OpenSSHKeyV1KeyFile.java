@@ -27,10 +27,9 @@ import com.hierynomus.sshj.userauth.keyprovider.bcrypt.BCrypt;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.common.Buffer.PlainBuffer;
 import net.schmizz.sshj.transport.cipher.Cipher;
-import net.schmizz.sshj.userauth.keyprovider.BaseFileKeyProvider;
+import net.schmizz.sshj.userauth.keyprovider.BaseOpenSSHKeyFile;
 import net.schmizz.sshj.userauth.keyprovider.FileKeyProvider;
 import net.schmizz.sshj.userauth.keyprovider.KeyFormat;
-import net.schmizz.sshj.userauth.password.PasswordFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +51,7 @@ import java.util.Map;
  * Reads a key file in the new OpenSSH format.
  * The format is described in the following document: <a href="https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.key">Key Protocol</a>
  */
-public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
+public class OpenSSHKeyV1KeyFile extends BaseOpenSSHKeyFile {
     private static final String BEGIN = "-----BEGIN ";
     private static final String END = "-----END ";
     private static final byte[] AUTH_MAGIC = "openssh-key-v1\0".getBytes();
@@ -76,20 +75,7 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
         SUPPORTED_CIPHERS.put(ChachaPolyCiphers.CHACHA_POLY_OPENSSH().getName(), ChachaPolyCiphers.CHACHA_POLY_OPENSSH());
     }
 
-    private final CompanionPublicKey companionPublicKey = new CompanionPublicKey();
     private SecurityKeySigner securityKeySigner;
-
-    @Override
-    public PublicKey getPublic()
-            throws IOException {
-        return companionPublicKey.isPresent() ? companionPublicKey.getPublicKey() : super.getPublic();
-    }
-
-    @Override
-    public KeyType getType()
-            throws IOException {
-        return companionPublicKey.getType() != null ? companionPublicKey.getType() : super.getType();
-    }
 
     /**
      * Attach the bridge to the hardware authenticator used to sign with a FIDO/U2F security key
@@ -117,24 +103,6 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     }
 
     protected final Logger log = LoggerFactory.getLogger(getClass());
-
-    @Override
-    public void init(File location, PasswordFinder pwdf) {
-        companionPublicKey.loadSiblingOf(location);
-        super.init(location, pwdf);
-    }
-
-    @Override
-    public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
-        companionPublicKey.load(publicKey);
-        super.init(privateKey, null, pwdf);
-    }
-
-    @Override
-    public void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf) {
-        companionPublicKey.load(publicKey);
-        super.init(privateKey, null, pwdf);
-    }
 
     @Override
     protected KeyPair readKeyPair() throws IOException {
