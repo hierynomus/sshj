@@ -125,6 +125,12 @@ public class OpenSSHKeyV1KeyFile extends BaseFileKeyProvider {
     }
 
     @Override
+    public void init(File privateKey, File publicKey, PasswordFinder pwdf) {
+        companionPublicKey.load(publicKey);
+        super.init(privateKey, pwdf);
+    }
+
+    @Override
     public void init(String privateKey, String publicKey, PasswordFinder pwdf) {
         companionPublicKey.load(publicKey);
         super.init(privateKey, null, pwdf);
