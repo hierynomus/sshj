@@ -56,13 +56,24 @@ public abstract class BaseFileKeyProvider implements FileKeyProvider {
 
     @Override
     public void init(File location) {
-        this.init(location, null);
+        this.init(location, (PasswordFinder) null);
     }
 
     @Override
     public void init(File location, PasswordFinder pwdf) {
         this.resource = new PrivateKeyFileResource(location.getAbsoluteFile());
         this.pwdf = pwdf;
+    }
+
+    @Override
+    public void init(File privateKey, File publicKey) {
+        this.init(privateKey, publicKey, null);
+    }
+
+    @Override
+    public void init(File privateKey, File publicKey, PasswordFinder pwdf) {
+        assert publicKey == null;
+        this.init(privateKey, pwdf);
     }
 
     @Override

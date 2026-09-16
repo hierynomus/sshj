@@ -47,8 +47,20 @@ public class CompanionPublicKey {
     public void loadSiblingOf(File privateKeyLocation) {
         File publicKeyFile = OpenSSHKeyFileUtil.getPublicKeyFile(privateKeyLocation);
         if (publicKeyFile != null) {
+            load(publicKeyFile);
+        }
+    }
+
+    /**
+     * Load the public key - or certificate - from the given, explicitly named file. Unlike {@link
+     * #loadSiblingOf(File)}, the file name is not constrained to the {@code .pub} / {@code -cert.pub}
+     * convention, so this also covers e.g. Pritunl-Zero style {@code -cert00.pub}, {@code -cert01.pub}
+     * multi-CA certificates, or do nothing when {@code publicKey} is {@code null}.
+     */
+    public void load(File publicKey) {
+        if (publicKey != null) {
             try {
-                parse(new FileReader(publicKeyFile));
+                parse(new FileReader(publicKey));
             } catch (IOException e) {
                 // let the provider fall back to the public key embedded in the private key file
                 log.warn("Error reading public key file: {}", e.toString());
