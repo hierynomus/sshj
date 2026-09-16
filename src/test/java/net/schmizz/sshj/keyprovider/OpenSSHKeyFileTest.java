@@ -335,7 +335,7 @@ public class OpenSSHKeyFileTest {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keyformats/ecdsa_opensshv1"));
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("ECDSA"));
+        assertThat(aPrivate.getAlgorithm(), equalTo("EC"));
     }
 
     private static final String OPENSSHV1_CERT_DIR = "src/itest/resources/keyfiles/certificates/";
@@ -361,7 +361,7 @@ public class OpenSSHKeyFileTest {
     @Test
     public void shouldLoadECDSACertificateAsOpenSSHV1() throws IOException {
         assertOpenSSHV1CertificateLoaded("id_ecdsa_256_rfc4716_signed_by_ecdsa",
-                KeyType.ECDSA256_CERT, "ECDSA");
+                KeyType.ECDSA256_CERT, "EC");
     }
 
     private void assertOpenSSHV1CertificateLoaded(String name, KeyType expectedType, String expectedPrivateAlgorithm)

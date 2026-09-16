@@ -54,7 +54,7 @@ public class ECDSAKeyFactory {
         final ECParameterSpec parameterSpec = getParameterSpec(ecdsaCurve);
         final ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(privateKeyInteger, parameterSpec);
 
-        final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA);
+        final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.EC_KEYSTORE);
         return keyFactory.generatePrivate(privateKeySpec);
     }
 
@@ -73,7 +73,7 @@ public class ECDSAKeyFactory {
         final ECParameterSpec parameterSpec = getParameterSpec(ecdsaCurve);
         final ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(point, parameterSpec);
 
-        final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.ECDSA);
+        final KeyFactory keyFactory = SecurityUtils.getKeyFactory(KeyAlgorithm.EC_KEYSTORE);
         return keyFactory.generatePublic(publicKeySpec);
     }
 
