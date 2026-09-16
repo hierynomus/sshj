@@ -35,6 +35,8 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -88,6 +90,8 @@ public final class TransportImpl
     private final Decoder decoder;
 
     private KeyAlgorithm hostKeyAlgorithm;
+
+    private List<String> serverSigAlgs = Collections.emptyList();
 
     private final Event<TransportException> serviceAccept;
 
@@ -514,7 +518,7 @@ public final class TransportImpl
                     gotServiceAccept();
                     break;
                 case EXT_INFO:
-                    log.debug("Received SSH_MSG_EXT_INFO");
+                    gotExtInfo(buf);
                     break;
                 case USERAUTH_BANNER:
                     log.debug("Received USERAUTH_BANNER");
@@ -536,6 +540,27 @@ public final class TransportImpl
             final boolean display = buf.readBoolean();
             final String message = buf.readString();
             log.debug("Received SSH_MSG_DEBUG (display={}) '{}'", display, message);
+        } catch (Buffer.BufferException be) {
+            throw new TransportException(be);
+        }
+    }
+
+    private void gotExtInfo(SSHPacket buf)
+            throws TransportException {
+        try {
+            final int nrExtensions = buf.readUInt32AsInt();
+            log.debug("Received SSH_MSG_EXT_INFO with {} extension(s)", nrExtensions);
+            for (int i = 0; i < nrExtensions; i++) {
+                final String extensionName = buf.readString();
+                final String extensionValue = buf.readString(); // always consumed, even if name is unknown
+                if ("server-sig-algs".equals(extensionName)) {
+                    serverSigAlgs = Arrays.asList(extensionValue.split(","));
+                    log.debug("Server supports signature algorithms: {}", serverSigAlgs);
+                }
+                // Other extensions (delay-compression, no-flow-control, elevation, ...) are
+                // intentionally skipped; their value has already been read above so buffer
+                // position stays correct for the remaining pairs.
+            }
         } catch (Buffer.BufferException be) {
             throw new TransportException(be);
         }
@@ -668,5 +693,10 @@ public final class TransportImpl
         if (available.isEmpty())
             throw new TransportException("Cannot find an available KeyAlgorithm for type " + keyType);
         return available;
+    }
+
+    @Override
+    public List<String> getServerSignatureAlgorithms() {
+        return serverSigAlgs;
     }
 }
