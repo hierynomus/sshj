@@ -64,6 +64,7 @@ NOTE: The built-in unix-domain socket transport requires a Java 16+ runtime. On 
 * command, subsystem and shell channels
 * local and remote port forwarding
 * scp + complete sftp version 0-3 implementation
+* SSH Extension Negotiation (https://datatracker.ietf.org/doc/html/rfc8308[RFC 8308]): advertises `ext-info-c` and uses the server's `server-sig-algs` extension to prefer public-key signature algorithms the server actually accepts during publickey authentication
 
 == Supported algorithms
 Implementations / adapters for the following algorithms are included:
