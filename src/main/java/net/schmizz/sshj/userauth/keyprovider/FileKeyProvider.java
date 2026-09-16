@@ -28,13 +28,17 @@ public interface FileKeyProvider
 
     void init(File location, PasswordFinder pwdf);
 
+    void init(File privateKey, File publicKey);
+
+    void init(File privateKey, File publicKey, PasswordFinder pwdf);
+
     void init(Reader location);
+
+    void init(Reader location, PasswordFinder pwdf);
 
     void init(Reader privateKey, Reader publicKey);
 
     void init(Reader privateKey, Reader publicKey, PasswordFinder pwdf);
-
-    void init(Reader location, PasswordFinder pwdf);
 
     void init(String privateKey, String publicKey);
 
