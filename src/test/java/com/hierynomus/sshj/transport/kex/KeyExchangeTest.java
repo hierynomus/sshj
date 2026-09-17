@@ -23,6 +23,7 @@ import net.schmizz.sshj.common.Factory;
 import net.schmizz.sshj.transport.kex.DHGexSHA1;
 import net.schmizz.sshj.transport.kex.DHGexSHA256;
 import net.schmizz.sshj.transport.kex.ECDHNistP;
+import net.schmizz.sshj.transport.kex.MLKEM768X25519SHA256;
 import net.schmizz.sshj.transport.random.JCERandom;
 import net.schmizz.sshj.transport.random.SingletonRandomFactory;
 import org.apache.sshd.common.kex.BuiltinDHFactories;
@@ -58,6 +59,7 @@ public class KeyExchangeTest {
                 { DHGServer.newFactory(BuiltinDHFactories.dhg16_512), DHGroups.Group16SHA512() },
                 { DHGServer.newFactory(BuiltinDHFactories.dhg17_512), DHGroups.Group17SHA512() },
                 { DHGServer.newFactory(BuiltinDHFactories.dhg18_512), DHGroups.Group18SHA512() },
+                { DHGServer.newFactory(BuiltinDHFactories.mlkem768x25519), new MLKEM768X25519SHA256.Factory() },
         });
     }
 

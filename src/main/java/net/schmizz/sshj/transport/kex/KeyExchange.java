@@ -15,6 +15,7 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 import net.schmizz.sshj.transport.Transport;
@@ -72,5 +73,20 @@ public interface KeyExchange {
      */
     boolean next(Message msg, SSHPacket buffer)
             throws GeneralSecurityException, TransportException;
+
+    /**
+     * Encode the shared secret K and append it to the given buffer when computing
+     * the exchange hash and deriving session keys.
+     * <p>
+     * Most key exchange methods encode K as an SSH {@code mpint} (RFC 4253). PQ/T
+     * hybrid methods such as {@code mlkem768x25519-sha256} encode K as an SSH
+     * {@code string} (a fixed-length byte array) per the IETF draft
+     * {@code draft-kampanakis-curdle-ssh-pq-ke}. Implementations that use a
+     * non-default encoding override this method.
+     * </p>
+     */
+    default void putSharedSecret(Buffer.PlainBuffer buffer) {
+        buffer.putMPInt(getK());
+    }
 
 }

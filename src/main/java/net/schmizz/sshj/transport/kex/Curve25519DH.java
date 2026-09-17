@@ -34,7 +34,8 @@ public class Curve25519DH extends DHBase {
 
     private static final String ALGORITHM = "X25519";
 
-    private static final int KEY_LENGTH = 32;
+    /** Length in bytes of an X25519 public key and of the X25519 shared secret. */
+    public static final int KEY_LENGTH = 32;
 
     private int encodedKeyLength;
 
@@ -42,6 +43,11 @@ public class Curve25519DH extends DHBase {
 
     // Algorithm Identifier is set on Key Agreement Initialization
     private byte[] algorithmId = new byte[KEY_LENGTH];
+
+    // Raw shared secret bytes captured in computeK; preserved alongside the BigInteger so
+    // callers that need the fixed-length byte form (e.g. PQ/T hybrid key exchanges) can
+    // obtain it without having to deal with mpint sign-bit padding.
+    private byte[] sharedSecretBytes;
 
     public Curve25519DH() {
         super(ALGORITHM, ALGORITHM);
@@ -61,8 +67,21 @@ public class Curve25519DH extends DHBase {
 
         agreement.doPhase(generatedPeerPublicKey, true);
         final byte[] sharedSecretKey = agreement.generateSecret();
+        sharedSecretBytes = sharedSecretKey;
         final BigInteger sharedSecretNumber = new BigInteger(BigInteger.ONE.signum(), sharedSecretKey);
         setK(sharedSecretNumber);
+    }
+
+    /**
+     * Returns the raw bytes of the most recently computed X25519 shared secret, i.e. the
+     * unmodified output of the underlying {@link javax.crypto.KeyAgreement}. For X25519
+     * the length is always {@value #KEY_LENGTH} bytes.
+     *
+     * @return the shared secret bytes, or {@code null} if {@link #computeK(byte[])} has
+     *         not been invoked yet.
+     */
+    public byte[] getSharedSecretBytes() {
+        return sharedSecretBytes;
     }
 
     /**
