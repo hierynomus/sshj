@@ -41,7 +41,7 @@ scmVersion {
 project.version = scmVersion.version
 
 compileJava {
-  options.release = 17
+  options.release = 8
 }
 
 configurations.implementation.transitive = false
