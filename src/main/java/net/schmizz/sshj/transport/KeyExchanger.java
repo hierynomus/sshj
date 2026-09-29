@@ -27,7 +27,6 @@ import net.schmizz.sshj.transport.verification.AlgorithmsVerifier;
 import net.schmizz.sshj.transport.verification.HostKeyVerifier;
 import org.slf4j.Logger;
 
-import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 import java.util.*;
@@ -309,9 +308,11 @@ final class KeyExchanger
      *
      * @return the resized key
      */
-    private static byte[] resizedKey(byte[] E, int blockSize, Digest hash, BigInteger K, byte[] H) {
+    private static byte[] resizedKey(byte[] E, int blockSize, Digest hash, KeyExchange kex, byte[] H) {
         while (blockSize > E.length) {
-            Buffer.PlainBuffer buffer = new Buffer.PlainBuffer().putMPInt(K).putRawBytes(H).putRawBytes(E);
+            Buffer.PlainBuffer buffer = new Buffer.PlainBuffer();
+            kex.putSharedSecret(buffer);
+            buffer.putRawBytes(H).putRawBytes(E);
             hash.update(buffer.array(), 0, buffer.available());
             byte[] foo = hash.digest();
             byte[] bar = new byte[E.length + foo.length];
@@ -333,9 +334,9 @@ final class KeyExchanger
             // session id is 'H' from the first key exchange and does not change thereafter
             sessionID = H;
 
-        final Buffer.PlainBuffer hashInput = new Buffer.PlainBuffer()
-                .putMPInt(kex.getK())
-                .putRawBytes(H)
+        final Buffer.PlainBuffer hashInput = new Buffer.PlainBuffer();
+        kex.putSharedSecret(hashInput);
+        hashInput.putRawBytes(H)
                 .putByte((byte) 0) // <placeholder>
                 .putRawBytes(sessionID);
         final int pos = hashInput.available() - sessionID.length - 1; // Position of <placeholder>
@@ -367,13 +368,13 @@ final class KeyExchanger
         final Cipher cipher_C2S = Factory.Named.Util.create(transport.getConfig().getCipherFactories(),
                                                             negotiatedAlgs.getClient2ServerCipherAlgorithm());
         cipher_C2S.init(Cipher.Mode.Encrypt,
-                        resizedKey(encryptionKey_C2S, cipher_C2S.getBlockSize(), hash, kex.getK(), kex.getH()),
+                        resizedKey(encryptionKey_C2S, cipher_C2S.getBlockSize(), hash, kex, kex.getH()),
                         initialIV_C2S);
 
         final Cipher cipher_S2C = Factory.Named.Util.create(transport.getConfig().getCipherFactories(),
                                                             negotiatedAlgs.getServer2ClientCipherAlgorithm());
         cipher_S2C.init(Cipher.Mode.Decrypt,
-                        resizedKey(encryptionKey_S2C, cipher_S2C.getBlockSize(), hash, kex.getK(), kex.getH()),
+                        resizedKey(encryptionKey_S2C, cipher_S2C.getBlockSize(), hash, kex, kex.getH()),
                         initialIV_S2C);
 
         /*
@@ -386,14 +387,14 @@ final class KeyExchanger
         if(cipher_C2S.getAuthenticationTagSize() == 0) {
             mac_C2S = Factory.Named.Util.create(transport.getConfig().getMACFactories(), negotiatedAlgs
                     .getClient2ServerMACAlgorithm());
-            mac_C2S.init(resizedKey(integrityKey_C2S, mac_C2S.getBlockSize(), hash, kex.getK(), kex.getH()));
+            mac_C2S.init(resizedKey(integrityKey_C2S, mac_C2S.getBlockSize(), hash, kex, kex.getH()));
         }
 
         MAC mac_S2C = null;
         if(cipher_S2C.getAuthenticationTagSize() == 0) {
             mac_S2C  = Factory.Named.Util.create(transport.getConfig().getMACFactories(),
                     negotiatedAlgs.getServer2ClientMACAlgorithm());
-            mac_S2C.init(resizedKey(integrityKey_S2C, mac_S2C.getBlockSize(), hash, kex.getK(), kex.getH()));
+            mac_S2C.init(resizedKey(integrityKey_S2C, mac_S2C.getBlockSize(), hash, kex, kex.getH()));
         }
 
         final Compression compression_S2C =
