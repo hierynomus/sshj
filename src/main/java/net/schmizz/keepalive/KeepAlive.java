@@ -55,6 +55,8 @@ public abstract class KeepAlive extends Thread {
 
     /**
      * Set KeepAlive interval in seconds
+     * Must be set BEFORE connect(): the keep-alive thread starts during connect() and only
+     * if the interval is already > 0
      *
      * @param keepAliveInterval KeepAlive interval in seconds
      */

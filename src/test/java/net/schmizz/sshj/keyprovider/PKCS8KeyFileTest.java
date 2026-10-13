@@ -84,6 +84,15 @@ public class PKCS8KeyFileTest {
     }
 
     @Test
+    public void testPkcs8RsaEncryptedPBES1() throws IOException {
+        final PKCS8KeyFile provider = new PKCS8KeyFile();
+        final PasswordFinder passwordFinder = PasswordUtils.createOneOff(KEY_PASSPHRASE.toCharArray());
+        provider.init(getFile("pkcs8-rsa-2048-encrypted-pbe-sha1-3des"), passwordFinder);
+        assertEquals(KeyAlgorithm.RSA, provider.getPublic().getAlgorithm());
+        assertEquals(KeyAlgorithm.RSA, provider.getPrivate().getAlgorithm());
+    }
+
+    @Test
     public void testPkcs8RsaEncryptedIncorrectPassword() {
         final PKCS8KeyFile provider = new PKCS8KeyFile();
         final PasswordFinder passwordFinder = PasswordUtils.createOneOff(INCORRECT_PASSPHRASE.toCharArray());

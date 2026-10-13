@@ -24,6 +24,10 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * {@link InputStream} for channels. Can {@link #receive(byte[], int, int) receive} data into its buffer for serving to
@@ -38,25 +42,37 @@ public final class ChannelInputStream
     private final Channel chan;
     private final Transport trans;
     private final Window.Local win;
+    private final int timeoutMs;
     private final CircularBuffer.PlainCircularBuffer buf;
+    private final ReentrantLock lock = new ReentrantLock();
+    private final Condition dataArrived = lock.newCondition();
     private final byte[] b = new byte[1];
 
     private boolean eof;
     private SSHException error;
 
+    /** Creates a non-timeout channel input stream. Reads will block indefinitely until data arrives or EOF. */
     public ChannelInputStream(Channel chan, Transport trans, Window.Local win) {
+        this(chan, trans, win, 0);
+    }
+
+    public ChannelInputStream(Channel chan, Transport trans, Window.Local win, int timeoutMs) {
         this.chan = chan;
         this.log = chan.getLoggerFactory().getLogger(getClass());
         this.trans = trans;
         this.win = win;
+        this.timeoutMs = timeoutMs;
         this.buf = new CircularBuffer.PlainCircularBuffer(
             chan.getLocalMaxPacketSize(), trans.getConfig().getMaxCircularBufferSize());
     }
 
     @Override
     public int available() {
-        synchronized (buf) {
+        lock.lock();
+        try {
             return buf.available();
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -66,18 +82,29 @@ public final class ChannelInputStream
     }
 
     public void eof() {
-        synchronized (buf) {
+        lock.lock();
+        try {
             if (!eof) {
                 eof = true;
-                buf.notifyAll();
+                dataArrived.signalAll();
             }
+        } finally {
+            lock.unlock();
         }
     }
 
     @Override
-    public synchronized void notifyError(SSHException error) {
-        this.error = error;
-        eof();
+    public void notifyError(SSHException error) {
+        lock.lock();
+        try {
+            if (!eof) {
+                this.error = error;
+                eof = true;
+                dataArrived.signalAll();
+            }
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -91,11 +118,9 @@ public final class ChannelInputStream
     @Override
     public int read(byte[] b, int off, int len)
             throws IOException {
-        synchronized (buf) {
-            for (; ; ) {
-                if (buf.available() > 0) {
-                    break;
-                }
+        lock.lock();
+        try {
+            while (buf.available() == 0) {
                 if (eof) {
                     if (error != null) {
                         throw error;
@@ -104,32 +129,42 @@ public final class ChannelInputStream
                     }
                 }
                 try {
-                    buf.wait();
+                    if (timeoutMs > 0) {
+                        if (!dataArrived.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+                            throw new SocketTimeoutException("Timeout of " + timeoutMs + "ms while waiting for data");
+                        }
+                    } else {
+                        dataArrived.await();
+                    }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw (IOException) new InterruptedIOException().initCause(e);
                 }
             }
-            if (len > buf.available()) {
-                len = buf.available();
+            int available = buf.available();
+            if (len > available) {
+                len = available;
             }
             buf.readRawBytes(b, off, len);
 
             if (!chan.getAutoExpand()) {
                 checkWindow();
             }
+        } finally {
+            lock.unlock();
         }
 
         return len;
     }
 
     public void receive(byte[] data, int offset, int len) throws SSHException {
-        if (eof) {
-            throw new ConnectionException("Getting data on EOF'ed stream");
-        }
-        synchronized (buf) {
+        lock.lock();
+        try {
+            if (eof) {
+                throw new ConnectionException("Getting data on EOF'ed stream");
+            }
             buf.putRawBytes(data, offset, len);
-            buf.notifyAll();
+            dataArrived.signalAll();
             // Potential fix for #203 (window consumed below 0).
             // This seems to be a race condition if we receive more data, while we're already sending a SSH_MSG_CHANNEL_WINDOW_ADJUST
             // And the window has not expanded yet.
@@ -137,6 +172,8 @@ public final class ChannelInputStream
             if (chan.getAutoExpand()) {
                 checkWindow();
             }
+        } finally {
+            lock.unlock();
         }
     }
 

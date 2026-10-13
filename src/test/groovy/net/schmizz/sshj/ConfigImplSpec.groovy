@@ -84,4 +84,23 @@ class ConfigImplSpec extends Specification {
         then:
         config.keyAlgorithms == [ED25519, SSH_RSA, RSA_SHA_512, ECDSA, RSA_SHA_256]
     }
+
+    def "default timeout should be 30 seconds"() {
+        given:
+        def config = new DefaultConfig()
+
+        expect:
+        config.getTimeoutMs() == 30000
+    }
+
+    def "timeout can be set and retrieved"() {
+        given:
+        def config = new DefaultConfig()
+
+        when:
+        config.setTimeoutMs(60000)
+
+        then:
+        config.getTimeoutMs() == 60000
+    }
 }

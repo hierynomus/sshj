@@ -161,7 +161,8 @@ public class RemotePortForwarder
 
         public ForwardedTCPIPChannel(Connection conn,
                                      int recipient, long remoteWinSize, long remoteMaxPacketSize,
-                                     Forward fwd, String origIP, int origPort) {
+                                     Forward fwd, String origIP, int origPort)
+                throws ConnectionException {
             super(conn, TYPE, recipient, remoteWinSize, remoteMaxPacketSize, origIP, origPort);
             this.fwd = fwd;
         }

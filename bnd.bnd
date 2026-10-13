@@ -1,0 +1,15 @@
+Bundle-SymbolicName: com.hierynomus.sshj
+Bundle-Description: SSHv2 library for Java
+Bundle-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+Import-Package: \
+    !net.schmizz.*, \
+    !com.hierynomus.sshj.*, \
+    javax.crypto*, \
+    com.jcraft.jzlib*;version="[1.1,2)";resolution:=optional, \
+    org.slf4j*;version="[1.7,5)", \
+    org.bouncycastle*;resolution:=optional, \
+    org.bouncycastle.jce.provider;resolution:=optional, \
+    *
+Export-Package: \
+    com.hierynomus.sshj.*;version="${Bundle-Version}", \
+    net.schmizz.*;version="${Bundle-Version}"

@@ -207,6 +207,9 @@ public class RemoteFile
 
         @Override
         public int read(byte[] into, int off, int len) throws IOException {
+            if (len == 0) {
+                return 0;
+            }
             int read = RemoteFile.this.read(fileOffset, into, off, len);
             if (read != -1) {
                 fileOffset += read;

@@ -1,0 +1,96 @@
+name-template: 'SSHJ $RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: '🔒 Security'
+    labels:
+      - 'security'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: '✨ New Features'
+    labels:
+      - 'enhancement'
+      - 'feature'
+  - title: '📦 Dependency Updates'
+    labels:
+      - 'dependencies'
+      - 'dependency-upgrade'
+  - title: '🔨 Improvements'
+    labels:
+      - 'improvement'
+      - 'refactoring'
+      - 'cleanup'
+  - title: '📝 Documentation'
+    labels:
+      - 'documentation'
+  - title: '🏗️ Infrastructure'
+    labels:
+      - 'ci'
+      - 'build'
+      - 'infrastructure'
+
+change-template: '* $TITLE (#$NUMBER) @$AUTHOR'
+change-title-escapes: '\<*_&'
+
+autolabeler:
+  - label: 'security'
+    title:
+      - '/\b(cve|security|vulnerability|exploit|terrapin)\b/i'
+  - label: 'bug'
+    title:
+      - '/\b(fix(es|ed|ing)?|bug|regression|broken|crash)\b/i'
+  - label: 'enhancement'
+    title:
+      - '/\b(add(s|ed|ing)?|support(s|ed|ing)?|implement(s|ed)?|feature)\b/i'
+  - label: 'improvement'
+    title:
+      - '/\b(refactor(ed|ing)?|clean(up)?|improv(e|es|ed|ing)|remov(e|es|ed|ing)|replac(e|es|ed|ing))\b/i'
+  - label: 'dependencies'
+    title:
+      - '/\b(upgrad(e|es|ed|ing)|bump(s|ed)?|depend(ency|encies))\b/i'
+    files:
+      - 'build.gradle'
+      - 'build-publishing.gradle'
+      - 'settings.gradle'
+      - 'gradle/**'
+      - 'mise.toml'
+      - 'gradlew'
+      - 'gradlew.bat'
+  - label: 'infrastructure'
+    files:
+      - '.github/**'
+  - label: 'documentation'
+    files:
+      - 'README.adoc'
+      - 'CONTRIBUTORS'
+      - 'NOTICE'
+      - 'LICENSE'
+      - 'LICENSE_HEADER'
+      - 'examples/**'
+
+version-resolver:
+  major:
+    labels:
+      - 'major'
+  minor:
+    labels:
+      - 'minor'
+      - 'enhancement'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'bug'
+      - 'fix'
+      - 'security'
+      - 'dependencies'
+  default: minor
+
+template: |
+  ## Changes
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

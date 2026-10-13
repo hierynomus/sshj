@@ -57,6 +57,8 @@ public class SFTPEngine
     protected int operativeVersion;
     protected final Map<String, String> serverExtensions = new HashMap<String, String>();
 
+    protected int maxUnconfirmedReads = 16;
+
     public SFTPEngine(SessionFactory ssh)
             throws SSHException {
         this(ssh, PathHelper.DEFAULT_PATH_SEPARATOR);

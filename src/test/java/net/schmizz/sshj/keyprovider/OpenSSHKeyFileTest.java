@@ -335,7 +335,74 @@ public class OpenSSHKeyFileTest {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keyformats/ecdsa_opensshv1"));
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("ECDSA"));
+        assertThat(aPrivate.getAlgorithm(), equalTo("EC"));
+    }
+
+    private static final String OPENSSHV1_CERT_DIR = "src/itest/resources/keyfiles/certificates/";
+
+    /**
+     * When a certificate is supplied alongside an {@code openssh-key-v1} private key - as a string, a
+     * stream or a {@code -cert.pub} file - it must be used as the public key. Regression test for a
+     * bug where the {@code String}/{@code Reader} {@code init} overloads checked the (always {@code
+     * null}) {@code pubKey} field instead of their {@code publicKey} argument, silently dropping it.
+     */
+    @Test
+    public void shouldLoadRSACertificateAsOpenSSHV1() throws IOException {
+        assertOpenSSHV1CertificateLoaded("id_rsa_2048_rfc4716_signed_by_rsa",
+                KeyType.RSA_CERT, "RSA");
+    }
+
+    @Test
+    public void shouldLoadED25519CertificateAsOpenSSHV1() throws IOException {
+        assertOpenSSHV1CertificateLoaded("id_ed25519_384_rfc4716_signed_by_ed25519",
+                KeyType.ED25519_CERT, "Ed25519");
+    }
+
+    @Test
+    public void shouldLoadECDSACertificateAsOpenSSHV1() throws IOException {
+        assertOpenSSHV1CertificateLoaded("id_ecdsa_256_rfc4716_signed_by_ecdsa",
+                KeyType.ECDSA256_CERT, "EC");
+    }
+
+    private void assertOpenSSHV1CertificateLoaded(String name, KeyType expectedType, String expectedPrivateAlgorithm)
+            throws IOException {
+        String privateKey = OPENSSHV1_CERT_DIR + name;
+        String publicKey = privateKey + "-cert.pub";
+
+        OpenSSHKeyV1KeyFile fromString = new OpenSSHKeyV1KeyFile();
+        fromString.init(readFile(privateKey), readFile(publicKey));
+        assertCertificate(fromString, expectedType, expectedPrivateAlgorithm);
+
+        OpenSSHKeyV1KeyFile fromStream = new OpenSSHKeyV1KeyFile();
+        fromStream.init(new FileReader(privateKey), new FileReader(publicKey));
+        assertCertificate(fromStream, expectedType, expectedPrivateAlgorithm);
+
+        OpenSSHKeyV1KeyFile fromFile = new OpenSSHKeyV1KeyFile();
+        fromFile.init(new File(privateKey));
+        assertCertificate(fromFile, expectedType, expectedPrivateAlgorithm);
+
+        OpenSSHKeyV1KeyFile fromExplicitFiles = new OpenSSHKeyV1KeyFile();
+        fromExplicitFiles.init(new File(privateKey), new File(publicKey), null);
+        assertCertificate(fromExplicitFiles, expectedType, expectedPrivateAlgorithm);
+    }
+
+    private void assertCertificate(OpenSSHKeyV1KeyFile keyFile, KeyType expectedType, String expectedPrivateAlgorithm)
+            throws IOException {
+        assertEquals(expectedType, keyFile.getType());
+        assertTrue(keyFile.getPublic() instanceof Certificate, "Public key is not a certificate");
+        assertThat(keyFile.getPrivate().getAlgorithm(), equalTo(expectedPrivateAlgorithm));
+    }
+
+    /**
+     * A {@code null} public key argument means "no separate public key", so the key embedded in the
+     * private key file must be used.
+     */
+    @Test
+    public void shouldFallBackToEmbeddedPublicKeyWhenNoneSuppliedAsOpenSSHV1() throws IOException {
+        OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
+        keyFile.init(readFile("src/test/resources/keyformats/rsa_opensshv1"), null);
+        assertTrue(keyFile.getPublic() instanceof RSAPublicKey);
+        assertThat(keyFile.getPrivate().getAlgorithm(), equalTo("RSA"));
     }
 
     private void checkOpenSSHKeyV1(String key, final String password, boolean withRetry) throws IOException {
@@ -391,6 +458,61 @@ public class OpenSSHKeyFileTest {
         PublicKey pubKey = keyFile.getPublic();
         assertNotNull(pubKey);
         assertEquals("RSA", pubKey.getAlgorithm());
+    }
+
+    @Test
+    public void shouldSuccessfullyLoadSignedRSACertificateFromStream() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new FileReader("src/test/resources/keytypes/certificate/test_rsa"),
+                new FileReader("src/test/resources/keytypes/certificate/test_rsa-cert.pub"),
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        assertTrue(keyFile.getPublic() instanceof Certificate, "Public key is not a certificate");
+        assertEquals(KeyType.RSA_CERT, keyFile.getType());
+    }
+
+    /**
+     * Issue 960: a single private key can have several certificates issued against it (e.g. by
+     * different CAs), and those don't necessarily follow the {@code <name>-cert.pub} naming
+     * convention (e.g. Pritunl-Zero writes {@code <name>-cert00.pub}, {@code <name>-cert01.pub}, ...).
+     * {@code init(File, File, PasswordFinder)} lets the certificate be pointed at explicitly, by any
+     * name, rather than relying on sibling-file discovery.
+     */
+    @Test
+    public void shouldSuccessfullyLoadSignedRSACertificateFromExplicitlyNamedFile() throws IOException {
+        File arbitrarilyNamedCert = new File(temporaryFolder, "test_rsa-cert00.pub");
+        copyFile(new File("src/test/resources/keytypes/certificate/test_rsa-cert.pub"), arbitrarilyNamedCert);
+
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa"), arbitrarilyNamedCert,
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        assertTrue(keyFile.getPublic() instanceof Certificate, "Public key is not a certificate");
+        assertEquals(KeyType.RSA_CERT, keyFile.getType());
+    }
+
+    /**
+     * A {@code null} public key argument means "no separate public key", consistent with the existing
+     * {@code String}/{@code Reader} overloads: the key embedded in the private key file is used instead,
+     * rather than falling back to {@code <name>-cert.pub} sibling-file discovery.
+     */
+    @Test
+    public void shouldFallBackToEmbeddedPublicKeyWhenNoExplicitCertificateFileGiven() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa"), (File) null,
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        assertFalse(keyFile.getPublic() instanceof Certificate, "Public key should not be a certificate");
+    }
+
+    private static void copyFile(File source, File destination) throws IOException {
+        try (InputStream in = new FileInputStream(source); OutputStream out = new FileOutputStream(destination)) {
+            byte[] buf = new byte[4096];
+            int n;
+            while ((n = in.read(buf)) != -1) {
+                out.write(buf, 0, n);
+            }
+        }
     }
 
     @Test

@@ -16,6 +16,7 @@
 package net.schmizz.sshj.connection.channel.forwarded;
 
 import net.schmizz.concurrent.Event;
+import net.schmizz.sshj.common.IOUtils;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.channel.Channel;
 import net.schmizz.sshj.connection.channel.SocketStreamCopyMonitor;
@@ -55,7 +56,7 @@ public class SocketForwardingConnectListener
                 .bufSize(chan.getRemoteMaxPacketSize())
                 .spawnDaemon("soc2chan");
 
-        final Event<IOException> chan2soc = new StreamCopier(chan.getInputStream(), sock.getOutputStream(), chan.getLoggerFactory())
+        final Event<IOException> chan2soc = new StreamCopier(chan.getInputStream(), IOUtils.halfCloseOnCloseOutputStream(sock), chan.getLoggerFactory())
                 .bufSize(chan.getLocalMaxPacketSize())
                 .spawnDaemon("chan2soc");
 

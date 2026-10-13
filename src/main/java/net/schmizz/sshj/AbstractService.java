@@ -38,7 +38,7 @@ public abstract class AbstractService
     public AbstractService(String name, Transport trans) {
         this.name = name;
         this.trans = trans;
-	log = trans.getConfig().getLoggerFactory().getLogger(getClass());
+        log = trans.getConfig().getLoggerFactory().getLogger(getClass());
     }
 
     @Override
