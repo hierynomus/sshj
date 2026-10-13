@@ -97,6 +97,15 @@ public class SshServerExtension implements BeforeEachCallback, AfterEachCallback
         return client;
     }
 
+    /**
+     * create a new uncached client
+     */
+    public SSHClient createClient(Config config) {
+        SSHClient client = new SSHClient(config);
+        client.addHostKeyVerifier(fingerprint);
+        return client;
+    }
+
     public SSHClient getClient() {
         if (client != null) {
             return client;
