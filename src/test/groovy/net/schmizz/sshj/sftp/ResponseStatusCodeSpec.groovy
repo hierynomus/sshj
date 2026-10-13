@@ -35,7 +35,7 @@ class ResponseStatusCodeSpec extends Specification {
         Response.StatusCode.FAILURE                     || 4
         Response.StatusCode.BAD_MESSAGE                 || 5
         Response.StatusCode.NO_CONNECTION               || 6
-        Response.StatusCode.CONNECITON_LOST             || 7
+        Response.StatusCode.CONNECTION_LOST             || 7
         Response.StatusCode.OP_UNSUPPORTED              || 8
         Response.StatusCode.INVALID_HANDLE              || 9
         Response.StatusCode.NO_SUCH_PATH                || 10
