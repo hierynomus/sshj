@@ -28,6 +28,8 @@ public class KeyAlgorithms {
 
     public static Factory SSHRSA() { return new Factory("ssh-rsa", new SignatureRSA.FactorySSHRSA(), KeyType.RSA); }
     public static Factory SSHRSACertV01() { return new Factory("ssh-rsa-cert-v01@openssh.com", new SignatureRSA.FactoryCERT(), KeyType.RSA_CERT); }
+    public static Factory RSASHA256CertV01() { return new Factory("rsa-sha2-256-cert-v01@openssh.com", new SignatureRSA.FactoryCERTSHA256(), KeyType.RSA_CERT); }
+    public static Factory RSASHA512CertV01() { return new Factory("rsa-sha2-512-cert-v01@openssh.com", new SignatureRSA.FactoryCERTSHA512(), KeyType.RSA_CERT); }
     public static Factory RSASHA256() { return new Factory("rsa-sha2-256", new SignatureRSA.FactoryRSASHA256(), KeyType.RSA); }
     public static Factory RSASHA512() { return new Factory("rsa-sha2-512", new SignatureRSA.FactoryRSASHA512(), KeyType.RSA); }
     public static Factory SSHDSA() { return new Factory(KeyType.DSA.toString(), new SignatureDSA.Factory(), KeyType.DSA); }
