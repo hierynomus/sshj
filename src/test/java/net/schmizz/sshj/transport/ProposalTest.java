@@ -67,11 +67,12 @@ public class ProposalTest {
     @Test
     public void knownHostRsaCertificateIsMatchedByKeyType() {
         // A certificate key type is distinct from its plain key type: an "ssh-rsa-cert-v01@openssh.com"
-        // known host must prefer the certificate algorithm, not the plain rsa-sha2-* / ssh-rsa ones.
+        // known host must prefer all RSA certificate algorithms, not the plain rsa-sha2-* / ssh-rsa ones.
         List<String> algorithms = hostKeyAlgorithmsFor(
                 Collections.singletonList("ssh-rsa-cert-v01@openssh.com"));
 
-        assertEquals("ssh-rsa-cert-v01@openssh.com", algorithms.get(0));
+        assertEquals(Arrays.asList("rsa-sha2-512-cert-v01@openssh.com", "rsa-sha2-256-cert-v01@openssh.com", "ssh-rsa-cert-v01@openssh.com"),
+                algorithms.subList(0, 3));
         assertEquals(Arrays.asList("rsa-sha2-512", "rsa-sha2-256", "ssh-rsa"), onlyRsa(algorithms));
     }
 
@@ -84,7 +85,7 @@ public class ProposalTest {
     private static List<String> onlyRsa(List<String> algorithms) {
         List<String> rsa = new java.util.ArrayList<>();
         for (String algorithm : algorithms) {
-            if (algorithm.equals("ssh-rsa") || algorithm.startsWith("rsa-sha2-")) {
+            if (algorithm.equals("ssh-rsa") || algorithm.matches("rsa-sha2-\\d+")) {
                 rsa.add(algorithm);
             }
         }

@@ -146,6 +146,8 @@ public class DefaultConfig
                 KeyAlgorithms.ECDSASHANistp256(),
                 KeyAlgorithms.RSASHA512(),
                 KeyAlgorithms.RSASHA256(),
+                KeyAlgorithms.RSASHA512CertV01(),
+                KeyAlgorithms.RSASHA256CertV01(),
                 KeyAlgorithms.SSHRSACertV01(),
                 KeyAlgorithms.SSHDSSCertV01(),
                 KeyAlgorithms.SSHRSA(),
