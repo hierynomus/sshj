@@ -25,7 +25,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HeartbeaterTest {
@@ -37,6 +40,7 @@ class HeartbeaterTest {
     ArgumentCaptor<SSHPacket> sshPacketCaptor = ArgumentCaptor.forClass(SSHPacket.class);
     when(transport.write(sshPacketCaptor.capture())).thenReturn(0L);
     ConnectionImpl connection = new ConnectionImpl(transport, KeepAliveProvider.HEARTBEAT);
+    when(transport.getService()).thenReturn(connection);
 
     KeepAlive heartbeater = connection.getKeepAlive();
     assertThat(heartbeater).isInstanceOf(Heartbeater.class);
@@ -46,6 +50,19 @@ class HeartbeaterTest {
     SSHPacket sshPacket = sshPacketCaptor.getValue();
     assertThat(sshPacket.readMessageID()).isEqualTo(Message.IGNORE);
     assertThat(sshPacket.readBytes()).isNotNull();
+  }
+
+  @Test
+  void noPacketBeforeAuthentication() throws Exception {
+    Transport transport = mock(Transport.class);
+    when(transport.getConfig()).thenReturn(new DefaultConfig());
+    ConnectionImpl connection = new ConnectionImpl(transport, KeepAliveProvider.HEARTBEAT);
+    // Service is not yet connection as authentication is not completed
+    when(transport.getService()).thenReturn(null);
+
+    connection.getKeepAlive().doKeepAlive();
+
+    verify(transport, never()).write(any(SSHPacket.class));
   }
 
 }
