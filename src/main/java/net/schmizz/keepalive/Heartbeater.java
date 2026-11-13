@@ -29,6 +29,12 @@ final class Heartbeater
 
     @Override
     protected void doKeepAlive() throws TransportException {
-        conn.getTransport().write(new SSHPacket(Message.IGNORE).putString(""));
+        // Do not send before authentication completed. The first packet is otherwise sent in the window between
+        // the authentication request and processing of USERAUTH_SUCCESS. It is then not compressed, but a server
+        // using delayed compression (zlib@openssh.com) already expects compressed packets and disconnects.
+        // The service is set after delayed compression is put in force.
+        if (conn.equals(conn.getTransport().getService())) {
+            conn.getTransport().write(new SSHPacket(Message.IGNORE).putString(""));
+        }
     }
 }
