@@ -15,10 +15,13 @@
  */
 package net.schmizz.sshj.keyprovider;
 
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PuTTYKeyFile;
 import net.schmizz.sshj.util.CorruptBase64;
+import net.schmizz.sshj.userauth.password.PasswordFinder;
+import net.schmizz.sshj.userauth.password.Resource;
 import net.schmizz.sshj.util.UnitTestPasswordFinder;
 import org.junit.jupiter.api.Test;
 
@@ -542,6 +545,60 @@ public class PuTTYKeyFileTest {
             assertNotNull(key.getPublic());
             assertNull(key.getPrivate());
         });
+    }
+
+    @Test
+    public void testWrongPassphraseRetriesV2() throws Exception {
+        CountingPasswordFinder finder = new CountingPasswordFinder("123456", 2, true);
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(ppk1024_passphrase), finder);
+        assertNotNull(key.getPrivate());
+        assertEquals(3, finder.requests);
+    }
+
+    @Test
+    public void testWrongPassphraseRetriesV3() throws Exception {
+        CountingPasswordFinder finder = new CountingPasswordFinder("changeit", 1, true);
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(v3_rsa_argon2id), finder);
+        assertNotNull(key.getPrivate());
+        assertEquals(2, finder.requests);
+    }
+
+    @Test
+    public void testWrongPassphraseNoRetry() throws Exception {
+        CountingPasswordFinder finder = new CountingPasswordFinder("123456", 1, false);
+        PuTTYKeyFile key = new PuTTYKeyFile();
+        key.init(new StringReader(ppk1024_passphrase), finder);
+        assertThrows(KeyDecryptionFailedException.class, key::getPrivate);
+        assertEquals(1, finder.requests);
+    }
+
+    /**
+     * Returns a wrong passphrase for the first {@code wrongAttempts} requests, then the correct one.
+     */
+    private static class CountingPasswordFinder implements PasswordFinder {
+        private final String correct;
+        private final int wrongAttempts;
+        private final boolean retry;
+        int requests;
+
+        CountingPasswordFinder(String correct, int wrongAttempts, boolean retry) {
+            this.correct = correct;
+            this.wrongAttempts = wrongAttempts;
+            this.retry = retry;
+        }
+
+        @Override
+        public char[] reqPassword(Resource<?> resource) {
+            requests++;
+            return (requests > wrongAttempts ? correct : "wrong-passphrase").toCharArray();
+        }
+
+        @Override
+        public boolean shouldRetry(Resource<?> resource) {
+            return retry;
+        }
     }
 
     @Test
