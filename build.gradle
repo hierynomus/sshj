@@ -41,19 +41,36 @@ scmVersion {
 project.version = scmVersion.version
 
 compileJava {
-  options.release = 17
+  options.release = 8
 }
 
 configurations.implementation.transitive = false
 
-def bouncycastleVersion = "1.84"
+def bouncycastleVersion = "1.87"
 def sshdVersion = "2.15.0"
+// Run tests without Bouncy Castle on the classpath: ./gradlew test -PwithBouncyCastle=false
+def withBouncyCastle = providers.gradleProperty("withBouncyCastle").map { it.toBoolean() }.getOrElse(true)
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+    registerFeature('bouncyCastle') {
+        usingSourceSet(sourceSets.main)
+    }
+}
+
+if (!withBouncyCastle) {
+  // The bouncyCastle feature shares the main source set, so it leaks onto the test runtime classpath; strip it.
+  configurations.matching { it.name.startsWith("test") && it.name.endsWith("RuntimeClasspath") }.configureEach {
+    exclude group: "org.bouncycastle"
+  }
+}
 
 dependencies {
   implementation "org.slf4j:slf4j-api:2.0.17"
-  implementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
-  implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
   implementation "com.hierynomus:asn-one:0.6.0"
+  bouncyCastleImplementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
+  bouncyCastleImplementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
 }
 
 license {
@@ -66,11 +83,6 @@ license {
     '**/com/hierynomus/sshj/userauth/keyprovider/bcrypt/*.java',
     '**/files/test_file_*.txt',
   ])
-}
-
-java {
-	withJavadocJar()
-	withSourcesJar()
 }
 
 if (!JavaVersion.current().isJava9Compatible()) {
@@ -99,6 +111,10 @@ testing {
         implementation "org.apache.sshd:sshd-sftp:$sshdVersion"
         implementation "org.apache.sshd:sshd-scp:$sshdVersion"
         implementation "ch.qos.logback:logback-classic:1.5.18"
+        if (withBouncyCastle) {
+          implementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
+          implementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
+        }
       }
 
       targets {
@@ -133,7 +149,7 @@ testing {
     integrationTest(JvmTestSuite) {
       dependencies {
         implementation project()
-        implementation platform('org.testcontainers:testcontainers-bom:1.20.6')
+        implementation platform('org.testcontainers:testcontainers-bom:1.21.4')
         implementation 'org.testcontainers:junit-jupiter'
       }
 
@@ -263,7 +279,10 @@ project.plugins.withType(MavenPublishPlugin).all {
 
 nexusPublishing {
 	repositories {
-		sonatype()    //sonatypeUsername and sonatypePassword properties are used automatically
+		sonatype {
+			nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+			snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+		}
 	}
 
 	connectTimeout = Duration.ofMinutes(3)

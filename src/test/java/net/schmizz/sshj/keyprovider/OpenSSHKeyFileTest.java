@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.keyprovider;
 
+import com.hierynomus.sshj.test.BouncyCastle;
+import org.junit.jupiter.api.condition.DisabledIf;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.userauth.certificate.Certificate;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
@@ -133,6 +135,7 @@ public class OpenSSHKeyFileTest {
     @TempDir
     public File temporaryFolder;
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void blankingOut()
             throws IOException, GeneralSecurityException {
@@ -145,6 +148,7 @@ public class OpenSSHKeyFileTest {
         assertArrayEquals(blank, correctPassphrase);
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void getters()
             throws IOException, GeneralSecurityException {
@@ -156,6 +160,7 @@ public class OpenSSHKeyFileTest {
         assertEquals(KeyUtil.newDSAPrivateKey(x, p, q, g), dsa.getPrivate());
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void retries()
             throws IOException, GeneralSecurityException {
@@ -164,6 +169,7 @@ public class OpenSSHKeyFileTest {
         assertEquals(KeyUtil.newDSAPrivateKey(x, p, q, g), dsa.getPrivate());
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void fromString()
             throws IOException, GeneralSecurityException {
@@ -222,7 +228,7 @@ public class OpenSSHKeyFileTest {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keytypes/test_ed25519"));
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("Ed25519"));
+        assertAlgorithm(aPrivate, "Ed25519");
     }
 
     @Test
@@ -265,6 +271,7 @@ public class OpenSSHKeyFileTest {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_aes256-gcm", "sshjtest", true);
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void shouldLoadProtectedEd25519PrivateKeyChaCha20Poly1305() throws IOException {
         checkOpenSSHKeyV1("src/test/resources/keytypes/ed25519_chacha20-poly1305", "sshjtest", false);
@@ -335,7 +342,7 @@ public class OpenSSHKeyFileTest {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         keyFile.init(new File("src/test/resources/keyformats/ecdsa_opensshv1"));
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("ECDSA"));
+        assertThat(aPrivate.getAlgorithm(), equalTo("EC"));
     }
 
     private static final String OPENSSHV1_CERT_DIR = "src/itest/resources/keyfiles/certificates/";
@@ -361,7 +368,7 @@ public class OpenSSHKeyFileTest {
     @Test
     public void shouldLoadECDSACertificateAsOpenSSHV1() throws IOException {
         assertOpenSSHV1CertificateLoaded("id_ecdsa_256_rfc4716_signed_by_ecdsa",
-                KeyType.ECDSA256_CERT, "ECDSA");
+                KeyType.ECDSA256_CERT, "EC");
     }
 
     private void assertOpenSSHV1CertificateLoaded(String name, KeyType expectedType, String expectedPrivateAlgorithm)
@@ -380,13 +387,17 @@ public class OpenSSHKeyFileTest {
         OpenSSHKeyV1KeyFile fromFile = new OpenSSHKeyV1KeyFile();
         fromFile.init(new File(privateKey));
         assertCertificate(fromFile, expectedType, expectedPrivateAlgorithm);
+
+        OpenSSHKeyV1KeyFile fromExplicitFiles = new OpenSSHKeyV1KeyFile();
+        fromExplicitFiles.init(new File(privateKey), new File(publicKey), null);
+        assertCertificate(fromExplicitFiles, expectedType, expectedPrivateAlgorithm);
     }
 
     private void assertCertificate(OpenSSHKeyV1KeyFile keyFile, KeyType expectedType, String expectedPrivateAlgorithm)
             throws IOException {
         assertEquals(expectedType, keyFile.getType());
         assertTrue(keyFile.getPublic() instanceof Certificate, "Public key is not a certificate");
-        assertThat(keyFile.getPrivate().getAlgorithm(), equalTo(expectedPrivateAlgorithm));
+        assertAlgorithm(keyFile.getPrivate(), expectedPrivateAlgorithm);
     }
 
     /**
@@ -401,15 +412,27 @@ public class OpenSSHKeyFileTest {
         assertThat(keyFile.getPrivate().getAlgorithm(), equalTo("RSA"));
     }
 
+    /**
+     * Bouncy Castle names Ed25519 keys "Ed25519", while the JCA provider in Java 15+ names them "EdDSA".
+     */
+    private static void assertAlgorithm(PrivateKey key, String expected) {
+        final String actual = key.getAlgorithm();
+        if ("Ed25519".equals(expected) && "EdDSA".equals(actual)) {
+            return;
+        }
+        assertThat(actual, equalTo(expected));
+    }
+
     private void checkOpenSSHKeyV1(String key, final String password, boolean withRetry) throws IOException {
         OpenSSHKeyV1KeyFile keyFile = new OpenSSHKeyV1KeyFile();
         WipeTrackingPasswordFinder pwf = new WipeTrackingPasswordFinder(password, withRetry);
         keyFile.init(new File(key), pwf);
         PrivateKey aPrivate = keyFile.getPrivate();
-        assertThat(aPrivate.getAlgorithm(), equalTo("Ed25519"));
+        assertAlgorithm(aPrivate, "Ed25519");
         pwf.assertWiped();
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void shouldSuccessfullyLoadSignedRSAPublicKey() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
@@ -444,6 +467,7 @@ public class OpenSSHKeyFileTest {
 
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void shouldSuccessfullyLoadSignedRSAPublicKeyFromStream() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
@@ -456,6 +480,7 @@ public class OpenSSHKeyFileTest {
         assertEquals("RSA", pubKey.getAlgorithm());
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void shouldSuccessfullyLoadSignedRSACertificateFromStream() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
@@ -465,6 +490,52 @@ public class OpenSSHKeyFileTest {
         assertNotNull(keyFile.getPrivate());
         assertTrue(keyFile.getPublic() instanceof Certificate, "Public key is not a certificate");
         assertEquals(KeyType.RSA_CERT, keyFile.getType());
+    }
+
+    /**
+     * Issue 960: a single private key can have several certificates issued against it (e.g. by
+     * different CAs), and those don't necessarily follow the {@code <name>-cert.pub} naming
+     * convention (e.g. Pritunl-Zero writes {@code <name>-cert00.pub}, {@code <name>-cert01.pub}, ...).
+     * {@code init(File, File, PasswordFinder)} lets the certificate be pointed at explicitly, by any
+     * name, rather than relying on sibling-file discovery.
+     */
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
+    @Test
+    public void shouldSuccessfullyLoadSignedRSACertificateFromExplicitlyNamedFile() throws IOException {
+        File arbitrarilyNamedCert = new File(temporaryFolder, "test_rsa-cert00.pub");
+        copyFile(new File("src/test/resources/keytypes/certificate/test_rsa-cert.pub"), arbitrarilyNamedCert);
+
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa"), arbitrarilyNamedCert,
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        assertTrue(keyFile.getPublic() instanceof Certificate, "Public key is not a certificate");
+        assertEquals(KeyType.RSA_CERT, keyFile.getType());
+    }
+
+    /**
+     * A {@code null} public key argument means "no separate public key", consistent with the existing
+     * {@code String}/{@code Reader} overloads: the key embedded in the private key file is used instead,
+     * rather than falling back to {@code <name>-cert.pub} sibling-file discovery.
+     */
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
+    @Test
+    public void shouldFallBackToEmbeddedPublicKeyWhenNoExplicitCertificateFileGiven() throws IOException {
+        FileKeyProvider keyFile = new OpenSSHKeyFile();
+        keyFile.init(new File("src/test/resources/keytypes/certificate/test_rsa"), (File) null,
+                PasswordUtils.createOneOff(correctPassphrase));
+        assertNotNull(keyFile.getPrivate());
+        assertFalse(keyFile.getPublic() instanceof Certificate, "Public key should not be a certificate");
+    }
+
+    private static void copyFile(File source, File destination) throws IOException {
+        try (InputStream in = new FileInputStream(source); OutputStream out = new FileOutputStream(destination)) {
+            byte[] buf = new byte[4096];
+            int n;
+            while ((n = in.read(buf)) != -1) {
+                out.write(buf, 0, n);
+            }
+        }
     }
 
     @Test
@@ -480,6 +551,7 @@ public class OpenSSHKeyFileTest {
         assertTrue(parseDate("9999-04-11 18:09:27 -0400").before(certificate.getValidBefore()));
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void shouldSuccessfullyLoadSignedDSAPublicKey() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();
@@ -508,6 +580,7 @@ public class OpenSSHKeyFileTest {
         assertEquals("", certificate.getExtensions().get("permit-pty"));
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void shouldSuccessfullyLoadSignedDSAPublicKeyFromStream() throws IOException {
         FileKeyProvider keyFile = new OpenSSHKeyFile();

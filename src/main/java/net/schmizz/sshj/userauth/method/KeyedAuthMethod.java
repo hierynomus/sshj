@@ -27,7 +27,9 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 public abstract class KeyedAuthMethod
@@ -43,9 +45,35 @@ public abstract class KeyedAuthMethod
 
     protected KeyAlgorithm getPublicKeyAlgorithm(KeyType keyType) throws TransportException {
         if (available == null) {
-            available = new LinkedList<>(params.getTransport().getClientKeyAlgorithms(keyType));
+            List<KeyAlgorithm> clientAlgorithms = new ArrayList<>(params.getTransport().getClientKeyAlgorithms(keyType));
+            List<String> serverSigAlgs = params.getTransport().getServerSignatureAlgorithms();
+            if (!serverSigAlgs.isEmpty()) {
+                clientAlgorithms = reorderByServerPreference(clientAlgorithms, serverSigAlgs);
+            }
+            available = new LinkedList<>(clientAlgorithms);
         }
         return available.peek();
+    }
+
+    /**
+     * Move the {@link KeyAlgorithm}s the server advertised via {@code server-sig-algs} (RFC
+     * 8308) to the front, so the first publickey auth attempt is more likely to match what the
+     * server accepts - without ever dropping a client-configured candidate, since the server's
+     * list may be incomplete or reference algorithms this client doesn't recognize.
+     */
+    private static List<KeyAlgorithm> reorderByServerPreference(
+            List<KeyAlgorithm> clientAlgorithms, List<String> serverSigAlgs) {
+        List<KeyAlgorithm> preferred = new ArrayList<>();
+        List<KeyAlgorithm> fallback = new ArrayList<>();
+        for (KeyAlgorithm ka : clientAlgorithms) {
+            (serverSigAlgs.contains(ka.getKeyAlgorithm()) ? preferred : fallback).add(ka);
+        }
+        if (preferred.isEmpty()) {
+            return clientAlgorithms; // no overlap: leave the original order untouched
+        }
+        List<KeyAlgorithm> reordered = new ArrayList<>(preferred);
+        reordered.addAll(fallback);
+        return reordered;
     }
 
     @Override

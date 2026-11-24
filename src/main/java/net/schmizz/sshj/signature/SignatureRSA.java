@@ -87,6 +87,36 @@ public class SignatureRSA
 
     }
 
+    /** A named factory for RSA {@link Signature} with a SHA-256 signature for an RSA certificate */
+    public static class FactoryCERTSHA256
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureRSA("SHA256withRSA", KeyType.RSA_CERT, "rsa-sha2-256");
+        }
+
+        @Override
+        public String getName() {
+            return "rsa-sha2-256-cert-v01@openssh.com";
+        }
+    }
+
+    /** A named factory for RSA {@link Signature} with a SHA-512 signature for an RSA certificate */
+    public static class FactoryCERTSHA512
+            implements net.schmizz.sshj.common.Factory.Named<Signature> {
+
+        @Override
+        public Signature create() {
+            return new SignatureRSA("SHA512withRSA", KeyType.RSA_CERT, "rsa-sha2-512");
+        }
+
+        @Override
+        public String getName() {
+            return "rsa-sha2-512-cert-v01@openssh.com";
+        }
+    }
+
     private final KeyType keyType;
 
 

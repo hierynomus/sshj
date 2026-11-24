@@ -16,6 +16,7 @@
 package net.schmizz.sshj.userauth.keyprovider;
 
 import com.hierynomus.sshj.common.KeyAlgorithm;
+import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import net.schmizz.sshj.common.*;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
@@ -227,23 +228,31 @@ class PuTTYKeyPairParser implements KeyPairParser {
             // Retrieve keys from payload
             publicKey = Base64Decoder.decode(payload.get("Public-Lines"));
             if (this.isEncrypted()) {
-                final char[] passphrase;
-                if (pwdf != null) {
-                    passphrase = pwdf.reqPassword(resource);
-                } else {
-                    passphrase = "".toCharArray();
-                }
-                try {
-                    privateKey = this.decrypt(Base64Decoder.decode(payload.get("Private-Lines")), passphrase);
-                    Mac mac;
-                    if (this.keyFileVersion <= 2) {
-                        mac = this.prepareVerifyMacV2(passphrase);
+                final byte[] encryptedPrivateKey = Base64Decoder.decode(payload.get("Private-Lines"));
+                while (true) {
+                    final char[] passphrase;
+                    if (pwdf != null) {
+                        passphrase = pwdf.reqPassword(resource);
                     } else {
-                        mac = this.prepareVerifyMacV3();
+                        passphrase = "".toCharArray();
                     }
-                    this.verify(mac);
-                } finally {
-                    PasswordUtils.blankOut(passphrase);
+                    try {
+                        privateKey = this.decrypt(encryptedPrivateKey, passphrase);
+                        Mac mac;
+                        if (this.keyFileVersion <= 2) {
+                            mac = this.prepareVerifyMacV2(passphrase);
+                        } else {
+                            mac = this.prepareVerifyMacV3();
+                        }
+                        this.verify(mac);
+                        break;
+                    } catch (KeyDecryptionFailedException e) {
+                        if (pwdf == null || !pwdf.shouldRetry(resource)) {
+                            throw e;
+                        }
+                    } finally {
+                        PasswordUtils.blankOut(passphrase);
+                    }
                 }
             } else {
                 privateKey = Base64Decoder.decode(payload.get("Private-Lines"));
@@ -321,7 +330,7 @@ class PuTTYKeyPairParser implements KeyPairParser {
         final String encoded = ByteArrayUtils.toHex(mac.doFinal(out.toByteArray()));
         final String reference = headers.get("Private-MAC");
         if (!encoded.equals(reference)) {
-            throw new IOException("Invalid passphrase");
+            throw new KeyDecryptionFailedException("Invalid passphrase");
         }
     }
 
