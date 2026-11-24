@@ -70,6 +70,8 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
     /** Bouncy Castle class for detecting support of historical OpenSSL password-based decryption */
     private static final String BOUNCY_CASTLE_CLASS = "org.bouncycastle.openssl.PEMDecryptor";
 
+    private static final String PROC_TYPE_ENCRYPTED_HEADER = "Proc-Type: 4,ENCRYPTED";
+
     private static final boolean HISTORICAL_DECRYPTION_SUPPORTED = isHistoricalDecryptionSupported();
 
     private static final String PBES2_ALGORITHM = "PBES2";
@@ -105,6 +107,9 @@ public class PKCS8KeyFile extends BaseFileKeyProvider {
 
         try (BufferedReader bufferedReader = new BufferedReader(resource.getReader())) {
             final PEMKey pemKey = pemKeyReader.readPemKey(bufferedReader);
+            if (!HISTORICAL_DECRYPTION_SUPPORTED && pemKey.getHeaders().contains(PROC_TYPE_ENCRYPTED_HEADER)) {
+                throw new IOException("Decryption of PEM Key with legacy encryption requires Bouncy Castle on the classpath");
+            }
             return readKeyPair(pemKey);
         }
     }

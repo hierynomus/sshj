@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import com.hierynomus.sshj.test.BouncyCastle;
+import org.junit.jupiter.api.condition.DisabledIf;
 import net.schmizz.sshj.common.SecurityUtils;
 import net.schmizz.sshj.transport.random.JCERandom;
 import org.junit.jupiter.api.AfterEach;
@@ -63,6 +65,7 @@ public class Curve25519DHTest {
         assertEquals(KEY_LENGTH, publicKeyEncoded.length);
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testInitComputeSharedSecretKey() throws GeneralSecurityException {
         SecurityUtils.setRegisterBouncyCastle(true);
