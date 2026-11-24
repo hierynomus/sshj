@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.keyprovider;
 
+import com.hierynomus.sshj.test.BouncyCastle;
+import org.junit.jupiter.api.condition.DisabledIf;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import com.hierynomus.sshj.userauth.keyprovider.OpenSSHKeyV1KeyFile;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
@@ -471,6 +473,7 @@ public class PuTTYKeyFileTest {
         assertNotNull(key.getPublic());
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testRSAv3EncryptedKeyArgon2id() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
@@ -486,6 +489,7 @@ public class PuTTYKeyFileTest {
         assertEquals(referencePrivate.getModulus(), ((RSAPublicKey) key.getPublic()).getModulus());
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testRSAv3EncryptedKeyArgon2d() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
@@ -503,6 +507,7 @@ public class PuTTYKeyFileTest {
         assertEquals(referencePrivate.getModulus(), ((RSAPublicKey) key.getPublic()).getModulus());
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testRSAv3EncryptedKeyArgon2i() throws Exception {
         PuTTYKeyFile key = new PuTTYKeyFile();
@@ -556,6 +561,7 @@ public class PuTTYKeyFileTest {
         assertEquals(3, finder.requests);
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testWrongPassphraseRetriesV3() throws Exception {
         CountingPasswordFinder finder = new CountingPasswordFinder("changeit", 1, true);

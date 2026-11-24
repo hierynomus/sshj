@@ -11,8 +11,12 @@ on:
 
 jobs:
   build:
-    name: Build with Java 17
+    name: Build with Java 17 (Bouncy Castle ${{ matrix.bouncycastle && 'present' || 'absent' }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bouncycastle: [true, false]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Java 17
@@ -23,8 +27,9 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
-      run: ./gradlew check
+      run: ./gradlew check -PwithBouncyCastle=${{ matrix.bouncycastle }}
     - name: Codecov
+      if: matrix.bouncycastle
       uses: codecov/codecov-action@v5
 
   integration:
