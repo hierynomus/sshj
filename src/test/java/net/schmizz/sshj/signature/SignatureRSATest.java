@@ -15,11 +15,17 @@
  */
 package net.schmizz.sshj.signature;
 
+import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.common.Buffer;
+import net.schmizz.sshj.common.Factory;
 import org.junit.jupiter.api.Test;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PublicKey;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
@@ -38,6 +44,46 @@ public class SignatureRSATest {
         signature.update(msg, 0, msg.length);
 
         assertTrue(signature.verify(sig), "RSACERT signature verifies");
+    }
+
+    @Test
+    public void testRSASHA2CERTFactoryNames() {
+        assertEquals("rsa-sha2-256-cert-v01@openssh.com", new SignatureRSA.FactoryCERTSHA256().getName());
+        assertEquals("rsa-sha2-512-cert-v01@openssh.com", new SignatureRSA.FactoryCERTSHA512().getName());
+    }
+
+    @Test
+    public void testRSASHA2CERTSignaturesUseSHA2SignatureName() throws Exception {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048);
+        KeyPair pair = generator.generateKeyPair();
+        byte[] msg = "test".getBytes();
+
+        assertSignatureVerifies(new SignatureRSA.FactoryCERTSHA256(), new SignatureRSA.FactoryRSASHA256(), "rsa-sha2-256", pair, msg);
+        assertSignatureVerifies(new SignatureRSA.FactoryCERTSHA512(), new SignatureRSA.FactoryRSASHA512(), "rsa-sha2-512", pair, msg);
+    }
+
+    private void assertSignatureVerifies(Factory.Named<Signature> cert, Factory.Named<Signature> plain, String name,
+                                         KeyPair pair, byte[] msg) throws Exception {
+        Signature signer = cert.create();
+        signer.initSign(pair.getPrivate());
+        signer.update(msg, 0, msg.length);
+        assertEquals(name, signer.getSignatureName(), "Signature name in signature blob");
+        byte[] sig = new Buffer.PlainBuffer().putString(signer.getSignatureName()).putString(signer.encode(signer.sign())).getCompactData();
+
+        Signature verifier = plain.create();
+        verifier.initVerify(pair.getPublic());
+        verifier.update(msg, 0, msg.length);
+        assertTrue(verifier.verify(sig), name + " signature verifies");
+    }
+
+    @Test
+    public void testDefaultConfigPrefersSHA2CERTOverLegacy() {
+        List<String> names = Factory.Named.Util.getNames(new DefaultConfig().getKeyAlgorithms());
+        int sha512 = names.indexOf("rsa-sha2-512-cert-v01@openssh.com");
+        int sha256 = names.indexOf("rsa-sha2-256-cert-v01@openssh.com");
+        int legacy = names.indexOf("ssh-rsa-cert-v01@openssh.com");
+        assertTrue(sha512 >= 0 && sha256 > sha512 && legacy > sha256, names.toString());
     }
 
     private byte[] fromString(String string) {
