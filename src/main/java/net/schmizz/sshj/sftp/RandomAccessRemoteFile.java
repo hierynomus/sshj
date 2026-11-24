@@ -41,7 +41,7 @@ public class RandomAccessRemoteFile
 
     public int read()
             throws IOException {
-        return read(singleByte, 0, 1) == -1 ? -1 : singleByte[0];
+        return read(singleByte, 0, 1) == -1 ? -1 : singleByte[0] & 0xff;
     }
 
     public int read(byte[] b)
@@ -52,7 +52,8 @@ public class RandomAccessRemoteFile
     public int read(byte[] b, int off, int len)
             throws IOException {
         final int count = rf.read(fp, b, off, len);
-        fp += count;
+        if (count != -1)
+            fp += count;
         return count;
     }
 
@@ -229,7 +230,7 @@ public class RandomAccessRemoteFile
     public void write(byte[] b, int off, int len)
             throws IOException {
         rf.write(fp, b, off, len);
-        fp += (len - off);
+        fp += len;
     }
 
     @Override
