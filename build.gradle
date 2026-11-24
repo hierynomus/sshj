@@ -133,7 +133,7 @@ testing {
     integrationTest(JvmTestSuite) {
       dependencies {
         implementation project()
-        implementation platform('org.testcontainers:testcontainers-bom:1.20.6')
+        implementation platform('org.testcontainers:testcontainers-bom:1.21.4')
         implementation 'org.testcontainers:junit-jupiter'
       }
 
