@@ -46,7 +46,7 @@ compileJava {
 
 configurations.implementation.transitive = false
 
-def bouncycastleVersion = "1.84"
+def bouncycastleVersion = "1.87"
 def sshdVersion = "2.15.0"
 
 java {
@@ -138,7 +138,7 @@ testing {
     integrationTest(JvmTestSuite) {
       dependencies {
         implementation project()
-        implementation platform('org.testcontainers:testcontainers-bom:1.20.6')
+        implementation platform('org.testcontainers:testcontainers-bom:1.21.4')
         implementation 'org.testcontainers:junit-jupiter'
       }
 

@@ -348,9 +348,10 @@ public final class TransportImpl
 
     @Override
     public void setAuthenticated() {
-        this.authed = true;
         encoder.setAuthenticated();
         decoder.setAuthenticated();
+        // Set last: authed == true implies delayed compression is already in force.
+        this.authed = true;
     }
 
     @Override
