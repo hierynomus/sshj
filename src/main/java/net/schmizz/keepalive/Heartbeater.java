@@ -32,8 +32,7 @@ final class Heartbeater
         // Do not send before authentication completed. The first packet is otherwise sent in the window between
         // the authentication request and processing of USERAUTH_SUCCESS. It is then not compressed, but a server
         // using delayed compression (zlib@openssh.com) already expects compressed packets and disconnects.
-        // The service is set after delayed compression is put in force.
-        if (conn.equals(conn.getTransport().getService())) {
+        if (conn.getTransport().isAuthenticated()) {
             conn.getTransport().write(new SSHPacket(Message.IGNORE).putString(""));
         }
     }

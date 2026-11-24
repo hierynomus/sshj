@@ -40,7 +40,7 @@ class HeartbeaterTest {
     ArgumentCaptor<SSHPacket> sshPacketCaptor = ArgumentCaptor.forClass(SSHPacket.class);
     when(transport.write(sshPacketCaptor.capture())).thenReturn(0L);
     ConnectionImpl connection = new ConnectionImpl(transport, KeepAliveProvider.HEARTBEAT);
-    when(transport.getService()).thenReturn(connection);
+    when(transport.isAuthenticated()).thenReturn(true);
 
     KeepAlive heartbeater = connection.getKeepAlive();
     assertThat(heartbeater).isInstanceOf(Heartbeater.class);
@@ -57,8 +57,7 @@ class HeartbeaterTest {
     Transport transport = mock(Transport.class);
     when(transport.getConfig()).thenReturn(new DefaultConfig());
     ConnectionImpl connection = new ConnectionImpl(transport, KeepAliveProvider.HEARTBEAT);
-    // Service is not yet connection as authentication is not completed
-    when(transport.getService()).thenReturn(null);
+    when(transport.isAuthenticated()).thenReturn(false);
 
     connection.getKeepAlive().doKeepAlive();
 
