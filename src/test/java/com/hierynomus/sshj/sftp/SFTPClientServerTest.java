@@ -21,7 +21,10 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.FileMode;
 import net.schmizz.sshj.sftp.FileAttributes;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
+import net.schmizz.sshj.sftp.Response;
 import net.schmizz.sshj.sftp.SFTPClient;
+import net.schmizz.sshj.sftp.SFTPException;
+import net.schmizz.sshj.sftp.StatefulSFTPClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -29,10 +32,13 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -197,6 +204,113 @@ class SFTPClientServerTest {
         // third skipped by BREAK, fourth skipped by the preceding BREAK
         assertEquals(1, listingResult.size());
         assertTrue(listingResult.contains(expectedFile.get()));
+    }
+
+    @Test
+    void rmdirsShouldRemoveNestedTree() throws IOException {
+        connect();
+        Path deep = Files.createDirectories(temp.resolve("tree/a/b/c"));
+        Files.createDirectories(temp.resolve("tree/empty"));
+        Files.writeString(temp.resolve("tree/top.txt"), "top");
+        Files.writeString(temp.resolve("tree/a/mid.txt"), "mid");
+        Files.writeString(deep.resolve("deep.txt"), "deep");
+
+        sftp.rmdirs(temp.resolve("tree").toString());
+
+        assertFalse(Files.exists(temp.resolve("tree")));
+    }
+
+    @Test
+    void rmdirsShouldRemoveEmptyDirectory() throws IOException {
+        connect();
+        Path dir = Files.createDirectory(temp.resolve("emptydir"));
+
+        sftp.rmdirs(dir.toString());
+
+        assertFalse(Files.exists(dir));
+    }
+
+    @Test
+    void rmdirsShouldRemoveManyEntries() throws IOException {
+        connect();
+        Path dir = Files.createDirectory(temp.resolve("many"));
+        for (int i = 0; i < 500; i++) {
+            Files.writeString(dir.resolve("file-" + i + ".txt"), "x");
+        }
+
+        sftp.rmdirs(dir.toString());
+
+        assertFalse(Files.exists(dir));
+    }
+
+    @Test
+    void rmdirsShouldNotFollowSymlinksInsideTree() throws IOException {
+        connect();
+        Path outside = Files.createDirectory(temp.resolve("outside"));
+        Path outsideFile = Files.writeString(outside.resolve("precious.txt"), "keep me");
+        Path tree = Files.createDirectory(temp.resolve("withlink"));
+        Files.createSymbolicLink(tree.resolve("dirlink"), outside);
+        Files.createSymbolicLink(tree.resolve("filelink"), outsideFile);
+
+        sftp.rmdirs(tree.toString());
+
+        assertFalse(Files.exists(tree));
+        assertEquals("keep me", Files.readString(outsideFile));
+    }
+
+    @Test
+    void rmdirsShouldOnlyRemoveLinkWhenArgumentIsSymlinkToDirectory() throws IOException {
+        connect();
+        Path target = Files.createDirectory(temp.resolve("linktarget"));
+        Path targetFile = Files.writeString(target.resolve("keep.txt"), "keep me");
+        Path link = Files.createSymbolicLink(temp.resolve("thelink"), target);
+
+        sftp.rmdirs(link.toString());
+
+        assertFalse(Files.exists(link, LinkOption.NOFOLLOW_LINKS));
+        assertEquals("keep me", Files.readString(targetFile));
+    }
+
+    @Test
+    void rmdirsShouldRemoveRegularFile() throws IOException {
+        connect();
+        Path file = Files.writeString(temp.resolve("plain.txt"), "x");
+
+        sftp.rmdirs(file.toString());
+
+        assertFalse(Files.exists(file));
+    }
+
+    @Test
+    void rmdirsShouldFailOnMissingPath() throws IOException {
+        connect();
+        SFTPException e = assertThrows(SFTPException.class,
+                () -> sftp.rmdirs(temp.resolve("does-not-exist").toString()));
+
+        assertEquals(Response.StatusCode.NO_SUCH_FILE, e.getStatusCode());
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", "  ", "/", "//"})
+    void rmdirsShouldRefuseDangerousPaths(String path) throws IOException {
+        connect();
+        assertThrows(IllegalArgumentException.class, () -> sftp.rmdirs(path));
+    }
+
+    @Test
+    void rmdirsOnStatefulClientShouldResolveRelativePathsAgainstWorkingDirectory() throws IOException {
+        connect();
+        Path parent = Files.createDirectories(temp.resolve("cwd/sub/deeper"));
+        Files.writeString(parent.resolve("f.txt"), "x");
+        try (StatefulSFTPClient stateful = sshClient.newStatefulSFTPClient()) {
+            stateful.cd(temp.resolve("cwd").toString());
+
+            stateful.rmdirs("sub");
+        }
+
+        assertFalse(Files.exists(temp.resolve("cwd/sub")));
+        assertTrue(Files.exists(temp.resolve("cwd")));
     }
 
     private void doUpload(File src, File dest) throws IOException {

@@ -147,6 +147,56 @@ public class SFTPClient
         engine.removeDir(dirname);
     }
 
+    /**
+     * Removes {@code path} and, if it is a directory, everything beneath it (like {@code rm -r}).
+     * <p>
+     * SFTP has no recursive delete operation (in any protocol version), so this is done client-side with one
+     * request per entry, which can be slow for large trees. It is not atomic: if an error occurs, the entries
+     * removed so far stay removed and the exception is propagated.
+     * <ul>
+     *   <li>Symbolic links are removed, never followed, so their targets are left untouched.</li>
+     *   <li>If {@code path} is a file or a symbolic link, only that file or link is removed.</li>
+     *   <li>If {@code path} does not exist, an {@link SFTPException} is thrown (as for {@link #rmdir}).</li>
+     *   <li>The root directory ({@code /}) and empty paths are rejected.</li>
+     * </ul>
+     *
+     * @param path the file, link or directory to remove
+     * @throws IOException on failure, e.g. missing path or insufficient permissions
+     */
+    public void rmdirs(String path)
+            throws IOException {
+        if (path == null || path.trim().isEmpty() || path.matches("/+")) {
+            throw new IllegalArgumentException("Refusing to recursively remove `" + path + "`");
+        }
+        // lstat, so that a symlink to a directory is treated as a link and not followed
+        if (lstat(path).getType() != FileMode.Type.DIRECTORY) {
+            rm(path);
+            return;
+        }
+        // Directories in discovery order: parents always precede their children.
+        final List<String> dirs = new ArrayList<String>();
+        final Deque<String> toScan = new ArrayDeque<String>();
+        dirs.add(path);
+        toScan.push(path);
+        while (!toScan.isEmpty()) {
+            // ls() reads the complete listing before we start removing anything from the directory
+            for (RemoteResourceInfo entry : ls(toScan.pop())) {
+                if (entry.isDirectory()) {
+                    dirs.add(entry.getPath());
+                    toScan.push(entry.getPath());
+                } else {
+                    log.debug("Removing `{}`", entry.getPath());
+                    rm(entry.getPath());
+                }
+            }
+        }
+        // Children were discovered after their parents, so removing in reverse removes children first.
+        for (int i = dirs.size() - 1; i >= 0; i--) {
+            log.debug("Removing directory `{}`", dirs.get(i));
+            rmdir(dirs.get(i));
+        }
+    }
+
     public void symlink(String linkpath, String targetpath)
             throws IOException {
         engine.symlink(linkpath, targetpath);
