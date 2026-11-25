@@ -15,6 +15,9 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.condition.DisabledIf;
+import com.hierynomus.sshj.test.MLKEM;
 import net.schmizz.sshj.DefaultConfig;
 import net.schmizz.sshj.common.Factory;
 import org.junit.jupiter.api.Test;
@@ -23,7 +26,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class MLKEM768X25519SHA256Test {
 
@@ -33,6 +38,7 @@ public class MLKEM768X25519SHA256Test {
     }
 
     @Test
+    @DisabledIf(value = MLKEM.UNSUPPORTED, disabledReason = MLKEM.REASON)
     public void factoryProducesFreshInstances() {
         final MLKEM768X25519SHA256.Factory factory = new MLKEM768X25519SHA256.Factory();
         final KeyExchange first = factory.create();
@@ -44,8 +50,23 @@ public class MLKEM768X25519SHA256Test {
     }
 
     @Test
-    public void registeredFirstInDefaultConfig() {
+    @EnabledIf(value = MLKEM.SUPPORTED, disabledReason = "ML-KEM not supported on this runtime")
+    public void registeredFirstInDefaultConfigWhenSupported() {
         final List<Factory.Named<KeyExchange>> factories = new DefaultConfig().getKeyExchangeFactories();
         assertEquals("mlkem768x25519-sha256", factories.get(0).getName());
+    }
+
+    @Test
+    @DisabledIf(value = MLKEM.SUPPORTED, disabledReason = "ML-KEM is supported on this runtime")
+    public void notAdvertisedInDefaultConfigWhenUnsupported() {
+        for (final Factory.Named<KeyExchange> factory : new DefaultConfig().getKeyExchangeFactories()) {
+            assertNotEquals("mlkem768x25519-sha256", factory.getName());
+        }
+    }
+
+    @Test
+    @DisabledIf(value = MLKEM.SUPPORTED, disabledReason = "ML-KEM is supported on this runtime")
+    public void factoryRefusesToCreateWhenUnsupported() {
+        assertThrows(IllegalStateException.class, () -> new MLKEM768X25519SHA256.Factory().create());
     }
 }

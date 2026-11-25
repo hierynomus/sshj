@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj.transport.kex;
 
+import com.hierynomus.sshj.test.MLKEM;
+import com.hierynomus.sshj.test.BouncyCastle;
 import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.DefaultConfig;
@@ -35,9 +37,11 @@ import org.junit.jupiter.api.TestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,7 +50,7 @@ public class KeyExchangeTest {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public static Collection<Object[]> getParameters() {
-        return Arrays.asList(new Object[][] {
+        final List<Object[]> parameters = new ArrayList<>(Arrays.asList(new Object[][] {
                 { DHGEXServer.newFactory(BuiltinDHFactories.dhgex), new DHGexSHA1.Factory() },
                 { DHGEXServer.newFactory(BuiltinDHFactories.dhgex256), new DHGexSHA256.Factory() },
                 { DHGServer.newFactory(BuiltinDHFactories.ecdhp256), new ECDHNistP.Factory256() },
@@ -59,8 +63,12 @@ public class KeyExchangeTest {
                 { DHGServer.newFactory(BuiltinDHFactories.dhg16_512), DHGroups.Group16SHA512() },
                 { DHGServer.newFactory(BuiltinDHFactories.dhg17_512), DHGroups.Group17SHA512() },
                 { DHGServer.newFactory(BuiltinDHFactories.dhg18_512), DHGroups.Group18SHA512() },
-                { DHGServer.newFactory(BuiltinDHFactories.mlkem768x25519), new MLKEM768X25519SHA256.Factory() },
-        });
+        }));
+        // The Mina server implements ML-KEM with Bouncy Castle, so it needs BC as well as client support.
+        if (MLKEM.isSupported() && BouncyCastle.isPresent()) {
+            parameters.add(new Object[] { DHGServer.newFactory(BuiltinDHFactories.mlkem768x25519), new MLKEM768X25519SHA256.Factory() });
+        }
+        return parameters;
     }
 
     @TestFactory

@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import org.junit.jupiter.api.condition.DisabledIf;
+import com.hierynomus.sshj.test.MLKEM;
 import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.common.Buffer;
@@ -50,6 +52,7 @@ import static org.mockito.Mockito.when;
  * {@code draft-kampanakis-curdle-ssh-pq-ke-05}, in particular invariants that an
  * interop test against a peer with the same bug would fail to catch.
  */
+@DisabledIf(value = MLKEM.UNSUPPORTED, disabledReason = MLKEM.REASON)
 public class MLKEM768X25519SHA256WireFormatTest {
 
     /**

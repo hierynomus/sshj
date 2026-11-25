@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.transport.kex;
 
+import org.junit.jupiter.api.condition.DisabledIf;
+import com.hierynomus.sshj.test.MLKEM;
 import net.schmizz.sshj.common.SshjKEM;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@DisabledIf(value = MLKEM.UNSUPPORTED, disabledReason = MLKEM.REASON)
 public class MLKEM768Test {
 
     @Test

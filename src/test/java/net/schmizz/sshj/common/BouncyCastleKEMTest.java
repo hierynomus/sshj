@@ -15,19 +15,16 @@
  */
 package net.schmizz.sshj.common;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.BeforeAll;
+import com.hierynomus.sshj.test.BouncyCastle;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.Security;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * Exercises the Bouncy Castle KEM fallback directly, independent of the JCA
@@ -35,21 +32,15 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * where {@code BouncyCastleKEM.isAvailable()} returns true (i.e. wherever
  * BC PQC is on the classpath, regardless of JDK version).
  */
+@DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
 public class BouncyCastleKEMTest {
-
-    @BeforeAll
-    public static void registerProvider() {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
 
     @Test
     public void roundTripProducesMatchingSecret() throws Exception {
-        assumeTrue(BouncyCastleKEM.isAvailable(), "Bouncy Castle PQC not on classpath");
+        assertTrue(BouncyCastleKEM.isAvailable(),
+                "Bouncy Castle is present, so its ML-KEM fallback must be usable (BC API may have changed)");
 
-        KeyPairGenerator kpg = KeyPairGenerator.getInstance("ML-KEM-768", BouncyCastleProvider.PROVIDER_NAME);
-        KeyPair kp = kpg.generateKeyPair();
+        KeyPair kp = SecurityUtils.getKeyPairGenerator("ML-KEM-768").generateKeyPair();
 
         SshjKEM kem = BouncyCastleKEM.create("ML-KEM");
 
@@ -65,7 +56,8 @@ public class BouncyCastleKEMTest {
 
     @Test
     public void rejectsUnknownAlgorithm() {
-        assumeTrue(BouncyCastleKEM.isAvailable(), "Bouncy Castle PQC not on classpath");
+        assertTrue(BouncyCastleKEM.isAvailable(),
+                "Bouncy Castle is present, so its ML-KEM fallback must be usable (BC API may have changed)");
         Throwable t = null;
         try {
             BouncyCastleKEM.create("DHKEM");

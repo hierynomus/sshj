@@ -15,13 +15,11 @@
  */
 package net.schmizz.sshj.common;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
@@ -56,9 +54,8 @@ public class JcaKEMTest {
 
     @BeforeAll
     public static void registerProvider() {
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
+        // Registers Bouncy Castle when it is on the classpath; a no-op otherwise.
+        SecurityUtils.registerSecurityProvider("org.bouncycastle.jce.provider.BouncyCastleProvider");
     }
 
     @Test
@@ -96,12 +93,12 @@ public class JcaKEMTest {
     @Test
     public void roundTripProducesMatchingSecretWithExplicitProvider() throws Exception {
         assumeTrue(JcaKEM.isApiAvailable(), "javax.crypto.KEM not available on this JRE");
-        assumeTrue(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
-                        .getService("KEM", "ML-KEM") != null,
+        assumeTrue(Security.getProvider(SecurityUtils.BOUNCY_CASTLE) != null
+                        && Security.getProvider(SecurityUtils.BOUNCY_CASTLE).getService("KEM", "ML-KEM") != null,
                 "BouncyCastle does not register ML-KEM KEM service on this JRE");
 
         KeyPair kp = generateMlKem768KeyPair();
-        SshjKEM kem = JcaKEM.create("ML-KEM", BouncyCastleProvider.PROVIDER_NAME);
+        SshjKEM kem = JcaKEM.create("ML-KEM", SecurityUtils.BOUNCY_CASTLE);
 
         SshjKEM.Encapsulated encapsulated = kem.encapsulate(kp.getPublic());
         byte[] decapsulated = kem.decapsulate(kp.getPrivate(), encapsulated.getCiphertext());
@@ -150,14 +147,8 @@ public class JcaKEMTest {
     }
 
     private static KeyPair generateMlKem768KeyPair() throws Exception {
-        KeyPairGenerator kpg;
-        try {
-            kpg = KeyPairGenerator.getInstance("ML-KEM-768");
-        } catch (NoSuchAlgorithmException firstTry) {
-            // SunJCE on JDK 21 doesn't register ML-KEM-768; explicitly fall back to BC.
-            kpg = KeyPairGenerator.getInstance("ML-KEM-768", BouncyCastleProvider.PROVIDER_NAME);
-        }
-        return kpg.generateKeyPair();
+        // Resolved through the configured provider chain: the JDK (24+) or Bouncy Castle when present.
+        return SecurityUtils.getKeyPairGenerator("ML-KEM-768").generateKeyPair();
     }
 
     private static boolean providerOffersService(String type, String algorithm) {
