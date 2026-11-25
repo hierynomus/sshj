@@ -57,7 +57,8 @@ import java.security.SignatureException;
  *
  * Verification rebuilds {@code signed} and checks it with the underlying ECDSA/Ed25519 key. Signing
  * is delegated to a {@link SecurityKeySigner} (the hardware bridge); this class only hashes the SSH
- * payload, hands the challenge to the signer and assembles the wire format from what comes back.
+ * payload, hands the signer both the data and its hash (the challenge), and assembles the wire format
+ * from what comes back.
  *
  * @see <a href="https://github.com/openssh/openssh-portable/blob/master/PROTOCOL.u2f">PROTOCOL.u2f</a>
  */
@@ -112,11 +113,10 @@ public abstract class AbstractSecurityKeySignature extends AbstractSignatureDSA 
             throw new SSHRuntimeException("No SecurityKeySigner attached to security key " + signingKey.getKeyTypeName()
                     + "; cannot reach the authenticator. Authenticate via ssh-agent or attach a SecurityKeySigner.");
         }
-        byte[] challenge = sha256(sshData.toByteArray());
         SecurityKeySignatureData data;
         try {
-            data = signer.sign(new SecurityKeySigningRequest(signingKey.getKeyTypeName(), application,
-                    signingKey.getKeyHandle(), challenge, signingKey.getFlags()));
+            data = signer.sign(SecurityKeySigningRequest.forData(signingKey.getKeyTypeName(), application,
+                    signingKey.getKeyHandle(), sshData.toByteArray(), signingKey.getFlags()));
         } catch (IOException e) {
             throw new SSHRuntimeException("Security key signing failed", e);
         }

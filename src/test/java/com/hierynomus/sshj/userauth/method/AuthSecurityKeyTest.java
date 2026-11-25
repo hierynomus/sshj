@@ -20,6 +20,8 @@ import com.hierynomus.sshj.userauth.fido.SecurityKeyPrivateKey;
 import com.hierynomus.sshj.userauth.fido.SecurityKeyPublicKey;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySignatureData;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySigner;
+import com.hierynomus.sshj.userauth.fido.SecurityKeyTestSigners;
+import com.hierynomus.sshj.userauth.fido.SoftwareSecurityKeyMiddleware;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
@@ -72,10 +74,28 @@ public class AuthSecurityKeyTest {
         authenticatesWith(kpg.generateKeyPair(), KeyType.SK_ECDSA, "SHA256withECDSA");
     }
 
+    /**
+     * The same, with the authenticator driven the way an OpenSSH security key middleware is: handed the
+     * message to sign, which it hashes itself (#1068). The server must accept what its device signed.
+     */
+    @Test
+    public void authenticatesWithSkEcdsaThroughAMiddleware() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(new ECGenParameterSpec("secp256r1"));
+        KeyPair keyPair = kpg.generateKeyPair();
+        byte[] keyHandle = {1, 2, 3, 4};
+        SoftwareSecurityKeyMiddleware middleware = new SoftwareSecurityKeyMiddleware(false, keyPair, keyHandle);
+
+        authenticatesWith(keyPair, KeyType.SK_ECDSA, SecurityKeyTestSigners.middlewareSigner(middleware, false), keyHandle);
+    }
+
     private void authenticatesWith(KeyPair keyPair, KeyType keyType, String jcaAlgorithm) throws Exception {
+        authenticatesWith(keyPair, keyType, softwareAuthenticator(keyPair.getPrivate(), jcaAlgorithm), new byte[]{1, 2, 3, 4});
+    }
+
+    private void authenticatesWith(KeyPair keyPair, KeyType keyType, SecurityKeySigner signer, byte[] keyHandle) throws Exception {
         SecurityKeyPublicKey publicKey = new SecurityKeyPublicKey(keyPair.getPublic(), APPLICATION);
-        SecurityKeySigner signer = softwareAuthenticator(keyPair.getPrivate(), jcaAlgorithm);
-        SecurityKeyPrivateKey privateKey = new SecurityKeyPrivateKey(keyType.toString(), publicKey, FLAGS, new byte[]{1, 2, 3, 4}, signer);
+        SecurityKeyPrivateKey privateKey = new SecurityKeyPrivateKey(keyType.toString(), publicKey, FLAGS, keyHandle, signer);
 
         KeyProvider keyProvider = new KeyProvider() {
             @Override
