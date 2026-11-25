@@ -48,7 +48,7 @@ public class LocalPortForwarder {
             final Event<IOException> soc2chan = new StreamCopier(socket.getInputStream(), getOutputStream(), loggerFactory)
                     .bufSize(getRemoteMaxPacketSize())
                     .spawnDaemon("soc2chan");
-            final Event<IOException> chan2soc = new StreamCopier(getInputStream(), socket.getOutputStream(), loggerFactory)
+            final Event<IOException> chan2soc = new StreamCopier(getInputStream(), IOUtils.halfCloseOnCloseOutputStream(socket), loggerFactory)
                     .bufSize(getLocalMaxPacketSize())
                     .spawnDaemon("chan2soc");
             SocketStreamCopyMonitor.monitor(5, TimeUnit.SECONDS, soc2chan, chan2soc, this, socket);

@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj.userauth.agent;
 
+import com.hierynomus.sshj.test.BouncyCastle;
+import org.junit.jupiter.api.condition.DisabledIf;
 import com.hierynomus.sshj.test.SshServerExtension;
 import net.schmizz.sshj.SSHClient;
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator;
@@ -48,6 +50,7 @@ public class AuthAgentTest {
         fixture.getServer().start();
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void authenticatesWithEd25519AgentKey() throws Exception {
         authenticatesWith(KeyPairGenerator.getInstance("Ed25519").generateKeyPair(), "ed25519-agent-key");

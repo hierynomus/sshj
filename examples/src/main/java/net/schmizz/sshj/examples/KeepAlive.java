@@ -20,6 +20,7 @@ public class KeepAlive {
         try {
             ssh.addHostKeyVerifier(new PromiscuousVerifier());
             // Set interval to enable keep-alive before connecting
+            // Must be set BEFORE connect(): sshj only starts the keep-alive thread during connect() and only if the interval is already > 0
             ssh.getConnection().getKeepAlive().setKeepAliveInterval(5);
             ssh.connect(args[0]);
             ssh.authPassword(args[1], args[2]);

@@ -226,4 +226,15 @@ public interface Transport
 
     KeyAlgorithm getHostKeyAlgorithm();
     List<KeyAlgorithm> getClientKeyAlgorithms(KeyType keyType) throws TransportException;
+
+    /**
+     * The public-key signature algorithm names the server advertised via the {@code
+     * server-sig-algs} extension in an {@code SSH_MSG_EXT_INFO} message (RFC 8308), in the
+     * order the server listed them.
+     *
+     * @return the server's accepted signature algorithm names, or an empty list if the server
+     *         didn't send one (e.g. it doesn't support extension negotiation, or hasn't sent
+     *         {@code SSH_MSG_EXT_INFO} yet)
+     */
+    List<String> getServerSignatureAlgorithms();
 }

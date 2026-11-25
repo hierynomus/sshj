@@ -16,22 +16,33 @@
 package com.hierynomus.sshj.connection.channel.forwarded;
 
 import com.hierynomus.sshj.test.HttpServer;
+import com.hierynomus.sshj.test.LogCapture;
 import com.hierynomus.sshj.test.SshServerExtension;
+import net.schmizz.concurrent.Promise;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.connection.ConnectionException;
 import net.schmizz.sshj.connection.channel.forwarded.RemotePortForwarder;
 import net.schmizz.sshj.connection.channel.forwarded.SocketForwardingConnectListener;
 import org.apache.sshd.server.forward.AcceptAllForwardingFilter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Random;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RemotePortForwarderTest {
@@ -97,6 +108,70 @@ public class RemotePortForwarderTest {
         SSHClient sshClient = getFixtureClient();
         RemotePortForwarder.Forward bind = forwardPort(sshClient, "", RANGE);
         assertHttpGetSuccess(bind);
+    }
+
+    @Test
+    @Timeout(30_000)
+    public void shouldNotLogErrorsWhenForwardedPeerClosesWhileBackendIsIdle() throws Exception {
+        // Regression test for #1048: when the channel side reaches EOF the forwarded socket must be
+        // half-closed (shutdownOutput), not fully closed. A full close wakes the still-running
+        // soc2chan copy - blocked reading the idle backend socket - with "SocketException: Socket
+        // closed", which StreamCopier and Promise then log at ERROR for a normal connection close.
+        //
+        // The backend is a raw TCP server that sends a fixed reply and then, once its input reaches
+        // EOF (the forwarded socket's half-close), closes its side so both copy directions finish.
+        final byte[] reply = new byte[256 * 1024];
+        new Random(42).nextBytes(reply);
+
+        try (ServerSocket backend = new ServerSocket(0, 0, InetAddress.getByName(LOCALHOST))) {
+            Thread backendThread = new Thread(() -> {
+                try (Socket s = backend.accept()) {
+                    InputStream bin = s.getInputStream();
+                    s.getOutputStream().write(reply);
+                    s.getOutputStream().flush();
+                    while (bin.read() != -1) {
+                        // keep the connection (and soc2chan) alive until our input is half-closed
+                    }
+                } catch (IOException ignored) {
+                }
+            }, "raw-backend");
+            backendThread.setDaemon(true);
+            backendThread.start();
+
+            try (LogCapture logs = LogCapture.attachTo("net.schmizz")) {
+                SSHClient sshClient = getFixtureClient();
+                RemotePortForwarder.Forward bind = sshClient.getRemotePortForwarder().bind(
+                        new RemotePortForwarder.Forward(LOCALHOST, 0),
+                        new SocketForwardingConnectListener(new InetSocketAddress(LOCALHOST, backend.getLocalPort())));
+
+                int totalRead = 0;
+                try (Socket peer = new Socket(LOCALHOST, bind.getPort())) {
+                    peer.setSoTimeout(20_000);
+                    peer.getOutputStream().write("ping".getBytes(StandardCharsets.US_ASCII));
+                    peer.getOutputStream().flush();
+
+                    InputStream in = peer.getInputStream();
+                    byte[] buf = new byte[8192];
+                    try {
+                        while (totalRead < reply.length) {
+                            int n = in.read(buf);
+                            if (n == -1) {
+                                break;
+                            }
+                            totalRead += n;
+                        }
+                    } catch (IOException truncatedByFullClose) {
+                        // The pre-fix full close of the backend socket truncates the relayed reply.
+                    }
+                    // Full reply received; close normally -> channel EOF -> chan2soc EOF.
+                }
+
+                sshClient.getConnection().join(); // wait for the forwarded channel to be torn down
+
+                assertThat(totalRead).isEqualTo(reply.length);
+                assertThat(logs.errorsFrom(StreamCopier.class, Promise.class)).isEmpty();
+            }
+        }
     }
 
     private void assertHttpGetSuccess(final RemotePortForwarder.Forward bind) throws IOException {

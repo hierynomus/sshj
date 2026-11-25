@@ -126,7 +126,16 @@ class StrictKeyExchangeTest {
     }
 
     private List<String> getLogs(String className) {
-        return logWatcher.list.stream()
+        // ListAppender.list is a plain ArrayList; Logback's AppenderBase.doAppend() is
+        // synchronized on the appender for concurrent writers, but reading the list directly
+        // (as a stream, below) isn't - racing against a still-running background thread (e.g.
+        // the hot-loop heartbeater, which keeps writing/logging immediately after client.close()
+        // returns) can throw ConcurrentModificationException. Snapshot under the same lock.
+        List<ILoggingEvent> snapshot;
+        synchronized (logWatcher) {
+            snapshot = new ArrayList<>(logWatcher.list);
+        }
+        return snapshot.stream()
             .filter(event -> event.getLoggerName().endsWith(className))
             .map(ILoggingEvent::getFormattedMessage)
             .collect(Collectors.toList());

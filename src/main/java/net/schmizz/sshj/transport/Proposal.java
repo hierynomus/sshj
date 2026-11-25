@@ -15,15 +15,20 @@
  */
 package net.schmizz.sshj.transport;
 
+import com.hierynomus.sshj.key.KeyAlgorithm;
+import com.hierynomus.sshj.key.KeyAlgorithms;
 import net.schmizz.sshj.Config;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.Factory;
+import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.Message;
 import net.schmizz.sshj.common.SSHPacket;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 class Proposal {
 
@@ -42,7 +47,7 @@ class Proposal {
         if (initialKex) {
             kex.add("kex-strict-c-v00@openssh.com");
         }
-        sig = filterKnownHostKeyAlgorithms(Factory.Named.Util.getNames(config.getKeyAlgorithms()), knownHostAlgs);
+        sig = filterKnownHostKeyAlgorithms(config.getKeyAlgorithms(), knownHostAlgs);
         c2sCipher = s2cCipher = Factory.Named.Util.getNames(config.getCipherFactories());
         c2sMAC = s2cMAC = Factory.Named.Util.getNames(config.getMACFactories());
         c2sComp = s2cComp = Factory.Named.Util.getNames(config.getCompressionFactories());
@@ -150,26 +155,44 @@ class Proposal {
         );
     }
 
-    private List<String> filterKnownHostKeyAlgorithms(List<String> configuredKeyAlgorithms, List<String> knownHostKeyAlgorithms) {
-        if (knownHostKeyAlgorithms != null && !knownHostKeyAlgorithms.isEmpty()) {
-            List<String> preferredAlgorithms = new ArrayList<String>();
-            List<String> otherAlgorithms = new ArrayList<String>();
-
-            for (String configuredKeyAlgorithm : configuredKeyAlgorithms) {
-                if (knownHostKeyAlgorithms.contains(configuredKeyAlgorithm)) {
-                    preferredAlgorithms.add(configuredKeyAlgorithm);
-                } else {
-                    otherAlgorithms.add(configuredKeyAlgorithm);
-                }
-            }
-
-            preferredAlgorithms.addAll(otherAlgorithms);
-
-            return preferredAlgorithms;
-        } else {
-            return configuredKeyAlgorithms;
+    private List<String> filterKnownHostKeyAlgorithms(List<Factory.Named<KeyAlgorithm>> configuredKeyAlgorithms, List<String> knownHostKeyAlgorithms) {
+        if (knownHostKeyAlgorithms == null || knownHostKeyAlgorithms.isEmpty()) {
+            return Factory.Named.Util.getNames(configuredKeyAlgorithms);
         }
 
+        // A known_hosts entry only records the host key *type*: an RSA host key is always stored as
+        // "ssh-rsa", regardless of whether the server signs with ssh-rsa, rsa-sha2-256 or rsa-sha2-512.
+        // Matching the stored name against the configured signature algorithm names would therefore only
+        // ever promote the legacy ssh-rsa and bury the rsa-sha2-* algorithms. Match on the key type
+        // instead, so every configured signature algorithm for a known key type is preferred while
+        // keeping the configured order (which prefers rsa-sha2-* over ssh-rsa).
+        Set<KeyType> knownHostKeyTypes = EnumSet.noneOf(KeyType.class);
+        for (String knownHostKeyAlgorithm : knownHostKeyAlgorithms) {
+            knownHostKeyTypes.add(KeyType.fromString(knownHostKeyAlgorithm));
+        }
+        knownHostKeyTypes.remove(KeyType.UNKNOWN);
+
+        List<String> preferredAlgorithms = new ArrayList<String>();
+        List<String> otherAlgorithms = new ArrayList<String>();
+
+        for (Factory.Named<KeyAlgorithm> configuredKeyAlgorithm : configuredKeyAlgorithms) {
+            if (knownHostKeyTypes.contains(keyTypeOf(configuredKeyAlgorithm))) {
+                preferredAlgorithms.add(configuredKeyAlgorithm.getName());
+            } else {
+                otherAlgorithms.add(configuredKeyAlgorithm.getName());
+            }
+        }
+
+        preferredAlgorithms.addAll(otherAlgorithms);
+
+        return preferredAlgorithms;
+    }
+
+    private static KeyType keyTypeOf(Factory.Named<KeyAlgorithm> keyAlgorithm) {
+        if (keyAlgorithm instanceof KeyAlgorithms.Factory) {
+            return ((KeyAlgorithms.Factory) keyAlgorithm).getKeyType();
+        }
+        return KeyType.fromString(keyAlgorithm.getName());
     }
 
     private static String firstMatch(String ofWhat, List<String> a, List<String> b)

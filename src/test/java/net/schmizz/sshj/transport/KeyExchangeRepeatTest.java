@@ -66,7 +66,7 @@ public class KeyExchangeRepeatTest {
         when(kex.next(any(), any())).thenReturn(true);
         when(kex.getH()).thenReturn(new byte[0]);
         when(kex.getK()).thenReturn(BigInteger.ZERO);
-        when(kex.getHash().digest()).thenReturn(new byte[10]);
+        when(kex.getHash().digest()).thenReturn(new byte[64]);
 
         keyExchanger = new KeyExchanger(transport);
         keyExchanger.addHostKeyVerifier(new PromiscuousVerifier());

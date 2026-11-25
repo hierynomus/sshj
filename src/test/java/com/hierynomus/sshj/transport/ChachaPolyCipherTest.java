@@ -15,6 +15,8 @@
  */
 package com.hierynomus.sshj.transport;
 
+import com.hierynomus.sshj.test.BouncyCastle;
+import org.junit.jupiter.api.condition.DisabledIf;
 import com.hierynomus.sshj.transport.cipher.ChachaPolyCiphers;
 import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.transport.cipher.Cipher;
@@ -33,6 +35,7 @@ public class ChachaPolyCipherTest {
     private static final ChachaPolyCiphers.Factory FACTORY = ChachaPolyCiphers.CHACHA_POLY_OPENSSH();
     private static final String PLAINTEXT = "[Secret authenticated message using Chacha20Poly1305";
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testEncryptDecrypt() {
         Cipher enc = FACTORY.create();
@@ -70,6 +73,7 @@ public class ChachaPolyCipherTest {
         }
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testEncryptDecryptWithoutAAD() {
         final Cipher encryptionCipher = FACTORY.create();

@@ -15,6 +15,8 @@
  */
 package net.schmizz.sshj.keyprovider;
 
+import com.hierynomus.sshj.test.BouncyCastle;
+import org.junit.jupiter.api.condition.DisabledIf;
 import com.hierynomus.sshj.common.KeyAlgorithm;
 import com.hierynomus.sshj.common.KeyDecryptionFailedException;
 import net.schmizz.sshj.common.KeyType;
@@ -46,8 +48,18 @@ public class PKCS8KeyFileTest {
         final PKCS8KeyFile provider = new PKCS8KeyFile();
         provider.init(new File("src/test/resources/id_rsa"));
         assertEquals(KeyUtil.newRSAPublicKey(modulus, pubExp), provider.getPublic());
-        assertEquals(KeyUtil.newRSAPrivateKey(modulus, privExp), provider.getPrivate());
+        assertRSAPrivateKey(provider.getPrivate());
         assertEquals(provider.getType(), KeyType.RSA);
+    }
+
+    /**
+     * Compares modulus and private exponent only: the parsed key may carry CRT parameters, and the JCA
+     * implementation (unlike Bouncy Castle) includes those in equals().
+     */
+    private static void assertRSAPrivateKey(java.security.PrivateKey actual) {
+        final java.security.interfaces.RSAPrivateKey rsaKey = (java.security.interfaces.RSAPrivateKey) actual;
+        assertEquals(new java.math.BigInteger(modulus, 16), rsaKey.getModulus());
+        assertEquals(new java.math.BigInteger(privExp, 16), rsaKey.getPrivateExponent());
     }
 
     @Test
@@ -58,12 +70,13 @@ public class PKCS8KeyFileTest {
         assertEquals(KeyAlgorithm.RSA, provider.getPrivate().getAlgorithm());
     }
 
+    @DisabledIf(value = BouncyCastle.ABSENT, disabledReason = BouncyCastle.REASON)
     @Test
     public void testPkcs1Encrypted() throws IOException, GeneralSecurityException {
         final PKCS8KeyFile provider = new PKCS8KeyFile();
         provider.init(getFile("pkcs1-rsa-encrypted"), PasswordUtils.createOneOff(KEY_PASSPHRASE.toCharArray()));
         assertEquals(KeyUtil.newRSAPublicKey(modulus, pubExp), provider.getPublic());
-        assertEquals(KeyUtil.newRSAPrivateKey(modulus, privExp), provider.getPrivate());
+        assertRSAPrivateKey(provider.getPrivate());
     }
 
     @Test
@@ -79,6 +92,15 @@ public class PKCS8KeyFileTest {
         final PKCS8KeyFile provider = new PKCS8KeyFile();
         final PasswordFinder passwordFinder = PasswordUtils.createOneOff(KEY_PASSPHRASE.toCharArray());
         provider.init(getFile("pkcs8-rsa-2048-encrypted"), passwordFinder);
+        assertEquals(KeyAlgorithm.RSA, provider.getPublic().getAlgorithm());
+        assertEquals(KeyAlgorithm.RSA, provider.getPrivate().getAlgorithm());
+    }
+
+    @Test
+    public void testPkcs8RsaEncryptedPBES1() throws IOException {
+        final PKCS8KeyFile provider = new PKCS8KeyFile();
+        final PasswordFinder passwordFinder = PasswordUtils.createOneOff(KEY_PASSPHRASE.toCharArray());
+        provider.init(getFile("pkcs8-rsa-2048-encrypted-pbe-sha1-3des"), passwordFinder);
         assertEquals(KeyAlgorithm.RSA, provider.getPublic().getAlgorithm());
         assertEquals(KeyAlgorithm.RSA, provider.getPrivate().getAlgorithm());
     }
