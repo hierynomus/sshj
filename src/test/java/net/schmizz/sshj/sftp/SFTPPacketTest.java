@@ -17,6 +17,7 @@ package net.schmizz.sshj.sftp;
 
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SFTPPacketTest {
@@ -44,6 +45,56 @@ public class SFTPPacketTest {
         FileAttributes attrs = packet.readFileAttributes();
 
         assertEquals(1234L, attrs.getSize());
+    }
+
+    // Issue 980: SFTP v3 atime and mtime are unsigned 32-bit integers (uint32), supporting timestamps
+    // past 2038-01-19 (Integer.MAX_VALUE) up to 2106-02-07 (0xFFFFFFFF).
+    @Test
+    public void shouldReadFileAttributesWithPost2038AtimeAndMtime() throws SFTPException {
+        long atime = 0x80000000L; // 2038-01-19T03:14:08Z (Integer.MAX_VALUE + 1)
+        long mtime = 2522880000L; // 2049-12-12T00:00:00Z
+
+        SFTPPacket<Request> packet = new SFTPPacket<Request>();
+        packet.putUInt32(FileAttributes.Flag.ACMODTIME.get());
+        packet.putUInt32(atime);
+        packet.putUInt32(mtime);
+
+        FileAttributes attrs = packet.readFileAttributes();
+
+        assertEquals(atime, attrs.getAtime());
+        assertEquals(mtime, attrs.getMtime());
+    }
+
+    @Test
+    public void shouldReadFileAttributesWithMaxUnsigned32BitAtimeAndMtime() throws SFTPException {
+        long maxUInt32 = 0xFFFFFFFFL; // 2106-02-07T06:28:15Z
+
+        SFTPPacket<Request> packet = new SFTPPacket<Request>();
+        packet.putUInt32(FileAttributes.Flag.ACMODTIME.get());
+        packet.putUInt32(maxUInt32);
+        packet.putUInt32(maxUInt32);
+
+        FileAttributes attrs = packet.readFileAttributes();
+
+        assertEquals(maxUInt32, attrs.getAtime());
+        assertEquals(maxUInt32, attrs.getMtime());
+    }
+
+    @Test
+    public void shouldRoundTripPost2038FileAttributes() throws SFTPException {
+        long atime = 2522880000L; // 2049-12-12T00:00:00Z
+        long mtime = 0xFFFFFFFFL; // 2106-02-07T06:28:15Z
+        FileAttributes original = new FileAttributes.Builder()
+                .withAtimeMtime(atime, mtime)
+                .build();
+
+        SFTPPacket<Request> packet = new SFTPPacket<Request>();
+        packet.putFileAttributes(original);
+        FileAttributes readBack = packet.readFileAttributes();
+
+        assertEquals(atime, readBack.getAtime());
+        assertEquals(mtime, readBack.getMtime());
+        assertArrayEquals(original.toBytes(), readBack.toBytes());
     }
 
 }
