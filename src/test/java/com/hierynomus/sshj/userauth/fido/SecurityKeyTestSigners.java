@@ -15,9 +15,6 @@
  */
 package com.hierynomus.sshj.userauth.fido;
 
-import java.io.ByteArrayOutputStream;
-import java.math.BigInteger;
-
 /**
  * {@link SecurityKeySigner}s backed by a {@link SoftwareSecurityKeyMiddleware}: what an application
  * embedding a security key middleware would write.
@@ -49,30 +46,8 @@ public final class SecurityKeyTestSigners {
     }
 
     private static SecurityKeySignatureData toSignatureData(SoftwareSecurityKeyMiddleware.Response response, boolean ed25519) {
-        final byte[] signature = ed25519
-                ? response.getSigR()
-                : derEcdsaSignature(response.getSigR(), response.getSigS());
-        return new SecurityKeySignatureData(response.getFlags(), response.getCounter(), signature);
-    }
-
-    /** {@code SEQUENCE { INTEGER r, INTEGER s }}: the encoding {@link SecurityKeySignatureData} expects for ECDSA. */
-    private static byte[] derEcdsaSignature(byte[] r, byte[] s) {
-        final byte[] rInteger = derInteger(r);
-        final byte[] sInteger = derInteger(s);
-        final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(0x30);
-        out.write(rInteger.length + sInteger.length); // at most 2 * 35 bytes: always a short-form length
-        out.write(rInteger, 0, rInteger.length);
-        out.write(sInteger, 0, sInteger.length);
-        return out.toByteArray();
-    }
-
-    private static byte[] derInteger(byte[] unsignedBigEndian) {
-        final byte[] value = new BigInteger(1, unsignedBigEndian).toByteArray(); // two's complement, so sign-safe
-        final byte[] out = new byte[value.length + 2];
-        out[0] = 0x02;
-        out[1] = (byte) value.length;
-        System.arraycopy(value, 0, out, 2, value.length);
-        return out;
+        return ed25519
+                ? SecurityKeySignatureData.ed25519(response.getFlags(), response.getCounter(), response.getSigR())
+                : SecurityKeySignatureData.ecdsa(response.getFlags(), response.getCounter(), response.getSigR(), response.getSigS());
     }
 }
