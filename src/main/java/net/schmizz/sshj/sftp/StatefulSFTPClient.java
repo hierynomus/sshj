@@ -146,6 +146,12 @@ public class StatefulSFTPClient
     }
 
     @Override
+    public void rmdirs(String path)
+            throws IOException {
+        super.rmdirs(cwdify(path));
+    }
+
+    @Override
     public void symlink(String linkpath, String targetpath)
             throws IOException {
         super.symlink(cwdify(linkpath), cwdify(targetpath));
