@@ -24,6 +24,7 @@ import com.hierynomus.sshj.userauth.fido.SecurityKeyTestSigners;
 import com.hierynomus.sshj.userauth.fido.SoftwareSecurityKeyMiddleware;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.KeyType;
+import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.userauth.method.AuthPublickey;
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator;
@@ -40,6 +41,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.ECGenParameterSpec;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -87,6 +90,73 @@ public class AuthSecurityKeyTest {
         SoftwareSecurityKeyMiddleware middleware = new SoftwareSecurityKeyMiddleware(false, keyPair, keyHandle);
 
         authenticatesWith(keyPair, KeyType.SK_ECDSA, SecurityKeyTestSigners.middlewareSigner(middleware, false), keyHandle);
+    }
+
+    /**
+     * A signer that fails, like a user cancelling the touch or PIN prompt, must only fail the publickey attempt.
+     * The connection has to stay open so the caller can fall back to another method (it used to be closed).
+     */
+    @Test
+    public void failingSignerFailsTheAttemptButKeepsTheConnectionOpen() throws Exception {
+        IOException cancelled = new IOException("user cancelled the touch prompt");
+        SSHClient client = fixture.setupConnectedDefaultClient();
+
+        UserAuthException e = assertThrows(UserAuthException.class,
+                () -> client.auth("test", new AuthPublickey(securityKeyProvider(request -> {
+                    throw cancelled;
+                }))));
+
+        assertFalse(client.isAuthenticated());
+        assertTrue(client.isConnected(), "the connection must survive a failed security key signature");
+        assertTrue(hasCause(e, cancelled), "the signer's exception should be preserved as the cause");
+
+        client.authPassword("test", "test");
+        assertTrue(client.isAuthenticated(), "should be able to fall back to another method on the same connection");
+    }
+
+    @Test
+    public void securityKeyWithoutSignerFailsTheAttemptButKeepsTheConnectionOpen() throws Exception {
+        SSHClient client = fixture.setupConnectedDefaultClient();
+
+        assertThrows(UserAuthException.class, () -> client.auth("test", new AuthPublickey(securityKeyProvider(null))));
+
+        assertTrue(client.isConnected());
+        client.authPassword("test", "test");
+        assertTrue(client.isAuthenticated());
+    }
+
+    private static boolean hasCause(Throwable t, Throwable expected) {
+        for (; t != null; t = t.getCause()) {
+            if (t == expected) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static KeyProvider securityKeyProvider(SecurityKeySigner signer) throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(new ECGenParameterSpec("secp256r1"));
+        KeyPair keyPair = kpg.generateKeyPair();
+        SecurityKeyPublicKey publicKey = new SecurityKeyPublicKey(keyPair.getPublic(), APPLICATION);
+        SecurityKeyPrivateKey privateKey = new SecurityKeyPrivateKey(KeyType.SK_ECDSA.toString(), publicKey, FLAGS,
+                new byte[]{1, 2, 3, 4}, signer);
+        return new KeyProvider() {
+            @Override
+            public PrivateKey getPrivate() {
+                return privateKey;
+            }
+
+            @Override
+            public PublicKey getPublic() {
+                return publicKey;
+            }
+
+            @Override
+            public KeyType getType() {
+                return KeyType.SK_ECDSA;
+            }
+        };
     }
 
     private void authenticatesWith(KeyPair keyPair, KeyType keyType, String jcaAlgorithm) throws Exception {

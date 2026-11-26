@@ -19,6 +19,7 @@ import com.hierynomus.sshj.userauth.fido.SecurityKeyPrivateKey;
 import com.hierynomus.sshj.userauth.fido.SecurityKeyPublicKey;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySignatureData;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySigner;
+import com.hierynomus.sshj.userauth.fido.SecurityKeySigningException;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySigningRequest;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.SSHRuntimeException;
@@ -110,7 +111,7 @@ public abstract class AbstractSecurityKeySignature extends AbstractSignatureDSA 
         }
         SecurityKeySigner signer = signingKey.getSigner();
         if (signer == null) {
-            throw new SSHRuntimeException("No SecurityKeySigner attached to security key " + signingKey.getKeyTypeName()
+            throw new SecurityKeySigningException("No SecurityKeySigner attached to security key " + signingKey.getKeyTypeName()
                     + "; cannot reach the authenticator. Authenticate via ssh-agent or attach a SecurityKeySigner.");
         }
         SecurityKeySignatureData data;
@@ -118,7 +119,7 @@ public abstract class AbstractSecurityKeySignature extends AbstractSignatureDSA 
             data = signer.sign(SecurityKeySigningRequest.forData(signingKey.getKeyTypeName(), application,
                     signingKey.getKeyHandle(), sshData.toByteArray(), signingKey.getFlags()));
         } catch (IOException e) {
-            throw new SSHRuntimeException("Security key signing failed", e);
+            throw new SecurityKeySigningException("Security key signing failed", e);
         }
         this.signedFlags = data.getFlags();
         this.signedCounter = data.getCounter();
