@@ -313,6 +313,26 @@ class SFTPClientServerTest {
         assertTrue(Files.exists(temp.resolve("cwd")));
     }
 
+    @Test
+    void resumeOnStatefulClientShouldResolveRelativePathsAgainstWorkingDirectory() throws IOException {
+        connect();
+        Path cwd = Files.createDirectory(temp.resolve("cwd"));
+        Path local = Files.createDirectory(temp.resolve("local"));
+        Files.writeString(cwd.resolve("download.txt"), "hello");
+        Files.writeString(local.resolve("download.txt"), "he");
+        Files.writeString(local.resolve("upload.txt"), "world");
+        Files.writeString(cwd.resolve("upload.txt"), "wo");
+        try (StatefulSFTPClient stateful = sshClient.newStatefulSFTPClient()) {
+            stateful.cd(cwd.toString());
+
+            stateful.get("download.txt", local.resolve("download.txt").toString(), 2);
+            stateful.put(local.resolve("upload.txt").toString(), "upload.txt", 2);
+        }
+
+        assertEquals("hello", Files.readString(local.resolve("download.txt")));
+        assertEquals("world", Files.readString(cwd.resolve("upload.txt")));
+    }
+
     private void doUpload(File src, File dest) throws IOException {
         SSHClient client = fixture.setupConnectedDefaultClient();
         client.authPassword("test", "test");
