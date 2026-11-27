@@ -47,7 +47,7 @@ compileJava {
 configurations.implementation.transitive = false
 
 def bouncycastleVersion = "1.87"
-def sshdVersion = "2.15.0"
+def sshdVersion = "2.20.1"
 // Run tests without Bouncy Castle on the classpath: ./gradlew test -PwithBouncyCastle=false
 def withBouncyCastle = providers.gradleProperty("withBouncyCastle").map { it.toBoolean() }.getOrElse(true)
 

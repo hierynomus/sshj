@@ -11,19 +11,21 @@ on:
 
 jobs:
   build:
-    name: Build with Java 17 (Bouncy Castle ${{ matrix.bouncycastle && 'present' || 'absent' }})
+    name: Build with Java ${{ matrix.java }} (Bouncy Castle ${{ matrix.bouncycastle && 'present' || 'absent' }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        # 17 is the oldest Java we test on; 21 is the first with the javax.crypto.KEM API used for ML-KEM.
+        java: [17, 21]
         bouncycastle: [true, false]
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Java 17
+    - name: Set up Java ${{ matrix.java }}
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: 17
+        java-version: ${{ matrix.java }}
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
