@@ -19,6 +19,7 @@ import com.hierynomus.sshj.key.KeyAlgorithm;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.SSHPacket;
+import net.schmizz.sshj.common.SSHRuntimeException;
 import net.schmizz.sshj.signature.Signature;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.userauth.UserAuthException;
@@ -26,6 +27,7 @@ import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 
 import java.io.IOException;
 import java.security.PrivateKey;
+import java.security.ProviderException;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -126,12 +128,21 @@ public abstract class KeyedAuthMethod
             throw new UserAuthException("No KeyAlgorithm configured for key " + kt);
         }
 
-        signature.initSign(key);
-        signature.update(new Buffer.PlainBuffer()
-                .putString(params.getTransport().getSessionID())
-                .putBuffer(reqBuf) // & rest of the data for sig
-                .getCompactData());
-        final byte[] encoded = signature.encode(signature.sign());
+        final byte[] encoded;
+        try {
+            signature.initSign(key);
+            signature.update(new Buffer.PlainBuffer()
+                    .putString(params.getTransport().getSessionID())
+                    .putBuffer(reqBuf) // & rest of the data for sig
+                    .getCompactData());
+            encoded = signature.encode(signature.sign());
+        } catch (SSHRuntimeException | ProviderException e) {
+            // The key could not sign, e.g. the user cancelled a touch/PIN prompt, or a PKCS#11 token was removed
+            // (the JDK reports that as an unchecked ProviderException). That only fails this attempt: a runtime
+            // exception escaping here would reach the transport reader thread and close the whole connection,
+            // leaving the caller unable to try another authentication method.
+            throw new UserAuthException("Problem signing with " + kProv, e.getCause() != null ? e.getCause() : e);
+        }
         if (signature.isSignaturePreEncoded()) {
             // A FIDO/U2F signature already encodes the type, flags and counter; write it as one string.
             reqBuf.putString(encoded);

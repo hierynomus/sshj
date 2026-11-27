@@ -48,7 +48,7 @@ public class SFTPPacket<T extends SFTPPacket<T>>
             if (FileAttributes.Flag.MODE.isSet(mask))
                 builder.withPermissions(readUInt32AsInt());
             if (FileAttributes.Flag.ACMODTIME.isSet(mask))
-                builder.withAtimeMtime(readUInt32AsInt(), readUInt32AsInt());
+                builder.withAtimeMtime(readUInt32(), readUInt32());
             if (FileAttributes.Flag.EXTENDED.isSet(mask)) {
                 final int extCount = readUInt32AsInt();
                 for (int i = 0; i < extCount; i++)
