@@ -200,9 +200,21 @@ public class StatefulSFTPClient
     }
 
     @Override
+    public void get(String source, String dest, long byteOffset)
+            throws IOException {
+        super.get(cwdify(source), dest, byteOffset);
+    }
+
+    @Override
     public void get(String source, LocalDestFile dest)
             throws IOException {
         super.get(cwdify(source), dest);
+    }
+
+    @Override
+    public void get(String source, LocalDestFile dest, long byteOffset)
+            throws IOException {
+        super.get(cwdify(source), dest, byteOffset);
     }
 
     @Override
@@ -212,9 +224,21 @@ public class StatefulSFTPClient
     }
 
     @Override
+    public void put(String source, String dest, long byteOffset)
+            throws IOException {
+        super.put(source, cwdify(dest), byteOffset);
+    }
+
+    @Override
     public void put(LocalSourceFile source, String dest)
             throws IOException {
         super.put(source, cwdify(dest));
+    }
+
+    @Override
+    public void put(LocalSourceFile source, String dest, long byteOffset)
+            throws IOException {
+        super.put(source, cwdify(dest), byteOffset);
     }
 
 }

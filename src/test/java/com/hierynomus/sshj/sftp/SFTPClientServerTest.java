@@ -25,6 +25,7 @@ import net.schmizz.sshj.sftp.Response;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.sftp.SFTPException;
 import net.schmizz.sshj.sftp.StatefulSFTPClient;
+import net.schmizz.sshj.xfer.FileSystemFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -311,6 +312,34 @@ class SFTPClientServerTest {
 
         assertFalse(Files.exists(temp.resolve("cwd/sub")));
         assertTrue(Files.exists(temp.resolve("cwd")));
+    }
+
+    @Test
+    void resumeOnStatefulClientShouldResolveRelativePathsAgainstWorkingDirectory() throws IOException {
+        connect();
+        Path cwd = Files.createDirectory(temp.resolve("cwd"));
+        Path local = Files.createDirectory(temp.resolve("local"));
+        Files.writeString(cwd.resolve("download.txt"), "hello");
+        Files.writeString(local.resolve("download.txt"), "he");
+        Files.writeString(local.resolve("upload.txt"), "world");
+        Files.writeString(cwd.resolve("upload.txt"), "wo");
+        Files.writeString(cwd.resolve("download2.txt"), "hello");
+        Files.writeString(local.resolve("download2.txt"), "he");
+        Files.writeString(local.resolve("upload2.txt"), "world");
+        Files.writeString(cwd.resolve("upload2.txt"), "wo");
+        try (StatefulSFTPClient stateful = sshClient.newStatefulSFTPClient()) {
+            stateful.cd(cwd.toString());
+
+            stateful.get("download.txt", local.resolve("download.txt").toString(), 2);
+            stateful.put(local.resolve("upload.txt").toString(), "upload.txt", 2);
+            stateful.get("download2.txt", new FileSystemFile(local.resolve("download2.txt").toFile()), 2);
+            stateful.put(new FileSystemFile(local.resolve("upload2.txt").toFile()), "upload2.txt", 2);
+        }
+
+        assertEquals("hello", Files.readString(local.resolve("download.txt")));
+        assertEquals("world", Files.readString(cwd.resolve("upload.txt")));
+        assertEquals("hello", Files.readString(local.resolve("download2.txt")));
+        assertEquals("world", Files.readString(cwd.resolve("upload2.txt")));
     }
 
     private void doUpload(File src, File dest) throws IOException {
