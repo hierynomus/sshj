@@ -19,6 +19,8 @@ import com.hierynomus.sshj.userauth.fido.SecurityKeyPrivateKey;
 import com.hierynomus.sshj.userauth.fido.SecurityKeyPublicKey;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySignatureData;
 import com.hierynomus.sshj.userauth.fido.SecurityKeySigner;
+import com.hierynomus.sshj.userauth.fido.SecurityKeyTestSigners;
+import com.hierynomus.sshj.userauth.fido.SoftwareSecurityKeyMiddleware;
 import net.schmizz.sshj.common.Buffer;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.signature.Signature;
@@ -65,6 +67,35 @@ public class SecurityKeyMinaInteropTest {
         minaVerifier.initVerifier(null, minaKey);
         minaVerifier.update(null, message);
         assertTrue(minaVerifier.verify(null, ourSignature), "MINA should verify sshj's sk-ecdsa signature");
+    }
+
+    /**
+     * The same check for a signature made through a security key middleware, which takes the message and
+     * hashes it itself (#1068): MINA must accept what the middleware's device signed.
+     */
+    @Test
+    public void minaVerifiesOurSkEcdsaSignatureMadeThroughAMiddleware() throws Exception {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(new ECGenParameterSpec("secp256r1"));
+        KeyPair kp = kpg.generateKeyPair();
+        byte[] message = "interop ecdsa middleware".getBytes(StandardCharsets.UTF_8);
+        byte[] keyHandle = {1, 2, 3, 4};
+
+        SecurityKeyPublicKey ourPublicKey = new SecurityKeyPublicKey(kp.getPublic(), APPLICATION);
+        SoftwareSecurityKeyMiddleware middleware = new SoftwareSecurityKeyMiddleware(false, kp, keyHandle);
+        SecurityKeyPrivateKey privateKey = new SecurityKeyPrivateKey(KeyType.SK_ECDSA.toString(), ourPublicKey, FLAGS, keyHandle,
+                SecurityKeyTestSigners.middlewareSigner(middleware, false));
+        Signature signing = new SignatureSkEcdsa();
+        signing.initSign(privateKey);
+        signing.update(message);
+        byte[] ourSignature = signing.encode(signing.sign());
+        byte[] ourPublicKeyBlob = new Buffer.PlainBuffer().putPublicKey(ourPublicKey).getCompactData();
+
+        java.security.PublicKey minaKey = new ByteArrayBuffer(ourPublicKeyBlob).getRawPublicKey();
+        org.apache.sshd.common.signature.Signature minaVerifier = new org.apache.sshd.common.signature.SignatureSkECDSA();
+        minaVerifier.initVerifier(null, minaKey);
+        minaVerifier.update(null, message);
+        assertTrue(minaVerifier.verify(null, ourSignature), "MINA should verify a signature made through a middleware");
     }
 
     /** Produce an sk signature through sshj's signing path, with a software authenticator standing in for hardware. */

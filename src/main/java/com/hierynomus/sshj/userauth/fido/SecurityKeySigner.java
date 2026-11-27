@@ -24,9 +24,22 @@ import java.io.IOException;
  * sshj cannot talk to a hardware authenticator on its own: there is no pure-Java USB-HID / CTAP
  * stack. The embedding application supplies one of these to bridge to the hardware - for example
  * via libfido2, a platform WebAuthn API, or by delegating to a running ssh-agent. Given the
- * challenge to sign, the application string and the credential (key handle), an implementation
+ * data to sign, the application string and the credential (key handle), an implementation
  * makes the authenticator produce an assertion and returns the device's signature plus the flags
  * and counter that the authenticator reported.
+ * <p>
+ * Which input to use depends on how the authenticator is reached:
+ * <ul>
+ *   <li>Through an OpenSSH security key middleware (the {@code sk_sign()} API of
+ *       {@code libsk-libfido2}, {@code ssh-keychain.dylib} and similar, which is what
+ *       {@code SecurityKeyProvider} and {@code ssh-keygen -w} load): pass
+ *       {@link SecurityKeySigningRequest#getData()}. The middleware hashes it to the client-data hash
+ *       itself, so passing {@link SecurityKeySigningRequest#getChallenge()} would hash twice and
+ *       yield a signature every server rejects. Its response gives the ECDSA signature as separate
+ *       {@code r} and {@code s} values and the Ed25519 signature whole in {@code sig_r}.</li>
+ *   <li>At the CTAP / WebAuthn level (a USB-HID stack, a platform WebAuthn API), which takes the
+ *       client-data hash: pass {@link SecurityKeySigningRequest#getChallenge()}.</li>
+ * </ul>
  * <p>
  * Note: when a {@code ssh-agent} holds the security key, you do not need this interface at all - the
  * agent returns a fully formed SSH signature. Use the {@code com.hierynomus.sshj.userauth.agent}
@@ -37,9 +50,9 @@ import java.io.IOException;
 public interface SecurityKeySigner {
 
     /**
-     * Produce a FIDO assertion over the given challenge.
+     * Produce a FIDO assertion over the data in the given request.
      *
-     * @param request the challenge, application and credential to sign with
+     * @param request the data (and its hash), application and credential to sign with
      * @return the authenticator's response (signature, flags and counter)
      * @throws IOException if the authenticator could not be reached or declined to sign
      */
