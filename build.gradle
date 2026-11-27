@@ -68,7 +68,7 @@ if (!withBouncyCastle) {
 
 dependencies {
   implementation "org.slf4j:slf4j-api:2.0.17"
-  implementation "com.hierynomus:asn-one:0.6.0"
+  implementation "com.hierynomus:asn-one:0.8.0"
   bouncyCastleImplementation "org.bouncycastle:bcprov-jdk18on:$bouncycastleVersion"
   bouncyCastleImplementation "org.bouncycastle:bcpkix-jdk18on:$bouncycastleVersion"
 }
